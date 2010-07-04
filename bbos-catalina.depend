@@ -1,0 +1,90 @@
+# depslib dependency file v1.0
+1277840206 source:d:\workspace\bbos\bbos\samples\demo_itc\demo_itc.c
+	<stddef.h>
+	<bbos.h>
+	<bbos/lib/bbos_delay.h>
+
+1277830596 d:\workspace\bbos\bbos\include\bbos.h
+	<bbos/microkernel/sys.h>
+	<bbos/microkernel/port.h>
+	<bbos/microkernel/process.h>
+	<bbos/microkernel/sched.h>
+	<bbos/microkernel/itc.h>
+
+1277823038 d:\workspace\bbos\bbos\include\bbos\microkernel\sys.h
+	<bbos/env.h>
+
+1277822264 d:\workspace\bbos\bbos\include\bbos\env.h
+	<bbos/version.h>
+	<bbos_config.h>
+	<bbos/hardware.h>
+	<bbos/types.h>
+	<bbos/codes.h>
+	<bbos/debug.h>
+
+1277822752 d:\workspace\bbos\bbos\include\bbos\version.h
+
+1277841994 d:\workspace\bbos\bbos\samples\demo_itc\bbos_config.h
+
+1277845616 d:\workspace\bbos\bbos\include\bbos\hardware.h
+
+1277822734 d:\workspace\bbos\bbos\include\bbos\types.h
+	<bbos/lib/portable_stdint.h>
+
+1276726178 d:\workspace\bbos\bbos\include\bbos\lib\portable_stdint.h
+	<limits.h>
+
+1277821532 d:\workspace\bbos\bbos\include\bbos\codes.h
+
+1277821704 d:\workspace\bbos\bbos\include\bbos\debug.h
+	<bbos/compiler.h>
+
+1277821564 d:\workspace\bbos\bbos\include\bbos\compiler.h
+	<bbos/compiler/catalina.h>
+
+1277819666 d:\workspace\bbos\bbos\include\bbos\compiler\catalina.h
+
+1277823002 d:\workspace\bbos\bbos\include\bbos\microkernel\port.h
+	<bbos/env.h>
+	<bbos/lib/bbos_queue.h>
+	<bbos/lib/memory/bbos_mempool.h>
+
+1277846274 d:\workspace\bbos\bbos\include\bbos\lib\bbos_queue.h
+	<stddef.h>
+	<bbos/env.h>
+
+1277824130 d:\workspace\bbos\bbos\include\bbos\lib\memory\bbos_mempool.h
+	<bbos/env.h>
+
+1277845750 d:\workspace\bbos\bbos\include\bbos\microkernel\process.h
+	<bbos/env.h>
+	<bbos/microkernel/thread.h>
+	<bbos/microkernel/port.h>
+	<bbos/lib/memory/bbos_mempool.h>
+	<bbos/lib/bbos_queue.h>
+
+1277845996 d:\workspace\bbos\bbos\include\bbos\microkernel\thread.h
+	<bbos/env.h>
+
+1277823028 d:\workspace\bbos\bbos\include\bbos\microkernel\sched.h
+	<bbos/env.h>
+
+1277822968 d:\workspace\bbos\bbos\include\bbos\microkernel\itc.h
+	<bbos/env.h>
+	<bbos/microkernel/thread.h>
+	<bbos/microkernel/port.h>
+
+1277824326 d:\workspace\bbos\bbos\include\bbos\lib\bbos_delay.h
+	<bbos/env.h>
+	<bbos/lib/bbos_time.h>
+
+1276550948 d:\workspace\bbos\bbos\include\bbos\lib\bbos_time.h
+
+1277812426 source:d:\workspace\bbos\bbos\src\hardware\arch\generic\arch_init.c
+	<bbos/hardware/arch/generic/arch_init.h>
+
+1277832060 d:\workspace\bbos\bbos\include\bbos\hardware\arch\generic\arch_init.h
+
+1276634766 source:d:\workspace\bbos\bbos\src\lib\bbos_delay.c
+	<bbos/lib/bbos_delay.h>
+

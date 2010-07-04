@@ -1,0 +1,201 @@
+[Header]
+MagicCookie={0b13fe8c-dfe0-40eb-8900-6712719559a7}
+Version=1.0
+[File000]
+Location=D:\workspace\bbos\bbos\samples\demo_itc\demo_itc.o
+Folder=Intermediary
+DeviceName=PIC32MX795F512L
+LanguageToolSuiteID={14495C23-81F8-43F3-8A44-859C583D7760}
+LanguageToolID={430F471F-7ECB-4852-A80D-DEF9A5C8E751}
+LanguageToolLocation=C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\bin\pic32-gcc.exe
+PPAD=$(BINDIR)|D:\workspace\bbos\bbos\obj||$(TMPDIR)||$(AINDIR)||$(INCDIR)|C:\Microchip Starter Kits\PIC32 Starter Kits\Microchip\Include;D:\workspace\bbos\bbos\samples\demo_itc;D:\workspace\bbos\bbos\include||$(LIBDIR)|C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\lib;C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\pic32mx\lib||$(LKRDIR)||
+SOLK=<src>|demo_itc.c|D:\workspace\bbos\bbos\src\microkernel\itc.c|D:\workspace\bbos\bbos\src\microkernel\panic.c|D:\workspace\bbos\bbos\src\microkernel\port.c|D:\workspace\bbos\bbos\src\microkernel\process.c|D:\workspace\bbos\bbos\src\microkernel\sched.c|D:\workspace\bbos\bbos\src\microkernel\sys.c|D:\workspace\bbos\bbos\src\microkernel\thread.c|D:\workspace\bbos\bbos\src\lib\bbos_queue.c|D:\workspace\bbos\bbos\src\lib\bbos_string.c|D:\workspace\bbos\bbos\src\lib\bbos_delay.c|D:\workspace\bbos\bbos\src\lib\memory\bbos_mempool.c|D:\workspace\bbos\bbos\src\hardware\arch\mips32\arch_init.c||<obj>||<lib>||<lkr>||
+SuiteArgsString=
+ToolArgsString=-g -DPIC32_STARTER_KIT
+TraceCmdString=
+DebugOptions=-D__DEBUG -D__MPLAB_DEBUGGER_PIC32MXSK=1
+[File001]
+Location=D:\workspace\bbos\bbos\samples\demo_itc\itc.o
+Folder=Intermediary
+DeviceName=PIC32MX795F512L
+LanguageToolSuiteID={14495C23-81F8-43F3-8A44-859C583D7760}
+LanguageToolID={430F471F-7ECB-4852-A80D-DEF9A5C8E751}
+LanguageToolLocation=C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\bin\pic32-gcc.exe
+PPAD=$(BINDIR)|D:\workspace\bbos\bbos\obj||$(TMPDIR)||$(AINDIR)||$(INCDIR)|C:\Microchip Starter Kits\PIC32 Starter Kits\Microchip\Include;D:\workspace\bbos\bbos\samples\demo_itc;D:\workspace\bbos\bbos\include||$(LIBDIR)|C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\lib;C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\pic32mx\lib||$(LKRDIR)||
+SOLK=<src>|demo_itc.c|D:\workspace\bbos\bbos\src\microkernel\itc.c|D:\workspace\bbos\bbos\src\microkernel\panic.c|D:\workspace\bbos\bbos\src\microkernel\port.c|D:\workspace\bbos\bbos\src\microkernel\process.c|D:\workspace\bbos\bbos\src\microkernel\sched.c|D:\workspace\bbos\bbos\src\microkernel\sys.c|D:\workspace\bbos\bbos\src\microkernel\thread.c|D:\workspace\bbos\bbos\src\lib\bbos_queue.c|D:\workspace\bbos\bbos\src\lib\bbos_string.c|D:\workspace\bbos\bbos\src\lib\bbos_delay.c|D:\workspace\bbos\bbos\src\lib\memory\bbos_mempool.c|D:\workspace\bbos\bbos\src\hardware\arch\mips32\arch_init.c||<obj>||<lib>||<lkr>||
+SuiteArgsString=
+ToolArgsString=-g -DPIC32_STARTER_KIT
+TraceCmdString=
+DebugOptions=-D__DEBUG -D__MPLAB_DEBUGGER_PIC32MXSK=1
+[File002]
+Location=D:\workspace\bbos\bbos\samples\demo_itc\panic.o
+Folder=Intermediary
+DeviceName=PIC32MX795F512L
+LanguageToolSuiteID={14495C23-81F8-43F3-8A44-859C583D7760}
+LanguageToolID={430F471F-7ECB-4852-A80D-DEF9A5C8E751}
+LanguageToolLocation=C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\bin\pic32-gcc.exe
+PPAD=$(BINDIR)|D:\workspace\bbos\bbos\obj||$(TMPDIR)||$(AINDIR)||$(INCDIR)|C:\Microchip Starter Kits\PIC32 Starter Kits\Microchip\Include;D:\workspace\bbos\bbos\samples\demo_itc;D:\workspace\bbos\bbos\include||$(LIBDIR)|C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\lib;C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\pic32mx\lib||$(LKRDIR)||
+SOLK=<src>|demo_itc.c|D:\workspace\bbos\bbos\src\microkernel\itc.c|D:\workspace\bbos\bbos\src\microkernel\panic.c|D:\workspace\bbos\bbos\src\microkernel\port.c|D:\workspace\bbos\bbos\src\microkernel\process.c|D:\workspace\bbos\bbos\src\microkernel\sched.c|D:\workspace\bbos\bbos\src\microkernel\sys.c|D:\workspace\bbos\bbos\src\microkernel\thread.c|D:\workspace\bbos\bbos\src\lib\bbos_queue.c|D:\workspace\bbos\bbos\src\lib\bbos_string.c|D:\workspace\bbos\bbos\src\lib\bbos_delay.c|D:\workspace\bbos\bbos\src\lib\memory\bbos_mempool.c|D:\workspace\bbos\bbos\src\hardware\arch\mips32\arch_init.c||<obj>||<lib>||<lkr>||
+SuiteArgsString=
+ToolArgsString=-g -DPIC32_STARTER_KIT
+TraceCmdString=
+DebugOptions=-D__DEBUG -D__MPLAB_DEBUGGER_PIC32MXSK=1
+[File003]
+Location=D:\workspace\bbos\bbos\samples\demo_itc\port.o
+Folder=Intermediary
+DeviceName=PIC32MX795F512L
+LanguageToolSuiteID={14495C23-81F8-43F3-8A44-859C583D7760}
+LanguageToolID={430F471F-7ECB-4852-A80D-DEF9A5C8E751}
+LanguageToolLocation=C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\bin\pic32-gcc.exe
+PPAD=$(BINDIR)|D:\workspace\bbos\bbos\obj||$(TMPDIR)||$(AINDIR)||$(INCDIR)|C:\Microchip Starter Kits\PIC32 Starter Kits\Microchip\Include;D:\workspace\bbos\bbos\samples\demo_itc;D:\workspace\bbos\bbos\include||$(LIBDIR)|C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\lib;C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\pic32mx\lib||$(LKRDIR)||
+SOLK=<src>|demo_itc.c|D:\workspace\bbos\bbos\src\microkernel\itc.c|D:\workspace\bbos\bbos\src\microkernel\panic.c|D:\workspace\bbos\bbos\src\microkernel\port.c|D:\workspace\bbos\bbos\src\microkernel\process.c|D:\workspace\bbos\bbos\src\microkernel\sched.c|D:\workspace\bbos\bbos\src\microkernel\sys.c|D:\workspace\bbos\bbos\src\microkernel\thread.c|D:\workspace\bbos\bbos\src\lib\bbos_queue.c|D:\workspace\bbos\bbos\src\lib\bbos_string.c|D:\workspace\bbos\bbos\src\lib\bbos_delay.c|D:\workspace\bbos\bbos\src\lib\memory\bbos_mempool.c|D:\workspace\bbos\bbos\src\hardware\arch\mips32\arch_init.c||<obj>||<lib>||<lkr>||
+SuiteArgsString=
+ToolArgsString=-g -DPIC32_STARTER_KIT
+TraceCmdString=
+DebugOptions=-D__DEBUG -D__MPLAB_DEBUGGER_PIC32MXSK=1
+[File004]
+Location=D:\workspace\bbos\bbos\samples\demo_itc\process.o
+Folder=Intermediary
+DeviceName=PIC32MX795F512L
+LanguageToolSuiteID={14495C23-81F8-43F3-8A44-859C583D7760}
+LanguageToolID={430F471F-7ECB-4852-A80D-DEF9A5C8E751}
+LanguageToolLocation=C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\bin\pic32-gcc.exe
+PPAD=$(BINDIR)|D:\workspace\bbos\bbos\obj||$(TMPDIR)||$(AINDIR)||$(INCDIR)|C:\Microchip Starter Kits\PIC32 Starter Kits\Microchip\Include;D:\workspace\bbos\bbos\samples\demo_itc;D:\workspace\bbos\bbos\include||$(LIBDIR)|C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\lib;C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\pic32mx\lib||$(LKRDIR)||
+SOLK=<src>|demo_itc.c|D:\workspace\bbos\bbos\src\microkernel\itc.c|D:\workspace\bbos\bbos\src\microkernel\panic.c|D:\workspace\bbos\bbos\src\microkernel\port.c|D:\workspace\bbos\bbos\src\microkernel\process.c|D:\workspace\bbos\bbos\src\microkernel\sched.c|D:\workspace\bbos\bbos\src\microkernel\sys.c|D:\workspace\bbos\bbos\src\microkernel\thread.c|D:\workspace\bbos\bbos\src\lib\bbos_queue.c|D:\workspace\bbos\bbos\src\lib\bbos_string.c|D:\workspace\bbos\bbos\src\lib\bbos_delay.c|D:\workspace\bbos\bbos\src\lib\memory\bbos_mempool.c|D:\workspace\bbos\bbos\src\hardware\arch\mips32\arch_init.c||<obj>||<lib>||<lkr>||
+SuiteArgsString=
+ToolArgsString=-g -DPIC32_STARTER_KIT
+TraceCmdString=
+DebugOptions=-D__DEBUG -D__MPLAB_DEBUGGER_PIC32MXSK=1
+[File005]
+Location=D:\workspace\bbos\bbos\samples\demo_itc\sched.o
+Folder=Intermediary
+DeviceName=PIC32MX795F512L
+LanguageToolSuiteID={14495C23-81F8-43F3-8A44-859C583D7760}
+LanguageToolID={430F471F-7ECB-4852-A80D-DEF9A5C8E751}
+LanguageToolLocation=C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\bin\pic32-gcc.exe
+PPAD=$(BINDIR)|D:\workspace\bbos\bbos\obj||$(TMPDIR)||$(AINDIR)||$(INCDIR)|C:\Microchip Starter Kits\PIC32 Starter Kits\Microchip\Include;D:\workspace\bbos\bbos\samples\demo_itc;D:\workspace\bbos\bbos\include||$(LIBDIR)|C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\lib;C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\pic32mx\lib||$(LKRDIR)||
+SOLK=<src>|demo_itc.c|D:\workspace\bbos\bbos\src\microkernel\itc.c|D:\workspace\bbos\bbos\src\microkernel\panic.c|D:\workspace\bbos\bbos\src\microkernel\port.c|D:\workspace\bbos\bbos\src\microkernel\process.c|D:\workspace\bbos\bbos\src\microkernel\sched.c|D:\workspace\bbos\bbos\src\microkernel\sys.c|D:\workspace\bbos\bbos\src\microkernel\thread.c|D:\workspace\bbos\bbos\src\lib\bbos_queue.c|D:\workspace\bbos\bbos\src\lib\bbos_string.c|D:\workspace\bbos\bbos\src\lib\bbos_delay.c|D:\workspace\bbos\bbos\src\lib\memory\bbos_mempool.c|D:\workspace\bbos\bbos\src\hardware\arch\mips32\arch_init.c||<obj>||<lib>||<lkr>||
+SuiteArgsString=
+ToolArgsString=-g -DPIC32_STARTER_KIT
+TraceCmdString=
+DebugOptions=-D__DEBUG -D__MPLAB_DEBUGGER_PIC32MXSK=1
+[File006]
+Location=D:\workspace\bbos\bbos\samples\demo_itc\sys.o
+Folder=Intermediary
+DeviceName=PIC32MX795F512L
+LanguageToolSuiteID={14495C23-81F8-43F3-8A44-859C583D7760}
+LanguageToolID={430F471F-7ECB-4852-A80D-DEF9A5C8E751}
+LanguageToolLocation=C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\bin\pic32-gcc.exe
+PPAD=$(BINDIR)|D:\workspace\bbos\bbos\obj||$(TMPDIR)||$(AINDIR)||$(INCDIR)|C:\Microchip Starter Kits\PIC32 Starter Kits\Microchip\Include;D:\workspace\bbos\bbos\samples\demo_itc;D:\workspace\bbos\bbos\include||$(LIBDIR)|C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\lib;C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\pic32mx\lib||$(LKRDIR)||
+SOLK=<src>|demo_itc.c|D:\workspace\bbos\bbos\src\microkernel\itc.c|D:\workspace\bbos\bbos\src\microkernel\panic.c|D:\workspace\bbos\bbos\src\microkernel\port.c|D:\workspace\bbos\bbos\src\microkernel\process.c|D:\workspace\bbos\bbos\src\microkernel\sched.c|D:\workspace\bbos\bbos\src\microkernel\sys.c|D:\workspace\bbos\bbos\src\microkernel\thread.c|D:\workspace\bbos\bbos\src\lib\bbos_queue.c|D:\workspace\bbos\bbos\src\lib\bbos_string.c|D:\workspace\bbos\bbos\src\lib\bbos_delay.c|D:\workspace\bbos\bbos\src\lib\memory\bbos_mempool.c|D:\workspace\bbos\bbos\src\hardware\arch\mips32\arch_init.c||<obj>||<lib>||<lkr>||
+SuiteArgsString=
+ToolArgsString=-g -DPIC32_STARTER_KIT
+TraceCmdString=
+DebugOptions=-D__DEBUG -D__MPLAB_DEBUGGER_PIC32MXSK=1
+[File007]
+Location=D:\workspace\bbos\bbos\samples\demo_itc\thread.o
+Folder=Intermediary
+DeviceName=PIC32MX795F512L
+LanguageToolSuiteID={14495C23-81F8-43F3-8A44-859C583D7760}
+LanguageToolID={430F471F-7ECB-4852-A80D-DEF9A5C8E751}
+LanguageToolLocation=C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\bin\pic32-gcc.exe
+PPAD=$(BINDIR)|D:\workspace\bbos\bbos\obj||$(TMPDIR)||$(AINDIR)||$(INCDIR)|C:\Microchip Starter Kits\PIC32 Starter Kits\Microchip\Include;D:\workspace\bbos\bbos\samples\demo_itc;D:\workspace\bbos\bbos\include||$(LIBDIR)|C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\lib;C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\pic32mx\lib||$(LKRDIR)||
+SOLK=<src>|demo_itc.c|D:\workspace\bbos\bbos\src\microkernel\itc.c|D:\workspace\bbos\bbos\src\microkernel\panic.c|D:\workspace\bbos\bbos\src\microkernel\port.c|D:\workspace\bbos\bbos\src\microkernel\process.c|D:\workspace\bbos\bbos\src\microkernel\sched.c|D:\workspace\bbos\bbos\src\microkernel\sys.c|D:\workspace\bbos\bbos\src\microkernel\thread.c|D:\workspace\bbos\bbos\src\lib\bbos_queue.c|D:\workspace\bbos\bbos\src\lib\bbos_string.c|D:\workspace\bbos\bbos\src\lib\bbos_delay.c|D:\workspace\bbos\bbos\src\lib\memory\bbos_mempool.c|D:\workspace\bbos\bbos\src\hardware\arch\mips32\arch_init.c||<obj>||<lib>||<lkr>||
+SuiteArgsString=
+ToolArgsString=-g -DPIC32_STARTER_KIT
+TraceCmdString=
+DebugOptions=-D__DEBUG -D__MPLAB_DEBUGGER_PIC32MXSK=1
+[File008]
+Location=D:\workspace\bbos\bbos\samples\demo_itc\bbos_queue.o
+Folder=Intermediary
+DeviceName=PIC32MX795F512L
+LanguageToolSuiteID={14495C23-81F8-43F3-8A44-859C583D7760}
+LanguageToolID={430F471F-7ECB-4852-A80D-DEF9A5C8E751}
+LanguageToolLocation=C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\bin\pic32-gcc.exe
+PPAD=$(BINDIR)|D:\workspace\bbos\bbos\obj||$(TMPDIR)||$(AINDIR)||$(INCDIR)|C:\Microchip Starter Kits\PIC32 Starter Kits\Microchip\Include;D:\workspace\bbos\bbos\samples\demo_itc;D:\workspace\bbos\bbos\include||$(LIBDIR)|C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\lib;C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\pic32mx\lib||$(LKRDIR)||
+SOLK=<src>|demo_itc.c|D:\workspace\bbos\bbos\src\microkernel\itc.c|D:\workspace\bbos\bbos\src\microkernel\panic.c|D:\workspace\bbos\bbos\src\microkernel\port.c|D:\workspace\bbos\bbos\src\microkernel\process.c|D:\workspace\bbos\bbos\src\microkernel\sched.c|D:\workspace\bbos\bbos\src\microkernel\sys.c|D:\workspace\bbos\bbos\src\microkernel\thread.c|D:\workspace\bbos\bbos\src\lib\bbos_queue.c|D:\workspace\bbos\bbos\src\lib\bbos_string.c|D:\workspace\bbos\bbos\src\lib\bbos_delay.c|D:\workspace\bbos\bbos\src\lib\memory\bbos_mempool.c|D:\workspace\bbos\bbos\src\hardware\arch\mips32\arch_init.c||<obj>||<lib>||<lkr>||
+SuiteArgsString=
+ToolArgsString=-g -DPIC32_STARTER_KIT
+TraceCmdString=
+DebugOptions=-D__DEBUG -D__MPLAB_DEBUGGER_PIC32MXSK=1
+[File009]
+Location=D:\workspace\bbos\bbos\samples\demo_itc\bbos_string.o
+Folder=Intermediary
+DeviceName=PIC32MX795F512L
+LanguageToolSuiteID={14495C23-81F8-43F3-8A44-859C583D7760}
+LanguageToolID={430F471F-7ECB-4852-A80D-DEF9A5C8E751}
+LanguageToolLocation=C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\bin\pic32-gcc.exe
+PPAD=$(BINDIR)|D:\workspace\bbos\bbos\obj||$(TMPDIR)||$(AINDIR)||$(INCDIR)|C:\Microchip Starter Kits\PIC32 Starter Kits\Microchip\Include;D:\workspace\bbos\bbos\samples\demo_itc;D:\workspace\bbos\bbos\include||$(LIBDIR)|C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\lib;C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\pic32mx\lib||$(LKRDIR)||
+SOLK=<src>|demo_itc.c|D:\workspace\bbos\bbos\src\microkernel\itc.c|D:\workspace\bbos\bbos\src\microkernel\panic.c|D:\workspace\bbos\bbos\src\microkernel\port.c|D:\workspace\bbos\bbos\src\microkernel\process.c|D:\workspace\bbos\bbos\src\microkernel\sched.c|D:\workspace\bbos\bbos\src\microkernel\sys.c|D:\workspace\bbos\bbos\src\microkernel\thread.c|D:\workspace\bbos\bbos\src\lib\bbos_queue.c|D:\workspace\bbos\bbos\src\lib\bbos_string.c|D:\workspace\bbos\bbos\src\lib\bbos_delay.c|D:\workspace\bbos\bbos\src\lib\memory\bbos_mempool.c|D:\workspace\bbos\bbos\src\hardware\arch\mips32\arch_init.c||<obj>||<lib>||<lkr>||
+SuiteArgsString=
+ToolArgsString=-g -DPIC32_STARTER_KIT
+TraceCmdString=
+DebugOptions=-D__DEBUG -D__MPLAB_DEBUGGER_PIC32MXSK=1
+[File010]
+Location=D:\workspace\bbos\bbos\samples\demo_itc\bbos_delay.o
+Folder=Intermediary
+DeviceName=PIC32MX795F512L
+LanguageToolSuiteID={14495C23-81F8-43F3-8A44-859C583D7760}
+LanguageToolID={430F471F-7ECB-4852-A80D-DEF9A5C8E751}
+LanguageToolLocation=C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\bin\pic32-gcc.exe
+PPAD=$(BINDIR)|D:\workspace\bbos\bbos\obj||$(TMPDIR)||$(AINDIR)||$(INCDIR)|C:\Microchip Starter Kits\PIC32 Starter Kits\Microchip\Include;D:\workspace\bbos\bbos\samples\demo_itc;D:\workspace\bbos\bbos\include||$(LIBDIR)|C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\lib;C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\pic32mx\lib||$(LKRDIR)||
+SOLK=<src>|demo_itc.c|D:\workspace\bbos\bbos\src\microkernel\itc.c|D:\workspace\bbos\bbos\src\microkernel\panic.c|D:\workspace\bbos\bbos\src\microkernel\port.c|D:\workspace\bbos\bbos\src\microkernel\process.c|D:\workspace\bbos\bbos\src\microkernel\sched.c|D:\workspace\bbos\bbos\src\microkernel\sys.c|D:\workspace\bbos\bbos\src\microkernel\thread.c|D:\workspace\bbos\bbos\src\lib\bbos_queue.c|D:\workspace\bbos\bbos\src\lib\bbos_string.c|D:\workspace\bbos\bbos\src\lib\bbos_delay.c|D:\workspace\bbos\bbos\src\lib\memory\bbos_mempool.c|D:\workspace\bbos\bbos\src\hardware\arch\mips32\arch_init.c||<obj>||<lib>||<lkr>||
+SuiteArgsString=
+ToolArgsString=-g -DPIC32_STARTER_KIT
+TraceCmdString=
+DebugOptions=-D__DEBUG -D__MPLAB_DEBUGGER_PIC32MXSK=1
+[File011]
+Location=D:\workspace\bbos\bbos\samples\demo_itc\bbos_mempool.o
+Folder=Intermediary
+DeviceName=PIC32MX795F512L
+LanguageToolSuiteID={14495C23-81F8-43F3-8A44-859C583D7760}
+LanguageToolID={430F471F-7ECB-4852-A80D-DEF9A5C8E751}
+LanguageToolLocation=C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\bin\pic32-gcc.exe
+PPAD=$(BINDIR)|D:\workspace\bbos\bbos\obj||$(TMPDIR)||$(AINDIR)||$(INCDIR)|C:\Microchip Starter Kits\PIC32 Starter Kits\Microchip\Include;D:\workspace\bbos\bbos\samples\demo_itc;D:\workspace\bbos\bbos\include||$(LIBDIR)|C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\lib;C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\pic32mx\lib||$(LKRDIR)||
+SOLK=<src>|demo_itc.c|D:\workspace\bbos\bbos\src\microkernel\itc.c|D:\workspace\bbos\bbos\src\microkernel\panic.c|D:\workspace\bbos\bbos\src\microkernel\port.c|D:\workspace\bbos\bbos\src\microkernel\process.c|D:\workspace\bbos\bbos\src\microkernel\sched.c|D:\workspace\bbos\bbos\src\microkernel\sys.c|D:\workspace\bbos\bbos\src\microkernel\thread.c|D:\workspace\bbos\bbos\src\lib\bbos_queue.c|D:\workspace\bbos\bbos\src\lib\bbos_string.c|D:\workspace\bbos\bbos\src\lib\bbos_delay.c|D:\workspace\bbos\bbos\src\lib\memory\bbos_mempool.c|D:\workspace\bbos\bbos\src\hardware\arch\mips32\arch_init.c||<obj>||<lib>||<lkr>||
+SuiteArgsString=
+ToolArgsString=-g -DPIC32_STARTER_KIT
+TraceCmdString=
+DebugOptions=-D__DEBUG -D__MPLAB_DEBUGGER_PIC32MXSK=1
+[File012]
+Location=D:\workspace\bbos\bbos\samples\demo_itc\arch_init.o
+Folder=Intermediary
+DeviceName=PIC32MX795F512L
+LanguageToolSuiteID={14495C23-81F8-43F3-8A44-859C583D7760}
+LanguageToolID={430F471F-7ECB-4852-A80D-DEF9A5C8E751}
+LanguageToolLocation=C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\bin\pic32-gcc.exe
+PPAD=$(BINDIR)|D:\workspace\bbos\bbos\obj||$(TMPDIR)||$(AINDIR)||$(INCDIR)|C:\Microchip Starter Kits\PIC32 Starter Kits\Microchip\Include;D:\workspace\bbos\bbos\samples\demo_itc;D:\workspace\bbos\bbos\include||$(LIBDIR)|C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\lib;C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\pic32mx\lib||$(LKRDIR)||
+SOLK=<src>|demo_itc.c|D:\workspace\bbos\bbos\src\microkernel\itc.c|D:\workspace\bbos\bbos\src\microkernel\panic.c|D:\workspace\bbos\bbos\src\microkernel\port.c|D:\workspace\bbos\bbos\src\microkernel\process.c|D:\workspace\bbos\bbos\src\microkernel\sched.c|D:\workspace\bbos\bbos\src\microkernel\sys.c|D:\workspace\bbos\bbos\src\microkernel\thread.c|D:\workspace\bbos\bbos\src\lib\bbos_queue.c|D:\workspace\bbos\bbos\src\lib\bbos_string.c|D:\workspace\bbos\bbos\src\lib\bbos_delay.c|D:\workspace\bbos\bbos\src\lib\memory\bbos_mempool.c|D:\workspace\bbos\bbos\src\hardware\arch\mips32\arch_init.c||<obj>||<lib>||<lkr>||
+SuiteArgsString=
+ToolArgsString=-g -DPIC32_STARTER_KIT
+TraceCmdString=
+DebugOptions=-D__DEBUG -D__MPLAB_DEBUGGER_PIC32MXSK=1
+[File013]
+Location=D:\workspace\bbos\bbos\obj\demo_itc.elf
+Folder=Output
+DeviceName=PIC32MX795F512L
+LanguageToolSuiteID={14495C23-81F8-43F3-8A44-859C583D7760}
+LanguageToolID={C68E5105-1196-4333-A0BF-3DC57271E614}
+LanguageToolLocation=C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\bin\pic32-ld.exe
+PPAD=$(BINDIR)|D:\workspace\bbos\bbos\obj||$(TMPDIR)||$(AINDIR)||$(INCDIR)|C:\Microchip Starter Kits\PIC32 Starter Kits\Microchip\Include;D:\workspace\bbos\bbos\samples\demo_itc;D:\workspace\bbos\bbos\include||$(LIBDIR)|C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\lib;C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\pic32mx\lib||$(LKRDIR)||
+SOLK=<src>|demo_itc.c|D:\workspace\bbos\bbos\src\microkernel\itc.c|D:\workspace\bbos\bbos\src\microkernel\panic.c|D:\workspace\bbos\bbos\src\microkernel\port.c|D:\workspace\bbos\bbos\src\microkernel\process.c|D:\workspace\bbos\bbos\src\microkernel\sched.c|D:\workspace\bbos\bbos\src\microkernel\sys.c|D:\workspace\bbos\bbos\src\microkernel\thread.c|D:\workspace\bbos\bbos\src\lib\bbos_queue.c|D:\workspace\bbos\bbos\src\lib\bbos_string.c|D:\workspace\bbos\bbos\src\lib\bbos_delay.c|D:\workspace\bbos\bbos\src\lib\memory\bbos_mempool.c|D:\workspace\bbos\bbos\src\hardware\arch\mips32\arch_init.c||<obj>||<lib>||<lkr>||
+SuiteArgsString=
+ToolArgsString=-Map="$(BINDIR_)$(TARGETBASE).map" -o"$(BINDIR_)$(TARGETBASE).$(TARGETSUFFIX)"
+TraceCmdString=
+DebugOptions=--defsym=__MPLAB_DEBUG=1 --defsym=__MPLAB_DEBUGGER_PIC32MXSK=1
+[File014]
+Location=D:\workspace\bbos\bbos\obj\demo_itc.hex
+Folder=Output
+DeviceName=PIC32MX795F512L
+LanguageToolSuiteID={14495C23-81F8-43F3-8A44-859C583D7760}
+LanguageToolID={C68E5105-1196-4333-A0BF-3DC57271E614}
+LanguageToolLocation=C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\bin\pic32-ld.exe
+PPAD=$(BINDIR)|D:\workspace\bbos\bbos\obj||$(TMPDIR)||$(AINDIR)||$(INCDIR)|C:\Microchip Starter Kits\PIC32 Starter Kits\Microchip\Include;D:\workspace\bbos\bbos\samples\demo_itc;D:\workspace\bbos\bbos\include||$(LIBDIR)|C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\lib;C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\pic32mx\lib||$(LKRDIR)||
+SOLK=<src>|demo_itc.c|D:\workspace\bbos\bbos\src\microkernel\itc.c|D:\workspace\bbos\bbos\src\microkernel\panic.c|D:\workspace\bbos\bbos\src\microkernel\port.c|D:\workspace\bbos\bbos\src\microkernel\process.c|D:\workspace\bbos\bbos\src\microkernel\sched.c|D:\workspace\bbos\bbos\src\microkernel\sys.c|D:\workspace\bbos\bbos\src\microkernel\thread.c|D:\workspace\bbos\bbos\src\lib\bbos_queue.c|D:\workspace\bbos\bbos\src\lib\bbos_string.c|D:\workspace\bbos\bbos\src\lib\bbos_delay.c|D:\workspace\bbos\bbos\src\lib\memory\bbos_mempool.c|D:\workspace\bbos\bbos\src\hardware\arch\mips32\arch_init.c||<obj>||<lib>||<lkr>||
+SuiteArgsString=
+ToolArgsString=-Map="$(BINDIR_)$(TARGETBASE).map" -o"$(BINDIR_)$(TARGETBASE).$(TARGETSUFFIX)"
+TraceCmdString=
+DebugOptions=--defsym=__MPLAB_DEBUG=1 --defsym=__MPLAB_DEBUGGER_PIC32MXSK=1
+[TOOL_LOC_STAMPS]
+tool_loc{430F471F-7ECB-4852-A80D-DEF9A5C8E751}=C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\bin\pic32-gcc.exe
+tool_loc{C68E5105-1196-4333-A0BF-3DC57271E614}=C:\Microchip Starter Kits\PIC32 Starter Kits\MPLAB C32 Suite\bin\pic32-ld.exe
