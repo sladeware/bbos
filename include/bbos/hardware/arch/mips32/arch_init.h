@@ -5,6 +5,9 @@
 #ifndef __BBOS_HARDWARE_ARCH_MIPS32_INIT_H
 #define __BBOS_HARDWARE_ARCH_MIPS32_INIT_H
 
+// PIC32 Peripheral library functions and macros
+#include <plib.h>
+
 #include <bbos/env.h>
 
 /* Prototypes */
