@@ -10,14 +10,6 @@
 /* Load portable compiler specific data types */
 #include <bbos/lib/portable_stdint.h>
 
-typedef struct {
-  uint8_t b[8]; // b - byte
-} uint64_t;
-
-typedef struct {
-  int8_t b[8]; // b - byte
-} int64_t;
-
 /**
  * typedef bbos_port_id_t - Port identifier.
  */
@@ -41,9 +33,13 @@ typedef uint8_t bbos_thread_priority_t;
  */
 typedef int16_t bbos_return_t;
 
-//#ifndef NULL
-//#define NULL (0)
-//#endif
+#ifndef NULL
+#if defined(__cplusplus)
+#define NULL (0)
+#else
+#define NULL ((void *)0)
+#endif /* __cplusplus */
+#endif /* NULL */
 
 #ifndef FALSE
 #define FALSE 0

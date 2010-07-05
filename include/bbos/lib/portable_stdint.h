@@ -5,7 +5,7 @@
  */
 
 #ifndef __PORTABLE_STDINT_H
-#define __PORTABLE_PSTDINT_H
+#define __PORTABLE_STDINT_H
 
 #include <limits.h>
 
@@ -117,6 +117,16 @@ typedef signed short int32_t;
 #error "Platform not supported"
 #endif
 #endif /* int32_t */
+
+/*
+typedef struct {
+  uint8_t b[8]; // b - byte
+} uint64_t;
+
+typedef struct {
+  int8_t b[8]; // b - byte
+} int64_t;
+*/
 
 #endif /* __PORTABLE_STDINT_H */
 
