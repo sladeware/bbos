@@ -5,9 +5,6 @@
 #ifndef __BBOS_CONFIG_H
 #define __BBOS_CONFIG_H
 
-// application defines
-//#define SYS_FREQ		(80000000)
-
 //#define BBOS_HARDWARE_ARCH  mips32
 //#define BBOS_HARDWARE_CPU   m4k
 
