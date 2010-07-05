@@ -1,14 +1,10 @@
 /*
- * lib/bbos_delay.c
+ * Delay routines.
  *
  * Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
  */
 
-/*** BeginHeader sdelay, mdelay */
-
-#include <bbos/lib/bbos_delay.h>
-
-/*** EndHeader */
+#include <bbos/lib/delay.h>
 
 /**
  * sdelay - Delay on a period in seconds.
