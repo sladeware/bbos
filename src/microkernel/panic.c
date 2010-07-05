@@ -6,9 +6,6 @@
 
 #include <bbos/microkernel/panic.h>
 
-#include <stdio.h>
-#include <stdarg.h>
-
 /**
  * bbos_panic - Halt the system.
  * @fmt: The text string to print.

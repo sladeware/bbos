@@ -8,6 +8,7 @@
 #define __BBOS_MICROKERNEL_PANIC_H
 
 #include <bbos/env.h>
+#include <stdarg.h>
 
 /* Prototypes */
 
