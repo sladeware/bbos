@@ -8,8 +8,8 @@
 #include <bbos/env.h>
 #include <bbos/microkernel/thread.h>
 #include <bbos/microkernel/port.h>
-#include <bbos/lib/memory/bbos_mempool.h>
-#include <bbos/lib/bbos_queue.h>
+#include <bbos/lib/memory/fastmempool.h>
+#include <bbos/lib/queue.h>
 
 /**
  * Number of ports.

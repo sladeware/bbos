@@ -1,6 +1,5 @@
 /*
- * File: itc.c
- * Description: Inter-thread communication.
+ * Inter-thread communication.
  *
  * Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
  */

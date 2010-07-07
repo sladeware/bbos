@@ -39,8 +39,8 @@ bbos_process_init_ports()
   bbos_port_id_t p;
 
   for(p=0; p<BBOS_NUMBER_OF_PORTS; p++) {
-    bbos_process_port_table[p].buffer = (bbos_mempool_t *)NULL;
-    bbos_process_port_table[p].queue = (bbos_queue_t *)NULL;
+    bbos_process_port_table[p].buffer = (fastmempool_t *)NULL;
+    bbos_process_port_table[p].queue = (queue_t *)NULL;
   }
 }
 

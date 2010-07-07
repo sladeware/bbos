@@ -19,8 +19,7 @@ void receiver() {
 
   printf("RECEIVER thread is running...\n");
 
-  msg = bbos_itc_receive(PORT0);
-  if (msg) {
+  if ((msg = bbos_itc_receive(PORT0)) != NULL) {
     printf("RECEIVER has a new message: %s\n", msg);
     exit(0);
   }
@@ -43,8 +42,9 @@ void sender() {
       printf("SENDER has sent the message: %s\n",msg);
     else
       printf("SENDER can not send the message.\n");
-  } else
+  } else {
     printf("Can not compose a new message.\n");
+  }
 }
 
 bbos_return_t switcher(bbos_thread_id_t tid) {

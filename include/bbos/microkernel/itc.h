@@ -34,7 +34,7 @@ struct bbos_itc_header {
 typedef struct bbos_itc_header bbos_itc_header_t;
 
 enum {
-  BBOS_ITC_HEADER_OVERHEAD = ((int16_t)sizeof(bbos_itc_header_t))
+  BBOS_ITC_HEADER_OVERHEAD = ((size_t)sizeof(bbos_itc_header_t))
 };
 
 #define BBOS_ITC_GET_MESSAGE_HEADER(msg)			\

@@ -8,8 +8,8 @@
 #define __BBOS_MICROKERNEL_PORT_H
 
 #include <bbos/env.h>
-#include <bbos/lib/bbos_queue.h>
-#include <bbos/lib/memory/bbos_mempool.h>
+#include <bbos/lib/queue.h>
+#include <bbos/lib/memory/fastmempool.h>
 
 /** Some well known thread id's. */
 #define BBOS_NIL_PORT_ID 0xFF
@@ -20,8 +20,8 @@
  * @buffer: Pointer to the memory buffer for the message data.
  */
 struct bbos_port {
-  bbos_queue_t *queue;
-  bbos_mempool_t *buffer;
+  queue_t *queue;
+  fastmempool_t *buffer;
 };
 
 /** 
@@ -36,7 +36,7 @@ typedef struct bbos_port bbos_port_t;
  * @sz: Message size.
  */
 #define BBOS_PORT_PARTITION_SIZE(n, sz)					\
-  (BBOS_QUEUE_PARTITION_SIZE(n) + BBOS_MEMPOOL_PARTITION_SIZE(n, sz))	\
+  (QUEUE_PARTITION_SIZE(n) + FASTMEMPOOL_PARTITION_SIZE(n, sz))	\
 
 /**
  * BBOS_PORT - Create a port's memory partition.
