@@ -11,50 +11,50 @@
 #include <bbos/env.h>
 
 /** The memory block structure */
-struct bbos_mempool_block {
+struct fastmempool_block {
   /* Next free memory block */
-  struct bbos_mempool_block *next;
+  struct fastmempool_block *next;
 };
 
-typedef struct bbos_mempool_block bbos_mempool_block_t;
+typedef struct fastmempool_block fastmempool_block_t;
 
 /* The memory pool structure */
-struct bbos_mempool {
+struct fastmempool {
   /* Points to the next free memory block */
-  bbos_mempool_block_t *next_free_block;
+  fastmempool_block_t *next_free_block;
 };
 
-typedef struct bbos_mempool bbos_mempool_t;
+typedef struct fastmempool fastmempool_t;
 
 enum {
   /* The number of bytes used to hold memory pool structure */
-  BBOS_MEMPOOL_OVERHEAD = ((int16_t)sizeof(bbos_mempool_t))
+  FASTMEMPOOL_OVERHEAD = ((int16_t)sizeof(fastmempool_t))
 };
 
 /**
  * Computes size of the memory partition by using specified number
  * of blocks and block size.
  */
-#define BBOS_MEMPOOL_PARTITION_SIZE(num_blocks, block_size) \
-  (BBOS_MEMPOOL_OVERHEAD + num_blocks * block_size)
+#define FASTMEMPOOL_PARTITION_SIZE(num_blocks, block_size) \
+  (FASTMEMPOOL_OVERHEAD + num_blocks * block_size)
 
 /**
- * BBOS_MEMPOOL - Creates memory partition.
+ * FASTMEMPOOL_PARTITION - Creates memory partition.
  */
-#define BBOS_MEMPOOL(name, num_blocks, block_size) \
-  int8_t name[BBOS_MEMPOOL_PARTITION_SIZE(num_blocks, block_size)]
+#define FASTMEMPOOL_PARTITION(name, num_blocks, block_size) \
+  int8_t name[FASTMEMPOOL_PARTITION_SIZE(num_blocks, block_size)]
 
 /* Prototypes */
 
-bbos_mempool_t *bbos_mempool_init(const void *part, uint16_t num_blocks, \
+fastmempool_t *fastmempool_init(const void *part, uint16_t num_blocks, \
 				  uint16_t block_size);
 
-void bbos_mempool_resize(bbos_mempool_t *pool, uint16_t num_blocks,\
+void fastmempool_resize(fastmempool_t *pool, uint16_t num_blocks,\
 			 uint16_t block_size);
 
-void *bbos_mempool_alloc(bbos_mempool_t *pool);
+void *fastmempool_alloc(fastmempool_t *pool);
 
-void bbos_mempool_free(bbos_mempool_t *pool, void *addr);
+void fastmempool_free(fastmempool_t *pool, void *addr);
 
 #endif /* __BBOS_LIB_MEMPOOL_H */
 
