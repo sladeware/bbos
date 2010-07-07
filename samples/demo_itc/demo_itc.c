@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <bbos.h>
-#include <bbos/lib/delay.h>
+#include <bbos/delay.h>
 
 #define PORT0 0
 

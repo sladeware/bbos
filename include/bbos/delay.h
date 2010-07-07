@@ -8,7 +8,7 @@
 #define __BBOS_DELAY_H
 
 #include <bbos/env.h>
-#include <bbos/lib/time.h>
+#include <bbos/time.h>
 
 void sdelay(uint32_t delay);
 void mdelay(uint32_t delay);

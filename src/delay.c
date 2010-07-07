@@ -4,7 +4,7 @@
  * Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
  */
 
-#include <bbos/lib/delay.h>
+#include <bbos/delay.h>
 
 /**
  * sdelay - Delay on a period in seconds.
