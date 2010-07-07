@@ -1,100 +1,49 @@
 /*
- * Queue, a First-In-First-Out (FIFO) data structure.
+ * Queue data structure.
  *
  * Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
  */
 
-#include <bbos/lib/bbos_queue.h>
+#include <bbos/lib/queue.h>
 
 /**
- * bbos_queue_full - Check whether queue is full or not.
- * @q: Pointer to the queue structure.
+ * queue_enqueue - Enqueues an element at the tail of the queue.
+ * @queue: Pointer to the queue data structure.
+ * @data: Pointer to the data.
  *
  * Return value:
  *
- * Returns true if the queue is full, and false otherwise.
- */
-int16_t
-bbos_queue_full(bbos_queue_t *q)
-{
-  assert(q); // check queue for NULL pointer
-
-  return !(q->len - q->counter);
-}
-
-/**
- * bbos_queue_init - Define whether queue is empty or not.
- * @part: Pointer to the memory partition.
- * @n: Number of elements in the queue.
+ * BBOS_SUCCESS if enqueuing the element is successful, or BBOS_FAILURE otherwise. 
  *
- * Return value:
+ * Complexity:
  *
- * Pointer to the queue structure.
- */
-bbos_queue_t *
-bbos_queue_init(void *part, uint16_t n)
-{
-  bbos_queue_t *q;
-
-  assert(part);
-
-  q = (bbos_queue_t *)part;
-  q->addr = (size_t *)((int8_t *)part + BBOS_QUEUE_OVERHEAD);
-  q->counter = 0;
-  q->first = q->last = 0;
-  q->len = n;
-
-  return q;
-}
-
-/**
- * bbos_queue_dequeue - Remove the item at the front of a queue and return it.
- * @q: Pointer to the queue structure.
- *
- * Return value:
- * Pointer to the element or NULL.
- */
-
-void *
-bbos_queue_dequeue(bbos_queue_t *q)
-{
-  void *ptr;
-
-  assert(q);
-
-  if(bbos_queue_empty(q)) {
-    return NULL;
-  }
-
-  ptr = (void *)q->addr[q->first];
-  q->first = (q->first + 1) % q->len;
-  q->counter--;
-
-  return (void *)ptr;
-}
-
-/**
- * bbos_queue_enqueue - Insert an element at the back of the queue.
- * @q: Pointer to the queue structure.
- * @ptr: Pointer to the element.
- *
- * Return value:
- *
- *   BBOS_SUCCESS   success.
- *   BBBOS_FAILURE  fail.
+ * O(1)
  */
 bbos_return_t
-bbos_queue_enqueue(bbos_queue_t *q, void *ptr)
+queue_enqueue(queue_t *queue, const void *data)
 {
-  assert(q);
-
-  if(bbos_queue_full(q)) {
-    return BBOS_FAILURE;
-  }
-
-  q->addr[q->last] = (size_t)ptr;
-  q->last = (q->last + 1) % q->len;
-  q->counter++;
-
-  return BBOS_SUCCESS;
+  return list_insert(queue, list_tail(queue), data); 
 }
+
+/**
+ * queue_dequeue - Dequeues an element from the head of the queue.
+ * @queue: Pointer to the queue data structure.
+ * 
+ * Return value:
+ *
+ * Pointer to the data, or NULL otherwise.
+ *
+ * Complexity:
+ *
+ * O(1)
+ *
+ * TODO:
+ *
+ * Pointer to an error can be added as an argument.
+ */
+void *
+queue_dequeue(queue_t *queue)
+{
+  return list_remove(queue, NULL); 
+}
+
