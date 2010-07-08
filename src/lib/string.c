@@ -5,11 +5,10 @@
  */
 
 #include <stddef.h>
-#include <bbos/lib/bbos_string.h>
+#include <bbos/lib/string.h>
 
 /**
- * xtoa - Convert hex string to char string and returns length of decoded
- * string.
+ * xtoa - Convert hex string to char string and returns length of decoded string.
  * @s: Pointer to the source hex string.
  * @d: Pointer to the destination char string.
  *
