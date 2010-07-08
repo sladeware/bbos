@@ -30,15 +30,9 @@
 #error "BBOS_NUMBER_OF_THREADS > BBOS_MAX_NUMBER_OF_THREADS"
 #endif
 
-/**
- * The thread table keeps a set of threads.
- */
-bbos_thread_t bbos_process_thread_table[BBOS_NUMBER_OF_THREADS];
+extern bbos_thread_t bbos_process_thread_table[BBOS_NUMBER_OF_THREADS];
 
-/**
- * The port table keeps a set of ports.
- */
-bbos_port_t bbos_process_port_table[BBOS_NUMBER_OF_PORTS];
+extern bbos_port_t bbos_process_port_table[BBOS_NUMBER_OF_PORTS];
 
 /* Prototypes */
 

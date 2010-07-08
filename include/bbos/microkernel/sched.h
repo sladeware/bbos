@@ -9,17 +9,9 @@
 
 #include <bbos/env.h>
 
-/* Thread after the current thread. */
-bbos_thread_id_t bbos_sched_pending;
+extern bbos_thread_id_t bbos_sched_pending;
 
-/* Keeps current running thread identifier. */
-bbos_thread_id_t bbos_sched_myself;
-
-/**
- * bbos_sched_myself - Returns current thread identifier.
- */
-#define bbos_sched_myself()			\
-  (bbos_sched_myself)
+extern bbos_thread_id_t bbos_sched_myself;
 
 /**
  * bbos_sched_jump - Jumps to the target thread.

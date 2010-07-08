@@ -7,6 +7,11 @@
 #include <bbos/microkernel/process.h>
 
 /**
+ * The thread table keeps a set of threads.
+ */
+bbos_thread_t bbos_process_thread_table[BBOS_NUMBER_OF_THREADS];
+
+/**
  * bbos_process_init_threads - Initialize threads within target process.
  *
  * Description:
@@ -29,6 +34,11 @@ bbos_process_init_threads()
     bbos_process_thread_table[tid].prev = BBOS_IDLE_ID;
   }
 }
+
+/**
+ * The port table keeps a set of ports.
+ */
+bbos_port_t bbos_process_port_table[BBOS_NUMBER_OF_PORTS];
 
 /**
  * bbos_process_init_ports - Initialize ports.

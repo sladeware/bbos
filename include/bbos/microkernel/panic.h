@@ -9,6 +9,7 @@
 
 #include <bbos/env.h>
 #include <stdarg.h>
+#include <stdio.h>
 
 /* Prototypes */
 

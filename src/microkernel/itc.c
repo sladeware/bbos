@@ -29,7 +29,7 @@ bbos_itc_compose(bbos_port_id_t port_id)
   }
 
   /* Form the message header */
-  hdr->sender = bbos_sched_myself();
+  hdr->sender = bbos_sched_myself;
   hdr->source_port_id = port_id;
   hdr->return_port_id = BBOS_NIL_PORT_ID;
 

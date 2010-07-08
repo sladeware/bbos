@@ -25,7 +25,7 @@ bbos_panic(const uint8_t *fmt, ...)
   va_list args;
 
   va_start(args, fmt);
-  vsnprintf(buf, sizeof(buf), fmt, args);
+  //vsnprintf(buf, sizeof(buf), fmt, args);
   va_end(args);
 
   printf("Panic: %s\n", buf);
