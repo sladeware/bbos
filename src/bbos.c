@@ -1,14 +1,14 @@
 /*
- * The BBOS microkernel system control.
+ * Architecture independent initialization code.
  *
  * Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
  */
 
-#include <bbos/microkernel/sys.h>
+#include <bbos.h>
 #include BBOS_HARDWARE_ARCH_INC(arch_init.h)
 
 /**
- * bbos_init - Main initialization service for microkernel.
+ * bbos_init - Main initialization entry point.
  *
  * Note:
  *
@@ -18,6 +18,8 @@
 void
 bbos_init()
 {
+  printf("%s", bbos_banner);
+
   /* Basic architecture initialization */
   arch_init();
 
@@ -27,8 +29,9 @@ bbos_init()
   /* Initialize scheduler */
   bbos_sched_init();
 }
+
 /**
- * bbos_test - Test BBOS settings and components.
+ * bbos_test - Test settings and components.
  */
 void
 bbos_test()
@@ -41,8 +44,8 @@ bbos_test()
 void
 bbos_start()
 {
-	/* Test the system settings and components */
-	bbos_test();	
+  /* Test the system settings and components */
+  bbos_test();	
 
   /* Scheduling loop */
   while(1) {	
