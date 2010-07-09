@@ -1,11 +1,13 @@
 /*
+ * Please review http://en.wikipedia.org/wiki/Software_versioning.
+ *
  * Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
  */
 
 #ifndef __BBOS_VERSION_H
 #define __BBOS_VERSION_H
 
-/* Please review http://en.wikipedia.org/wiki/Software_versioning */
+#include <bbos/lib/portable_stdint.h>
 
 #define BBOS_MAJOR_VERSION 0
 #define BBOS_MINOR_VERSION 1
