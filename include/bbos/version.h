@@ -32,5 +32,7 @@
 #define bbos_version_number()\
   (BBOS_VERSION)
 
+extern const int8_t bbos_banner[];
+
 #endif /* __BBOS_VERSION_H */
 
