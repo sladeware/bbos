@@ -1,0 +1,8 @@
+
+Portable Standards
+
+Sometimes stdint.h and stddef.h are going to be a real headache for developers 
+since they can be provided in the different manner for each compiler. Therefore 
+BBOS provides portable_stdint.h and portable_stddef.h just to avoid such sort of
+situactions.
+

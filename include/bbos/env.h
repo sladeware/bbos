@@ -1,6 +1,7 @@
 /*
  * The BBOS environment an attempt to build a single universal include file for
- * the whole system configurations.
+ * the whole system configurations. Generelly it containes some often-used 
+ * functions, prototypes, etc.
  *
  * Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
  */
@@ -21,6 +22,7 @@
 
 /* General header files. */
 #include <bbos/types.h>
+#include <bbos/compiler.h>
 #include <bbos/codes.h>
 #include <bbos/debug.h>
 

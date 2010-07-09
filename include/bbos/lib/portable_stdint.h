@@ -1,11 +1,15 @@
 /*
  * Portable stdint.h file.
  *
+ * The naming convention for exact-width integer types is intN_t for signed 
+ * integers and uintN_t for unsigned integers. Additionally their ranges are
+ * defined as INTN_MIN, INTN_MAX and UINTN_MIN, UINTN_MAX.
+ *
  * Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
  */
 
-#ifndef __PORTABLE_STDINT_H
-#define __PORTABLE_STDINT_H
+#ifndef __BBOS_LIB_PORTABLE_STDINT_H
+#define __BBOS_LIB_PORTABLE_STDINT_H
 
 #include <limits.h>
 
@@ -128,6 +132,6 @@ typedef struct {
 } int64_t;
 */
 
-#endif /* __PORTABLE_STDINT_H */
+#endif /* __BBOS_LIB_PORTABLE_STDINT_H */
 
 
