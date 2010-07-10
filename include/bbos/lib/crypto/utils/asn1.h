@@ -1,7 +1,5 @@
 /*
- * bbos/lib/crypto/utils/asn1.h
- *
- * ASN.1 Support
+ * ASN.1 Support.
  *
  * Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
  *
@@ -16,32 +14,32 @@
 #include <bbos/lib/portable_stdint.h>
 
 enum {
-	ASN1_TAG_UNKNOWN					=	0x00,
-	ASN1_TAG_BOOLEAN          =	0x01,
-	ASN1_TAG_INTEGER					=	0x02,
-	ASN1_TAG_HUGEINTEGER      =	0x0102,
-	ASN1_TAG_BITSTRING        =	0x03,
-	ASN1_TAG_OCTETSTRING      =	0x04,
-	ASN1_TAG_NULL							=	0x05,
-	ASN1_TAG_OID							=	0x06,
-	ASN1_TAG_ENUMERATED				=	0x0A,
-	ASN1_TAG_PRINTABLE_STRING	=	0x13,
-	ASN1_TAG_IA5              =	0x16,
-	ASN1_TAG_DATETIME					=	0x17,
-	ASN1_TAG_SEQUENCE					=	0x30,
-	ASN1_TAG_SET              =	0x31,
-	ASN1_TAG_IP_ADDR					=	0x40,
-	ASN1_TAG_COUNTER					=	0x41,
-	ASN1_TAG_TIME_TICKS       =	0x43
+  ASN1_TAG_UNKNOWN	    = 0x00,
+  ASN1_TAG_BOOLEAN          = 0x01,
+  ASN1_TAG_INTEGER	    = 0x02,
+  ASN1_TAG_HUGEINTEGER      = 0x0102,
+  ASN1_TAG_BITSTRING        = 0x03,
+  ASN1_TAG_OCTETSTRING      = 0x04,
+  ASN1_TAG_NULL		    = 0x05,
+  ASN1_TAG_OID		    = 0x06,
+  ASN1_TAG_ENUMERATED	    = 0x0A,
+  ASN1_TAG_PRINTABLE_STRING = 0x13,
+  ASN1_TAG_IA5              = 0x16,
+  ASN1_TAG_DATETIME	    = 0x17,
+  ASN1_TAG_SEQUENCE	    = 0x30,
+  ASN1_TAG_SET              = 0x31,
+  ASN1_TAG_IP_ADDR	    = 0x40,
+  ASN1_TAG_COUNTER	    = 0x41,
+  ASN1_TAG_TIME_TICKS       = 0x43
 };
 
 /**
  * Structure to contain ASN.1 buffer information.
  */
 typedef struct {
-	uint16_t *buf;
-	int16_t buf_len;
-	uint16_t *end;
+  uint16_t *buf;
+  int16_t buf_len;
+  uint16_t *end;
 } asn1_ctx_t;
 
 /* Prototypes */
