@@ -10,6 +10,7 @@
 /* Load portable compiler specific data types */
 #include <bbos/lib/portable_stdint.h>
 #include <bbos/lib/portable_stddef.h>
+#include <bbos/lib/portable_stdbool.h>
 
 /**
  * typedef bbos_port_id_t - Port identifier.
@@ -32,13 +33,5 @@ typedef uint8_t bbos_thread_priority_t;
  * typedef bbos_return_t - Type of the BBOS code.
  */
 typedef int16_t bbos_return_t;
-
-#ifndef FALSE
-#define FALSE 0
-#endif
-
-#ifndef TRUE
-#define TRUE (!FALSE)
-#endif
 
 #endif /* __BBOS_TYPES_H */
