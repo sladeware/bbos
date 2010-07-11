@@ -1,11 +1,14 @@
 /*
+ * stddef.h header file.
+ *
  * Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
  */
 
-#ifndef __BBOS_LIB_PORTABLE_STDDEF_H
-#define __BBOS_LIB_PORTABLE_STDDEF_H
+#ifndef __BBOS_LIB_STDDEF_H
+#define __BBOS_LIB_STDDEF_H
 
 #include <bbos/compiler.h>
+#include <stddef.h>
 
 #ifndef NULL
 #if defined(__cplusplus)
@@ -15,6 +18,6 @@
 #endif /* __cplusplus */
 #endif /* NULL */
 
-#endif /* __BBOS_LIB_PORTABLE_STDDEF_H */
+#endif /* __BBOS_LIB_STDDEF_H */
 
 

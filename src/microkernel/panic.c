@@ -19,9 +19,9 @@
  * This function should never return.
  */
 void
-bbos_panic(const uint8_t *fmt, ...)
+bbos_panic(const char *fmt, ...)
 {
-  static uint8_t buf[128];
+  static char buf[128];
   va_list args;
 
   va_start(args, fmt);

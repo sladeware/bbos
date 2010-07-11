@@ -1,5 +1,5 @@
 /*
- * Portable stdint.h file.
+ * stdint.h header file.
  *
  * The naming convention for exact-width integer types is intN_t for signed 
  * integers and uintN_t for unsigned integers. Additionally their ranges are
@@ -8,8 +8,8 @@
  * Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
  */
 
-#ifndef __BBOS_LIB_PORTABLE_STDINT_H
-#define __BBOS_LIB_PORTABLE_STDINT_H
+#ifndef __BBOS_LIB_STDINT_H
+#define __BBOS_LIB_STDINT_H
 
 #include <limits.h>
 

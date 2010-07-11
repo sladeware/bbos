@@ -7,9 +7,13 @@
 #ifndef __BBOS_LIB_STRING_H
 #define __BBOS_LIB_STRING_H
 
-#include <bbos/env.h>
+#include <bbos/lib/stdint.h>
+#include <string.h>
 
-int16_t xtoa(uint8_t* src, uint8_t* dest);
+extern size_t strlen(const char *s);
+extern size_t strnlen(const char *s, size_t count);
+
+extern int xtoa(const char* src, char* dest);
 
 #endif /* __BBOS_LIB_STRING_H */
 

@@ -2,9 +2,8 @@
  * Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
  */
 
-#include <stddef.h>
-#include <stdio.h>
-#include <string.h>
+//#include <stddef.h>
+//#include <stdio.h>
 #include <bbos.h>
 
 #include <catalina_cog.h>
@@ -51,7 +50,9 @@ main(void)
 
   count = _cnt();
 
+
   bbos_init();
+
   bbos_thread_start(LED16_ID);
   bbos_thread_start(LED17_ID);
   bbos_thread_start(LED18_ID);

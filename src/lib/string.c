@@ -8,6 +8,47 @@
 #include <bbos/lib/string.h>
 
 /**
+ * strlen - Find the length of a string.
+ * @s: The string to be sized.
+ *
+ * Return value:
+ *
+ * The length of a string.
+ */
+size_t
+strlen(const char *s)
+{
+  const char *sc;
+
+  for(sc = s; *sc != '\0'; ++sc) {
+    /* nothing to be here */
+  }
+
+  return (sc - s);
+}
+
+/**
+ * strnlen - Find the length of a length-limited string.
+ * @s: The string to be sized.
+ * @count: The maximum number of bytes to search.
+ *
+ * Return value:
+ *
+ * The length of a length-limited string.
+ */
+size_t
+strnlen(const char *s, size_t count)
+{
+  const char *sc;
+
+  for(sc = s; count-- && *sc != '\0'; ++sc) {
+    /* nothing to be here */
+  }
+
+  return (sc - s);
+}
+
+/**
  * xtoa - Convert hex string to char string and returns length of decoded string.
  * @s: Pointer to the source hex string.
  * @d: Pointer to the destination char string.
@@ -16,8 +57,8 @@
  *
  * Length of the destination string.
  */
-int16_t
-xtoa(uint8_t* s, uint8_t* d)
+int
+xtoa(const char* s, char* d)
 {
   size_t l;
   int16_t i, x;
@@ -30,10 +71,10 @@ xtoa(uint8_t* s, uint8_t* d)
 
   for(i=l; i>=0; i--) {
     if(*(s+i) >= 97) {
-      x = *(s+i) - 87; /* 97 + 10 */
+      x = *(s+i) - 87; /* -97 + 10 */
     }
     else if(*(s+i) >= 65) {
-      x = *(s+i) - 55; /* 65 + 10 */
+      x = *(s+i) - 55; /* -65 + 10 */
     }
     else {
       x = *(s+i) - 48;
