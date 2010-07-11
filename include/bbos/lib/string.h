@@ -1,5 +1,5 @@
 /*
- * Some extra string routines.
+ * string.h header file plus some extra string routines.
  *
  * Copyrigth (c) 2010 Slade Marurer, Alexander Sviridenko
  */
@@ -7,6 +7,7 @@
 #ifndef __BBOS_LIB_STRING_H
 #define __BBOS_LIB_STRING_H
 
+#include <bbos/compiler.h>
 #include <bbos/lib/stdint.h>
 #include <string.h>
 

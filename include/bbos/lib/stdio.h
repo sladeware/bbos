@@ -1,10 +1,13 @@
 /*
+ * stdio.h header file.
+ *
  * Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
  */
 
 #ifndef __BBOS_LIB_STDIO_H
 #define __BBOS_LIB_STDIO_H
 
+#include <bbos/compiler.h>
 #include <bbos/lib/stdarg.h>
 #include <stdio.h>
 

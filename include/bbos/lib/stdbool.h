@@ -1,11 +1,11 @@
 /*
- * Portable stdbool.h for BBOS.
+ * stdbool.h header file.
  *
  * Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
  */
 
-#ifndef __BBOS_LIB_PORTABLE_STDBOOL_H
-#define __BBOS_LIB_PORTABLE_STDBOOL_H
+#ifndef __BBOS_LIB_STDBOOL_H
+#define __BBOS_LIB_STDBOOL_H
 
 /*
  * The type `bool' must promote to `int' or `unsigned int'. The constants
@@ -27,5 +27,5 @@ typedef enum {
  */
 #define __bbol_true_false_are_defined 1
 
-#endif /* __BBOS_LIB_PORTABLE_STDBOOL_H */
+#endif /* __BBOS_LIB_STDBOOL_H */
 

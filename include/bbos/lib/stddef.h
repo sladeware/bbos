@@ -19,5 +19,3 @@
 #endif /* NULL */
 
 #endif /* __BBOS_LIB_STDDEF_H */
-
-
