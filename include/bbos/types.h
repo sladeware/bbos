@@ -8,9 +8,9 @@
 #define __BBOS_TYPES_H
 
 /* Load portable compiler specific data types */
-#include <bbos/lib/portable_stdint.h>
-#include <bbos/lib/portable_stddef.h>
-#include <bbos/lib/portable_stdbool.h>
+#include <bbos/lib/stdint.h>
+#include <bbos/lib/stddef.h>
+#include <bbos/lib/stdbool.h>
 
 /**
  * typedef bbos_port_id_t - Port identifier.

@@ -1,7 +1,0 @@
-
-Portable Standards
-
-Sometimes C99 standard are going to be a real headache for developers 
-since it can be provided in the different manner for each compiler. Therefore 
-BBOS provides portable_stdxxx.h files just to avoid such sort of situactions.
-

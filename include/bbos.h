@@ -12,10 +12,13 @@
  */
 #define BBOS
 
+#include <bbos/env.h>
 #include <bbos/microkernel/port.h>
 #include <bbos/microkernel/process.h>
 #include <bbos/microkernel/sched.h>
 #include <bbos/microkernel/itc.h>
+
+extern const int8_t bbos_banner[];
 
 /* Prototypes */
 
