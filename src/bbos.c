@@ -7,6 +7,9 @@
 #include <bbos.h>
 #include BBOS_HARDWARE_ARCH_INC(arch_init.h)
 
+/* The banner that gets printed on startup. */
+const int8_t bbos_banner[] = "BBOS version " BBOS_VERSION_STR "\n";
+
 /**
  * bbos_init - Main initialization entry point.
  *

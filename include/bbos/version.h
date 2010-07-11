@@ -7,8 +7,6 @@
 #ifndef __BBOS_VERSION_H
 #define __BBOS_VERSION_H
 
-#include <bbos/lib/portable_stdint.h>
-
 #define BBOS_MAJOR_VERSION 0
 #define BBOS_MINOR_VERSION 1
 #define BBOS_PATCH_VERSION 8
@@ -33,8 +31,6 @@
 
 #define bbos_version_number()\
   (BBOS_VERSION)
-
-extern const int8_t bbos_banner[];
 
 #endif /* __BBOS_VERSION_H */
 

@@ -69,8 +69,6 @@ bbos_return_t switcher(bbos_thread_id_t tid) {
 }
 
 int main(void) {
-  printf("ITC Demo!\n");
-
   bbos_init();
 
   /* Initialize ports */
@@ -80,6 +78,7 @@ int main(void) {
   bbos_thread_start(RECEIVER_ID);
   bbos_thread_start(SENDER_ID);
 
+  printf("ITC Demo!\n");
   bbos_start();
 
   return 0;
