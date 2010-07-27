@@ -25,6 +25,7 @@ extern const int8_t bbos_banner[];
 extern void bbos_init();
 extern void bbos_test();
 extern void bbos_start();
+extern void bbos_stop();
 
 #endif /* __BBOS_H */
 

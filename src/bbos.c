@@ -61,4 +61,10 @@ bbos_start()
   bbos_panic("Scheduling has been ended.\n");
 }
 
-
+/**
+ * bbos_stop - Stop BBOS.
+ */
+void
+bbos_stop()
+{
+}
