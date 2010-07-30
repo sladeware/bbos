@@ -5,6 +5,8 @@
 #ifndef __PROPELLER_DEMO_BOARD_INIT_H
 #define __PROPELLER_DEMO_BOARD_INIT_H
 
+#include <bbos/env.h>
+
 bbos_return_t board_init();
 
 #endif /* __PROPELLER_DEMO_BOARD_INIT_H */

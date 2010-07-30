@@ -5,7 +5,7 @@
  */
 
 #include <bbos.h>
-#include BBOS_HARDWARE_ARCH_INC(arch_init.h)
+#include BBOS_HARDWARE_ARCH_INC(init.h)
 
 /* The banner that gets printed on startup. */
 const int8_t bbos_banner[] = "BBOS version " BBOS_VERSION_STR "\n";
@@ -48,10 +48,10 @@ void
 bbos_start()
 {
   /* Test the system settings and components */
-  bbos_test();	
+  bbos_test();
 
   /* Scheduling loop */
-  while(1) {	
+  while(1) {
     /* Try to schedule next thread */
     if(bbos_sched_next() != BBOS_SUCCESS) {
       break;

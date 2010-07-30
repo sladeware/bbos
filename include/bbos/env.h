@@ -1,6 +1,6 @@
 /*
  * The BBOS environment an attempt to build a single universal include file for
- * the whole system configurations. Generelly it containes some often-used 
+ * the whole system configurations. Generelly it containes some often-used
  * functions, prototypes, etc.
  *
  * Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
@@ -18,7 +18,7 @@
 #include <bbos/hardware.h>
 
 /* Some of the include files rely on architecture specific configuration. */
-#include BBOS_HARDWARE_ARCH_INC(arch_config.h)
+//#include BBOS_HARDWARE_ARCH_INC(arch_config.h)
 
 /* General header files. */
 #include <bbos/types.h>

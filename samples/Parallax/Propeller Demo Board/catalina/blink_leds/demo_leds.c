@@ -13,9 +13,9 @@ unsigned on_off = 1;
 
 void
 blink_led(unsigned led) {
-  _outa(1<<led, (1<<led)*on_off);
-  count += 6250000;
-  _waitcnt(count);
+  //_outa(1<<led, (1<<led)*on_off);
+  //count += 6250000;
+  //_waitcnt(count);
 
   if(led == 23) {
     on_off ^= 1;
