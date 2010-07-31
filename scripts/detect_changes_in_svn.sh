@@ -18,7 +18,7 @@ then
     if [ "$BBOS_HEAD" != "$LAST_BBOS_HEAD" ];
     then
         echo "Emailing $TO_ADDR about $BBOS_HEAD"
-	svn log -r HEAD | nail -s "$SUBJECT $BBOS_HEAD" "$TO_ADDR";
+	svn log -v -r HEAD | nail -s "$SUBJECT $BBOS_HEAD" "$TO_ADDR";
     fi;
 fi;
 
