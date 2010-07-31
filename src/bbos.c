@@ -58,7 +58,7 @@ bbos_start()
     }
   }
 
-  bbos_panic("Scheduling has been ended.\n");
+  bbos_panic("Scheduling terminated.\n");
 }
 
 /**
