@@ -1,4 +1,4 @@
-#!perl
+#!/usr/bin/perl
 #
 # Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
 #
