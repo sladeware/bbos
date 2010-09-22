@@ -28,18 +28,26 @@
  */
 #include <assert.h>
 
-#include <bbos/kernel/time.h>
-
+/* Memory management */
 #include <bbos/kernel/mm.h>
 
-/* Data types. */
 #include <bbos/kernel/list.h>
 #include <bbos/kernel/queue.h>
 
+/* Timing control */
+#include <bbos/kernel/time.h>
+
+/* Hardware support */
 #include <bbos/kernel/hardware.h>
+
+/* Process management */
 #include <bbos/kernel/process.h>
-#include <bbos/kernel/itc.h>
+
+/* System management */
 #include <bbos/kernel/system.h>
+
+/* Inter-process communication support */
+#include <bbos/kernel/ipc.h>
 
 #endif /* __BBOS_KERNEL_H */
 
