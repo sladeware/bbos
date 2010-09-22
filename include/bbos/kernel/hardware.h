@@ -7,7 +7,9 @@
 #ifndef __BBOS_HARDWARE_H
 #define __BBOS_HARDWARE_H
 
-#include <bbos/kernel/hardware/device/driver.h>
+#include <bbos/kernel/hardware/device.h>
+
+void bbos_hardware_init();
 
 #endif /* __BBOS_HARDWARE_H */
 
