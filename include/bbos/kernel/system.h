@@ -2,14 +2,23 @@
  * Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
  */
 
-#ifndef __BBOS_KERNEL_SYSTEM_H
-#define __BBOS_KERNEL_SYSTEM_H
+#ifndef __BBOS_SYSTEM_H
+#define __BBOS_SYSTEM_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 extern const int8_t bbos_banner[];
+
+/* Enumerate values used for system states */
+extern enum bbos_system_states {
+
+  BBOS_SYSTEM_INITIALIZATION,
+  BBOS_SYSTEM_TESTING,
+  BBOS_SYSTEM_RUNNING
+
+} bbos_system_state;
 
 /* Prototypes */
 
@@ -23,6 +32,6 @@ extern void bbos_panic(const char *fmt, ...);
 }
 #endif
 
-#endif /* __BBOS_KERNEL_SYSTEM_H */
+#endif /* __BBOS_SYSTEM_H */
 
 
