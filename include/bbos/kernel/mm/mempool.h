@@ -37,17 +37,12 @@ struct bbos_mempool {
 
 typedef struct bbos_mempool bbos_mempool_t;
 
-enum {
-  /* The number of bytes used to hold memory pool structure */
-  BBOS_MEMPOOL_OVERHEAD = ((int16_t)sizeof(bbos_mempool_t))
-};
-
 /*
  * Computes size of the memory partition by using specified number
  * of blocks and block size.
  */
 #define BBOS_MEMPOOL_PARTITION_SIZE(num_blocks, block_size) \
-  (BBOS_MEMPOOL_OVERHEAD + num_blocks * block_size)
+  (num_blocks * block_size)
 
 /*
  * Creates memory partition with the specified name.
@@ -57,13 +52,13 @@ enum {
 
 /* Prototypes */
 
-struct bbos_mempool *bbos_mempool_create(const void *part, uint16_t num_blocks,\
-	uint16_t block_sz);
+bbos_return_t bbos_mempool_init(struct bbos_mempool *pool, const void *part, 
+  uint16_t num_blocks, uint16_t block_sz);
 
-void bbos_mempool_resize(struct bbos_mempool *pool, uint16_t num_blocks,	\
-	uint16_t block_sz);
+void bbos_mempool_resize(struct bbos_mempool *pool, const void *part, 
+  uint16_t num_blocks,	uint16_t block_sz);
 
-void *bbos_mempool_alloc(struct bbos_mempool *pool);
+void *bbos_mempool_allocate(struct bbos_mempool *pool);
 
 void bbos_mempool_free(struct bbos_mempool *pool, void *block);
 

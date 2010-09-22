@@ -8,49 +8,41 @@
 #include <bbos.h>
 
 /**
- * bbos_mempool_create - Create and return memory pool.
+ * bbos_mempool_init - Initialize memory pool.
+ * @pool: Pointer to the pool structure.
  * @part: Pointer to the memory partition.
  * @n_blocks: Number of blocks in partition.
  * @block_sz: Number of bytes in each memory block.
  *
  * Return value:
  *
- * Pointer to the memory pool.
+ * Generic error code.
  *
  * Note:
  *
- * The partition should	have the correct size stored in the memory pool
- * structure (see BBOS_MEMPOOL_PARTITION_SIZE).
- *
  * As close block size or number of blocks to the power of 2, as faster.
- *
- * Description:
- *
- * This service creates a memory pool in the area specified.
  *
  * Complexity:
  *
  * O(n_blocks), where n_blocks is the number of blocks in partition.
  */
-struct bbos_mempool *
-bbos_mempool_create(const void *part, uint16_t n_blocks, uint16_t block_sz)
+bbos_return_t
+bbos_mempool_init(struct bbos_mempool *pool, const void *part, uint16_t n, 
+  uint16_t sz)
 {
-  bbos_mempool_t *pool;
-
   /* Initialize pool */
-  pool = (bbos_mempool_t *)part;
-  pool->next_free_block = (bbos_mempool_block_t *)((int8_t *)part +	\
-						   BBOS_MEMPOOL_OVERHEAD);
+  pool->next_free_block = (bbos_mempool_block_t *)part;
 
   /* Initialize/Format memory partition */
-  bbos_mempool_resize(pool, n_blocks, block_sz);
+  bbos_mempool_resize(pool, part, n, sz);
 
-  return pool;
+  return BBOS_SUCCESS;
 }
 
 /**
- * bbos_mempool_resize - Resizes an existed memory pool.
- * @pool: Pointer to the used memory pool.
+ * bbos_mempool_resize - Resize an existed memory pool.
+ * @pool: Pointer to the memory pool.
+ * @part: Pointer to the used memory pool.
  * @n_blocks: Number of blocks in partition.
  * @block_sz: Block size in bytes.
  *
@@ -61,20 +53,19 @@ bbos_mempool_create(const void *part, uint16_t n_blocks, uint16_t block_sz)
  * O(n_blocks), where n_blocks is the number of blocks in partition.
  */
 void
-bbos_mempool_resize(bbos_mempool_t *pool, uint16_t n_blocks, uint16_t block_sz)
+bbos_mempool_resize(bbos_mempool_t *pool, const void *part, uint16_t n_blocks, 
+  uint16_t block_sz)
 {
   uint16_t block_id;
-  int8_t *start_addr;
   bbos_mempool_block_t *block;
   bbos_mempool_block_t *prev_block;
 
-  start_addr = (int8_t *)pool + BBOS_MEMPOOL_OVERHEAD;
-  prev_block=(bbos_mempool_block_t *)start_addr;
+  prev_block=(bbos_mempool_block_t *)part;
   prev_block->next = NULL;
 
   /* Initialize memory partition */
   for(block_id=1; block_id < n_blocks; block_id++) {
-    block = (bbos_mempool_block_t *)(start_addr + (block_id * block_sz));
+    block = (bbos_mempool_block_t *)(part + (block_id * block_sz));
     block->next = NULL;
     prev_block->next = block;
     prev_block = block;
@@ -82,7 +73,7 @@ bbos_mempool_resize(bbos_mempool_t *pool, uint16_t n_blocks, uint16_t block_sz)
 }
 
 /**
- * bbos_mempool_alloc - Allocates next free memory block from the memory
+ * bbos_mempool_allocate - Allocate next free memory block from the memory
  * pool.
  * @pool: Pointer to the target memory pool.
  *
@@ -95,11 +86,11 @@ bbos_mempool_resize(bbos_mempool_t *pool, uint16_t n_blocks, uint16_t block_sz)
  * O(1)
  */
 void *
-bbos_mempool_alloc(bbos_mempool_t *pool)
+bbos_mempool_allocate(bbos_mempool_t *pool)
 {
   bbos_mempool_block_t *block;
 
-	assert(pool); // check for NULL pointer
+  assert(pool); // check for NULL pointer
 
   /* Get next free memory block and move to the next one if possible */
   if ((block = pool->next_free_block) != NULL) {
@@ -111,7 +102,7 @@ bbos_mempool_alloc(bbos_mempool_t *pool)
 }
 
 /**
- * bbos_mempool_free - Returns memory block to a memory pool.
+ * bbos_mempool_free - Return memory block to a memory pool.
  * @pool: Pointer to the used memory pool.
  * @addr: Pointer to the block.
  *
@@ -124,7 +115,7 @@ bbos_mempool_free(bbos_mempool_t *pool, void *addr)
 {
   bbos_mempool_block_t *block;
 
-	assert(pool); // check for NULL pointer
+  assert(pool); // check for NULL pointer
 
   /* Don't attempt to free a NULL pointer */
   if (addr == NULL) {
@@ -154,6 +145,4 @@ void
 bbos_mempool_destroy(struct bbos_mempool *pool)
 {
 }
-
-
 
