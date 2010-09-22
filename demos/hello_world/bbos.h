@@ -7,6 +7,9 @@
 #ifndef __BBOS_H
 #define __BBOS_H
 
+#define HAVE_STDINT_H
+#define HAVE_STDDEF_H
+
 #define bbos_thread_switch my_switcher
 
 #include <bbos/compiler.h>
