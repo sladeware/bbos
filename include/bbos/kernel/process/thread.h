@@ -81,26 +81,34 @@ struct bbos_thread {
 /* The type of the thread management structure. */
 typedef struct bbos_thread bbos_thread_t;
 
-/* Well known idle thread structure */
-#define bbos_idle_thread (bbos_process_thread_table[BBOS_IDLE_THREAD_ID])
+/*
+ * The number of threads should be greater than 0, but
+ * less than BBOS_MAX_NUMBER_OF_THREADS.
+ */
+#if BBOS_NUMBER_OF_THREADS == 0
+#error "BBOS_NUMBER_OF_THREADS must be >0"
+#endif /* BBOS_NUMBER_OF_THREADS == 0 */
+#if BBOS_NUMBER_OF_THREADS > BBOS_MAX_NUMBER_OF_THREADS
+#error "BBOS_NUMBER_OF_THREADS > BBOS_MAX_NUMBER_OF_THREADS"
+#endif /* BBOS_NUMBER_OF_THREADS > BBOS_MAX_NUMBER_OF_THREADS */
 
-/* Initialize thread */
-#define bbos_thread_init(tid) \
-	do {\
-		bbos_thread_set_priority(tid, BBOS_THREAD_LOWEST_PRIORITY);\
-		bbos_process_thread_table[tid].next = BBOS_IDLE_THREAD_ID;\
-		bbos_process_thread_table[tid].prev = BBOS_IDLE_THREAD_ID;\
-	} while(0);
+extern bbos_thread_t bbos_thread_table[BBOS_NUMBER_OF_THREADS];
+
+/* Well known idle thread structure */
+#define bbos_idle_thread (bbos_thread_table[BBOS_IDLE_THREAD_ID])
 
 /* Prototypes */
+
+bbos_return_t bbos_thread_init(bbos_thread_id_t tid, 
+  bbos_thread_priority_t prio);
 
 bbos_thread_priority_t bbos_thread_get_priority(bbos_thread_id_t tid);
 
 void bbos_thread_set_priority(bbos_thread_id_t tid, bbos_thread_priority_t prio);
 
-bbos_return_t bbos_thread_start(bbos_thread_id_t tid);
+bbos_return_t bbos_thread_resume(bbos_thread_id_t tid);
 
-bbos_return_t bbos_thread_stop(bbos_thread_id_t tid);
+bbos_return_t bbos_thread_suspend(bbos_thread_id_t tid);
 
 #ifdef __cplusplus
 }

@@ -7,36 +7,32 @@
 #include <bbos.h>
 
 /**
- * bbos_list_create - Create the linked list.
+ * bbos_list_init - Initialize linked list.
+ * @list: Pointer to the list structure.
  * @part: Pointer to the memory partition.
- * @sz: Number of nodes in the list.
+ * @n: Number of nodes in the list.
  *
  * Return value:
  *
- * Pointer to list.
+ * Generic code.
  *
  * Complexity:
  *
  * O(n), where n is the number of nodes in the list.
  */
-bbos_list_t *
-bbos_list_create(int8_t *part, int16_t sz)
+bbos_return_t
+bbos_list_init(struct bbos_list *list, int8_t *part, int16_t n)
 {
-  bbos_list_t *list;
-
   assert(part);
-	assert(sz > 0);
+  assert(n > 0);
 
-  list = (bbos_list_t *)part;
-  list->mempool = bbos_mempool_create(part + BBOS_LIST_OVERHEAD, sz,
-		sizeof(bbos_list_node_t));
+  bbos_mempool_init(list->pool, part, n, sizeof(struct bbos_list_node));
 
-  list->size = sz;
+  list->size = n;
   list->counter = 0;
-  list->head = NULL;
-  list->tail = NULL;
+  list->head = list->tail = NULL;
 
-  return list;
+  return BBOS_SUCCESS;
 }
 
 /**
@@ -54,15 +50,16 @@ bbos_list_create(int8_t *part, int16_t sz)
  * O(1)
  */
 bbos_return_t
-bbos_list_insert(bbos_list_t *list, bbos_list_node_t *node, const void *data)
+bbos_list_insert(struct bbos_list *list, struct bbos_list_node *node, 
+  const void *data)
 {
-  bbos_list_node_t *new_node;
+  struct bbos_list_node *new_node;
 
   /*
    * Allocate storage for the node.
-   * Do not need to check the counter. Use fastmempool instead.
+   * Do not need to check the counter. Use mempool instead.
    */
-  if ((new_node = (bbos_list_node_t *)bbos_mempool_alloc(list->mempool)) == NULL) {
+  if ((new_node = (struct bbos_list_node *)bbos_mempool_allocate(list->pool)) == NULL) {
     return BBOS_FAILURE;
   }
 
@@ -116,10 +113,10 @@ bbos_list_insert(bbos_list_t *list, bbos_list_node_t *node, const void *data)
  * Pointer to an error can be added as an argument.
  */
 void *
-bbos_list_remove(bbos_list_t *list, bbos_list_node_t *node)
+bbos_list_remove(struct bbos_list *list, struct bbos_list_node *node)
 {
   void *data;
-  bbos_list_node_t *old_node;
+  struct bbos_list_node *old_node;
 
   /* Do not allow removal from an empty list */
   if (bbos_list_counter(list) == 0) {
@@ -152,7 +149,7 @@ bbos_list_remove(bbos_list_t *list, bbos_list_node_t *node)
     }
   }
 
-  bbos_mempool_free(list->mempool, old_node);
+  bbos_mempool_free(list->pool, old_node);
 
   /* Adjust the size of the list to account for the removed node. */
   list->counter--;
@@ -167,6 +164,6 @@ bbos_list_remove(bbos_list_t *list, bbos_list_node_t *node)
 void
 bbos_list_destroy(struct bbos_list *list)
 {
-	bbos_mempool_destroy(list->mempool);
+  bbos_mempool_destroy(list->pool);
 }
 

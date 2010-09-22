@@ -4,8 +4,8 @@
  * Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
  */
 
-#ifndef __BBOS_VERSION_H
-#define __BBOS_VERSION_H
+#ifndef __BBOS_KERNEL_VERSION_H
+#define __BBOS_KERNEL_VERSION_H
 
 #define BBOS_MAJOR_VERSION 0
 #define BBOS_MINOR_VERSION 1
@@ -32,5 +32,5 @@
 #define bbos_version_number()\
   (BBOS_VERSION)
 
-#endif /* __BBOS_VERSION_H */
+#endif /* __BBOS_KERNEL_VERSION_H */
 

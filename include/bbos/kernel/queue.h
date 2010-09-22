@@ -23,7 +23,7 @@ typedef bbos_list_t bbos_queue_t;
  */
 #define BBOS_QUEUE_PARTITION(name, n) BBOS_LIST_PARTITION(name, n)
 
-#define bbos_queue_create bbos_list_create
+#define bbos_queue_init bbos_list_init
 #define bbos_queue_destroy bbos_list_destroy
 
 #define bbos_queue_peek(queue) ((queue)->head == NULL ? NULL : (queue)->head->data)
