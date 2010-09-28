@@ -4,65 +4,60 @@
 
 #include <bbos.h>
 
-#if BBOS_NUMBER_OF_DEVICES > 0
+#if BBOS_NUMBER_OF_DRIVERS > 0
 
-struct bbos_device_vec bbos_device_table[BBOS_NUMBER_OF_DEVICES];
+enum bbos_driver_states {
+  BBOS_DRIVER_IS_UNDEFINED,
+  BBOS_DRIVER_IS_OPENED,
+  BBOS_DRIVER_IS_CLOSED
+};
+
+struct bbos_driver_local {
+  bbos_driver_state_t state;
+};
+
+struct bbos_driver_global {
+  bbos_thread_id_t tid;
+  int8_t *name;
+  int16_t version;
+  int8_t *config;
+};
+
+struct bbos_driver_global bbos_driver_global_table[BBOS_NUMBER_OF_DRIVERS];
 
 bbos_return_t
-bbos_device_init(struct bbos_device *dev, bbos_device_id_t id)
+bbos_driver_init()
 {
-  bbos_device_id_t i;
-
-  assert(id < BBOS_NUMBER_OF_DEVICES);
-
-  dev->id = id;
-
-  for(i=0; i<BBOS_NUMBER_OF_DEVICES; i++) {
-    dev->state_table[i] = 0;
-  }
-
-  return BBOS_SUCCESS;
 }
 
 bbos_return_t
-bbos_device_register(struct bbos_device *dev,
-		     bbos_thread_id_t tid, int8_t *name, int16_t version, 
-		     int8_t *config, void *private)
+bbos_driver_register(bbos_driver_id_t id, bbos_thread_id_t tid, \
+		     int8_t *name, int16_t version, int8_t *config)
 {
-  assert(dev->id < BBOS_NUMBER_OF_DEVICES);
+  assert(id < BBOS_NUMBER_OF_DRIVERS);
   assert(tid < BBOS_NUMBER_OF_THREADS);
 
-  bbos_device_table[dev->id].tid = tid;
-  bbos_device_table[dev->id].name = name;
-  bbos_device_table[dev->id].version = version;
-  bbos_device_table[dev->id].config = config;
-  bbos_device_table[dev->id].private = private;
+  bbos_driver_global_table[id].tid = tid;
+  bbos_driver_global_table[id].name = name;
+  bbos_driver_global_table[id].version = version;
+  bbos_driver_global_table[id].config = config;
 
   return BBOS_SUCCESS;
 }
 
 bbos_return_t
-bbos_device_unregister(struct bbos_device *dev)
+bbos_driver_unregister(bbos_driver_id_t id)
 {
-  assert(dev->id < BBOS_NUMBER_OF_DEVICES);
+  assert(dev->id < BBOS_NUMBER_OF_DRIVERS);
   assert(tid < BBOS_NUMBER_OF_THREADS);
 
-  bbos_device_table[dev->id].tid = 0;
-  bbos_device_table[dev->id].name = NULL;
-  bbos_device_table[dev->id].version = 0;
-  bbos_device_table[dev->id].config = NULL;
-  bbos_device_table[dev->id].private = NULL;
+  bbos_driver_global_table[id].tid = 0;
+  bbos_driver_global_table[id].name = NULL;
+  bbos_driver_global_table[id].version = 0;
+  bbos_driver_global_table[id].config = NULL;
 
   return BBOS_SUCCESS;
 }
 
-bbos_return_t
-bbos_device_destroy(struct bbos_device *dev)
-{
-  bbos_device_unregister(dev);
-
-  return BBOS_SUCCESS;
-}
-
-#endif /* BBOS_NUMBER_OF_DEVICES > 0 */
+#endif /* BBOS_NUMBER_OF_DRIVERS > 0 */
 
