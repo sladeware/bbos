@@ -12,8 +12,8 @@ CFLAGS = $(CDEBUG) -I. -I$(INCLUDE)
 LDFLAGS = -g
 
 SRCS_C = hello_world.c $(KERNEL)/process/itc.c $(KERNEL)/time.c \
-	$(KERNEL)/list.c $(KERNEL)/process/itc/port.c $(KERNEL)/process.c \
-	$(KERNEL)/queue.c $(KERNEL)/system.c $(KERNEL)/mm/mempool.c \
+	$(KERNEL)/process/itc/port.c $(KERNEL)/process.c \
+	$(KERNEL)/system.c $(KERNEL)/mm/mempool.c \
 	$(KERNEL)/hardware/device.c $(KERNEL)/process/scheduler/basic.c \
 	$(KERNEL)/process/thread.c $(KERNEL)/process/itc/mqueue.c \
   $(KERNEL)/hardware.c

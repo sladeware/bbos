@@ -31,9 +31,6 @@
 /* Memory management */
 #include <bbos/kernel/mm.h>
 
-#include <bbos/kernel/list.h>
-#include <bbos/kernel/queue.h>
-
 /* Timing control */
 #include <bbos/kernel/time.h>
 

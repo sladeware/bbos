@@ -52,4 +52,9 @@ bbos_mqueue_receive(struct bbos_mqueue *mq)
   return NULL;
 }
 
+bbos_return_t
+bbos_mqueue_destroy(struct bbos_mqueue *mq)
+{
+}
+
 
