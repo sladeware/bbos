@@ -3,61 +3,112 @@
  * digital signal. Each GPIO represents a bit connected to a particular pin. 
  */
 
-#include <bbos.h>
+#include <bbos/hardware/driver/gpio.h>
 
-struct gpio_info {
-  int8_t *label;
-  int16_t base; // identifies the first GPIO number
-  uint16_t n; // the number of GPIOs
+/*
+ * Describe GPIO table.
+ */
+struct gpio_pin *gpio_table[BBOS_HARDWARE_NUMBER_OF_GPIO_PINS];
+
+struct bbos_driver_message {
+  int16_t command;
+  void *private;
 };
 
-/* Thread identifier for the GPIO driver should be defined manually. */
-#ifndef GPIO_DRIVER_THREAD_ID
-#error "GPIO thread identifier is undefined"
-#endif
-
-struct bbos_driver_local bbos_driver_local_table[BBOS_NUMBER_OF_DRIVERS];
-
-enum {
-  GPIO_DIRECTION_INPUT,
-  GPIO_DIRECTION_OUTPUT
-};
-
-struct gpio_info {
-  int8_t *label;
-  int16_t base;
-  uint16_t n; // number of pins
-  uint16_t bitmap; // pins map
+struct gpio_request {
+  uint16_t pin;
+  int16_t value;
 };
 
 void
-gpio()
+gpio_driver()
 {
+  bbos_thread_id_t sender;
   struct bbos_driver_message *message;
-  struct gpio_info *gpio;
-  bbos_driver_id_t id;
+  struct gpio_request *request;
+  bbos_driver_command_t command;
+  int16_t result;
 
-  bbos_itc_receive(&message, 0);
-  id = message->id;
+  bbos_itc_receive(&sender, &message);
 
-  gpio = (struct gpio_info *)bbos_driver_get_info(id);
+  command = message->command;
+  request = (struct gpio_request *)message->private;
 
-  switch(message->cmd) {
-  case BBOS_DRIVER_CMD_OPEN:
-    // To open GPIO driver it should be closed first
-    if(bbos_driver_local_table[id].state != BBOS_DRIVER_IS_CLOSED) {
-      // error: driver is not closed
+  // Check owner of this pin
+  if (command != BBOS_DRIVER_COMMAND_OPEN
+      && command != BBOS_DRIVER_COMMAND_CLOSE) {
+    
+    if (gpio_table[pin].owner == BBOS_UNKNOWN_THREAD_ID) {
+      // this pin wasn't opened so cannot be used
+      return;
     }
-    if((gpio->bitmap ^ *((uint16_t *)message->data)) <= gpio->bitmap) {
-      // error: some of the required pins is already in use
+
+    /* Let us take look if the sender owns this pin */
+    if (gpio_table[pin].owner != sender) {
+      // error
+      return;
     }
+  }
+
+  switch (command) {
+  case BBOS_DRIVER_COMMAND(BBOS_DRIVER_COMMAND_OPEN):
+    // This pin is already is use
+    if (gpio_table[pin].owner != BBOS_UNKNOWN_THREAD_ID) {
+      return;
+    }
+    gpio_table[pin].owner = sender;
+    result = BBOS_SUCCESS;
+    break;
+
+  case BBOS_DRIVER_COMMAND(BBOS_DRIVER_COMMAND_CLOSE):
+    if (gpio_table[pin].owner == BBOS_UNKNOWN_THREAD_ID) {
+      // thread was not opened
+      return;
+    }
+    gpio_table[pin].owner = BBOS_UNKNOWN_THREAD_ID;
+    result = BBOS_SUCCESS;
+    break;
+
+  case BBOS_DRIVER_COMMAND(GPIO_DIRECTION_INPUT):
+    result = GPIO_DIRECTION_INPUT(gpio_table[pin].chip, request->pin);
+    break;
+
+  case BBOS_DRIVER_COMMAND(GPIO_DIRECTION_OUTPUT):
+    result = GPIO_DIRECTION_OUTPUT(gpio_table[pin].chip, request->pin, request->value);
+    break;
+
+  case BBOS_DRIVER_COMMAND(GPIO_SET_VALUE):
+    result = GPIO_SET_VALUE(gpio_table[pin].chip, request->pin, request->value);
+    break;
+
+  case BBOS_DRIVER_COMMAND(GPIO_GET_VALUE):
+    result = GPIO_GET_VALUE(gpio_table[pin].chip, request->pin);
     break;
   }
+
+  bbos_itc_send(sender, &result);
 }
 
 bbos_return_t
-gpio_is_valid(uin16_t base) {
-  return (base < NUMBER_OF_GPIO);
+gpio_register_chip(struct gpio_chip *chip)
+{
+  uint16_t id;
+  int16_t base;
+
+  base = chip->base;
+
+  /* Trace GPIO numbers so they must not be managed by another GPIO chip */
+  for (id=base; id<base+chip->n; id++) {
+    gpio_table[id] = chip;
+  }
+
+  return BBOS_SUCCESS;
+}
+
+bbos_return_t
+gpio_unregister_chip(struct gpio_chip *chip)
+{
+  return BBOS_SUCCESS;
 }
 
 
