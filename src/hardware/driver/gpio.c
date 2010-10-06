@@ -10,46 +10,28 @@
  */
 struct gpio_pin *gpio_table[BBOS_HARDWARE_NUMBER_OF_GPIO_PINS];
 
-struct bbos_driver_message {
-  int16_t command;
-  void *private;
-};
-
 struct gpio_request {
   uint16_t pin;
   int16_t value;
 };
 
+/**
+ * gpio_driver - Entry point for the thread which controls GPIO driver.
+ */
 void
 gpio_driver()
 {
   bbos_thread_id_t sender;
-  struct bbos_driver_message *message;
-  struct gpio_request *request;
   bbos_driver_command_t command;
+  struct gpio_request *request;
   int16_t result;
 
-  bbos_itc_receive(&sender, &message);
-
-  command = message->command;
-  request = (struct gpio_request *)message->private;
-
-  // Check owner of this pin
-  if (command != BBOS_DRIVER_COMMAND_OPEN
-      && command != BBOS_DRIVER_COMMAND_CLOSE) {
-    
-    if (gpio_table[pin].owner == BBOS_UNKNOWN_THREAD_ID) {
-      // this pin wasn't opened so cannot be used
-      return;
-    }
-
-    /* Let us take look if the sender owns this pin */
-    if (gpio_table[pin].owner != sender) {
-      // error
-      return;
-    }
+  // Calls messenger to know, do we have a new message?
+  if (bbos_driver_messenger(&sender, &command, &request) != BBOS_SUCCESS) {
+    return;
   }
 
+  /* Demultiplex standard commands */
   switch (command) {
   case BBOS_DRIVER_COMMAND(BBOS_DRIVER_COMMAND_OPEN):
     // This pin is already is use
@@ -69,6 +51,22 @@ gpio_driver()
     result = BBOS_SUCCESS;
     break;
 
+  default:
+    // Check owner of this pin
+    if (gpio_table[pin].owner == BBOS_UNKNOWN_THREAD_ID) {
+      // this pin wasn't opened so cannot be used
+      return;
+    }
+
+    /* Let us take a look if this sender owns this pin */
+    if (gpio_table[pin].owner != sender) {
+      // error
+      return;
+    }
+    break;
+  }
+
+  switch (command) {
   case BBOS_DRIVER_COMMAND(GPIO_DIRECTION_INPUT):
     result = GPIO_DIRECTION_INPUT(gpio_table[pin].chip, request->pin);
     break;
