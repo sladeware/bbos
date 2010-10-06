@@ -15,21 +15,29 @@ struct gpio_request {
   int16_t value;
 };
 
+int16_t result;
+
 /**
  * gpio_driver - Entry point for the thread which controls GPIO driver.
  */
 void
 gpio_driver()
 {
-  bbos_thread_id_t sender;
-  bbos_driver_command_t command;
-  struct gpio_request *request;
-  int16_t result;
-
-  // Calls messenger to know, do we have a new message?
-  if (bbos_driver_messenger(&sender, &command, &request) != BBOS_SUCCESS) {
+  if (bbos_driver_messenger() != BBOS_SUCCESS) {
     return;
   }
+}
+
+void
+bbos_driver_result(bbos_thread_id_t sender)
+{
+  bbos_itc_send(sender, &result);
+}
+
+void
+bbos_driver_demultiplexer(bbos_driver_command_t command, void *data)
+{
+  struct gpio_request *request;
 
   /* Demultiplex standard commands */
   switch (command) {
@@ -83,8 +91,6 @@ gpio_driver()
     result = GPIO_GET_VALUE(gpio_table[pin].chip, request->pin);
     break;
   }
-
-  bbos_itc_send(sender, &result);
 }
 
 bbos_return_t
