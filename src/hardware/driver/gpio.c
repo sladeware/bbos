@@ -42,7 +42,7 @@ bbos_driver_demultiplexer(bbos_driver_command_t command, void *data)
   /* Demultiplex standard commands */
   switch (command) {
   case BBOS_DRIVER_COMMAND(BBOS_DRIVER_COMMAND_OPEN):
-    // This pin is already is use
+    // This pin is already in use
     if (gpio_table[pin].owner != BBOS_UNKNOWN_THREAD_ID) {
       return;
     }
