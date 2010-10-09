@@ -1,7 +1,7 @@
 /*
  * Scheduler.
  *
- * Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
+ * Copyright (c) ???? Slade Maurer, Alexander Sviridenko
  */
 
 #include <bbos.h>
@@ -64,3 +64,5 @@ bbos_sched_next()
 
   return err;
 }
+
+

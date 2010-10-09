@@ -21,47 +21,12 @@ struct bbos_thread bbos_thread_table[BBOS_NUMBER_OF_THREADS];
 #endif /* BBOS_NUMBER_OF_THREADS > 0 */
 
 /**
- * bbos_thread_get_priority - Get thread's priority.
- * @tid: Thread identifier.
- *
- * Return value:
- *
- * Priority value.
- */
-bbos_thread_priority_t
-bbos_thread_get_priority(bbos_thread_id_t tid)
-{
-  assert(tid < BBOS_NUMBER_OF_THREADS);
-
-  return bbos_thread_table[tid].priority;
-}
-
-/**
- * bbos_thread_set_priority - Set thread's priority.
- * @tid: Thread identifier.
- * @prio: Thread priority.
- */
-void
-bbos_thread_set_priority(bbos_thread_id_t tid, bbos_thread_priority_t prio)
-{
-  assert(tid < BBOS_NUMBER_OF_THREADS); // check thread id
-
-  bbos_thread_table[tid].priority = prio;
-}
-
-/**
- * bbos_thread_init
- *
- * Description:
- *
- * Initialize thread and put it into the list of ready threads for scheduler.
+ * bbos_thread_init - Initialize thread.
  */
 bbos_return_t
-bbos_thread_init(bbos_thread_id_t tid, bbos_thread_priority_t prio)
+bbos_thread_init(bbos_thread_id_t id)
 {
-  bbos_thread_set_priority(tid, prio);
-
-  bbos_scheduler_insert_thread(tid);
+  bbos_thread_table[id].id = id;
 }
 
 /**
