@@ -25,13 +25,13 @@ int main() {
 
 	// Register supported GPIO drivers. All the GPIO drivers related to 
 	// GPIO_DRIVER_THREAD_ID thread.
-  struct gpio_info parallax_gpio;
-  parallax_gpio.labal = "GPIOA";
-  parallax_gpio.base = 0;
-  parallax_gpio.n = 32;
-  parallax_gpio.bitmap = 0x0;
+	struct gpio_info parallax_gpio;
+	parallax_gpio.labal = "GPIOA";
+	parallax_gpio.base = 0;
+	parallax_gpio.n = 32;
+	parallax_gpio.bitmap = 0x0;
 	bbos_driver_register(PARALLAX_GPIO_DRIVER_ID, GPIO_DRIVER_THREAD_ID, 
-    "PARALLAX/GPIO", 1, &parallax_gpio);
+			     "PARALLAX/GPIO", 1, &parallax_gpio);
 
 	bbos_thread_start(TEST, BBOS_THREAD_LOWEST_PRIORITY);
 
