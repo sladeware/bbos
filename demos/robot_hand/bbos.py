@@ -1,4 +1,4 @@
-application = BBOSApplication([finger, finger])
+application = BBOSApplication([finger])
 
 robot_compiler = BBOSCompiler("../../src",
                               ["../../include"],
@@ -6,17 +6,16 @@ robot_compiler = BBOSCompiler("../../src",
                               "gcc",
                               ["-O"])
 
-finger_ports = ["gpio_driver", "finger"]
-
 gpio_driver = BBOSDriver("gpio_driver",
-                         ["/hardware/driver/gpio.c", "/hardware/driver/propeller.c"],
+                         ["/hardware/driver/gpio.c",
+                          "/hardware/driver/propeller.c"],
                          "gpio",
-                         0,
+                         "GPIO_DRIVER_PORT",
                          2)
 
 finger = BBOSProcess(robot_compiler, 
                      [gpio_driver],                         
                      ["finger.c"],
                      False,
-                     finger_ports,
+                     ["MOVE_PORT"],
                      ["move"])
