@@ -55,7 +55,7 @@ def usage():
     -a=FILE, --application_configuration=FILE : Load the application configuration from FILE
     """
 
-def  load_app_config(code_path):
+def load_app_config(code_path):
     try:
         try:
             code_dir = os.path.dirname(code_path)
@@ -102,11 +102,11 @@ def generate_code(config):
     for thread in process.threads:
         f.write("    case " + thread.upper() + ": \\\n")
         f.write("      " + thread + "(); \\\n")
-        f.write("      break;\n")
+        f.write("      break;\\\n")
     for driver in process.drivers:
         f.write("    case " + driver.name.upper() + ": \\\n")
         f.write("      " + driver.entry_function + "(); \\\n")
-        f.write("      break;\n")
+        f.write("      break;\\\n")
     f.write(BBOS_SWITCHER_BOTTOM)
 
     # Output the port IDs
@@ -119,7 +119,7 @@ def generate_code(config):
         f.write("#define" + driver.port + " " + str(id) + "\n")
         id += 1
 
-    # Output the number of ports in this proces
+    # Output the number of ports in this process
     f.write("\n/* The number of ports in this process */\n")
     f.write("#define BBOS_NUMBER_OF_PORTS " + str(id) + "\n")
 
@@ -133,13 +133,13 @@ def generate_code(config):
     f.write("\n/* BBOS driver bootstrapper functions */\n")
     f.write("#define bbos_boot_drivers \\\n")
     for driver in process.drivers:
-        f.write("    " + driver.boot_function + "();\n")
+        f.write("    " + driver.boot_function + "(); \\\n")
 
     # Output the exit functions
     f.write("\n/* BBOS driver exit functions */\n")
     f.write("#define bbos_exit_drivers \\\n")
     for driver in process.drivers:
-        f.write("    " + driver.exit_function + "();\n")
+        f.write("    " + driver.exit_function + "(); \\\n")
 
     # Output the static bottom content
     f.write(BBOS_H_BOTTOM)
