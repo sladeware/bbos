@@ -34,7 +34,7 @@
 #define BBOS_NUMBER_OF_PORTS 2
 
 /* BBOS driver constants */
-#define GPIO_DRIVER_NAME "gpio_driver"
+#define GPIO_DRIVER_NAME "gpio"
 #define GPIO_DRIVER_VERSION 2
 
 /* BBOS driver bootstrapper functions */
