@@ -34,7 +34,7 @@ def  load_app_config(code_path):
 
             fin = open(code_path, 'rb')
 
-            return imp.load_source(md5.new(code_path).hexdigest(), code_path, fin)
+            return [code_path, imp.load_source(md5.new(code_path).hexdigest(), code_path, fin)]
         finally:
             try: fin.close()
             except: pass
@@ -44,6 +44,11 @@ def  load_app_config(code_path):
     except:
         traceback.print_exc(file = sys.stderr)
         raise
+
+def generate_code(config):
+    code_path = config[0]
+#    application.config[1].application
+    print config[1]
     
 def main(argv=None):
     if argv is None:
@@ -55,7 +60,7 @@ def main(argv=None):
              raise Usage(msg)
         for o, a in opts:
             if o in ("-a", "--application_configuration"):
-                load_app_config(a)
+                generate_code(load_app_config(a))
             elif o in ("-h", "--help"):
                 usage()
             else:

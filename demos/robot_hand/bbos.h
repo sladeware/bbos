@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010 Slade Maurer, Alexander Sviridenko                                                      */
+ * Copyright (c) 2010 Slade Maurer, Alexander Sviridenko                                                    */
 
 #ifndef __BBOS_H
 #define __BBOS_H
@@ -33,9 +33,17 @@
 /* The number of ports in this process */
 #define BBOS_NUMBER_OF_PORTS 2
 
-/* BBOS Driver Constants */
+/* BBOS driver constants */
 #define GPIO_DRIVER_NAME "gpio_driver"
 #define GPIO_DRIVER_VERSION 2
+
+/* BBOS driver bootstrapper functions */
+#define bbos_boot_drivers			\
+  gpio_driver_init();
+
+/* BBOS driver exit functions */
+#define bbos_exit_drivers			\
+  gpio_driver_exit();
 
 #include <bbos/kernel.h>
 
