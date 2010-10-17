@@ -5,18 +5,18 @@
 from types import *
 
 class BBOSDriver:
-    def __init__(self, boot_function, entry_function, exit_function, files, name, port, version):
+    def __init__(self, boot, main, exit, files, name, port, version):
         # The bootstrapper function for this driver
-        self.boot_function = boot_function
-        assert type(self.boot_function) is StringType, "boot_function is not a string type: %s" % self.boot_function
+        self.boot = boot
+        assert type(self.boot) is StringType, "boot is not a string type: %s" % self.boot
 
-        # This is the main entry function for the driver that calls messenger()
-        self.entry_function = entry_function
-        assert type(self.entry_function) is StringType, "entry_function is not a string type: %s" % self.entry_function
+        # This is the main main function for the driver that calls messenger()
+        self.main = main
+        assert type(self.main) is StringType, "main is not a string type: %s" % self.main
 
         # The exit function for this driver
-        self.exit_function = exit_function
-        assert type(self.exit_function) is StringType, "exit_function is not a string type: %s" % self.exit_function
+        self.exit = exit
+        assert type(self.exit) is StringType, "exit is not a string type: %s" % self.exit
 
         # The driver source files
         self.files = files

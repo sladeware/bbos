@@ -10,9 +10,9 @@ class BBOSConfiguration:
                                   name="gcc",
                                   options=["-O"])
     
-    gpio_driver = BBOSDriver.BBOSDriver(boot_function="gpio_driver_init",
-                             entry_function="gpio_driver",
-                             exit_function="gpio_driver_exit",
+    gpio_driver = BBOSDriver.BBOSDriver(boot="gpio_driver_init",
+                             main="gpio_driver",
+                             exit="gpio_driver_exit",
                              files=["/hardware/driver/gpio.c",
                                     "/hardware/driver/propeller.c"],
                              name="gpio",

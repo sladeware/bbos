@@ -105,7 +105,7 @@ def generate_code(config):
         f.write("      break; \\\n")
     for driver in process.drivers:
         f.write("    case " + driver.name.upper() + ": \\\n")
-        f.write("      " + driver.entry_function + "(); \\\n")
+        f.write("      " + driver.main + "(); \\\n")
         f.write("      break; \\\n")
     f.write(BBOS_SWITCHER_BOTTOM)
 
@@ -144,13 +144,13 @@ def generate_code(config):
     f.write("\n/* BBOS driver bootstrapper functions */\n")
     f.write("#define bbos_boot_drivers \\\n")
     for driver in process.drivers:
-        f.write("    " + driver.boot_function + "(); \\\n")
+        f.write("    " + driver.boot + "(); \\\n")
 
     # Output the exit functions
     f.write("\n/* BBOS driver exit functions */\n")
     f.write("#define bbos_exit_drivers \\\n")
     for driver in process.drivers:
-        f.write("    " + driver.exit_function + "(); \\\n")
+        f.write("    " + driver.exit + "(); \\\n")
 
     # Output the static bottom content
     f.write(BBOS_H_BOTTOM)
