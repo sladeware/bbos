@@ -6,30 +6,44 @@ import BBOSCompiler
 from types import *
 
 class BBOSProcess:
-    def __init__(self, c, d, f, i, p, t):
+    def add_system_threads(self):
+        # Always add the system idle thread
+        self.threads.append("bbos_idle")
+
+        # Add IPC system thread to this process
+        if self.ipc:
+            self.threads.append("bbos_ipc") 
+
+    def __init__(self, compiler, drivers, files, ipc, mempools, ports, threads):
         # The IPC files used to add the IPC part
         self.__ipc_files = None
-        
+
         # The compiler object for this process
-        self.compiler = c
-        assert isinstance(self.compiler, BBOSCompiler.BBOSCompiler), "compiler is not a BBOSCompiler type"
+        self.compiler = compiler
+        assert isinstance(self.compiler, BBOSCompiler.BBOSCompiler), "compiler is not a BBOSCompiler type: %s" % self.compiler
 
         # The list of BBOSDrivers within this process
-        self.drivers = d
-        assert type(self.drivers) is ListType, "drivers is not a list type: %s" % drivers
+        self.drivers = drivers
+        assert type(self.drivers) is ListType, "drivers is not a list type: %s" % self.drivers
 
         # The list of process source files used for the build
-        self.files = f
-        assert type(self.files) is ListType, "files is not a list type: %s" % files
+        self.files = files
+        assert type(self.files) is ListType, "files is not a list type: %s" % self.files
 
         # IPC is used by this process
-        self.ipc = i
-        assert type(self.ipc) is BooleanType, "ipc is not a boolean type: %s" % ipc
+        self.ipc = ipc
+        assert type(self.ipc) is BooleanType, "ipc is not a boolean type: %s" % self.ipc
 
         # List of ports
-        self.ports = p
-        assert type(self.ports) is ListType, "ports is not a list type: %s" % ports
+        self.mempools = mempools
+        assert type(self.mempools) is ListType, "mempools is not a list type: %s" % self.mempools
+
+        # List of ports
+        self.ports = ports
+        assert type(self.ports) is ListType, "ports is not a list type: %s" % self.ports
 
         # The list of entry functions for each thread
-        self.threads = t
-        assert type(self.threads) is ListType, "threads is not a list type: %s" % threads
+        self.threads = threads
+        assert type(self.threads) is ListType, "threads is not a list type: %s" % self.threads
+
+        self.add_system_threads()

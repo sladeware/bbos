@@ -10,20 +10,28 @@
 
 /* Thread IDs */
 #define MOVE 0
-#define GPIO 1
+#define BBOS_IDLE 1
+#define BBOS_IPC 2
+#define GPIO 3
 
 /* The number of BBOS application threads */
-#define BBOS_NUMBER_OF_APPLICATION_THREADS 2
+#define BBOS_NUMBER_OF_APPLICATION_THREADS 4
 
 /* Application switcher macro */
 #define bbos_application_switcher(id) \
   switch(id) { \
     case MOVE: \
       move(); \
-      break;\
+      break; \
+    case BBOS_IDLE: \
+      bbos_idle(); \
+      break; \
+    case BBOS_IPC: \
+      bbos_ipc(); \
+      break; \
     case GPIO: \
       gpio_driver(); \
-      break;\
+      break; \
     default: \
       bbos_exit(); \
   }
@@ -34,6 +42,11 @@
 
 /* The number of ports in this process */
 #define BBOS_NUMBER_OF_PORTS 2
+
+/* Mempool IDs */
+#define MOVE_MESSAGES 0
+/* The number of mempools in this process */
+#define BBOS_NUMBER_OF_MEMPOOLS 1
 
 /* BBOS driver constants */
 #define GPIO_DRIVER_NAME "gpio"

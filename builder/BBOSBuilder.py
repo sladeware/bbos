@@ -102,11 +102,11 @@ def generate_code(config):
     for thread in process.threads:
         f.write("    case " + thread.upper() + ": \\\n")
         f.write("      " + thread + "(); \\\n")
-        f.write("      break;\\\n")
+        f.write("      break; \\\n")
     for driver in process.drivers:
         f.write("    case " + driver.name.upper() + ": \\\n")
         f.write("      " + driver.entry_function + "(); \\\n")
-        f.write("      break;\\\n")
+        f.write("      break; \\\n")
     f.write(BBOS_SWITCHER_BOTTOM)
 
     # Output the port IDs
@@ -122,6 +122,17 @@ def generate_code(config):
     # Output the number of ports in this process
     f.write("\n/* The number of ports in this process */\n")
     f.write("#define BBOS_NUMBER_OF_PORTS " + str(id) + "\n")
+
+    # Output the mempools
+    f.write("\n/* Mempool IDs */\n")
+    id = 0
+    for mempool in process.mempools:
+        f.write("#define " + mempool + " " + str(id) + "\n")
+        id += 1
+
+    # Output the number of mempools in this process
+    f.write("/* The number of mempools in this process */\n")
+    f.write("#define BBOS_NUMBER_OF_MEMPOOLS " + str(id) + "\n")
 
     # Output BBOS driver constants
     f.write("\n/* BBOS driver constants */\n")
