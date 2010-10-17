@@ -61,6 +61,9 @@
 #define bbos_exit_drivers \
     gpio_driver_exit(); \
 
+/* The include files we are using  */
+#include <propeller_demo_board.h>
+
 #include <bbos/kernel.h>
 
 #endif /* __BBOS_H */

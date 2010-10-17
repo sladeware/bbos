@@ -152,6 +152,11 @@ def generate_code(config):
     for driver in process.drivers:
         f.write("    " + driver.exit + "(); \\\n")
 
+    # Output the includes for this process
+    f.write("\n/* The include files we are using  */\n")
+    for include in process.get_include_files():
+        f.write("#include <" + include + ">\n")
+
     # Output the static bottom content
     f.write(BBOS_H_BOTTOM)
 

@@ -32,4 +32,4 @@ class BBOSDriver:
 
         # The version of the driver
         self.version = version
-        assert type(self.version) is IntType, "version is not an integer type: %s" % self.version
+        assert type(self.version) is IntType, "version is not an integer type: %d" % self.version

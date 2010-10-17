@@ -14,9 +14,19 @@ class BBOSProcess:
         if self.ipc:
             self.threads.append("bbos_ipc") 
 
+    def get_include_files(self):
+        return self.__includes
+
+    def append_include_files(self, name):
+        assert type(name) is StringType, "name is not a string type: %s" % name
+        self.__includes.append(name)
+
     def __init__(self, compiler, drivers, files, ipc, mempools, ports, threads):
+        # The include files used by this process
+        self.__includes = []
+
         # The IPC files used to add the IPC part
-        self.__ipc_files = None
+        self.__ipc_files = []
 
         # The compiler object for this process
         self.compiler = compiler
