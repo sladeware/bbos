@@ -113,10 +113,10 @@ def generate_code(config):
     f.write("\n/* Port IDs */\n")
     id = 0
     for port in process.ports:
-        f.write("#define" + port + " " + str(id) + "\n")
+        f.write("#define " + port + " " + str(id) + "\n")
         id += 1
     for driver in process.drivers:
-        f.write("#define" + driver.port + " " + str(id) + "\n")
+        f.write("#define " + driver.port + " " + str(id) + "\n")
         id += 1
 
     # Output the number of ports in this process
@@ -131,7 +131,7 @@ def generate_code(config):
         id += 1
 
     # Output the number of mempools in this process
-    f.write("/* The number of mempools in this process */\n")
+    f.write("\n/* The number of mempools in this process */\n")
     f.write("#define BBOS_NUMBER_OF_MEMPOOLS " + str(id) + "\n")
 
     # Output BBOS driver constants

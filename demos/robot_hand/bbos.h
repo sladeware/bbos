@@ -37,14 +37,15 @@
   }
 
 /* Port IDs */
-#defineMOVE_PORT 0
-#defineGPIO_DRIVER_PORT 1
+#define MOVE_PORT 0
+#define GPIO_DRIVER_PORT 1
 
 /* The number of ports in this process */
 #define BBOS_NUMBER_OF_PORTS 2
 
 /* Mempool IDs */
 #define MOVE_MESSAGES 0
+
 /* The number of mempools in this process */
 #define BBOS_NUMBER_OF_MEMPOOLS 1
 
