@@ -2,15 +2,15 @@
 # Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
 #
 
-import BBOSBoard
-from types import *
+from bbos_board import BBOSBoard
+from common import *
 
-class PropellerDemoBoard(BBOSBoard.BBOSBoard):
+class PropellerDemoBoard(BBOSBoard):
     def __init__(self, process, amount_of_memory):
-        BBOSBoard.BBOSBoard.__init__(self, process)
+        BBOSBoard.__init__(self, process)
 
+        verify_int(amount_of_memory)
         self.amount_of_memory = amount_of_memory
-        assert type(self.amount_of_memory) is IntType, "amount_of_memory is not an integer type: %d" % self.amount_of_memory
         assert self.amount_of_memory in (1, 5, 12), "amount_of_memory must be 1, 5 or 12: %d" % self.amount_of_memory
 
         # Modify includes

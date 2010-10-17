@@ -3,10 +3,11 @@
 # Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
 #
 
-import BBOSApplication
-import BBOSCompiler
-import BBOSDriver
-import BBOSProcess
+from common import *
+from bbos_application import *
+from bbos_compiler import *
+from bbos_driver import *
+from bbos_process import *
 import sys
 import getopt
 import md5
@@ -75,9 +76,8 @@ def load_app_config(code_path):
         raise
 
 def generate_code(config):
-    app = config[1].BBOSConfiguration.application
-    assert len(app.processes) == 1 # Until we can handle more than one process
-    process = app.processes[0]
+    assert len(config[1].application.processes) == 1, "Right now we can handle only one process."
+    process = config[1].application.processes[0]
     f = open(config[0] + "/bbos.h", "w")
 
     # Output the static top content
