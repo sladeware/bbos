@@ -41,88 +41,100 @@ class GenerateCode:
     def __init__(self, config):
         self.config = config
 
-    def generate(self):
         assert self.config[1].application, "You must define the application variable in bbos.py"
 
         assert len(self.config[1].application.processes) == 1, "Right now we can handle only one process."
 
         # The process we're genearting code for
-        process = self.config[1].application.processes[0]
+        self.process = self.config[1].application.processes[0]
 
         # The list of threads within the process
-        threads = process.threads + [d.name for d in process.drivers]
+        self.threads = self.process.threads + [d.name for d in self.process.drivers]
 
         # The list of main functions for each thread
-        main_functions = process.threads + [d.main for d in process.drivers]
+        self.main_functions = self.process.threads + [d.main for d in self.process.drivers]
 
         # The list of ports
-        ports = process.ports + [d.port for d in process.drivers]
+        self.ports = self.process.ports + [d.port for d in self.process.drivers]
 
         # Open the header file we're outputing to
-        f = open(self.config[0] + "/bbos.h", "w")
+        self.f = open(self.config[0] + "/bbos.h", "w")
+        
+    def generate(self):
+        self.__output_static_top_content()
+        self.__output_thread_ids()
+        self.__output_number_of_app_threads()
+        self.__output_switcher_macro()
+        self.__output_port_ids()
+        self.__output_number_of_ports()
+        self.__output_mempools()
+        self.__output_driver_constants()
+        self.__output_bootstrapper_functions()
+        self.__output_exit_functions()
+        self.__output_includes_for_this_process()
+        self.__output_static_bottom_content()
+        self.f.close()
 
-        # Output the static top content
-        f.write(BBOS_H_TOP)
+    def __output_static_top_content(self):
+        self.f.write(BBOS_H_TOP)
 
-        # Output the thread IDs
-        f.write("/* Thread IDs */\n")
-        for id in range(0, len(threads)):
-            f.write("#define " + threads[id].upper() + " " + str(id) + "\n")
+    def __output_thread_ids(self):
+        self.f.write("/* Thread IDs */\n")
+        for id in range(0, len(self.threads)):
+            self.f.write("#define " + self.threads[id].upper() + " " + str(id) + "\n")
 
-        # Output the number of app threads
-        f.write("\n/* The number of BBOS application threads */\n")
-        f.write("#define BBOS_NUMBER_OF_APPLICATION_THREADS " + str(len(threads)) + "\n")
+    def __output_number_of_app_threads(self):
+        self.f.write("\n/* The number of BBOS application threads */\n")
+        self.f.write("#define BBOS_NUMBER_OF_APPLICATION_THREADS " + str(len(self.threads)) + "\n")
 
-        # Output the switcher macro
-        f.write(BBOS_SWITCHER_TOP)
-        for thread, main_function in zip(threads, main_functions):
-            f.write("    case " + thread.upper() + ": \\\n")
-            f.write("      " + main_function + "(); \\\n")
-            f.write("      break; \\\n")
-        f.write(BBOS_SWITCHER_BOTTOM)
+    def __output_switcher_macro(self):
+        self.f.write(BBOS_SWITCHER_TOP)
+        for thread, main_function in zip(self.threads, self.main_functions):
+            self.f.write("    case " + thread.upper() + ": \\\n")
+            self.f.write("      " + main_function + "(); \\\n")
+            self.f.write("      break; \\\n")
+        self.f.write(BBOS_SWITCHER_BOTTOM)
 
-        # Output the port IDs
-        f.write("\n/* Port IDs */\n")
-        for id in range(0, len(ports)):
-            f.write("#define " + ports[id] + " " + str(id) + "\n")
+    def __output_port_ids(self):
+        self.f.write("\n/* Port IDs */\n")
+        for id in range(0, len(self.ports)):
+            self.f.write("#define " + self.ports[id] + " " + str(id) + "\n")
 
-        # Output the number of ports in this process
-        f.write("\n/* The number of ports in this process */\n")
-        f.write("#define BBOS_NUMBER_OF_PORTS " + str(len(ports)) + "\n")
+    def __output_number_of_ports(self):
+        self.f.write("\n/* The number of ports in this process */\n")
+        self.f.write("#define BBOS_NUMBER_OF_PORTS " + str(len(self.ports)) + "\n")
 
-        # Output the mempools
-        f.write("\n/* Mempool IDs */\n")
-        for id in range(0, len(process.mempools)):
-            f.write("#define " + process.mempools[id] + " " + str(id) + "\n")
-
+    def __output_mempools(self):
+        self.f.write("\n/* Mempool IDs */\n")
+        for id in range(0, len(self.process.mempools)):
+            self.f.write("#define " + self.process.mempools[id] + " " + str(id) + "\n")
         # Output the number of mempools in this process
-        f.write("\n/* The number of mempools in this process */\n")
-        f.write("#define BBOS_NUMBER_OF_MEMPOOLS " + str(len(process.mempools)) + "\n")
+        self.f.write("\n/* The number of mempools in this process */\n")
+        self.f.write("#define BBOS_NUMBER_OF_MEMPOOLS " + str(len(self.process.mempools)) + "\n")
 
-        # Output BBOS driver constants
-        f.write("\n/* BBOS driver constants */\n")
-        for driver in process.drivers:
-            f.write("#define GPIO_DRIVER_NAME \"" + driver.name + "\"\n")
-            f.write("#define GPIO_DRIVER_VERSION " + str(driver.version) + "\n")
+    def __output_driver_constants(self):
+        self.f.write("\n/* BBOS driver constants */\n")
+        for driver in self.process.drivers:
+            self.f.write("#define GPIO_DRIVER_NAME \"" + driver.name + "\"\n")
+            self.f.write("#define GPIO_DRIVER_VERSION " + str(driver.version) + "\n")
 
-        # Output the bootstrapper functions
-        f.write("\n/* BBOS driver bootstrapper functions */\n")
-        f.write("#define bbos_boot_drivers \\\n")
-        for driver in process.drivers:
-            f.write("    " + driver.boot + "(); \\\n")
+    def __output_bootstrapper_functions(self):
+        self.f.write("\n/* BBOS driver bootstrapper functions */\n")
+        self.f.write("#define bbos_boot_drivers \\\n")
+        for driver in self.process.drivers:
+            self.f.write("    " + driver.boot + "(); \\\n")
 
-        # Output the exit functions
-        f.write("\n/* BBOS driver exit functions */\n")
-        f.write("#define bbos_exit_drivers \\\n")
-        for driver in process.drivers:
-            f.write("    " + driver.exit + "(); \\\n")
+    def __output_exit_functions(self):
+        self.f.write("\n/* BBOS driver exit functions */\n")
+        self.f.write("#define bbos_exit_drivers \\\n")
+        for driver in self.process.drivers:
+            self.f.write("    " + driver.exit + "(); \\\n")
 
-        # Output the includes for this process
-        f.write("\n/* The include files we are using  */\n")
-        for include in process.get_include_files():
-            f.write("#include <" + include + ">\n")
+    def __output_includes_for_this_process(self):
+        self.f.write("\n/* The include files we are using  */\n")
+        for include in self.process.get_include_files():
+            self.f.write("#include <" + include + ">\n")
 
-        # Output the static bottom content
-        f.write(BBOS_H_BOTTOM)
+    def __output_static_bottom_content(self):
+        self.f.write(BBOS_H_BOTTOM)
 
-        f.close()
