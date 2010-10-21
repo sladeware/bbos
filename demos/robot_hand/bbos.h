@@ -17,23 +17,14 @@
 /* The number of BBOS application threads */
 #define BBOS_NUMBER_OF_APPLICATION_THREADS 4
 
-/* Application switcher macro */
-#define bbos_application_switcher(id) \
-  switch(id) { \
-    case MOVE: \
-      move(); \
-      break; \
-    case BBOS_IDLE: \
-      bbos_idle(); \
-      break; \
-    case BBOS_IPC: \
-      bbos_ipc(); \
-      break; \
-    case GPIO: \
-      gpio_driver(); \
-      break; \
-    default: \
-      bbos_exit(); \
+/* Application static scheduler macro */
+#define BBOS_SCHEDULER_STATIC
+#define bbos_static_scheduler()  \
+  while(true) { \
+    move(); \
+    bbos_idle(); \
+    bbos_ipc(); \
+    gpio_driver(); \
   }
 
 /* Port IDs */

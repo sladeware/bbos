@@ -20,6 +20,7 @@ finger = BBOSProcess(compiler=BBOSCompiler(),
                      ipc=True,
                      mempools=["MOVE_MESSAGES"],
                      ports=["MOVE_PORT"],
+                     static_scheduler=True,
                      threads=["move"])
 
 PropellerDemoBoard(finger, 12)

@@ -6,7 +6,7 @@ from bbos_compiler import *
 from common import *
 
 class BBOSProcess:
-    def __init__(self, compiler, drivers, files, ipc, mempools, ports, threads):
+    def __init__(self, compiler, drivers, files, ipc, mempools, ports, static_scheduler, threads):
         # The include files used by this process
         self.__includes = []
 
@@ -31,6 +31,9 @@ class BBOSProcess:
 
         # List of ports
         self.ports = verify_list(ports)
+
+        # Choice of static scheduler or default
+        self.static_scheduler = verify_boolean(static_scheduler)
 
         # The list of entry functions for each thread
         self.threads = verify_list(threads)

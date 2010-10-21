@@ -25,16 +25,14 @@ BBOS_H_BOTTOM ="""
 #endif /* __BBOS_H */
 """
 
-BBOS_SWITCHER_TOP="""
-/* Application switcher macro */
-#define bbos_application_switcher(id) \\
-  switch(id) { \\
+BBOS_STATIC_SCHEDULER_TOP="""
+/* Application static scheduler macro */
+#define BBOS_SCHEDULER_STATIC
+#define bbos_static_scheduler()  \\
+  while(true) { \\
 """
 
-BBOS_SWITCHER_BOTTOM="""    default: \\
-      bbos_exit(); \\
-  }
-"""
+BBOS_STATIC_SCHEDULER_BOTTOM="  }\n"
 
 
 class GenerateCode:
@@ -64,7 +62,7 @@ class GenerateCode:
         self.__output_static_top_content()
         self.__output_thread_ids()
         self.__output_number_of_app_threads()
-        self.__output_switcher_macro()
+        self.__output_static_scheduler_macro()
         self.__output_port_ids()
         self.__output_number_of_ports()
         self.__output_mempools()
@@ -87,13 +85,12 @@ class GenerateCode:
         self.f.write("\n/* The number of BBOS application threads */\n")
         self.f.write("#define BBOS_NUMBER_OF_APPLICATION_THREADS " + str(len(self.threads)) + "\n")
 
-    def __output_switcher_macro(self):
-        self.f.write(BBOS_SWITCHER_TOP)
-        for thread, main_function in zip(self.threads, self.main_functions):
-            self.f.write("    case " + thread.upper() + ": \\\n")
-            self.f.write("      " + main_function + "(); \\\n")
-            self.f.write("      break; \\\n")
-        self.f.write(BBOS_SWITCHER_BOTTOM)
+    def __output_static_scheduler_macro(self):
+        if self.process.static_scheduler:
+            self.f.write(BBOS_STATIC_SCHEDULER_TOP)
+            for main_function in self.main_functions:
+                self.f.write("    " + main_function + "(); \\\n")
+            self.f.write(BBOS_STATIC_SCHEDULER_BOTTOM)
 
     def __output_port_ids(self):
         self.f.write("\n/* Port IDs */\n")
