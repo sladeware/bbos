@@ -28,11 +28,13 @@ class BBOSCompiler:
         self.options = verify_list(options)
 
     def get_includes(self):
+        include_string = ""
         for i in self.includes:
-            self.include_string += self.include_argument + " " + i + " "
-        return self.include_string
+            include_string += self.include_argument + " " + i + " "
+        return include_string
 
     def get_options(self):
+        options_string = ""
         for o in self.options:
-            self.options_string += o + " "
-        return self.options_string
+            options_string += o + " "
+        return options_string

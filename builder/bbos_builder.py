@@ -35,7 +35,6 @@ def load_app_config(code_path):
     try:
         try:
             code_dir = os.path.dirname(code_path)
-            code_file = os.path.basename(code_path)
 
             fin = open(code_path, 'rb')
 
@@ -43,7 +42,7 @@ def load_app_config(code_path):
         finally:
             try: fin.close()
             except: pass
-    except ImportError, x:
+    except ImportError:
         traceback.print_exc(file = sys.stderr)
         raise
     except:

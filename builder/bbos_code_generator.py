@@ -60,7 +60,7 @@ class GenerateCode:
         filename = directory + "/bbos.h"
         try:
             self.f = open(filename, "w")
-        except IOError, e:
+        except IOError:
             print "\nThere were problems writing to %s\n" % filename
             traceback.print_exc(file = sys.stderr)
             raise
@@ -86,8 +86,8 @@ class GenerateCode:
 
     def __output_thread_ids(self):
         self.f.write("/* Thread IDs */\n")
-        for id in range(0, len(self.threads)):
-            self.f.write("#define " + self.threads[id].upper() + " " + str(id) + "\n")
+        for thread_id in range(0, len(self.threads)):
+            self.f.write("#define " + self.threads[thread_id].upper() + " " + str(thread_id) + "\n")
 
     def __output_number_of_app_threads(self):
         self.f.write("\n/* The number of BBOS application threads */\n")
@@ -102,8 +102,8 @@ class GenerateCode:
 
     def __output_port_ids(self):
         self.f.write("\n/* Port IDs */\n")
-        for id in range(0, len(self.ports)):
-            self.f.write("#define " + self.ports[id] + " " + str(id) + "\n")
+        for port_id in range(0, len(self.ports)):
+            self.f.write("#define " + self.ports[port_id] + " " + str(port_id) + "\n")
 
     def __output_number_of_ports(self):
         self.f.write("\n/* The number of ports in this process */\n")
@@ -111,8 +111,8 @@ class GenerateCode:
 
     def __output_mempools(self):
         self.f.write("\n/* Mempool IDs */\n")
-        for id in range(0, len(self.process.mempools)):
-            self.f.write("#define " + self.process.mempools[id] + " " + str(id) + "\n")
+        for mempool_id in range(0, len(self.process.mempools)):
+            self.f.write("#define " + self.process.mempools[mempool_id] + " " + str(mempool_id) + "\n")
         # Output the number of mempools in this process
         self.f.write("\n/* The number of mempools in this process */\n")
         self.f.write("#define BBOS_NUMBER_OF_MEMPOOLS " + str(len(self.process.mempools)) + "\n")
