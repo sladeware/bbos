@@ -1,8 +1,14 @@
 # 
 # Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
 #
+# The BBOS compiler class represents all that is required by compilers used to
+# build your application. Each core's compiler in the system may require
+# different arguments, executables, library paths, source files and include
+# paths in order to produce a binary for your process running on that core.
+#
 
 from common import *
+
 
 class BBOSCompiler:
     def __init__(self, base=None, includes=None, include_argument=None, name=None, options=None):

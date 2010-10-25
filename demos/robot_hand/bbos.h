@@ -24,21 +24,20 @@
     move(); \
     bbos_idle(); \
     bbos_ipc(); \
-    gpio_driver(); \
+    gpio_driver_main(); \
   }
 
 /* Port IDs */
-#define MOVE_PORT 0
+#define FINGER_PORT 0
 #define GPIO_DRIVER_PORT 1
 
 /* The number of ports in this process */
 #define BBOS_NUMBER_OF_PORTS 2
 
 /* Mempool IDs */
-#define MOVE_MESSAGES 0
 
 /* The number of mempools in this process */
-#define BBOS_NUMBER_OF_MEMPOOLS 1
+#define BBOS_NUMBER_OF_MEMPOOLS 0
 
 /* BBOS driver constants */
 #define GPIO_DRIVER_NAME "gpio"

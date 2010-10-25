@@ -1,37 +1,22 @@
 # 
 # Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
 #
+# The Propeller Demo Board from Parallax is a compact platform designed to
+# demostrate all of the various capabilities of the P8X32A processor. It
+# provides connections and supporting devices to demostrate video, sound,
+# mouse, keyboard and provides a USB interface for programming. There are
+# 8 unused I/O pins for experimentation. There are 8 LEDs, a reset push
+# button, an on/off switch and a 24LC256-I/ST EEPROM for program storage.
+# It has a 5.000MHz replacable crystal oscillator.
+#
 
 from bbos_board import BBOSBoard
 from common import *
+from propeller_p8x32a import *
+
 
 class PropellerDemoBoard(BBOSBoard):
-    def __init__(self, process, amount_of_memory):
-        BBOSBoard.__init__(self, process)
+    def __init__(self, processes, memsize):
+        processors = [PropellerP8X32A(processes, memsize)]
+        BBOSBoard.__init__(self, processors)
 
-        verify_int(amount_of_memory)
-        self.amount_of_memory = amount_of_memory
-        assert self.amount_of_memory in (1, 5, 12), "amount_of_memory must be 1, 5 or 12: %d" % self.amount_of_memory
-
-        # Modify includes
-        self.process.append_include_files("propeller_demo_board.h")
-
-        # Modify compiler include directories
-        if self.process.compiler.includes:
-            print "WARNING: Overwriting preexisting compiler include directories"
-        self.process.compiler.includes = []
-
-        # Modify compiler include argument
-        if self.process.compiler.include_argument:
-            print "WARNING: Overwriting preexisting compiler include argument"
-        self.process.compiler.include_argument = "-I"
-
-        # Modify compiler name
-        if self.process.compiler.name:
-            print "WARNING: Overwriting preexisting compiler name"
-        self.process.compiler.name = "catalina"
-
-        # Modify compiler options
-        if self.process.compiler.options:
-            print "WARNING: Overwriting preexisting compiler options"
-        self.process.compiler.options = "-DDEMO -m " + str(self.amount_of_memory)

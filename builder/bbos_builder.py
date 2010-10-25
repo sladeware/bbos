@@ -7,6 +7,7 @@ from common import *
 from bbos_application import *
 from bbos_compiler import *
 from bbos_driver import *
+from bbos_code_builder import *
 from bbos_code_generator import *
 from bbos_process import *
 import sys
@@ -29,6 +30,7 @@ def usage():
     -a=FILE, --application_configuration=FILE : Load the application configuration from FILE
     """
 
+# Dynamically load the user defined bbos.py module
 def load_app_config(code_path):
     try:
         try:
@@ -47,7 +49,26 @@ def load_app_config(code_path):
     except:
         traceback.print_exc(file = sys.stderr)
         raise
-    
+
+# Here we do the primary work of the BBOS builder -- i.e. generate and build code.
+def do_it(code_path):
+    # Dynamically load the user defined bbos.py module and verify the output
+    (directory, module) = load_app_config(code_path)
+    verify_string(directory)
+    application = module.application
+    assert application, "You must define the application variable in bbos.py"
+    assert isinstance(application, BBOSApplication), "The application variable must be a BBOSApplication type"
+
+    # Generate the late binding applicaiton source code
+    g = GenerateCode(directory, application)
+    assert g
+    g.generate()
+
+    # Builde the application code
+    b = BuildCode(directory, application)
+    assert b
+    b.build()
+
 def main(argv=None):
     if argv is None:
         argv = sys.argv
@@ -58,8 +79,7 @@ def main(argv=None):
              raise Usage(msg)
         for o, a in opts:
             if o in ("-a", "--application_configuration"):
-                g = GenerateCode(load_app_config(a))
-                g.generate()
+                do_it(a)
             elif o in ("-h", "--help"):
                 usage()
             else:

@@ -1,9 +1,14 @@
 # 
 # Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
 #
+# A process is executable software running in its own context of execution on a
+# core. A process contains threads, which are time shared on the same core
+# in a cooperatively scheduled non-preemptive manner.
+#
 
 from bbos_compiler import *
 from common import *
+
 
 class BBOSProcess:
     def __init__(self, compiler, drivers, files, ipc, mempools, ports, static_scheduler, threads):

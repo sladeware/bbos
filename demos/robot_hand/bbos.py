@@ -9,7 +9,9 @@ gpio_driver = BBOSDriver(
     name="gpio",
     version=2,
     ports=["GPIO_DRIVER_PORT"],
-    handlers=["gpio_driver_init","gpio_driver_main","gpio_driver_exit"],
+    boot="gpio_driver_init",
+    main="gpio_driver_main",
+    exit="gpio_driver_exit",
     files=["/hardware/driver/gpio.c", "/hardware/driver/propeller.c"],
     )
 
@@ -25,15 +27,13 @@ finger = BBOSProcess(
 )
 
 board = PropellerDemoBoard(
-    process=finger,
-    config={
-        'memsize': 32
-        }
+    processes=[finger],
+    memsize=32
     )
     
 
 application = BBOSApplication(
     name="RobotHand",
-    devices=[board]
+    boards=[board]
     )
 

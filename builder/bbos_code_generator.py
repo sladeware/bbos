@@ -7,6 +7,9 @@
 # C macro language is seriously underpowered for our purposes.
 #
 
+import sys
+import traceback
+
 BBOS_H_TOP ="""
 /*
  * Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
@@ -36,15 +39,12 @@ BBOS_STATIC_SCHEDULER_BOTTOM="  }\n"
 
 
 class GenerateCode:
-    def __init__(self, config):
-        self.config = config
-
-        assert self.config[1].application, "You must define the application variable in bbos.py"
-
-        assert len(self.config[1].application.processes) == 1, "Right now we can handle only one process."
+    def __init__(self, directory, application):
+        processes = application.get_processes()
+        assert len(processes) == 1, "Right now we can handle only one process."
 
         # The process we're genearting code for
-        self.process = self.config[1].application.processes[0]
+        self.process = processes[0]
 
         # The list of threads within the process
         self.threads = self.process.threads + [d.name for d in self.process.drivers]
@@ -53,12 +53,20 @@ class GenerateCode:
         self.main_functions = self.process.threads + [d.main for d in self.process.drivers]
 
         # The list of ports
-        self.ports = self.process.ports + [d.port for d in self.process.drivers]
+        for ports in [d.ports for d in self.process.drivers]:
+            self.ports = self.process.ports + ports
 
         # Open the header file we're outputing to
-        self.f = open(self.config[0] + "/bbos.h", "w")
-        
+        filename = directory + "/bbos.h"
+        try:
+            self.f = open(filename, "w")
+        except IOError, e:
+            print "\nThere were problems writing to %s\n" % filename
+            traceback.print_exc(file = sys.stderr)
+            raise
+
     def generate(self):
+        print "Generating code..."
         self.__output_static_top_content()
         self.__output_thread_ids()
         self.__output_number_of_app_threads()
