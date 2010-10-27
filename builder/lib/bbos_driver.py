@@ -1,9 +1,10 @@
-# 
-# Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
-#
-# A BBOS driver is a special type of thread that has a well defined
-# interface designed to support hardware.
-#
+"""Class used to represent a driver thread within BBOS.
+
+A BBOS driver is a special type of thread that has a well defined
+interface designed to support hardware.
+"""
+
+__copyright__ = "Copyright (c) 2010 Slade Maurer, Alexander Sviridenko"
 
 from common import *
 

@@ -1,17 +1,24 @@
-#!/usr/bin/python
-# 
-# Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
-#
-# Generate the source code for the bbos.h header file used to late bind BBOS
-# processes, threads and etc just before building. We need this since the
-# C macro language is seriously underpowered for our purposes.
-#
+"""Class used to generate C source code used by BBOS for late binding.
 
+Generate the source code for the bbos.h header file used to late bind BBOS
+processes, threads and etc just before building. We need this since the
+C macro language is seriously underpowered for our purposes.
+"""
+
+__copyright__ = "Copyright (c) 2010 Slade Maurer, Alexander Sviridenko"
+
+from common import *
 import sys
+import tempfile
 import traceback
 
 BBOS_H_TOP ="""
 /*
+ * This is BBOS generated source code used for late binding application
+ * features just before compile time.
+ *
+ * Please do not edit this by hand, as your changes will be lost.
+ *
  * Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
  */
 
@@ -39,12 +46,9 @@ BBOS_STATIC_SCHEDULER_BOTTOM="  }\n"
 
 
 class GenerateCode:
-    def __init__(self, directory, application):
-        processes = application.get_processes()
-        assert len(processes) == 1, "Right now we can handle only one process."
-
-        # The process we're genearting code for
-        self.process = processes[0]
+    def __init__(self, directory, process, test=False):
+        # The process we're generating code for
+        self.process = process
 
         # The list of threads within the process
         self.threads = self.process.threads + [d.name for d in self.process.drivers]
@@ -56,14 +60,20 @@ class GenerateCode:
         for ports in [d.ports for d in self.process.drivers]:
             self.ports = self.process.ports + ports
 
-        # Open the header file we're outputing to
-        filename = directory + "/bbos.h"
-        try:
-            self.f = open(filename, "w")
-        except IOError:
-            print "\nThere were problems writing to %s\n" % filename
-            traceback.print_exc(file = sys.stderr)
-            raise
+        self.test = test
+
+        if not self.test:
+            self.test = False
+            # Open the header file we're outputing to
+            filename = directory + BBOS_HEADER
+            try:
+                self.f = open(filename, "w")
+            except IOError:
+                print "\nThere were problems writing to %s\n" % filename
+                traceback.print_exc(file = sys.stderr)
+                raise
+        else:
+            self.f = tempfile.TemporaryFile()
 
     def generate(self):
         print "Generating code..."
@@ -79,7 +89,13 @@ class GenerateCode:
         self.__output_exit_functions()
         self.__output_includes_for_this_process()
         self.__output_static_bottom_content()
-        self.f.close()
+        if not self.test:
+            self.f.close()
+        else:
+            self.f.seek(0)
+            lines = self.f.readlines()
+            self.f.close()
+            return lines
 
     def __output_static_top_content(self):
         self.f.write(BBOS_H_TOP)

@@ -1,10 +1,11 @@
-# 
-# Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
-#
-# A BBOS application contains all the software and hardware resources of your
-# system. It is the highest level in the application hierachy. An application
-# contains boards, which are what your software runs on.
-#
+"""Class representing a BBOS application, encapsulating a full system.
+
+A BBOS application contains all the software and hardware resources of your
+system. It is the highest level in the application hierachy. An application
+contains boards, which are what your software runs on.
+"""
+
+__copyright__ = "Copyright (c) 2010 Slade Maurer, Alexander Sviridenko"
 
 from bbos_board import *
 from common import *

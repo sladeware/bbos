@@ -1,11 +1,12 @@
-# 
-# Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
-#
-# The BBOS compiler class represents all that is required by compilers used to
-# build your application. Each core's compiler in the system may require
-# different arguments, executables, library paths, source files and include
-# paths in order to produce a binary for your process running on that core.
-#
+"""Class representing all that is required to operate a compiler.
+
+The BBOS compiler class represents all that is required by compilers used to
+build your application. Each core's compiler in the system may require
+different arguments, executables, library paths, source files and include
+paths in order to produce a binary for your process running on that core.
+"""
+
+__copyright__ = "Copyright (c) 2010 Slade Maurer, Alexander Sviridenko"
 
 from common import *
 

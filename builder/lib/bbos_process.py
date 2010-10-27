@@ -1,10 +1,11 @@
-# 
-# Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
-#
-# A process is executable software running in its own context of execution on a
-# core. A process contains threads, which are time shared on the same core
-# in a cooperatively scheduled non-preemptive manner.
-#
+"""Class used to represent a single context of execution within BBOS.
+
+A process is executable software running in its own context of execution on a
+core. A process contains threads, which are time shared on the same core
+in a cooperatively scheduled non-preemptive manner.
+"""
+
+__copyright__ = "Copyright (c) 2010 Slade Maurer, Alexander Sviridenko"
 
 from bbos_compiler import *
 from common import *

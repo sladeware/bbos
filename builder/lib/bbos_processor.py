@@ -1,10 +1,12 @@
-# 
-# Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
-#
-# A processor contains one or more cores. It is a discrete semiconductor based
-# device used for computation. For example, the PIC32MX5 microcontroller is a
-# processor.
-#
+"""
+Base class used for creating a BBOS processor.
+
+A processor contains one or more cores. It is a discrete semiconductor based
+device used for computation. For example, the PIC32MX5 microcontroller is a
+processor.
+"""
+
+__copyright__ = "Copyright (c) 2010 Slade Maurer, Alexander Sviridenko"
 
 from bbos_core import *
 from common import *

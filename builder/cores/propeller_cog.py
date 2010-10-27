@@ -1,16 +1,17 @@
-# 
-# Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
-#
-# A "cog" is a CPU contained within the Propeller processor. Cogs are designed
-# to run independently and concurrently within the same silicon die. They have
-# their own internal memory, configurable counters, video generators and access
-# to I/O pins as well as the system clock. All the cogs in the processor share
-# access to global resources sych as the main RAM/ROM, synchronization resources
-# and specialized monitoring capabilities to know what the other cogs are doing.
-#
+"""Parallax Propeller processor's cog core.
 
-from bbos_core import *
-from common import *
+A "cog" is a CPU contained within the Propeller processor. Cogs are designed
+to run independently and concurrently within the same silicon die. They have
+their own internal memory, configurable counters, video generators and access
+to I/O pins as well as the system clock. All the cogs in the processor share
+access to global resources sych as the main RAM/ROM, synchronization resources
+and specialized monitoring capabilities to know what the other cogs are doing.
+"""
+
+__copyright__ = "Copyright (c) 2010 Slade Maurer, Alexander Sviridenko"
+
+from lib.bbos_core import *
+from lib.common import *
 
 
 class PropellerCog(BBOSCore):

@@ -1,9 +1,10 @@
-# 
-# Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
-#
-# A Core is the smallest computational unit supported by BBOS. There is one
-# core per processes and one process per core.
-#
+"""Base class used to represent a core within a processor.
+
+A Core is the smallest computational unit supported by BBOS. There is one
+core per processes and one process per core.
+"""
+
+__copyright__ = "Copyright (c) 2010 Slade Maurer, Alexander Sviridenko"
 
 from bbos_process import *
 from common import *

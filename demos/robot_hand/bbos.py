@@ -1,9 +1,9 @@
-from bbos_application import *
-from bbos_board import *
-from bbos_compiler import *
-from bbos_driver import *
-from bbos_process import *
-from propeller_demo_board import *
+from lib.bbos_application import *
+from lib.bbos_board import *
+from lib.bbos_compiler import *
+from lib.bbos_driver import *
+from lib.bbos_process import *
+from boards.propeller_demo_board import *
 
 gpio_driver = BBOSDriver(
     name="gpio",

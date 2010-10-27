@@ -1,15 +1,17 @@
 #!/usr/bin/python
-# 
-# Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
-#
 
-from common import *
-from bbos_application import *
-from bbos_compiler import *
-from bbos_driver import *
-from bbos_code_builder import *
-from bbos_code_generator import *
-from bbos_process import *
+"""Main program for generating code and building a BBOS application.
+"""
+
+__copyright__  = "Copyright (c) 2010 Slade Maurer, Alexander Sviridenko"
+
+from lib.common import *
+from lib.bbos_application import *
+from lib.bbos_compiler import *
+from lib.bbos_driver import *
+from lib.bbos_code_builder import *
+from lib.bbos_code_generator import *
+from lib.bbos_process import *
 import sys
 import getopt
 import md5
@@ -49,8 +51,8 @@ def load_app_config(code_path):
         traceback.print_exc(file = sys.stderr)
         raise
 
-# Here we do the primary work of the BBOS builder -- i.e. generate and build code.
 def do_it(code_path):
+    """Do the primary work of the BBOS builder; we generate and build code."""
     # Dynamically load the user defined bbos.py module and verify the output
     (directory, module) = load_app_config(code_path)
     verify_string(directory)
@@ -58,15 +60,19 @@ def do_it(code_path):
     assert application, "You must define the application variable in bbos.py"
     assert isinstance(application, BBOSApplication), "The application variable must be a BBOSApplication type"
 
-    # Generate the late binding applicaiton source code
-    g = GenerateCode(directory, application)
-    assert g
-    g.generate()
+    for process in application.get_processes():
+        # Generate the late binding application source code
+        g = GenerateCode(directory, process)
+        g.generate()
 
-    # Builde the application code
-    b = BuildCode(directory, application)
-    assert b
-    b.build()
+        # Build the application code
+        b = BuildCode(directory, process)
+        b.build()
+
+        # Cleanup after this process
+        header_file = directory + BBOS_HEADER
+        print "Removing " + header_file + " ..."
+        os.remove(header_file)
 
 def main(argv=None):
     if argv is None:

@@ -1,10 +1,12 @@
-# 
-# Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
-#
-# Common subroutines used within the BBOS builder.
-#
+"""Common subroutines used within the BBOS builder.
+"""
+
+__copyright__ = "Copyright (c) 2010 Slade Maurer, Alexander Sviridenko"
 
 from types import *
+
+# This is the C header file we are code generating that connects it all together
+BBOS_HEADER = "/bbos.h"
 
 def verify_boolean(var):
     if var:
