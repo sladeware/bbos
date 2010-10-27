@@ -1,7 +1,7 @@
 /*
  * Thread.
  *
- * Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
+ * Copyright (c) ???? Slade Maurer, Alexander Sviridenko
  */
 
 #ifndef __BBOS_THREAD_H
@@ -11,26 +11,12 @@
 extern "C" {
 #endif
 
-/* 
- * Release the processor non-preemtively.
+/*
+ * Number of application threads. Assume as 0 unless it was defined.
  */
-#ifndef bbos_thread_switch
-#define bbos_thread_switch bbos_thread_dummy_switch
-
-/**
- * bbos_thread_dummy_switch - Dummy thread switcher.
- * @tid: Thread identifier.
- *
- * Return value:
- *
- * Always returns BBOS_SUCCESS code.
- */
-static bbos_return_t
-bbos_thread_dummy_switch(bbos_thread_id_t tid)
-{
-  return BBOS_SUCCESS;
-}
-#endif /* bbos_thread_switch */
+#ifndef BBOS_NUMBER_OF_APPLICATION_THREADS
+#define BBOS_NUMBER_OF_APPLICATION_THREADS 0
+#endif /* BBOS_NUMBER_OF_APPLICATION_THREADS */
 
 /*
  * Number of system threads, where the system threads are:
@@ -39,43 +25,25 @@ bbos_thread_dummy_switch(bbos_thread_id_t tid)
 #define BBOS_NUMBER_OF_SYSTEM_THREADS 1
 
 /*
- * Number of config threads. Assume as 0 unless it was defined.
+ * Some well known system thread id's.
  */
-#ifndef BBOS_NUMBER_OF_CONFIG_THREADS
-#define BBOS_NUMBER_OF_CONFIG_THREADS 0
-#endif /* BBOS_NUMBER_OF_CONFIG_THREADS */
+#define BBOS_IDLE_ID (BBOS_NUMBER_OF_APPLICATION_THREADS + 0)
 
 /*
- * Total number of threads equals to number of config threads plus
+ * Total number of threads equals to number of application threads plus
  * number of system threads.
  */
-#define BBOS_NUMBER_OF_THREADS						\
-  (BBOS_NUMBER_OF_CONFIG_THREADS + BBOS_NUMBER_OF_SYSTEM_THREADS)
+#define BBOS_NUMBER_OF_THREADS (BBOS_NUMBER_OF_APPLICATION_THREADS + BBOS_NUMBER_OF_SYSTEM_THREADS)
 
 /*
  * Some well known thread id's.
  */
-#define BBOS_IDLE_THREAD_ID (BBOS_NUMBER_OF_CONFIG_THREADS + 0)
+#define BBOS_IDLE_THREAD_ID (BBOS_NUMBER_OF_APPLICATION_THREADS + 0)
 
-/*
- * Some well known thread priorities.
- */
-#define BBOS_THREAD_LOWEST_PRIORITY (BBOS_THREAD_MAX_PRIORITY_VALUE)
-#define BBOS_IDLE_THREAD_PRIORITY BBOS_THREAD_LOWEST_PRIORITY
-
-/**
- * struct bbos_thread - The thread management structure.
- * @priority: Thread priority.
- * @next: Next thread identifier.
- * @prev: Previous thread identifier.
- */
+/* Thread management structure */
 struct bbos_thread {
-  /* General fields */
-  bbos_thread_priority_t priority;
-
-  /* Scheduling fields */
-  bbos_thread_id_t next;
-  bbos_thread_id_t prev;
+  bbos_thread_id_t id;
+  void (*action)();
 };
 
 /* The type of the thread management structure. */
@@ -94,21 +62,9 @@ typedef struct bbos_thread bbos_thread_t;
 
 extern bbos_thread_t bbos_thread_table[BBOS_NUMBER_OF_THREADS];
 
-/* Well known idle thread structure */
-#define bbos_idle_thread (bbos_thread_table[BBOS_IDLE_THREAD_ID])
-
 /* Prototypes */
 
-bbos_return_t bbos_thread_init(bbos_thread_id_t tid, 
-  bbos_thread_priority_t prio);
-
-bbos_thread_priority_t bbos_thread_get_priority(bbos_thread_id_t tid);
-
-void bbos_thread_set_priority(bbos_thread_id_t tid, bbos_thread_priority_t prio);
-
-bbos_return_t bbos_thread_resume(bbos_thread_id_t tid);
-
-bbos_return_t bbos_thread_suspend(bbos_thread_id_t tid);
+bbos_return_t bbos_thread_init(bbos_thread_id_t id, void *action);
 
 #ifdef __cplusplus
 }

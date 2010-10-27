@@ -1,5 +1,7 @@
 /*
- * Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
+ * Memory management.
+ *
+ * Copyright (c) ???? Slade Maurer, Alexander Sviridenko
  */
 
 #ifndef __BBOS_MM_H

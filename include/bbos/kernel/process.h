@@ -1,5 +1,7 @@
 /*
- * Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
+ * Process.
+ *
+ * Copyright (c) ???? Slade Maurer, Alexander Sviridenko
  */
 
 #ifndef __BBOS_PROCESS_H
@@ -9,23 +11,17 @@
 extern "C" {
 #endif
 
-/* Threads */
 #include <bbos/kernel/process/thread.h>
-
-/* Scheduler */
 #include <bbos/kernel/process/scheduler.h>
+#include <bbos/kernel/process/port.h>
 
-/* Inter-thread communication support */
-#include <bbos/kernel/process/itc.h>
+/* Include system threads */
+#include <bbos/kernel/process/thread/idle.h>
 
 /* Prototypes */
 
 void bbos_process_init();
-
-void bbos_process_test();
-
 void bbos_process_start();
-
 void bbos_process_stop();
 
 #ifdef __cplusplus

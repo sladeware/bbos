@@ -46,5 +46,9 @@
 /* Inter-process communication support */
 #include <bbos/kernel/ipc.h>
 
+/* Application support */
+#include <bbos/kernel/application.h>
+
 #endif /* __BBOS_KERNEL_H */
+
 

@@ -1,33 +1,19 @@
 
 #include <bbos.h>
 
-void
-print_hello_world()
-{
-	printf("%s", "Hello world from the idle thread!\n");
-	printf("%s", "Bye!\n");
-	exit(0);
+void hello_world() {
+  printf("Hello world!\n");
 }
 
-bbos_return_t
-my_switcher(bbos_thread_id_t tid)
-{
-	switch(tid) {
-		case BBOS_IDLE_THREAD_ID:
-			print_hello_world();
-			break;
-  }
-  return BBOS_SUCCESS;
+void bbos_application_init() {
+  bbos_thread_init(HELLO_WORLD_ID, hello_world);
 }
 
-int
-main()
-{
-	bbos_init();
+void bbos_application_exit() {
+}
 
-	bbos_start();
-
-	return 0;
+int main() {
+  return bbos_main();
 }
 
 

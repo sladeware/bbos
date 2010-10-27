@@ -7,9 +7,13 @@
 
 #include <bbos.h>
 
+#if BBOS_NUMBER_OF_MEMPOOLS > 0
+
+struct bbos_mempool bbos_mempool_table[BBOS_NUMBER_OF_MEMPOOLS];
+
 /**
  * bbos_mempool_init - Initialize memory pool.
- * @pool: Pointer to the pool structure.
+ * @id: Memory pool identifier.
  * @part: Pointer to the memory partition.
  * @n_blocks: Number of blocks in partition.
  * @block_sz: Number of bytes in each memory block.
@@ -22,19 +26,24 @@
  *
  * As close block size or number of blocks to the power of 2, as faster.
  *
+ * It is the application’s responsibility to manage the memory area
+ * associated with the pool, which is available after this service completes.
+ * In addition, the application must prevent use of a deleted pool or memory
+ * previously allocated from it.
+ *
  * Complexity:
  *
  * O(n_blocks), where n_blocks is the number of blocks in partition.
  */
 bbos_return_t
-bbos_mempool_init(struct bbos_mempool *pool, const void *part, uint16_t n, 
+bbos_mempool_init(bbos_mempool_id_t id, const void *part, uint16_t n, 
   uint16_t sz)
 {
   /* Initialize pool */
-  pool->next_free_block = (bbos_mempool_block_t *)part;
+  bbos_mempool_table[id].next_free_block = (bbos_mempool_block_t *)part;
 
   /* Initialize/Format memory partition */
-  bbos_mempool_resize(pool, part, n, sz);
+  bbos_mempool_resize(id, part, n, sz);
 
   return BBOS_SUCCESS;
 }
@@ -53,7 +62,7 @@ bbos_mempool_init(struct bbos_mempool *pool, const void *part, uint16_t n,
  * O(n_blocks), where n_blocks is the number of blocks in partition.
  */
 void
-bbos_mempool_resize(bbos_mempool_t *pool, const void *part, uint16_t n_blocks, 
+bbos_mempool_resize(bbos_mempool_id_t id, const void *part, uint16_t n_blocks, 
   uint16_t block_sz)
 {
   uint16_t block_id;
@@ -73,7 +82,7 @@ bbos_mempool_resize(bbos_mempool_t *pool, const void *part, uint16_t n_blocks,
 }
 
 /**
- * bbos_mempool_allocate - Allocate next free memory block from the memory
+ * bbos_mempool_alloc - Allocate next free memory block from the memory
  * pool.
  * @pool: Pointer to the target memory pool.
  *
@@ -86,15 +95,15 @@ bbos_mempool_resize(bbos_mempool_t *pool, const void *part, uint16_t n_blocks,
  * O(1)
  */
 void *
-bbos_mempool_allocate(bbos_mempool_t *pool)
+bbos_mempool_alloc(bbos_mempool_id_t id)
 {
   bbos_mempool_block_t *block;
 
-  assert(pool); // check for NULL pointer
+  assert(id < BBOS_NUMBER_OF_MEMPOOLS); // check for NULL pointer
 
   /* Get next free memory block and move to the next one if possible */
-  if ((block = pool->next_free_block) != NULL) {
-    pool->next_free_block = block->next;
+  if ((block = bbos_mempool_table[id].next_free_block) != NULL) {
+    bbos_mempool_table[id].next_free_block = block->next;
   }
 
   /* Return pointer to the next free memory block */
@@ -111,11 +120,11 @@ bbos_mempool_allocate(bbos_mempool_t *pool)
  * O(1)
  */
 void
-bbos_mempool_free(bbos_mempool_t *pool, void *addr)
+bbos_mempool_free(bbos_mempool_id_t id, void *addr)
 {
   bbos_mempool_block_t *block;
 
-  assert(pool); // check for NULL pointer
+  assert(id < BBOS_NUMBER_OF_MEMPOOLS);
 
   /* Don't attempt to free a NULL pointer */
   if (addr == NULL) {
@@ -125,24 +134,9 @@ bbos_mempool_free(bbos_mempool_t *pool, void *addr)
   block = (bbos_mempool_block_t *)addr;
 
   /* Connect block with the chain of free blocks */
-  block->next = pool->next_free_block;
-  pool->next_free_block = block;
+  block->next = bbos_mempool_table[id].next_free_block;
+  bbos_mempool_table[id].next_free_block = block;
 }
 
 
-/**
- * bbos_mempool_destroy - Destroy memory pool.
- * @pool: Pointer to the memory pool.
- *
- * Note:
- *
- * It is the application’s responsibility to manage the memory area
- * associated with the pool, which is available after this service completes.
- * In addition, the application must prevent use of a deleted pool or memory
- * previously allocated from it.
- */
-void
-bbos_mempool_destroy(struct bbos_mempool *pool)
-{
-}
-
+#endif

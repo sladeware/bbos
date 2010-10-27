@@ -10,7 +10,7 @@
 #define HAVE_STDINT_H
 #define HAVE_STDDEF_H
 
-#define bbos_thread_switch my_switcher
+#define HELLO_WORLD_ID 0
 
 #include <bbos/compiler.h>
 #include <bbos/kernel.h>

@@ -36,14 +36,6 @@ struct bbos_device {
 
 /* Prototypes */
 
-bbos_return_t bbos_device_init(struct bbos_device *dev, bbos_device_id_t id);
-
-bbos_return_t bbos_device_register(struct bbos_device *dev, bbos_thread_id_t tid, int8_t *name,
-				   int16_t version, int8_t *config, void *private);
-
-bbos_return_t bbos_device_unregister(struct bbos_device *dev);
-
-bbos_return_t bbos_device_destroy(struct bbos_device *dev);
 
 #endif /* __BBOS_HARDWARE_DEVICE_H */
 

@@ -25,6 +25,11 @@ gpio_init()
 }
 
 void
+gpio_exit()
+{
+}
+
+void
 GPIO_DIRECTION_INPUT(struct gpio_chip *chip, unsigned pin)
 {
   unsigned int mask;

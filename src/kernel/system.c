@@ -1,7 +1,5 @@
 /*
  * System.
- *
- * Copyright (c) ???? Slade Maurer, Alexander Sviridenko
  */
 
 #include <bbos.h>
@@ -10,6 +8,56 @@
 const int8_t bbos_banner[] = "BBOS version " BBOS_VERSION_STR "\n";
 
 enum bbos_system_states bbos_system_state;
+
+/**
+ * bbos_init - BBOS initialization.
+ *
+ * Note:
+ *
+ * The service must be called prior to calling bbos_start which will
+ * actually start the system.
+ */
+void
+bbos_init()
+{
+  /* Start the system initialization */
+  bbos_system_state = BBOS_SYSTEM_INITIALIZATION;
+
+  printf("%s", bbos_banner);
+
+  bbos_hardware_init();
+  bbos_process_init();
+
+#ifdef BBOS_IPC
+  bbos_ipc_init();
+#endif
+}
+
+/**
+ * bbos_test - Test settings and components.
+ */
+void
+bbos_test()
+{
+  bbos_system_state = BBOS_SYSTEM_TESTING;
+
+  printf("System testing\n");
+
+  /* It seems to be fine */
+}
+
+void
+bbos_exit()
+{
+  /* Do the application specific exit point first */
+  bbos_application_exit();
+
+#ifdef BBOS_IPC
+  bbos_ipc_exit();
+#endif
+
+  exit(0);
+}
 
 /**
  * bbos_panic - Halt the system.
@@ -30,51 +78,13 @@ bbos_panic(const char *fmt, ...)
   va_list args;
 
   va_start(args, fmt);
-  //vsnprintf(buf, sizeof(buf), fmt, args);
+  vsnprintf(buf, sizeof(buf), fmt, args);
   va_end(args);
 
   printf("Panic: %s\n", buf);
 
   /* Exit with error */
-  //exit(1);
-}
-
-/**
- * bbos_init - BBOS initialization.
- *
- * Note:
- *
- * The service must be called prior to calling bbos_start which will
- * actually start the system.
- */
-void
-bbos_init()
-{
-  /* BBOS_SYSTEM_BOOTING? */
-
-  printf("%s", bbos_banner);
-
-  /* Start the system initialization */
-  bbos_system_state = BBOS_SYSTEM_INITIALIZATION;
-
-  /* Initialize hardware */
-  printf("Initialize hardware\n");
-  bbos_hardware_init();
-
-  printf("Initialize process\n");
-  bbos_process_init();
-
-  // Initialize inter-process communication here
-  // bbos_ipc_init();
-}
-
-/**
- * bbos_test - Test settings and components.
- */
-void
-bbos_test()
-{
-  /* It seems to be fine */
+  bbos_exit();
 }
 
 /**
@@ -91,11 +101,8 @@ bbos_start()
     bbos_panic("BBOS was not initialized!\n");
   }
 
-  /* Perform system test */
-  bbos_system_state = BBOS_SYSTEM_TESTING;
-  bbos_test();
-
   printf("Start process\n");
+
   bbos_system_state = BBOS_SYSTEM_RUNNING;
   bbos_process_start();
 }
@@ -106,9 +113,38 @@ bbos_start()
 void
 bbos_stop()
 {
-  /* Stop process */
   bbos_process_stop();
-
-  exit(0);
 }
+
+/**
+ * bbos_main - Main entry point for the BBOS.
+ *
+ * Description:
+ *
+ * Called from main().
+ *
+ * Return value:
+ *
+ * Generic error code.
+ */
+bbos_return_t
+bbos_main()
+{
+  /* Start entire system */
+  bbos_init();
+
+  /* Initialize application */
+  bbos_application_init();
+
+#ifdef BBOS_TEST
+  /* Initiate system test */
+  bbos_test();
+#endif
+
+  /* Start the system */
+  bbos_start();
+
+  return BBOS_SUCCESS;
+}
+
 

@@ -10,6 +10,8 @@
 extern "C" {
 #endif
 
+#if BBOS_NUMBER_OF_MEMPOOLS > 0
+
 /**
  * struct bbos_mempool_block - The memory block structure.
  * @next: Pointer to the next free memory block.
@@ -20,6 +22,8 @@ struct bbos_mempool_block {
 };
 
 typedef struct bbos_mempool_block bbos_mempool_block_t;
+
+extern struct bbos_mempool bbos_mempool_table[BBOS_NUMBER_OF_MEMPOOLS];
 
 /**
  * struct bbos_mempool - The memory pool structure.
@@ -52,17 +56,19 @@ typedef struct bbos_mempool bbos_mempool_t;
 
 /* Prototypes */
 
-bbos_return_t bbos_mempool_init(struct bbos_mempool *pool, const void *part, 
+bbos_return_t bbos_mempool_init(bbos_mempool_id_t id, const void *part, 
   uint16_t num_blocks, uint16_t block_sz);
 
-void bbos_mempool_resize(struct bbos_mempool *pool, const void *part, 
+void bbos_mempool_resize(bbos_mempool_id_t id, const void *part, 
   uint16_t num_blocks,	uint16_t block_sz);
 
-void *bbos_mempool_allocate(struct bbos_mempool *pool);
+void *bbos_mempool_alloc(bbos_mempool_id_t id);
 
-void bbos_mempool_free(struct bbos_mempool *pool, void *block);
+void bbos_mempool_free(bbos_mempool_id_t id, void *block);
 
-void bbos_mempool_destroy(struct bbos_mempool *pool);
+#else
+#define BBOS_NUMBER_OF_MEMPOOLS 0
+#endif
 
 #ifdef __cplusplus
 }

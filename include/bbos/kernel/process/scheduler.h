@@ -1,7 +1,7 @@
 /*
  * Scheduler.
  *
- * Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
+ * Copyright (c) ???? Slade Maurer, Alexander Sviridenko
  */
 
 #ifndef __BBOS_SCHEDULER_H
@@ -12,11 +12,14 @@ extern "C" {
 #endif
 
 #ifndef BBOS_SCHEDULER_POLICY
-#define BBOS_SCHEDULER_POLICY basic
+#define BBOS_SCHEDULER_POLICY BBOS_SCHEDULER_FCFS_POLICY
 #endif
 
-#if BBOS_SCHEDULER_POLICY == basic
-#include <bbos/kernel/process/scheduler/basic.h>
+#if BBOS_SCHEDULER_POLICY == BBOS_SCHEDULER_STATIC_POLICY
+#include <bbos/kernel/process/scheduler/static.h>
+#endif
+#if BBOS_SCHEDULER_POLICY == BBOS_SCHEDULER_FCFS_POLICY
+#include <bbos/kernel/process/scheduler/fcfs.h>
 #endif
 
 #ifdef __cplusplus
