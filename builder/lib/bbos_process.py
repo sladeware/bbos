@@ -8,6 +8,7 @@ in a cooperatively scheduled non-preemptive manner.
 __copyright__ = "Copyright (c) 2010 Slade Maurer, Alexander Sviridenko"
 
 from bbos_compiler import *
+from bbos_static_scheduler import *
 from common import *
 
 
@@ -39,7 +40,9 @@ class BBOSProcess:
         self.ports = verify_list(ports)
 
         # Choice of static scheduler or default
-        self.static_scheduler = verify_boolean(static_scheduler)
+        assert isinstance(static_scheduler, (NoneType, StaticScheduler)), "static_scheduler is not a StaticScheduler: %s" % static_scheduler
+
+        self.static_scheduler = static_scheduler
 
         # The list of entry functions for each thread
         self.threads = verify_list(threads)
@@ -53,7 +56,7 @@ class BBOSProcess:
 
         # Add IPC system thread to this process
         if self.ipc:
-            self.threads.append("bbos_ipc") 
+            self.threads.append(BBOS_IPC_THREAD_NAME) 
 
     def append_include_files(self, name):
         verify_string(name)

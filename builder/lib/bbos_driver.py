@@ -10,16 +10,7 @@ from common import *
 
 
 class BBOSDriver:
-    def __init__(self, boot, main, exit, files, name, ports, version):
-        # The bootstrapper function for this driver
-        self.boot = verify_string(boot)
-
-        # This is the main main function for the driver that calls messenger()
-        self.main = verify_string(main)
-
-        # The exit function for this driver
-        self.exit = verify_string(exit)
-
+    def __init__(self, files, name, ports, version):
         # The driver source files
         self.files = verify_list(files)
 

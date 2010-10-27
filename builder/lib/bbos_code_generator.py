@@ -7,6 +7,7 @@ C macro language is seriously underpowered for our purposes.
 
 __copyright__ = "Copyright (c) 2010 Slade Maurer, Alexander Sviridenko"
 
+from bbos_static_scheduler import *
 from common import *
 import sys
 import tempfile
@@ -53,9 +54,6 @@ class GenerateCode:
         # The list of threads within the process
         self.threads = self.process.threads + [d.name for d in self.process.drivers]
 
-        # The list of main functions for each thread
-        self.main_functions = self.process.threads + [d.main for d in self.process.drivers]
-
         # The list of ports
         for ports in [d.ports for d in self.process.drivers]:
             self.ports = self.process.ports + ports
@@ -76,7 +74,8 @@ class GenerateCode:
             self.f = tempfile.TemporaryFile()
 
     def generate(self):
-        print "Generating code..."
+        if not self.test:
+            print "Generating code..."
         self.__output_static_top_content()
         self.__output_thread_ids()
         self.__output_number_of_app_threads()
@@ -85,8 +84,6 @@ class GenerateCode:
         self.__output_number_of_ports()
         self.__output_mempools()
         self.__output_driver_constants()
-        self.__output_bootstrapper_functions()
-        self.__output_exit_functions()
         self.__output_includes_for_this_process()
         self.__output_static_bottom_content()
         if not self.test:
@@ -111,10 +108,15 @@ class GenerateCode:
 
     def __output_static_scheduler_macro(self):
         if self.process.static_scheduler:
-            self.f.write(BBOS_STATIC_SCHEDULER_TOP)
-            for main_function in self.main_functions:
-                self.f.write("    " + main_function + "(); \\\n")
-            self.f.write(BBOS_STATIC_SCHEDULER_BOTTOM)
+            # Add the the end of the list the implied threads
+            if self.process.ipc:
+                self.process.static_scheduler.append_thread(BBOS_IPC_THREAD_NAME)
+            self.process.static_scheduler.append_thread(BBOS_IDLE_THREAD_NAME)
+
+            # Output the static scheduler in the order defined by the user
+            self.process.static_scheduler.output(self.f,
+                                                 BBOS_STATIC_SCHEDULER_TOP,
+                                                 BBOS_STATIC_SCHEDULER_BOTTOM)
 
     def __output_port_ids(self):
         self.f.write("\n/* Port IDs */\n")
@@ -138,18 +140,6 @@ class GenerateCode:
         for driver in self.process.drivers:
             self.f.write("#define GPIO_DRIVER_NAME \"" + driver.name + "\"\n")
             self.f.write("#define GPIO_DRIVER_VERSION " + str(driver.version) + "\n")
-
-    def __output_bootstrapper_functions(self):
-        self.f.write("\n/* BBOS driver bootstrapper functions */\n")
-        self.f.write("#define bbos_boot_drivers \\\n")
-        for driver in self.process.drivers:
-            self.f.write("    " + driver.boot + "(); \\\n")
-
-    def __output_exit_functions(self):
-        self.f.write("\n/* BBOS driver exit functions */\n")
-        self.f.write("#define bbos_exit_drivers \\\n")
-        for driver in self.process.drivers:
-            self.f.write("    " + driver.exit + "(); \\\n")
 
     def __output_includes_for_this_process(self):
         self.f.write("\n/* The include files we are using  */\n")

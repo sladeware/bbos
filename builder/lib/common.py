@@ -8,6 +8,10 @@ from types import *
 # This is the C header file we are code generating that connects it all together
 BBOS_HEADER = "/bbos.h"
 
+# System thread names
+BBOS_IDLE_THREAD_NAME = "bbos_idle"
+BBOS_IPC_THREAD_NAME = "bbos_ipc"
+
 def verify_boolean(var):
     if var:
         assert type(var) is BooleanType, "%s is not a boolean type: %s" % (var.__name__, var)
