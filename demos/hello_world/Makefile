@@ -5,8 +5,8 @@ LIBS =
 
 CDEBUG = -g
 
-INCLUDE = ../../include
-KERNEL = ../../src/kernel
+INCLUDE = ../..
+KERNEL = ../../bbos/kernel
 
 CFLAGS = $(CDEBUG) -I. -I$(INCLUDE)
 LDFLAGS = -g
