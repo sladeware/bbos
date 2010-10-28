@@ -10,10 +10,7 @@ void bbos_application_init() {
 }
 
 void bbos_application_exit() {
-}
 
-int main() {
-  return bbos_main();
 }
 
 

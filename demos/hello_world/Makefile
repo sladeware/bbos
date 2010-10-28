@@ -16,7 +16,7 @@ SRCS_C = hello_world.c $(KERNEL)/ipc.c $(KERNEL)/time.c \
 	$(KERNEL)/system.c $(KERNEL)/mm/mempool.c \
 	$(KERNEL)/process/scheduler/fcfs.c $(KERNEL)/process/scheduler/static.c \
 	$(KERNEL)/process/thread.c $(KERNEL)/process/thread/idle.c \
-	$(KERNEL)/hardware.c
+	$(KERNEL)/hardware.c $(KERNEL)/application.c
 
 SRCS = $(SRCS_C)
 
