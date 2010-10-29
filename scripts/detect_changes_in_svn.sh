@@ -26,14 +26,14 @@ TO_ADDR="slade@computer.org mail.d2rk@gmail.com"
 TMP_OUTPUT=/tmp/.detect_changes_in_svn_tmp
 
 # The run tests script for testing all of BBOS
-/home/slade/bbos/src/trunk/scripts/run_tests.sh
+RUN_TESTS=/home/slade/bbos/src/trunk/scripts/run_tests.sh
 
 # This is processing done when the SVN repo is updated
 conditional_processing() {
     # Email the update info to developers
     echo "Emailing $TO_ADDR about $BBOS_HEAD"
-    svn log -v -r HEAD > $TMP_OUTPUT
-    $RUN_TESTS >> $TMP_OUTPUT
+    svn log -v -r HEAD &> $TMP_OUTPUT
+    $RUN_TESTS &>> $TMP_OUTPUT
     cat $TMP_OUTPUT | nail -s "$SUBJECT $BBOS_HEAD" "$TO_ADDR"
     rm $TMP_OUTPUT
 }

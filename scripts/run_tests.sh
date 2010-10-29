@@ -13,7 +13,6 @@ seperator() {
 }
 
 # Output banner
-clear
 seperator
 echo "BBOS Test Runner!"
 seperator
