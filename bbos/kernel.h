@@ -43,9 +43,6 @@
 /* System management */
 #include <bbos/kernel/system.h>
 
-/* Inter-process communication support */
-#include <bbos/kernel/ipc.h>
-
 /* Application support */
 #include <bbos/kernel/application.h>
 

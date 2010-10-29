@@ -11,7 +11,7 @@ KERNEL = ../../bbos/kernel
 CFLAGS = $(CDEBUG) -I. -I$(INCLUDE)
 LDFLAGS = -g
 
-SRCS_C = hello_world.c $(KERNEL)/ipc.c $(KERNEL)/time.c \
+SRCS_C = hello_world.c $(KERNEL)/time.c \
 	$(KERNEL)/process/port.c $(KERNEL)/process.c \
 	$(KERNEL)/system.c $(KERNEL)/mm/mempool.c \
 	$(KERNEL)/process/scheduler/fcfs.c $(KERNEL)/process/scheduler/static.c \
