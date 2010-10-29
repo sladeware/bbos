@@ -23,15 +23,19 @@ bbos_process_init()
 
   printf("Initialize process\n");
 
+#if BBOS_NUMBER_OF_PORTS > 0
   /* Initialize ports */
   for (id=0; id<BBOS_NUMBER_OF_PORTS; id++) {
     bbos_port_init(id, NULL, 0);
   }
+#endif
 
+#if BBOS_NUMBER_OF_MEMPOOLS > 0
   /* Initialize memory pools */
   for (id=0; id<BBOS_NUMBER_OF_MEMPOOLS; id++) {
     bbos_mempool_init(id, NULL, 0, 0);
   }
+#endif
 
   /* Initialize scheduler */
   bbos_scheduler_init();
