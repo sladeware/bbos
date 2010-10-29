@@ -27,7 +27,7 @@ finger = BBOSProcess(
     threads=["move"]
 )
 
-board = PropellerDemoBoard(
+propeller_demo_board = PropellerDemoBoard(
     processes=[finger],
     memsize=32
     )
@@ -35,6 +35,6 @@ board = PropellerDemoBoard(
 # The application varible of type BBOSApplication(...) must be defined
 application = BBOSApplication(
     name="RobotHand",
-    boards=[board]
+    boards=[propeller_demo_board]
     )
 

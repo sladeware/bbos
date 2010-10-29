@@ -26,21 +26,15 @@ class PropellerCog(BBOSCore):
         self.process.append_include_files("propeller_demo_board.h")
 
         # Modify compiler include directories
-        if self.process.compiler.includes:
-            print "WARNING: Overwriting preexisting compiler include directories"
-        self.process.compiler.includes = []
+        dirs = []
+        self.modify_compiler_include_directories(dirs)
 
         # Modify compiler include argument
-        if self.process.compiler.include_argument:
-            print "WARNING: Overwriting preexisting compiler include argument"
-        self.process.compiler.include_argument = "-I"
+        self.modify_compiler_include_argument("-I")
 
         # Modify compiler name
-        if self.process.compiler.name:
-            print "WARNING: Overwriting preexisting compiler name"
-        self.process.compiler.name = "catalina"
+        self.modify_compiler_name("catalina")
 
         # Modify compiler options
-        if self.process.compiler.options:
-            print "WARNING: Overwriting preexisting compiler options"
-        self.process.compiler.options = "-DDEMO -m " + str(self.memsize)
+        options = "-DDEMO -m " + str(self.memsize)
+

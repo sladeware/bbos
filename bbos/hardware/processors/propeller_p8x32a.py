@@ -17,7 +17,7 @@ class PropellerP8X32A(BBOSProcessor):
     def __init__(self, processes, memsize):
         verify_list(processes)
         number_of_processes = len(processes)
-        assert number_of_processes <= 8, "The P8X32A supports up to 8 processes. You have too many: %d" % number_of_processes
+        self.assert_num_processes(len(processes), 8)
 
         cores = []
         for process in processes:

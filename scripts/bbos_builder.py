@@ -21,6 +21,8 @@ from bbos.builder.code_builder import *
 from bbos.builder.code_generator import *
 from bbos.builder.common import *
 
+# Enable this for debugging when you don't want to remove files
+DO_NOT_REMOVE = False
 
 class Usage(Exception):
     def __init__(self, msg):
@@ -72,9 +74,10 @@ def do_it(code_path):
         b.build()
 
         # Cleanup after this process
-        header_file = directory + BBOS_HEADER
-        print "Removing " + header_file + " ..."
-        os.remove(header_file)
+        if not DO_NOT_REMOVE:
+            header_file = directory + BBOS_HEADER
+            print "Removing " + header_file + " ..."
+            os.remove(header_file)
 
 def main(argv=None):
     if argv is None:

@@ -24,3 +24,6 @@ class BBOSProcessor:
         for core in self.cores:
             processes.append(core.process)
         return processes
+
+    def assert_num_processes(self, number_of_processes, max):
+        assert number_of_processes <= max, "The %s supports up to %d processes. You have too many: %d" % (self.__name__(), max, number_of_processes)
