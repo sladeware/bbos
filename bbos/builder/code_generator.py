@@ -26,8 +26,6 @@ BBOS_H_TOP ="""
 #ifndef __BBOS_H
 #define __BBOS_H
 
-#include <bbos/compiler.h>
-
 """
 
 BBOS_H_BOTTOM ="""
@@ -80,6 +78,7 @@ class GenerateCode:
         if not self.test:
             print "Generating code..."
         self.__output_static_top_content()
+        self.__output_compiler_defines()
         self.__output_thread_ids()
         self.__output_number_of_app_threads()
         self.__output_static_scheduler_macro()
@@ -96,6 +95,13 @@ class GenerateCode:
             lines = self.f.readlines()
             self.f.close()
             return lines
+
+    def __output_compiler_defines(self):
+        defines = self.process.compiler.defines
+        if defines:
+            for define in defines:
+                self.f.write("#define " + define + "\n")
+        self.f.write("#include <bbos/compiler.h>\n\n")
 
     def __output_static_top_content(self):
         self.f.write(BBOS_H_TOP)
@@ -149,10 +155,11 @@ class GenerateCode:
 
     def __output_includes_for_this_process(self):
         include_files = self.process.get_include_files()
-        self.f.write("\n/* The include files we are using  */\n")
-        for include in include_files:
-            if include:
-                self.f.write("#include <" + include + ">\n")
+        if include_files:
+            self.f.write("\n/* The include files we are using  */\n")
+            for include in include_files:
+                if include:
+                    self.f.write("#include <" + include + ">\n")
 
     def __output_static_bottom_content(self):
         self.f.write(BBOS_H_BOTTOM)

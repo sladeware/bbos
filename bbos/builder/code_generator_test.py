@@ -53,8 +53,6 @@ control_lines_bottom = ['/* Port IDs */\n',
                         '#define GPIO_DRIVER_NAME "gpio"\n',
                         '#define GPIO_DRIVER_VERSION 2\n',
                         '\n',
-                        '/* The include files we are using  */\n',
-                        '\n',
                         '#include <bbos/kernel.h>\n',
                         '\n',
                         '#endif /* __BBOS_H */\n']

@@ -11,12 +11,13 @@ class X86(BBOSCore):
     def __init__(self, process):
         BBOSCore.__init__(self, process)
 
-        # Modify includes
-        includes = ""
-        self.process.append_include_files(includes)
+        # Update compiler defines
+        self.modify_compiler_defines(["HAVE_INTTYPES_H",
+                                      "HAVE_STDINT_H",
+                                      "HAVE_STDDEF_H"])
 
         # Modify compiler include directories
-        dirs = []
+        dirs = [".", "../.."]
         self.modify_compiler_include_directories(dirs)
 
         # Modify compiler include argument
@@ -26,6 +27,6 @@ class X86(BBOSCore):
         self.modify_compiler_name("gcc")
 
         # Modify compiler options
-        options = ""
-        self.modify_compiler_options(str(options))
+        self.modify_compiler_options("-O -g")
+
 

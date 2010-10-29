@@ -16,6 +16,11 @@ class BBOSCore:
         assert isinstance(process, BBOSProcess), "process is not a BBOSProcess: %s" % process
         self.process = process
 
+    def modify_compiler_defines(self, defines):
+        if self.process.compiler.defines:
+            print "WARNING: Overwriting preexisting compiler defines"
+        self.process.compiler.defines = verify_list(defines)
+
     def modify_compiler_include_directories(self, dirs):
         if self.process.compiler.includes:
             print "WARNING: Overwriting preexisting compiler include directories"

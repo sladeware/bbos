@@ -12,9 +12,12 @@ from bbos.builder.common import *
 
 
 class BBOSCompiler:
-    def __init__(self, base=None, includes=None, include_argument=None, name=None, options=None):
+    def __init__(self, base=None, defines=None, includes=None, include_argument=None, name=None, options=None):
         # The base directory for BBOS
         self.base = verify_string(base)
+
+        # The list of compiler defines
+        self.defines = verify_list(defines)
 
         # The list of include directories
         self.includes = verify_list(includes)
