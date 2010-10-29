@@ -6,7 +6,7 @@
 #
 
 BBOS_ROOT=`dirname $0`/..
-PYTHONPATH=$PYTHONPATH:$BBOS_ROOT
+export PYTHONPATH=$BBOS_ROOT:$PYTHONPATH
 
 seperator() {
     echo "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
