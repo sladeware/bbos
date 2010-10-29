@@ -22,7 +22,7 @@ from bbos.builder.code_generator import *
 from bbos.builder.common import *
 
 # Enable this for debugging when you don't want to remove files
-DO_NOT_REMOVE = False
+DO_NOT_REMOVE = True
 
 class Usage(Exception):
     def __init__(self, msg):
@@ -32,7 +32,10 @@ def usage():
     print """
     Welcome to the Bionic Bunny Operating System Builder!
     
+    USAGE: [OPTION]... [FILE]
+
     -h, --help : print this help message
+
     -a=FILE, --application_configuration=FILE : Load the application configuration from FILE
     """
 
@@ -96,6 +99,8 @@ def main(argv=None):
                 usage()
             else:
                 raise Usage("Unhandled argument")
+        for a in args:
+            do_it(a)
     except Usage, err:
         print >>sys.stderr, err.msg
         print >>sys.stderr, "for help use --help"
