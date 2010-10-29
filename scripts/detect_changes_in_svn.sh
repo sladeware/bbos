@@ -23,16 +23,16 @@ SUBJECT="New BBOS Revision"
 TO_ADDR="slade@computer.org mail.d2rk@gmail.com"
 
 # The temp file we use for our email
-TMP=/tmp/.detect_changes_in_svn_tmp
+TMP_OUTPUT=/tmp/.detect_changes_in_svn_tmp
 
 # This is processing done when the SVN repo is updated
 conditional_processing() {
     # Email the update info to developers
     echo "Emailing $TO_ADDR about $BBOS_HEAD"
-    svn log -v -r HEAD > $TMP
-    scripts/run_tests.sh >> $TMP
-    cat $TMP | nail -s "$SUBJECT $BBOS_HEAD" "$TO_ADDR"
-    rm $TMP
+    svn log -v -r HEAD > $TMP_OUTPUT
+    scripts/run_tests.sh >> $TMP_OUTPUT
+    cat $TMP_OUTPUT | nail -s "$SUBJECT $BBOS_HEAD" "$TO_ADDR"
+    rm $TMP_OUTPUT
 }
 
 # Call this when exiting to clear the lock file
