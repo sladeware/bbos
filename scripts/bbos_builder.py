@@ -7,7 +7,7 @@ __copyright__  = "Copyright (c) 2010 Slade Maurer, Alexander Sviridenko"
 
 import sys
 import getopt
-import md5
+import hashlib
 import os.path
 import imp
 import traceback
@@ -44,7 +44,7 @@ def load_app_config(code_path):
 
             fin = open(code_path, 'rb')
 
-            return [code_dir, imp.load_source(md5.new(code_path).hexdigest(), code_path, fin)]
+            return [code_dir, imp.load_source(hashlib.md5(code_path).hexdigest(), code_path, fin)]
         finally:
             try: fin.close()
             except: pass
