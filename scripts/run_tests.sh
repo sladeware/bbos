@@ -18,12 +18,11 @@ seperator
 # You need to have pychecker installed to do a pycheck
 which pychecker > /dev/null
 if [ "$?" -eq "0" ]; then
-    RESULT=`find . -name \*.py | xargs pychecker 2> /dev/null`
     echo
     echo "PYCHECKER RESULTS. PLEASE REVIEW AND CLEANUP WARNINGS."
     seperator
     echo
-    echo $RESULT
+    find ../bbos -name \*.py | xargs pychecker 2> /dev/null
     echo
 else
     echo "YOU MUST INSTALL PYCHECKER TO RUN THE PYCHECKER TEST"
@@ -36,7 +35,7 @@ if [ "$?" -eq "0" ]; then
     echo "REGRESSION TEST RESULTS. PLEASE FIX FAILURES."
     seperator
     echo
-    python lib/regression.py
+    python ../bbos/builder/regression.py
     echo
 else
     echo "YOU MUST INSTALL PYTHON TO RUN PYTHON PREGRESSION TESTS"

@@ -8,8 +8,8 @@ may be present on the board, but BBOS does not explicitly refer to them.
 
 __copyright__ = "Copyright (c) 2010 Slade Maurer, Alexander Sviridenko"
 
-from bbos_processor import *
-from common import *
+from bbos.builder.common import *
+from bbos.hardware.processor import *
 
 
 class BBOSBoard:

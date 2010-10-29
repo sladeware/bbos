@@ -3,10 +3,10 @@
 
 __copyright__ = "Copyright (c) 2010 Slade Maurer, Alexander Sviridenko"
 
-from bbos_code_generator import *
-from bbos_compiler import *
-from bbos_driver import *
-from bbos_process import *
+from code_generator import *
+from bbos.compiler import *
+from bbos.hardware.driver import *
+from bbos.kernel.bbos_process import *
 import tempfile
 import unittest
 

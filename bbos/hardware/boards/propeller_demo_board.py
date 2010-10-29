@@ -11,9 +11,9 @@ It has a 5.000MHz replacable crystal oscillator.
 
 __copyright__ = "Copyright (c) 2010 Slade Maurer, Alexander Sviridenko"
 
-from lib.bbos_board import BBOSBoard
-from lib.common import *
-from processors.propeller_p8x32a import *
+from bbos.hardware.board import BBOSBoard
+from bbos.hardware.processors.propeller_p8x32a import *
+from bbos.builder.common import *
 
 
 class PropellerDemoBoard(BBOSBoard):

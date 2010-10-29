@@ -5,19 +5,21 @@
 
 __copyright__  = "Copyright (c) 2010 Slade Maurer, Alexander Sviridenko"
 
-from lib.common import *
-from lib.bbos_application import *
-from lib.bbos_compiler import *
-from lib.bbos_driver import *
-from lib.bbos_code_builder import *
-from lib.bbos_code_generator import *
-from lib.bbos_process import *
 import sys
 import getopt
 import md5
 import os.path
 import imp
 import traceback
+
+# Setup the path properly for bbos builder imports
+path = os.path.abspath(os.path.dirname(sys.argv[0])) + "/.."
+sys.path.append(path)
+
+from bbos.application import *
+from bbos.builder.code_builder import *
+from bbos.builder.code_generator import *
+from bbos.builder.common import *
 
 
 class Usage(Exception):

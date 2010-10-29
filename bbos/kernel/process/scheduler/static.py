@@ -2,7 +2,7 @@
 """
 __copyright__ = "Copyright (c) 2010 Slade Maurer, Alexander Sviridenko"
 
-from common import *
+from bbos.builder.common import *
 import sys
 import traceback
 

@@ -1,13 +1,13 @@
 """An example bbos.py file defining the late binding of the robot hand.
 """
 
-from lib.bbos_application import *
-from lib.bbos_board import *
-from lib.bbos_compiler import *
-from lib.bbos_driver import *
-from lib.bbos_process import *
-from lib.bbos_static_scheduler import *
-from boards.propeller_demo_board import *
+from bbos.application import *
+from bbos.compiler import *
+from bbos.hardware.board import *
+from bbos.hardware.boards.propeller_demo_board import *
+from bbos.hardware.driver import *
+from bbos.kernel.bbos_process import *
+from bbos.kernel.process.scheduler.static import *
 
 gpio_driver = BBOSDriver(
     name="gpio",

@@ -7,7 +7,7 @@ C macro language is seriously underpowered for our purposes.
 
 __copyright__ = "Copyright (c) 2010 Slade Maurer, Alexander Sviridenko"
 
-from bbos_static_scheduler import *
+from bbos.kernel.process.scheduler.static import *
 from common import *
 import sys
 import tempfile

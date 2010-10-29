@@ -6,8 +6,8 @@ core per processes and one process per core.
 
 __copyright__ = "Copyright (c) 2010 Slade Maurer, Alexander Sviridenko"
 
-from bbos_process import *
-from common import *
+from bbos.kernel.bbos_process import *
+from bbos.builder.common import *
 
 
 class BBOSCore:

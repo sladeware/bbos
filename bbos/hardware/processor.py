@@ -8,8 +8,8 @@ processor.
 
 __copyright__ = "Copyright (c) 2010 Slade Maurer, Alexander Sviridenko"
 
-from bbos_core import *
-from common import *
+from bbos.builder.common import *
+from bbos.hardware.core import *
 
 
 class BBOSProcessor:

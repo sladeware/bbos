@@ -3,10 +3,10 @@
 
 __copyright__ = "Copyright (c) 2010 Slade Maurer, Alexander Sviridenko"
 
-from bbos_board import *
-from bbos_process import *
-from bbos_processor import *
-from bbos_core import *
+from bbos.hardware.board import *
+from bbos.hardware.core import *
+from bbos.hardware.processor import *
+from bbos.kernel.bbos_process import *
 import unittest
 
 test_process = BBOSProcess(

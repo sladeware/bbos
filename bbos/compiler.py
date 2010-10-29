@@ -8,7 +8,7 @@ paths in order to produce a binary for your process running on that core.
 
 __copyright__ = "Copyright (c) 2010 Slade Maurer, Alexander Sviridenko"
 
-from common import *
+from bbos.builder.common import *
 
 
 class BBOSCompiler:

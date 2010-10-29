@@ -8,9 +8,9 @@ share using a multiplexed system bus. There are 32 IO pins.
 
 __copyright__ = "Copyright (c) 2010 Slade Maurer, Alexander Sviridenko"
 
-from lib.bbos_processor import *
-from lib.common import *
-from cores.propeller_cog import *
+from bbos.hardware.cores.propeller_cog import *
+from bbos.hardware.processor import *
+from bbos.builder.common import *
 
 
 class PropellerP8X32A(BBOSProcessor):

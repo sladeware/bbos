@@ -7,9 +7,9 @@ in a cooperatively scheduled non-preemptive manner.
 
 __copyright__ = "Copyright (c) 2010 Slade Maurer, Alexander Sviridenko"
 
-from bbos_compiler import *
-from bbos_static_scheduler import *
-from common import *
+from bbos.builder.common import *
+from bbos.compiler import *
+from process.scheduler.static import *
 
 
 class BBOSProcess:

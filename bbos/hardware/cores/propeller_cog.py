@@ -10,8 +10,8 @@ and specialized monitoring capabilities to know what the other cogs are doing.
 
 __copyright__ = "Copyright (c) 2010 Slade Maurer, Alexander Sviridenko"
 
-from lib.bbos_core import *
-from lib.common import *
+from bbos.hardware.core import *
+from bbos.builder.common import *
 
 
 class PropellerCog(BBOSCore):

@@ -7,8 +7,8 @@ contains boards, which are what your software runs on.
 
 __copyright__ = "Copyright (c) 2010 Slade Maurer, Alexander Sviridenko"
 
-from bbos_board import *
-from common import *
+from bbos.hardware.board import *
+from bbos.builder.common import *
 
 
 class BBOSApplication:

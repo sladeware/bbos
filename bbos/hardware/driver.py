@@ -6,7 +6,7 @@ interface designed to support hardware.
 
 __copyright__ = "Copyright (c) 2010 Slade Maurer, Alexander Sviridenko"
 
-from common import *
+from bbos.builder.common import *
 
 
 class BBOSDriver:
