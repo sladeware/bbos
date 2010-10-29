@@ -78,7 +78,9 @@ bbos_panic(const char *fmt, ...)
   va_list args;
 
   va_start(args, fmt);
+#ifndef __CATALINA__
   vsnprintf(buf, sizeof(buf), fmt, args);
+#endif
   va_end(args);
 
   printf("Panic: %s\n", buf);
