@@ -88,7 +88,7 @@ def main(argv=None):
     try:
         try:
             opts, args = getopt.getopt(argv[1:], "ha:", ["help", "application_configuration="])
-            if len(opts) is 0:
+            if len(opts) == 0:
                 usage()
         except getopt.error, msg:
              raise Usage(msg)

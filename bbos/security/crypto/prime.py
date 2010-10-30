@@ -66,7 +66,7 @@ def primality_test(n, s):
     Takes tested number n and s as number of tests. Returns false if n
     is a composite number and true otherwise.
     """
-    for j in range(s):
+    for _ in range(s):
         a = randint(1, n-1)
         # Now the witness should gives the statements.
         # Returns false only in the case when "a" says that "n" is the

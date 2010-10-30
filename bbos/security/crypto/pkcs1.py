@@ -16,7 +16,6 @@ __copyright__ = "Copyright (c) 2010 Slade Maurer, Alexander Sviridenko"
 import math
 import asn1
 import sha
-import copy
 import struct
 from binascii import a2b_hex, b2a_hex
 from random import randint
@@ -161,7 +160,7 @@ class pkcs1_v1_5_encryption(rsa_encryption_scheme):
         encoded_msg += '\x00'
         encoded_msg += '\x02'
         padding_len = key.len - msg_len - 3
-        for i in range(padding_len):
+        for _ in range(padding_len):
             encoded_msg += chr(randint(1, 255))
         encoded_msg += '\x00'
         encoded_msg += msg

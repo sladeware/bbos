@@ -12,6 +12,7 @@ DEMO=$BBOS_ROOT/demos/hello_world/demo
 BBOS_H=$BBOS_ROOT/demos/hello_world/bbos.h
 
 PYCHECKER_ERROR_LIMIT=1000
+PYCHECKER_FILTER="bbos/security/crypto/asn1.py"
 
 seperator() {
     echo "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
@@ -91,7 +92,10 @@ if [ "$?" -eq "0" ]; then
     echo "[$CNT] PYCHECKER RESULTS. PLEASE REVIEW AND CLEANUP WARNINGS."
     seperator
     echo
-    find $BBOS_ROOT -name \*.py | xargs pychecker --limit=$PYCHECKER_ERROR_LIMIT 2> /dev/null
+    find $BBOS_ROOT -name \*.py | \
+	xargs pychecker --limit=$PYCHECKER_ERROR_LIMIT | \
+	grep -v $PYCHECKER_FILTER \
+	2> /dev/null
     echo
 else
     echo "YOU MUST INSTALL PYCHECKER TO RUN THE PYCHECKER TEST"
