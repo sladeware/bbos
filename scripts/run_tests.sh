@@ -63,6 +63,7 @@ echo
 echo "[$CNT] SHOWING YOU THE BBOS HEADER THAT WAS GENERATED IN CASE YOU THINK IT IS WRONG"
 seperator
 cat $BBOS_H
+rm $BBOS_H
 echo
 seperator
 
@@ -76,6 +77,7 @@ chmod +x $DEMO
 $DEMO | head &
 sleep 1
 kill %1
+rm $DEMO
 echo
 seperator
 

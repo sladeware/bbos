@@ -28,7 +28,7 @@ class BuildCode:
         self.process = process
 
         # The base directory of the application we are building
-        self.application_directory = BASE + directory + "/"
+        self.application_directory = directory + "/"
 
         # The files we're going to build for this process
         self.files = [self.application_directory + f[0:-2] for f in self.process.files] + [BASE + f for f in KERNEL_FILES]
@@ -46,7 +46,7 @@ class BuildCode:
             oc_files = "-c -o " + f + ".o " + f + ".c"
             cmd = c.name + " " + c.options + " " + c.get_includes() + " " + oc_files
             os.system(cmd)
-    
+
     def _build_process_binary(self):
         c = self.process.compiler
         cmd = c.name + " " + c.options + " -o " + self.application_directory + self.process.name + " "
