@@ -13,7 +13,6 @@ KERNEL_FILES = ["bbos/kernel/time",
                 "bbos/kernel/system",
                 "bbos/kernel/mm/mempool",
                 "bbos/kernel/process/scheduler/fcfs",
-                "bbos/kernel/process/scheduler/static",
                 "bbos/kernel/process/thread",
                 "bbos/kernel/process/thread/idle",
                 "bbos/kernel/hardware",
@@ -32,6 +31,9 @@ class BuildCode:
 
         # The files we're going to build for this process
         self.files = [self.application_directory + f[0:-2] for f in self.process.files] + [BASE + f for f in KERNEL_FILES]
+        if self.process.static_scheduler:
+            self.files.append("bbos/kernel/process/scheduler/static")
+
         self.test = test
 
     def build(self):
@@ -40,7 +42,7 @@ class BuildCode:
         c = self.process.compiler
         c.includes.append(self.application_directory)
         lines += self._build_objects()
-        lines += self._build_process_binary()
+        lines.append(self._build_process_binary())
         if self.test:
             return lines
 
@@ -62,6 +64,6 @@ class BuildCode:
         for f in self.files:
             cmd += f + ".o "
         if self.test:
-            return [cmd]
+            return cmd
         else:
             os.system(cmd)
