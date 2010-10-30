@@ -32,8 +32,8 @@ RUN_TESTS=/home/slade/bbos/src/trunk/scripts/run_tests.sh
 conditional_processing() {
     # Email the update info to developers
     echo "Emailing $TO_ADDR about $BBOS_HEAD"
-    svn log -v -r HEAD &> $TMP_OUTPUT
-    $RUN_TESTS &>> $TMP_OUTPUT
+    svn log -v -r HEAD > $TMP_OUTPUT
+    $RUN_TESTS >> $TMP_OUTPUT
     cat $TMP_OUTPUT | nail -s "$SUBJECT $BBOS_HEAD" "$TO_ADDR"
     rm $TMP_OUTPUT
 }
