@@ -69,12 +69,18 @@ echo
 echo "[$CNT] CHECKING MD5SUM OF THE BBOS HEADER THAT WAS GENERATED"
 seperator
 echo
-M=`md5sum $BBOS_H`
-MD5SUM=${M% *}
-if [ $BBOS_H_MD5SUM = $MD5SUM ]; then
-    echo "MD5SUM CHECK OK"
+which md5sum > /dev/null
+if [ "$?" -eq "0" ]; then
+    M=`md5sum $BBOS_H`
+    MD5SUM=${M% *}
+    if [ $BBOS_H_MD5SUM = $MD5SUM ]; then
+	echo "MD5SUM CHECK OK"
+    else
+	echo "WARNING!!! MD5SUM MISMATCH"
+    fi
 else
-    echo "WARNING!!! MD5SUM MISMATCH"
+    echo "YOU MUST INSTALL MD5SUM TO SEE MD5 MATCH RESULTS. CATTING BBOS.H INSTEAD."
+    cat $BBOS_H
 fi
 rm $BBOS_H
 echo
@@ -87,7 +93,7 @@ echo "[$CNT] RUNNING HELLO WORLD. PLEASE FIX FAILURES."
 seperator
 echo
 chmod +x $DEMO
-$DEMO | head --lines=6&
+$DEMO | head -n 6&
 sleep 1
 kill %1
 rm $DEMO
