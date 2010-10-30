@@ -23,7 +23,7 @@ BASE = os.path.abspath(os.path.dirname(sys.argv[0])) + "/../"
 
 
 class BuildCode:
-    def __init__(self, directory, process):
+    def __init__(self, directory, process, test=False):
         # The process we're genearting code for
         self.process = process
 
@@ -32,24 +32,36 @@ class BuildCode:
 
         # The files we're going to build for this process
         self.files = [self.application_directory + f[0:-2] for f in self.process.files] + [BASE + f for f in KERNEL_FILES]
+        self.test = test
 
     def build(self):
+        lines = []
         print "Building code..."
         c = self.process.compiler
         c.includes.append(self.application_directory)
-        self._build_objects()
-        self._build_process_binary()
+        lines += self._build_objects()
+        lines += self._build_process_binary()
+        if self.test:
+            return lines
 
     def _build_objects(self):
+        results = []
         c = self.process.compiler
         for f in self.files:
             oc_files = "-c -o " + f + ".o " + f + ".c"
             cmd = c.name + " " + c.options + " " + c.get_includes() + " " + oc_files
-            os.system(cmd)
+            if self.test:
+                results.append(cmd)
+            else:
+                os.system(cmd)
+        return results
 
     def _build_process_binary(self):
         c = self.process.compiler
         cmd = c.name + " " + c.options + " -o " + self.application_directory + self.process.name + " "
         for f in self.files:
             cmd += f + ".o "
-        os.system(cmd)
+        if self.test:
+            return [cmd]
+        else:
+            os.system(cmd)
