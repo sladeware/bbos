@@ -8,7 +8,6 @@ from bbos.compiler import *
 from bbos.hardware.boards.quad_x86_simulation_board import *
 from bbos.hardware.driver import *
 from bbos.kernel.bbos_process import *
-import tempfile
 import unittest
 
 process0 = BBOSProcess(

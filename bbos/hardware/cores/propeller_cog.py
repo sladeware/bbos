@@ -36,5 +36,5 @@ class PropellerCog(BBOSCore):
         self.modify_compiler_name("catalina")
 
         # Modify compiler options
-        options = "-DDEMO -m " + str(self.memsize)
+        self.options = "-DDEMO -m " + str(self.memsize)
 

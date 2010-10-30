@@ -16,7 +16,6 @@ from bbos.builder.common import *
 class PropellerP8X32A(BBOSProcessor):
     def __init__(self, processes, memsize):
         verify_list(processes)
-        number_of_processes = len(processes)
         self.assert_num_processes(len(processes), 8)
 
         cores = []
