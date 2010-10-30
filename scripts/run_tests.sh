@@ -43,7 +43,7 @@ seperator
 echo
 date
 echo
-python $BBOS_ROOT/scripts/bbos_builder.py -a $BBOS_ROOT/demos/hello_world/bbos.py
+python $BBOS_ROOT/scripts/bbos_builder.py -a $BBOS_ROOT/demos/hello_world/bbos.py 2> /dev/null
 echo
 seperator
 
