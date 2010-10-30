@@ -60,9 +60,6 @@ fi
 # Create the lock file
 echo "$LOCK_DATE" > "$LOCK_FILE"
 
-# Go into the BBOS SVN root directory
-cd $BBOS_ROOT
-
 # Use svn log to determine the current head revision number
 BBOS_HEAD=$(svn log -r HEAD | awk '/^r[0-9]+/ {print $1}')
 if [ "$BBOS_HEAD" == "" ];
