@@ -39,7 +39,8 @@ class BuildCode:
 
     def build(self):
         lines = []
-        print "  Building code..."
+        if not self.test:
+            print "  Building code..."
         c = self.process.compiler
         c.includes.append(self.application_directory)
         lines += self._build_objects()
