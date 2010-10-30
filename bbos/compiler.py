@@ -34,11 +34,5 @@ class BBOSCompiler:
     def get_includes(self):
         include_string = ""
         for i in self.includes:
-            include_string += self.include_argument + " " + i + " "
+            include_string += self.include_argument + i + " "
         return include_string
-
-    def get_options(self):
-        options_string = ""
-        for o in self.options:
-            options_string += o + " "
-        return options_string

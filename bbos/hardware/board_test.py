@@ -15,6 +15,7 @@ test_process = BBOSProcess(
     files=["finger.c"],
     ipc=True,
     mempools=[],
+    name="test_process",
     ports=["FINGER_PORT"],
     static_scheduler=StaticScheduler(["move", "gpio_driver_main"]),
     threads=["move"]

@@ -13,6 +13,7 @@ hello_world = BBOSProcess(
     files=["hello_world.c"],
     ipc=None,
     mempools=[],
+    name="demo",
     ports=[],
     static_scheduler=None,
     threads=["hello_world"]

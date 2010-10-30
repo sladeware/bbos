@@ -13,7 +13,7 @@ from process.scheduler.static import *
 
 
 class BBOSProcess:
-    def __init__(self, compiler, drivers, files, ipc, mempools, ports, static_scheduler, threads):
+    def __init__(self, compiler, drivers, files, ipc, mempools, name, ports, static_scheduler, threads):
         # The include files used by this process
         self.__includes = []
 
@@ -35,6 +35,9 @@ class BBOSProcess:
 
         # List of ports
         self.mempools = verify_list(mempools)
+        
+        # The name of the process
+        self.name = verify_string(name)
 
         # List of ports
         self.ports = verify_list(ports)

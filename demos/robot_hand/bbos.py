@@ -22,6 +22,7 @@ finger = BBOSProcess(
     files=["finger.c"],
     ipc=True,
     mempools=[],
+    name="finger",
     ports=["FINGER_PORT"],
     static_scheduler=StaticScheduler(["move", "gpio_driver_main"]),
     threads=["move"]
