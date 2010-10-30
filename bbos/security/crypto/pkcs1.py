@@ -8,19 +8,20 @@ for implementing the RSA algorithm for public-key cryptography. It defines
 the mathematical properties of public and private keys, primitive operations
 for encryption and signatures, secure cryptographic schemes, and related ASN.1
 syntax representations.
-
-Copyright (c) 2009 Sun Scoper Inc.
 """
 
 __version__ = '0.0.2'
- 
+__copyright__ = "Copyright (c) 2010 Slade Maurer, Alexander Sviridenko"
+
 import math
 import asn1
 import sha
 import copy
+import struct
 from binascii import a2b_hex, b2a_hex
 from random import randint
-from bbos.crypto.prime import get_fast_prime
+
+from bbos.security.crypto.prime import get_fast_prime
 
 #______________________________________________________________________________
 
@@ -40,6 +41,10 @@ class rsa_public_key(rsa_key):
     n -- the RSA modulus, a positive integer
     e -- the RSA public exponent, a positive integer
     """
+
+    def __init__(self, n, e):
+        rsa_key.__init__(self, n, e)
+
     def encrypt_primitive(self, encoded_msg):
         # convert the encoded message em to an integer
         # representative m
@@ -80,11 +85,13 @@ class rsa_private_key(rsa_key):
     d_q -- the second factor's CRT exponent, a positive integer
     q_inv -- the (first) CRT coefficient, a positive integer
     """
+
     def __init__(self, n, e, p, q, d, d_p, d_q, q_inv):
         self.version = 0
-        self.n, self.e, self.p, self.q, self.d, self.d_p, self.d_q, self.q_inv =\
-            n, e, p, q, d, d_p, d_q, q_inv
-        self.len = octlen(self.n)
+        self.p, self.q, self.d, self.d_p, self.d_q, self.q_inv =\
+            p, q, d, d_p, d_q, q_inv
+        #self.len = octlen(self.n)
+        rsa_key.__init__(self, n, e)
         
     def decrypt_primitive(self, ciphertext):
         # convert the ciphertext C to an integer ciphertext
@@ -98,16 +105,16 @@ class rsa_private_key(rsa_key):
 
     def pem_encode(self):
         seq = asn1.sequence(( \
-                              asn1.integer(self.version), \
-                              asn1.integer(self.n),       \
-                              asn1.integer(self.e),       \
-                              asn1.integer(self.d),       \
-                              asn1.integer(self.p),       \
-                              asn1.integer(self.q),       \
-                              asn1.integer(self.d_p),     \
-                              asn1.integer(self.d_q),     \
-                              asn1.integer(self.q_inv)    \
-                              ))
+                asn1.integer(self.version), \
+                    asn1.integer(self.n),       \
+                    asn1.integer(self.e),       \
+                    asn1.integer(self.d),       \
+                    asn1.integer(self.p),       \
+                asn1.integer(self.q),       \
+                asn1.integer(self.d_p),     \
+                asn1.integer(self.d_q),     \
+                asn1.integer(self.q_inv)    \
+                ))
         return asn1.pem_encode(seq, 'RSA PRIVATE KEY')
     
     def pem_decode(self, encoded_key):

@@ -555,7 +555,7 @@ if __name__ == '__main__':
 
 
 class Test:
-  def test_cert(t):
+  def test_cert(self):
     from base64 import b64decode
     cert_der = b64decode('''
 MIIDdTCCAt6gAwIBAgIDGgTWMA0GCSqGSIb3DQEBBQUAMGwxCzAJBgNVBAYTAlVT
@@ -586,7 +586,7 @@ A7DcwPNoj1dcSwaFIt1k3ezKFwJBJqjUOw==
     print b2a_hex( reencoded )
     assert reencoded == cert_der
 
-  def test_pem(t):
+  def test_pem(self):
     pem = '''-----BEGIN CERTIFICATE-----
 MIIDdTCCAt6gAwIBAgIDGgTWMA0GCSqGSIb3DQEBBQUAMGwxCzAJBgNVBAYTAlVT
 MRYwFAYDVQQIEw1NYXNzYWNodXNldHRzMS4wLAYDVQQKEyVNYXNzYWNodXNldHRz
