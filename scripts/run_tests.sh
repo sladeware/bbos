@@ -11,6 +11,8 @@ export PYTHONPATH=$BBOS_ROOT:$PYTHONPATH
 DEMO=$BBOS_ROOT/demos/hello_world/demo
 BBOS_H=$BBOS_ROOT/demos/hello_world/bbos.h
 
+BBOS_H_MD5SUM="dcf6a9ec5db9c6fe57f8c50590d90e3f"
+
 PYCHECKER_ERROR_LIMIT=1000
 PYCHECKER_FILTER="bbos/security/crypto/asn1.py"
 
@@ -55,6 +57,7 @@ CNT=3
 echo
 echo "[$CNT] LISTING THE RESULTS SO YOU KNOW THE BBOS BUILDER WORKED"
 seperator
+echo
 ls -l $BBOS_H
 ls -l $DEMO
 echo
@@ -63,9 +66,16 @@ seperator
 # Show the hello world header file
 CNT=4
 echo
-echo "[$CNT] SHOWING YOU THE BBOS HEADER THAT WAS GENERATED IN CASE YOU THINK IT IS WRONG"
+echo "[$CNT] CHECKING MD5SUM OF THE BBOS HEADER THAT WAS GENERATED"
 seperator
-cat $BBOS_H
+echo
+M=`md5sum $BBOS_H`
+MD5SUM=${M% *}
+if [ $BBOS_H_MD5SUM = $MD5SUM ]; then
+    echo "MD5SUM CHECK OK"
+else
+    echo "WARNING!!! MD5SUM MISMATCH"
+fi
 rm $BBOS_H
 echo
 seperator
@@ -77,7 +87,7 @@ echo "[$CNT] RUNNING HELLO WORLD. PLEASE FIX FAILURES."
 seperator
 echo
 chmod +x $DEMO
-$DEMO | head &
+$DEMO | head --lines=6&
 sleep 1
 kill %1
 rm $DEMO
@@ -93,9 +103,8 @@ if [ "$?" -eq "0" ]; then
     seperator
     echo
     find $BBOS_ROOT -name \*.py | \
-	xargs pychecker --limit=$PYCHECKER_ERROR_LIMIT | \
-	grep -v $PYCHECKER_FILTER \
-	2> /dev/null
+	xargs pychecker --limit=$PYCHECKER_ERROR_LIMIT 2> /dev/null | \
+	grep -v $PYCHECKER_FILTER
     echo
 else
     echo "YOU MUST INSTALL PYCHECKER TO RUN THE PYCHECKER TEST"
