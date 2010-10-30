@@ -9,6 +9,7 @@ BBOS_ROOT=`dirname $0`/..
 export PYTHONPATH=$BBOS_ROOT:$PYTHONPATH
 
 DEMO=$BBOS_ROOT/demos/hello_world/demo
+DEMO_COG=$BBOS_ROOT/demos/hello_world/demo_cog
 BBOS_H=$BBOS_ROOT/demos/hello_world/bbos.h
 
 BBOS_H_MD5SUM="dcf6a9ec5db9c6fe57f8c50590d90e3f"
@@ -60,6 +61,8 @@ seperator
 echo
 ls -l $BBOS_H
 ls -l $DEMO
+ls -l $DEMO_COG
+rm $DEMO_COG
 echo
 seperator
 

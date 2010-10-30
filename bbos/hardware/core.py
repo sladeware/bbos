@@ -18,26 +18,31 @@ class BBOSCore:
 
     def modify_compiler_defines(self, defines):
         if self.process.compiler.defines:
-            print "WARNING: Overwriting preexisting compiler defines"
-        self.process.compiler.defines = verify_list(defines)
+            print "WARNING: Not overwriting preexisting compiler defines"
+        else:
+            self.process.compiler.defines = verify_list(defines)
 
     def modify_compiler_include_directories(self, dirs):
         if self.process.compiler.includes:
-            print "WARNING: Overwriting preexisting compiler include directories"
-        self.process.compiler.includes = verify_list(dirs)
+            print "WARNING: Not overwriting preexisting compiler include directories"
+        else:
+            self.process.compiler.includes = verify_list(dirs)
 
     def modify_compiler_include_argument(self, arg):
         if self.process.compiler.include_argument:
-            print "WARNING: Overwriting preexisting compiler include argument"
-        self.process.compiler.include_argument = verify_string(arg)
+            print "WARNING: Not overwriting preexisting compiler include argument"
+        else:
+            self.process.compiler.include_argument = verify_string(arg)
 
     def modify_compiler_name(self, name):
         if self.process.compiler.name:
-            print "WARNING: Overwriting preexisting compiler name"
-        self.process.compiler.name = verify_string(name)
+            print "WARNING: Not overwriting preexisting compiler name"
+        else:
+            self.process.compiler.name = verify_string(name)
 
     def modify_compiler_options(self, options):
         if self.process.compiler.options:
-            print "WARNING: Overwriting preexisting compiler options"
-        self.process.compiler.options = verify_string(options)
+            print "WARNING: Not overwriting preexisting compiler options"
+        else:
+            self.process.compiler.options = verify_string(options)
 

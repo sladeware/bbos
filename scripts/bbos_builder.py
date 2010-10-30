@@ -68,6 +68,8 @@ def do_it(code_path):
     assert isinstance(application, BBOSApplication), "The application variable must be a BBOSApplication type"
 
     for process in application.get_processes():
+        print "Working on process \"%s\":" % process.name
+
         # Generate the late binding application source code
         g = GenerateCode(directory, process)
         g.generate()
@@ -82,13 +84,15 @@ def do_it(code_path):
             print "Removing " + header_file + " ..."
             os.remove(header_file)
 
+        print "\n"
+
 def main(argv=None):
     if argv is None:
         argv = sys.argv
     try:
         try:
             opts, args = getopt.getopt(argv[1:], "ha:", ["help", "application_configuration="])
-            if len(opts) == 0:
+            if not len(opts) and not len(args):
                 usage()
         except getopt.error, msg:
              raise Usage(msg)

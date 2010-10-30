@@ -22,19 +22,21 @@ class PropellerCog(BBOSCore):
         self.memsize = memsize
         assert self.memsize <= 32, "memsize must be no greater than 32KB: %d" % self.memsize
 
-        # Modify includes
-        self.process.append_include_files("propeller_demo_board.h")
+        # Update compiler defines
+        self.modify_compiler_defines(["HAVE_INTTYPES_H",
+                                      "HAVE_STDINT_H",
+                                      "HAVE_STDDEF_H"])
 
         # Modify compiler include directories
-        dirs = []
+        dirs = [".", "../.."]
         self.modify_compiler_include_directories(dirs)
 
         # Modify compiler include argument
         self.modify_compiler_include_argument("-I")
 
         # Modify compiler name
-        self.modify_compiler_name("catalina")
+        self.modify_compiler_name("/usr/local/lib/catalina/bin/catalina /usr/local/lib/catalina/bin/catalina")
 
         # Modify compiler options
-        self.options = "-DDEMO -m " + str(self.memsize)
+        self.modify_compiler_options("-v -W -lc -DDEMO -x0 -M" + str(self.memsize) + "m")
 

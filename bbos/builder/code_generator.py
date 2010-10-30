@@ -76,7 +76,7 @@ class GenerateCode:
 
     def generate(self):
         if not self.test:
-            print "Generating code..."
+            print "  Generating code..."
         self.__output_static_top_content()
         self.__output_compiler_defines()
         self.__output_thread_ids()
