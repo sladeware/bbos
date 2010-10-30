@@ -12,7 +12,6 @@ KERNEL_FILES = ["bbos/kernel/time",
                 "bbos/kernel/process",
                 "bbos/kernel/system",
                 "bbos/kernel/mm/mempool",
-                "bbos/kernel/process/scheduler/fcfs",
                 "bbos/kernel/process/thread",
                 "bbos/kernel/process/thread/idle",
                 "bbos/kernel/hardware",
@@ -33,6 +32,8 @@ class BuildCode:
         self.files = [self.application_directory + f[0:-2] for f in self.process.files] + [BASE + f for f in KERNEL_FILES]
         if self.process.static_scheduler:
             self.files.append("bbos/kernel/process/scheduler/static")
+        else:
+            self.files.append("bbos/kernel/process/scheduler/fcfs")
 
         self.test = test
 
