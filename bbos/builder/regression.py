@@ -33,7 +33,6 @@ def recursive_directory_walk(path):
 
 def regression_test():
     path = os.path.abspath(os.path.dirname(sys.argv[0])) + "/../.."
-    print path
 
     modules = map(__import__, recursive_directory_walk(path))
     load = unittest.defaultTestLoader.loadTestsFromModule
