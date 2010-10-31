@@ -17,6 +17,7 @@ extern "C" {
 
 /* Include system threads */
 #include <bbos/kernel/process/thread/idle.h>
+#include <bbos/kernel/process/thread/main.h>
 
 /* Prototypes */
 

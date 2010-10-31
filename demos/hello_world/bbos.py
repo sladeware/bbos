@@ -17,7 +17,7 @@ hello_world = BBOSProcess(
     name="demo",
     ports=[],
     static_scheduler=None,
-    threads=["hello_world"]
+    threads=[]
 )
 
 quad_core_x86_simulation_board = QuadX86SimulationBoard(
@@ -33,7 +33,7 @@ hello_world_cog = BBOSProcess(
     name="demo_cog",
     ports=[],
     static_scheduler=None,
-    threads=["hello_world"]
+    threads=[]
 )
 
 propeller_demo_board = PropellerDemoBoard(

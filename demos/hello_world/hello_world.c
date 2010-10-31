@@ -1,16 +1,7 @@
 
 #include <bbos.h>
 
-void hello_world() {
+void bbos_main() {
   printf("Hello world!\n");
 }
-
-void bbos_application_init() {
-  bbos_thread_init(HELLO_WORLD, hello_world);
-}
-
-void bbos_application_exit() {
-
-}
-
 

@@ -1,7 +1,7 @@
 /*
  * Process.
  *
- * Copyright (c) ???? Slade Maurer, Alexander Sviridenko
+ * Copyright (c) 2011 Slade Maurer, Alexander Sviridenko
  */
 
 #include <bbos.h>
@@ -13,8 +13,6 @@
  *
  * The process initialization includes: scheduler initialization, threads 
  * initialization and inter-thread communication initialization.
- *
- * Start idle thread.
  */
 void
 bbos_process_init()
@@ -46,8 +44,10 @@ bbos_process_init()
   }
 
   bbos_thread_init(BBOS_IDLE_ID, bbos_idle);
+	bbos_thread_init(BBOS_MAIN_ID, bbos_main);
 
   bbos_scheduler_insert_thread(BBOS_IDLE_ID);
+	bbos_scheduler_insert_thread(BBOS_MAIN_ID);
 }
 
 /**
@@ -60,6 +60,8 @@ bbos_process_init()
 void
 bbos_process_start()
 {
+	printf("Start process\n");
+
   bbos_scheduler_do_loop();
 
   bbos_panic("Scheduler exit.");

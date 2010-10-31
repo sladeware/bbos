@@ -105,7 +105,13 @@ bbos_scheduler_remove_thread(bbos_thread_id_t tid)
 void
 bbos_scheduler_init()
 {
+	bbos_thread_id_t tid;
+
   target_tid = BBOS_IDLE_ID;
+
+	for (tid=0; tid<BBOS_NUMBER_OF_THREADS; tid++) {
+		schedule[tid].next = BBOS_IDLE_ID;
+	}
 }
 
 void

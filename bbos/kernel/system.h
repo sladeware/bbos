@@ -1,5 +1,5 @@
 /*
- * Copyright (c) ???? Slade Maurer, Alexander Sviridenko
+ * Copyright (c) 2011 Slade Maurer, Alexander Sviridenko
  */
 
 #ifndef __BBOS_SYSTEM_H
@@ -20,9 +20,8 @@ extern enum bbos_system_states {
 
 /* Prototypes */
 
-extern bbos_return_t bbos_main();
+extern bbos_return_t bbos();
 extern void bbos_init();
-extern void bbos_exit();
 extern void bbos_test();
 extern void bbos_start();
 extern void bbos_stop();

@@ -1,5 +1,7 @@
 /*
  * System.
+ *
+ * Copyright (c) 2011 Slade Maurer, Alexander Sviridenko
  */
 
 #include <bbos.h>
@@ -24,13 +26,15 @@ bbos_init()
   bbos_system_state = BBOS_SYSTEM_INITIALIZATION;
 
   printf("%s", bbos_banner);
+	printf("Initialize BBOS\n");
 
+#ifdef BBOS_HARDWARE_SUPPORT
   bbos_hardware_init();
-  bbos_process_init();
-
-#ifdef BBOS_IPC
-  bbos_ipc_init();
 #endif
+
+	// bbos_time_init();
+
+  bbos_process_init();
 }
 
 /**
@@ -44,19 +48,6 @@ bbos_test()
   printf("System testing\n");
 
   /* It seems to be fine */
-}
-
-void
-bbos_exit()
-{
-  /* Do the application specific exit point first */
-  bbos_application_exit();
-
-#ifdef BBOS_IPC
-  bbos_ipc_exit();
-#endif
-
-  exit(0);
 }
 
 /**
@@ -86,7 +77,7 @@ bbos_panic(const char *fmt, ...)
   printf("Panic: %s\n", buf);
 
   /* Exit with error */
-  bbos_exit();
+	exit(0);
 }
 
 /**
@@ -103,7 +94,7 @@ bbos_start()
     bbos_panic("BBOS was not initialized!\n");
   }
 
-  printf("Start process\n");
+  printf("Start BBOS\n");
 
   bbos_system_state = BBOS_SYSTEM_RUNNING;
   bbos_process_start();
@@ -119,7 +110,7 @@ bbos_stop()
 }
 
 /**
- * bbos_main - Main entry point for the BBOS.
+ * bbos - Main entry point for the BBOS.
  *
  * Description:
  *
@@ -130,13 +121,10 @@ bbos_stop()
  * Generic error code.
  */
 bbos_return_t
-bbos_main()
+bbos()
 {
   /* Start entire system */
   bbos_init();
-
-  /* Initialize application */
-  bbos_application_init();
 
 #ifdef BBOS_TEST
   /* Initiate system test */
@@ -147,6 +135,14 @@ bbos_main()
   bbos_start();
 
   return BBOS_SUCCESS;
+}
+
+/******************************************************************************/
+
+int
+main()
+{
+	return bbos();
 }
 
 

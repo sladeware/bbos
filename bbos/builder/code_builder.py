@@ -14,8 +14,7 @@ KERNEL_FILES = ["bbos/kernel/time",
                 "bbos/kernel/mm/mempool",
                 "bbos/kernel/process/thread",
                 "bbos/kernel/process/thread/idle",
-                "bbos/kernel/hardware",
-                "bbos/kernel/application"]
+                "bbos/kernel/hardware"]
 
 BASE = os.path.abspath(os.path.dirname(sys.argv[0])) + "/../"
 

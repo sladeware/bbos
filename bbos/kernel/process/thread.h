@@ -1,7 +1,7 @@
 /*
  * Thread.
  *
- * Copyright (c) ???? Slade Maurer, Alexander Sviridenko
+ * Copyright (c) 2011 Slade Maurer, Alexander Sviridenko
  */
 
 #ifndef __BBOS_THREAD_H
@@ -22,12 +22,13 @@ extern "C" {
  * Number of system threads, where the system threads are:
  * idle thread.
  */
-#define BBOS_NUMBER_OF_SYSTEM_THREADS 1
+#define BBOS_NUMBER_OF_SYSTEM_THREADS 2
 
 /*
  * Some well known system thread id's.
  */
 #define BBOS_IDLE_ID (BBOS_NUMBER_OF_APPLICATION_THREADS + 0)
+#define BBOS_MAIN_ID (BBOS_NUMBER_OF_APPLICATION_THREADS + 1)
 
 /*
  * Total number of threads equals to number of application threads plus

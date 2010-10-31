@@ -43,9 +43,6 @@
 /* System management */
 #include <bbos/kernel/system.h>
 
-/* Application support */
-#include <bbos/kernel/application.h>
-
 #endif /* __BBOS_KERNEL_H */
 
 
