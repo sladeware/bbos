@@ -12,7 +12,7 @@ DEMO=$BBOS_ROOT/demos/hello_world/demo
 DEMO_COG=$BBOS_ROOT/demos/hello_world/demo_cog
 BBOS_H=$BBOS_ROOT/demos/hello_world/bbos.h
 
-BBOS_H_MD5SUM="dcf6a9ec5db9c6fe57f8c50590d90e3f"
+BBOS_H_MD5SUM="d7965752c27a8180de4e14bc7711f538"
 
 PYCHECKER_ERROR_LIMIT=1000
 PYCHECKER_FILTER="bbos/security/crypto/asn1.py"

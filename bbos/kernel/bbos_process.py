@@ -55,7 +55,10 @@ class BBOSProcess:
 
     def add_system_threads(self):
         # Always add the system idle thread
-        self.threads.append("bbos_idle")
+        self.threads.append(BBOS_IDLE_THREAD_NAME)
+
+        # Always add the user main thread
+        self.threads.append(BBOS_MAIN_THREAD_NAME)
 
         # Add IPC system thread to this process
         if self.ipc:

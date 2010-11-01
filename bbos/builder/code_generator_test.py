@@ -26,8 +26,8 @@ control_lines_top = ['\n',
                      '#include <bbos/compiler.h>\n',
                      '\n',
                      '/* Thread IDs */\n',
-                     '#define MOVE 0\n',
-                     '#define BBOS_IDLE 1\n',
+                     '#define BBOS_IDLE 0\n',
+                     '#define BBOS_MAIN 1\n',
                      '#define BBOS_IPC 2\n',
                      '#define GPIO 3\n',
                      '\n',
@@ -61,10 +61,10 @@ static_control_lines = control_lines_top + ['/* Application static scheduler mac
                                             '#define BBOS_SCHEDULER_STATIC\n',
                                             '#define bbos_static_scheduler()  \\\n',
                                             '  while(true) { \\\n',
-                                            '    move(); \\\n',
-                                            '    gpio_driver_main(); \\\n', 
-                                            '    bbos_ipc(); \\\n',
+                                            '    gpio_driver_main(); \\\n',
                                             '    bbos_idle(); \\\n',
+                                            '    bbos_main(); \\\n',
+                                            '    bbos_ipc(); \\\n',
                                             '  }\n',
                                             '\n'] + control_lines_bottom
 
@@ -86,7 +86,7 @@ fcfs_process = BBOSProcess(
     name="finger",
     ports=["FINGER_PORT"],
     static_scheduler=None,
-    threads=["move"]
+    threads=[]
 )
 
 static_process = BBOSProcess(
@@ -97,8 +97,8 @@ static_process = BBOSProcess(
     mempools=["FINGER_MEMPOOL"],
     name="finger",
     ports=["FINGER_PORT"],
-    static_scheduler=StaticScheduler(["move", "gpio_driver_main"]),
-    threads=["move"]
+    static_scheduler=StaticScheduler(["gpio_driver_main"]),
+    threads=[]
 )
 
 

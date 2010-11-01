@@ -9,6 +9,7 @@ from types import *
 BBOS_HEADER = "/bbos.h"
 
 # System thread names
+BBOS_MAIN_THREAD_NAME = "bbos_main"
 BBOS_IDLE_THREAD_NAME = "bbos_idle"
 BBOS_IPC_THREAD_NAME = "bbos_ipc"
 

@@ -117,10 +117,7 @@ class GenerateCode:
 
     def __output_static_scheduler_macro(self):
         if self.process.static_scheduler:
-            # Add the the end of the list the implied threads
-            if self.process.ipc:
-                self.process.static_scheduler.append_thread(BBOS_IPC_THREAD_NAME)
-            self.process.static_scheduler.append_thread(BBOS_IDLE_THREAD_NAME)
+            [self.process.static_scheduler.append_thread(t) for t in self.process.threads]
 
             # Output the static scheduler in the order defined by the user
             self.process.static_scheduler.output(self.f,

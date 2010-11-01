@@ -17,11 +17,11 @@ test_process = BBOSProcess(
     mempools=[],
     name="test_process",
     ports=["FINGER_PORT"],
-    static_scheduler=StaticScheduler(["move", "gpio_driver_main"]),
-    threads=["move"]
+    static_scheduler=StaticScheduler(["gpio_driver_main"]),
+    threads=[]
 )
 
-CONTROL_THREADS=['move', 'bbos_idle', 'bbos_ipc']
+CONTROL_THREADS=['bbos_idle', 'bbos_main', 'bbos_ipc']
 
 
 class SanityCheck(unittest.TestCase):
