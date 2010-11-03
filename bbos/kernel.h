@@ -28,6 +28,9 @@
  */
 #include <assert.h>
 
+/* Math */
+#include <bbos/kernel/math.h>
+
 /* Memory management */
 #include <bbos/kernel/mm.h>
 

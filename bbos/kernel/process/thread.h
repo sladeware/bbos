@@ -30,16 +30,13 @@ extern "C" {
 #define BBOS_IDLE_ID (BBOS_NUMBER_OF_APPLICATION_THREADS + 0)
 #define BBOS_MAIN_ID (BBOS_NUMBER_OF_APPLICATION_THREADS + 1)
 
+#define BBOS_UNKNOWN_ID 16 /* FIXME */
+
 /*
  * Total number of threads equals to number of application threads plus
  * number of system threads.
  */
 #define BBOS_NUMBER_OF_THREADS (BBOS_NUMBER_OF_APPLICATION_THREADS + BBOS_NUMBER_OF_SYSTEM_THREADS)
-
-/*
- * Some well known thread id's.
- */
-#define BBOS_IDLE_THREAD_ID (BBOS_NUMBER_OF_APPLICATION_THREADS + 0)
 
 /* Thread management structure */
 struct bbos_thread {
