@@ -29,10 +29,9 @@ bbos_port_read(bbos_port_id_t id, void *buffer, uint16_t n)
 
   d = min(n, bbos_port_table[id].size - (bbos_port_table[id].out & 
     (bbos_port_table[id].size - 1)));
-  memcpy(buffer, bbos_port_table[id].buffer + (bbos_port_table[id].out &
-    (bbos_port_table[id].size - 1)), d);
+  memcpy(buffer, (void *)((uint16_t *)bbos_port_table[id].buffer + (bbos_port_table[id].out & (bbos_port_table[id].size - 1))), d);
 
-  memcpy(buffer + d, bbos_port_table[id].buffer, n - d);
+  memcpy((void *)((uint16_t *)buffer + d), bbos_port_table[id].buffer, n - d);
 
   bbos_port_table[id].out += n;
 
@@ -51,10 +50,10 @@ bbos_port_write(bbos_port_id_t id, void *buffer, uint16_t n)
 
   d = min(n, bbos_port_table[id].size - (bbos_port_table[id].in & 
     (bbos_port_table[id].size - 1)));
-  memcpy(bbos_port_table[id].buffer + (bbos_port_table[id].in & 
-    (bbos_port_table[id].size - 1)), buffer, d);
+  memcpy((void *)((uint16_t *)bbos_port_table[id].buffer + (bbos_port_table[id].in & 
+    (bbos_port_table[id].size - 1))), buffer, d);
 
-  memcpy(bbos_port_table[id].buffer, buffer + d, n - d);
+  memcpy(bbos_port_table[id].buffer, (void *)((uint16_t *)buffer + d), n - d);
 
   bbos_port_table[id].in += n;
 

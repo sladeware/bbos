@@ -55,8 +55,8 @@ struct bbos_gpio_chip p8x32a_gpio_banks[] = {
 };
 
 /* P8X32A GPIO driver implentation with support of catalina compiler. */
-//#ifdef __CATALINA__
-//#include <catalina_cog.h>
+#ifdef __CATALINA__
+#include <catalina_cog.h>
 
 /**
  * bbos_gpio_direction_input
@@ -64,44 +64,76 @@ struct bbos_gpio_chip p8x32a_gpio_banks[] = {
 static bbos_return_t
 gpio_direction_input(unsigned int pin)
 {
-	struct bbos_gpio_chip *chip;
+  unsigned int mask;
+  struct bbos_gpio_chip *chip;
 
-	chip = bbos_gpio_pin_to_chip(pin);
+  chip = bbos_gpio_pin_to_chip(pin);
+  mask = 1 << pin;
 
-	return BBOS_SUCCESS;
+  // Register A
+  if (chip->base == 0) {
+    _dira(mask, 0);
+    return BBOS_SUCCESS;
+  }
+
+  return BBOS_FAILURE;
 }
 
 static bbos_return_t
 gpio_direction_output(unsigned int pin, int value)
 {
-	struct bbos_gpio_chip *chip;
+  unsigned int mask;
+  struct bbos_gpio_chip *chip;
+  
+  chip = bbos_gpio_pin_to_chip(pin);
+  mask = 1 << pin;
 
-	chip = bbos_gpio_pin_to_chip(pin);
+  if (chip->base == 0) {
+    _dira(mask, mask);    /* Set pins to output */
+    _outa(mask, value);   /* Set output */
+    return BBOS_SUCCESS;
+  }
 
-	return BBOS_SUCCESS;
+  return BBOS_FAILURE;
 }
 
 static bbos_return_t
 gpio_get_value(unsigned int pin)
 {
-	struct bbos_gpio_chip *chip;
+  struct bbos_gpio_chip *chip;
 
-	chip = bbos_gpio_pin_to_chip(pin);
+  chip = bbos_gpio_pin_to_chip(pin);
+
+  if (chip->base == 0) {
+    // get value and take pins in which we are insterested id
+//    *(bbos_driver_response.data) = (_ina() & (1 << pin));
+    bbos_driver_response.size = sizeof(unsigned int);
+    return BBOS_SUCCESS;
+  }
 	
-	return BBOS_SUCCESS;
+  return BBOS_FAILURE;
 }
 
 static bbos_return_t
 gpio_set_value(unsigned int pin, int value)
 {
-	struct bbos_gpio_chip *chip;
+  unsigned int mask;
+  struct bbos_gpio_chip *chip;
 
-	chip = bbos_gpio_pin_to_chip(pin);
+  chip = bbos_gpio_pin_to_chip(pin);
+  mask = 1 << pin;
 
-	return BBOS_SUCCESS;
+  if (chip->base == 0) {
+    _outa(mask, value);
+    return BBOS_SUCCESS;
+  }
+
+  return BBOS_FAILURE;
 }
 
-//#endif /* __CATALINA__ */
+#else
+#error "Unsupported compiler."
+#endif
 
 /**
  * bbos_driver_command - Process driver commands.
@@ -109,51 +141,52 @@ gpio_set_value(unsigned int pin, int value)
 static bbos_return_t
 bbos_driver_command()
 {
-	struct bbos_gpio_message *request;
+  struct bbos_gpio_message *request;
 
-	request = (struct bbos_gpio_message *)bbos_driver_request.data;
+  request = (struct bbos_gpio_message *)bbos_driver_request.data;
 
-	switch (bbos_driver_request.command) {
-		case BBOS_DRIVER_OPEN:
-			if (bbos_gpio_table[request->pin].owner != BBOS_UNKNOWN_ID) {
-				/* Pin is already in use */
-				return BBOS_FAILURE;
-			}
-			bbos_gpio_table[request->pin].owner = bbos_driver_request.sender;
-			return BBOS_SUCCESS;
+  switch (bbos_driver_request.command) {
+  case BBOS_DRIVER_OPEN:
+    if (bbos_gpio_table[request->pin].owner != BBOS_UNKNOWN_ID) {
+      /* Pin is already in use */
+      return BBOS_FAILURE;
+    }
+    bbos_gpio_table[request->pin].owner = bbos_driver_request.sender;
+    return BBOS_SUCCESS;
 			
-		case BBOS_DRIVER_CLOSE:
-			if (bbos_gpio_table[request->pin].owner == BBOS_UNKNOWN_ID) {
-				/* Pin has no owner */
-				return BBOS_FAILURE;
-			}
-			bbos_gpio_table[request->pin].owner = BBOS_UNKNOWN_ID;
-			return BBOS_SUCCESS;
-		default:
-			/* 
-			 * To get any other commands GPIO driver has to check your rights for the
-			 * particular pin.
-			 */
-			if (bbos_gpio_table[request->pin].owner != bbos_driver_request.sender) {
-				return BBOS_FAILURE;
-			}
-			break;
-	}
+  case BBOS_DRIVER_CLOSE:
+    if (bbos_gpio_table[request->pin].owner == BBOS_UNKNOWN_ID) {
+      /* Pin has no owner */
+      return BBOS_FAILURE;
+    }
+    bbos_gpio_table[request->pin].owner = BBOS_UNKNOWN_ID;
+    return BBOS_SUCCESS;
 
-	switch (bbos_driver_request.command) {
-		case BBOS_GPIO_DIRECTION_INPUT:
-			return gpio_direction_input(request->pin);
-		case BBOS_GPIO_DIRECTION_OUTPUT:
-			return gpio_direction_output(request->pin, request->value);
-		case BBOS_GPIO_SET_VALUE:
-			return gpio_set_value(request->pin, request->value);
-		case BBOS_GPIO_GET_VALUE:
-			return gpio_get_value(request->pin);
-		default:
-			break;
-	}
+  default:
+    /* 
+     * To get any other commands GPIO driver has to check your rights for the
+     * particular pin.
+     */
+    if (bbos_gpio_table[request->pin].owner != bbos_driver_request.sender) {
+      return BBOS_FAILURE;
+    }
+    break;
+  }
+
+  switch (bbos_driver_request.command) {
+  case BBOS_GPIO_DIRECTION_INPUT:
+    return gpio_direction_input(request->pin);
+  case BBOS_GPIO_DIRECTION_OUTPUT:
+    return gpio_direction_output(request->pin, request->value);
+  case BBOS_GPIO_SET_VALUE:
+    return gpio_set_value(request->pin, request->value);
+  case BBOS_GPIO_GET_VALUE:
+    return gpio_get_value(request->pin);
+  default:
+    break;
+  }
 	
-	return BBOS_FAILURE;
+  return BBOS_FAILURE;
 }
 
 /**
@@ -167,20 +200,20 @@ void
 p8x32a_gpio_init()
 {
 
-	/* Register GPIO chips */
-	if (bbos_gpio_register_chip(&p8x32a_gpio_banks[0]) != BBOS_SUCCESS) {
-		bbos_panic("P8X32A GPIO driver can not initialize gpio banks.\n");
-	}
+  /* Register GPIO chips */
+  if (bbos_gpio_register_chip(&p8x32a_gpio_banks[0]) != BBOS_SUCCESS) {
+    bbos_panic("P8X32A GPIO driver can not initialize gpio banks.\n");
+  }
 
-	/* Register driver */
-	//bbos_driver_register(P8X32A_GPIO_ID, "P8X32A_GPIO", 0, "");
+  /* Register driver */
+  //bbos_driver_register(P8X32A_GPIO_ID, "P8X32A_GPIO", 0, "");
 
-	/* Initalize P8X32 GPIO driver communication mechanisms */	
-	bbos_port_init(P8X32A_GPIO_PORT_ID, p8x32a_gpio_port, P8X32A_GPIO_PORT_SIZE);
+  /* Initalize P8X32 GPIO driver communication mechanisms */	
+  bbos_port_init(P8X32A_GPIO_PORT_ID, p8x32a_gpio_port, P8X32A_GPIO_PORT_SIZE);
 
-	/* Initialize and start schedule GPIO driver */
-	bbos_driver_init(P8X32A_GPIO_ID, P8X32A_GPIO_PORT_ID);
-	bbos_thread_init(P8X32A_GPIO_ID, bbos_driver_messenger);
-	bbos_scheduler_insert_thread(P8X32A_GPIO_ID);
+  /* Initialize and start schedule GPIO driver */
+  bbos_driver_init(P8X32A_GPIO_ID, P8X32A_GPIO_PORT_ID);
+  bbos_thread_init(P8X32A_GPIO_ID, bbos_driver_messenger);
+  bbos_scheduler_insert_thread(P8X32A_GPIO_ID);
 }
 
