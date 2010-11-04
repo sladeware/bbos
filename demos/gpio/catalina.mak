@@ -5,6 +5,7 @@ LIBS =
 
 CDEBUG = -g
 
+ROOT = ../../bbos
 KERNEL = ../../bbos/kernel
 HARDWARE = ../../bbos/hardware
 DRIVERS = $(HARDWARE)/drivers
@@ -12,7 +13,7 @@ DRIVERS = $(HARDWARE)/drivers
 CFLAGS = -v -W -lc -DDEMO -x0 -M2m -I. -I../.. -I../../../../data/downloads/catalina_2.6_linux/include
 LDFLAGS = -g
 
-SRCS_C = test_yield.c $(KERNEL)/system.c $(KERNEL)/hardware.c $(KERNEL)/process.c \
+SRCS_C = test_yield.c $(KERNEL)/system.c $(ROOT)/hardware.c $(KERNEL)/process.c \
 	$(KERNEL)/time.c \
 	$(KERNEL)/mm/mempool.c $(KERNEL)/process/port.c \
 	$(KERNEL)/process/thread.c $(KERNEL)/process/scheduler/fcfs.c \
