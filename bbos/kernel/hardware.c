@@ -1,7 +1,7 @@
 /*
  * Hardware support.
  *
- * Copyright (c) ???? Slade Maurer, Alexander Sviridenko
+ * Copyright (c) 2011 Slade Maurer, Alexander Sviridenko
  */
 
 #include <bbos.h>

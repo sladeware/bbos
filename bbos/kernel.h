@@ -1,7 +1,7 @@
 /*
  * Kernel.
  *
- * Copyright (c) 2010 Slade Maurer, Alexander Sviridenko
+ * Copyright (c) 2011 Slade Maurer, Alexander Sviridenko
  */
 
 #ifndef __BBOS_KERNEL_H
@@ -36,9 +36,6 @@
 
 /* Timing control */
 #include <bbos/kernel/time.h>
-
-/* Hardware support */
-#include <bbos/kernel/hardware.h>
 
 /* Process management */
 #include <bbos/kernel/process.h>

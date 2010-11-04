@@ -1,9 +1,0 @@
-
-#ifndef __BBOS_HARDWARE_DEVICE_H
-#define __BBOS_HARDWARE_DEVICE_H
-
-
-#endif /* __BBOS_HARDWARE_DEVICE_H */
-
-
-
