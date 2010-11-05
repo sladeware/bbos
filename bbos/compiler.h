@@ -1,5 +1,7 @@
 /*
- * Copyright (c) ???? Slade Maurer, Alexander Sviridenko
+ * Compiler support.
+ *
+ * Copyright (c) 2011 Slade Maurer, Alexander Sviridenko
  */
 
 #ifdef __CATALINA__

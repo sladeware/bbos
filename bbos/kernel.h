@@ -28,6 +28,10 @@
  */
 #include <assert.h>
 
+/* Temporary header files. They will be moved soon. */
+#include <bbos/compiler.h>
+#include <bbos/hardware.h>
+
 /* Math */
 #include <bbos/kernel/math.h>
 

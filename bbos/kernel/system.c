@@ -28,11 +28,7 @@ bbos_init()
   printf("%s", bbos_banner);
 	printf("Initialize BBOS\n");
 
-#ifdef BBOS_HARDWARE_SUPPORT
   bbos_hardware_init();
-#endif
-
-	// bbos_time_init();
 
   bbos_process_init();
 }
