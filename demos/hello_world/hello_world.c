@@ -1,6 +1,7 @@
 
 #include <bbos.h>
 
+#ifdef __PIC32MX__
 #pragma config \
 	FPLLIDIV = DIV_2,  \
 	FPLLMUL  = MUL_20, \
@@ -11,6 +12,7 @@
 	FPBDIV   = DIV_2
 
 #define DEG2RAD (M_PI / 180.0)
+#endif
 
 void bbos_main() {
   printf("Hello world!\n");
