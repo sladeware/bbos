@@ -13,7 +13,8 @@
 #include <bbos/kernel/codes.h>
 #include <bbos/kernel/debug.h>
 #include <bbos/kernel/types.h>
-
+#define __need__va_list
+#include <stdarg.h>
 /* We must include stdarg.h before stdio.h. */
 #include <stdarg.h>
 
