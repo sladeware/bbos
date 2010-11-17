@@ -58,9 +58,6 @@ struct bbos_gpio_chip p8x32a_gpio_banks[] = {
 #ifdef __CATALINA__
 #include <catalina_cog.h>
 
-/**
- * bbos_gpio_direction_input
- */
 static bbos_return_t
 gpio_direction_input(unsigned int pin)
 {
@@ -199,7 +196,6 @@ bbos_driver_command()
 void
 p8x32a_gpio_init()
 {
-
   /* Register GPIO chips */
   if (bbos_gpio_register_chip(&p8x32a_gpio_banks[0]) != BBOS_SUCCESS) {
     bbos_panic("P8X32A GPIO driver can not initialize gpio banks.\n");
@@ -212,8 +208,6 @@ p8x32a_gpio_init()
   bbos_port_init(P8X32A_GPIO_PORT_ID, p8x32a_gpio_port, P8X32A_GPIO_PORT_SIZE);
 
   /* Initialize and start schedule GPIO driver */
-  bbos_driver_init(P8X32A_GPIO_ID, P8X32A_GPIO_PORT_ID);
-  bbos_thread_init(P8X32A_GPIO_ID, bbos_driver_messenger);
-  bbos_scheduler_insert_thread(P8X32A_GPIO_ID);
+  bbos_driver_register(P8X32A_GPIO_ID, P8X32A_GPIO_PORT_ID);
 }
 

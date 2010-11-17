@@ -26,12 +26,15 @@ static struct bbos_driver_response bbos_driver_response;
 static bbos_return_t bbos_driver_error;
 
 /* Initialize driver structure */
-#define bbos_driver_init(id, input) \
-	do {\
-		bbos_driver_id = id; \
-		bbos_driver_input = input;\
-	}\
-	while(0)
+static void 
+bbos_driver_register(bbos_thread_id_t tid, bbos_port_id_t input)
+{
+  bbos_driver_id = tid;
+  bbos_driver_input = input;
+  
+  bbos_thread_init(tid, bbos_driver_messenger);
+  bbos_scheduler_insert_thread(tid);
+}
 
 /* Interface */
 
