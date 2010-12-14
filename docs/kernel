@@ -1,0 +1,5 @@
+
+Kernel
+
+The BBOS kernel environment is represented by bbos/kernel.h header file.
+

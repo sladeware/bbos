@@ -1,0 +1,8 @@
+
+bbos_sched_init()
+bbos_sched_start()
+
+bbos_thread_init()
+bbos_thread_suspend()
+bbos_thread_resume()
+

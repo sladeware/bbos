@@ -1,0 +1,120 @@
+
+Inter-thread communication
+
+Inter-thread communication mechanism is separated from thread management. It 
+means, that the thread management structure does not contain any information for 
+communication mechanism. Thus the inter-thread communication is an independent 
+unit and so it will be working even for state-machine design (see state-machine 
+design).
+
+Threads communicate with each other via message passing, where the message can 
+be any data value. Message passing is _asynchronous_: a sending thread will not 
+be suspended after sending a message. Sending a message will never fail; so 
+if you try sending a message to nonexistent thread, it's thrown away without 
+generating an error. Also the sending thread cannot fail, even if the receiving 
+thread fails or becomes inaccessible. 
+
+Ports
+
+The messages are sent to and received from mailboxes, called _ports_ (see Mach 
+ports for comparison). The BBOS port represented by a linked list of messages, 
+where the port is the head of such list. Thus the BBOS 
+port does not have own space for its queue of messages, and so, the number of 
+messages is unlimited, which means a port will never be full.
+
+All the ports are represented by a port table, the size of which is defined by 
+the macro BBOS_NUMBER_OF_PORTS. Only two primitives are needed for message 
+transfer. The bbos_port_write() primitive sends a message to a port. A message 
+is received via bbos_port_read().
+
+Since the port does not have own memory to keep the messages, this memory has to
+be allocated by developer. To provide much more complicated and efficient 
+systems with dynamic memory management, developer may write a wrappers for the 
+main primitives such as bbos_port_write() and bbos_port_read().
+
+The threads may control more than one port in which incoming messages are 
+stored. Messages are stored in port in the order in which they are delivered. At
+the same time messages are retrieved from the port _selectively_, so it's not 
+necessary to process messages in the order they are received. This makes the 
+concurrency more robust.
+
+Records and messages
+
+BBOS messages can be sent and received by using port specific primitives 
+described above. The messages themselves lives under the _record_ fixed-size 
+record:
+
+	typedef struct bbos_port_record {
+		int id;
+		void *message;
+		bbos_port_id_t return_port;
+		struct bbos_port_record *next;
+	} bbos_port_record_t;
+
+The meanings of the record fields are as follows:
+
+	*	id contains an identifier that can be used to convey the meaning or format 
+		of the message, to be interpreted by the recipient. For example, a client 
+		can use this field to specify an operation to be performed by the server.
+		
+	* message is a pointer to the message.
+	
+	* return_port can be used to specify the reply port that the recipient will 
+		use to send a reply.
+		
+	* next is ignored since it will be set automatically by port to tie the 
+		message with other.
+
+A different messages are describes in bbos/kernel/messages.h header file.
+
+Builder
+
+Use enum_port pragma to enumerate your ports.
+
+	#pragma BBOS enum_port(MYPORT)
+	
+	or
+	
+	#pragma BBOS enum_port(MYPORT=3)
+
+	Review current table port enumerated ports and set MYPORT as 3.
+
+Examples
+
+	Client part
+
+#pragma BBOS enum_port(CLIENT_PORT, SERVER_PORT)
+
+void client() {
+	bbos_port_record_t rec;
+	
+	rec.message = "Hello world!\0";
+	rec.id = CLIENT_MESSAGE;
+	rec.return_port = CLIENT_PORT_ID;
+
+	bbos_port_write(&rec, SERVER_PORT_ID);
+}
+
+void server() {
+	bbos_port_record_t *rec;
+	
+	bbos_port_read(&rec, SERVER_PORT_ID);
+	printf("Client sent: %s\n", rec->message);
+}
+
+The port record:
+
+ +----------+---------+----------+
+ |~~~NEXT~~~|~~LABEL~~|~~~DATA~~~| RETURN PORT
+ +----------+---------+----------+
+    2 bytes   2 bytes   2 bytes 
+
+
+	bbos_port_msghdr_t hdr;
+
+	rec.id = PRINT_ME;
+	rec.message = "Hello world!\0";
+	rec.return_port = CLIENT_PORT_ID;	
+	bbos_port_write(&rec, SERVER_PORT_ID);
+
+
