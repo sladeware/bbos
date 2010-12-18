@@ -1191,20 +1191,20 @@ SEGMENT_LAYOUT = 0
 0fe0(03d7): 00 0e 03 00 '  long $30e00 ' restore registers
 0fe4(03d8): 0c 00 7c 5c '  jmp #RETN
 0fe8(03d9):             '  long ' align long
-0fe8(03d9):             ' C_tmpfile7l3ION_4d07ee05_bbos_driver_bootstrapper_L000008 ' <symbol:bbos_driver_bootstrapper>
+0fe8(03d9):             ' C_tmpfileJ2XpEO_4d093705_bbos_driver_bootstrapper_L000008 ' <symbol:bbos_driver_bootstrapper>
 0fe8(03d9): 04 00 7c 5c '  jmp #LODA
-0fec(03da): 90 3d 00 00 '  long @C_tmpfiler5stRb_4d07ee05_driver_thread_id_L000003
+0fec(03da): 90 3d 00 00 '  long @C_tmpfilemTgnxM_4d093705_driver_thread_id_L000003
 0ff0(03db): 2e 6c 3c 04 '  wrword r3, RI ' ASGNI2 addrg
 0ff4(03dc): 04 00 7c 5c '  jmp #LODA
-0ff8(03dd): 8c 3d 00 00 '  long @C_tmpfilerULIfI_4d07ee05_driver_listen_port_id_L000004
+0ff8(03dd): 8c 3d 00 00 '  long @C_tmpfilejdPzXM_4d093705_driver_listen_port_id_L000004
 0ffc(03de): 2e 6a 3c 04 '  wrword r2, RI ' ASGNI2 addrg
 1000(03df): 0c 00 7c 5c '  jmp #RETN
 1004(03e0):             '  long ' align long
-1004(03e0):             ' C_tmpfile1bMZck_4d07ee05_bbos_driver_messenger_L000010 ' <symbol:bbos_driver_messenger>
+1004(03e0):             ' C_tmpfilec9AE4O_4d093705_bbos_driver_messenger_L000010 ' <symbol:bbos_driver_messenger>
 1004(03e0): 22 00 7c 5c '  jmp #PSHM
 1008(03e1): 00 08 00 00 '  long $800 ' save registers
 100c(03e2): 04 00 7c 5c '  jmp #LODA
-1010(03e3): 8c 3d 00 00 '  long @C_tmpfilerULIfI_4d07ee05_driver_listen_port_id_L000004
+1010(03e3): 8c 3d 00 00 '  long @C_tmpfilejdPzXM_4d093705_driver_listen_port_id_L000004
 1014(03e4): 2e 7c bc 04 '  rdword r11, RI ' reg <- INDIRI2 addrg
 1018(03e5): 3e 6a bc a0 '  mov r2, r11 ' CVII
 101c(03e6): 3e 6a bc a0 '  mov r2, r11 ' CVII
@@ -1219,18 +1219,18 @@ SEGMENT_LAYOUT = 0
 1040(03ef): 4d 7c bc 60 '  and r11, cviu_m1 ' zero extend
 1044(03f0): 00 7c 7c c2 '  cmps r11,  #0 wz
 1048(03f1): 13 00 7c 5c '  jmp #BR_Z
-104c(03f2): e8 0f 00 00 '  long @C_tmpfile1bMZck_4d07ee05_bbos_driver_messenger_L000010_12 ' EQI4
+104c(03f2): e8 0f 00 00 '  long @C_tmpfilec9AE4O_4d093705_bbos_driver_messenger_L000010_12 ' EQI4
 1050(03f3): 00 5e fc a0 '  mov BC, #0 ' arg size
 1054(03f4): 0b 00 7c 5c '  jmp #CALA
-1058(03f5): 18 13 00 00 '  long @C_tmpfile3ZBd2K_4d07ee05_bbos_driver_idle_L000006 ' CALL addrg
+1058(03f5): 18 13 00 00 '  long @C_tmpfilevIiZNN_4d093705_bbos_driver_idle_L000006 ' CALL addrg
 105c(03f6): 0e 00 7c 5c '  jmp #JMPA
-1060(03f7): b4 10 00 00 '  long @C_tmpfile1bMZck_4d07ee05_bbos_driver_messenger_L000010_11 ' JUMPV addrg
-1064(03f8):             ' C_tmpfile1bMZck_4d07ee05_bbos_driver_messenger_L000010_12
+1060(03f7): b4 10 00 00 '  long @C_tmpfilec9AE4O_4d093705_bbos_driver_messenger_L000010_11 ' JUMPV addrg
+1064(03f8):             ' C_tmpfilec9AE4O_4d093705_bbos_driver_messenger_L000010_12
 1064(03f8): 04 00 7c 5c '  jmp #LODA
-1068(03f9): 78 3d 00 00 '  long @C_tmpfileZ46XDe_4d07ee05_driver_message_L000005
+1068(03f9): 78 3d 00 00 '  long @C_tmpfileIPtMnN_4d093705_driver_message_L000005
 106c(03fa): 2e 6a bc a0 '  mov r2, RI ' reg ARG ADDRG
 1070(03fb): 04 00 7c 5c '  jmp #LODA
-1074(03fc): 8c 3d 00 00 '  long @C_tmpfilerULIfI_4d07ee05_driver_listen_port_id_L000004
+1074(03fc): 8c 3d 00 00 '  long @C_tmpfilejdPzXM_4d093705_driver_listen_port_id_L000004
 1078(03fd): 2e 7c bc 04 '  rdword r11, RI ' reg <- INDIRI2 addrg
 107c(03fe): 3e 6c bc a0 '  mov r3, r11 ' CVII
 1080(03ff): 3e 6c bc a0 '  mov r3, r11 ' CVII
@@ -1242,32 +1242,32 @@ SEGMENT_LAYOUT = 0
 1098(0405): d0 04 00 00 '  long @C___bbos_port_read
 109c(0406): 08 58 fc 80 '  add SP, #8 ' CALL addrg
 10a0(0407): 04 00 7c 5c '  jmp #LODA
-10a4(0408): 88 3d 00 00 '  long @C_tmpfileZ46XDe_4d07ee05_driver_message_L000005+16
+10a4(0408): 88 3d 00 00 '  long @C_tmpfileIPtMnN_4d093705_driver_message_L000005+16
 10a8(0409): 2e 6a bc 08 '  rdlong r2, RI ' reg ARG INDIR ADDRG
 10ac(040a): 04 00 7c 5c '  jmp #LODA
-10b0(040b): 78 3d 00 00 '  long @C_tmpfileZ46XDe_4d07ee05_driver_message_L000005
+10b0(040b): 78 3d 00 00 '  long @C_tmpfileIPtMnN_4d093705_driver_message_L000005
 10b4(040c): 2e 6c bc 08 '  rdlong r3, RI ' reg ARG INDIR ADDRG
 10b8(040d): 08 5e fc a0 '  mov BC, #8 ' arg size
 10bc(040e): 08 58 fc 84 '  sub SP, #8 ' stack space for reg ARGs
 10c0(040f): 0b 00 7c 5c '  jmp #CALA
-10c4(0410): d0 13 00 00 '  long @C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L000007
+10c4(0410): d0 13 00 00 '  long @C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L000007
 10c8(0411): 08 58 fc 80 '  add SP, #8 ' CALL addrg
 10cc(0412): 04 00 7c 5c '  jmp #LODA
-10d0(0413): 80 3d 00 00 '  long @C_tmpfileZ46XDe_4d07ee05_driver_message_L000005+8
+10d0(0413): 80 3d 00 00 '  long @C_tmpfileIPtMnN_4d093705_driver_message_L000005+8
 10d4(0414): 2e 7c bc 04 '  rdword r11, RI ' reg <- INDIRI2 addrg
 10d8(0415): 10 7c fc 2c '  shl r11, #16
 10dc(0416): 10 7c fc 38 '  sar r11, #16 ' sign extend
 10e0(0417): 00 7c 7c c2 '  cmps r11,  #0 wz
 10e4(0418): 13 00 7c 5c '  jmp #BR_Z
-10e8(0419): 78 10 00 00 '  long @C_tmpfile1bMZck_4d07ee05_bbos_driver_messenger_L000010_15 ' EQI4
+10e8(0419): 78 10 00 00 '  long @C_tmpfilec9AE4O_4d093705_bbos_driver_messenger_L000010_15 ' EQI4
 10ec(041a): 0e 00 7c 5c '  jmp #JMPA
-10f0(041b): b4 10 00 00 '  long @C_tmpfile1bMZck_4d07ee05_bbos_driver_messenger_L000010_11 ' JUMPV addrg
-10f4(041c):             ' C_tmpfile1bMZck_4d07ee05_bbos_driver_messenger_L000010_15
+10f0(041b): b4 10 00 00 '  long @C_tmpfilec9AE4O_4d093705_bbos_driver_messenger_L000010_11 ' JUMPV addrg
+10f4(041c):             ' C_tmpfilec9AE4O_4d093705_bbos_driver_messenger_L000010_15
 10f4(041c): 04 00 7c 5c '  jmp #LODA
-10f8(041d): 78 3d 00 00 '  long @C_tmpfileZ46XDe_4d07ee05_driver_message_L000005
+10f8(041d): 78 3d 00 00 '  long @C_tmpfileIPtMnN_4d093705_driver_message_L000005
 10fc(041e): 2e 6a bc a0 '  mov r2, RI ' reg ARG ADDRG
 1100(041f): 04 00 7c 5c '  jmp #LODA
-1104(0420): 80 3d 00 00 '  long @C_tmpfileZ46XDe_4d07ee05_driver_message_L000005+8
+1104(0420): 80 3d 00 00 '  long @C_tmpfileIPtMnN_4d093705_driver_message_L000005+8
 1108(0421): 2e 7c bc 04 '  rdword r11, RI ' reg <- INDIRI2 addrg
 110c(0422): 3e 6c bc a0 '  mov r3, r11 ' CVII
 1110(0423): 3e 6c bc a0 '  mov r3, r11 ' CVII
@@ -1278,12 +1278,12 @@ SEGMENT_LAYOUT = 0
 1124(0428): 0b 00 7c 5c '  jmp #CALA
 1128(0429): f8 02 00 00 '  long @C___bbos_port_write
 112c(042a): 08 58 fc 80 '  add SP, #8 ' CALL addrg
-1130(042b):             ' C_tmpfile1bMZck_4d07ee05_bbos_driver_messenger_L000010_11
+1130(042b):             ' C_tmpfilec9AE4O_4d093705_bbos_driver_messenger_L000010_11
 1130(042b): 23 00 7c 5c '  jmp #POPM
 1134(042c): 00 08 00 00 '  long $800 ' restore registers
 1138(042d): 0c 00 7c 5c '  jmp #RETN
 113c(042e):             '  long ' align long
-113c(042e):             ' C_tmpfilezxjEZm_4d07ee05_gpio_direction_input_L000021 ' <symbol:gpio_direction_input>
+113c(042e):             ' C_tmpfilem16dVP_4d093705_gpio_direction_input_L000021 ' <symbol:gpio_direction_input>
 113c(042e): 09 00 7c 5c '  jmp #NEWF
 1140(042f): 08 58 fc 84 '  sub SP, #8
 1144(0430): 22 00 7c 5c '  jmp #PSHM
@@ -1314,7 +1314,7 @@ SEGMENT_LAYOUT = 0
 11a8(0449): 10 7c fc 38 '  sar r11, #16 ' sign extend
 11ac(044a): 00 7c 7c c2 '  cmps r11,  #0 wz
 11b0(044b): 14 00 7c 5c '  jmp #BRNZ
-11b4(044c): 6c 11 00 00 '  long @C_tmpfilezxjEZm_4d07ee05_gpio_direction_input_L000021_23 ' NEI4
+11b4(044c): 6c 11 00 00 '  long @C_tmpfilem16dVP_4d093705_gpio_direction_input_L000021_23 ' NEI4
 11b8(044d): 00 6a fc a0 '  mov r2, #0 ' reg ARG coni
 11bc(044e): 2d 5c bc a0 '  mov RI, FP
 11c0(044f): 08 5c fc 84 '  sub RI, #-(-8)
@@ -1326,16 +1326,16 @@ SEGMENT_LAYOUT = 0
 11d8(0455): 08 58 fc 80 '  add SP, #8 ' CALL addrg
 11dc(0456): 00 66 fc a0 '  mov r0, #0 ' RET coni
 11e0(0457): 0e 00 7c 5c '  jmp #JMPA
-11e4(0458): 70 11 00 00 '  long @C_tmpfilezxjEZm_4d07ee05_gpio_direction_input_L000021_22 ' JUMPV addrg
-11e8(0459):             ' C_tmpfilezxjEZm_4d07ee05_gpio_direction_input_L000021_23
+11e4(0458): 70 11 00 00 '  long @C_tmpfilem16dVP_4d093705_gpio_direction_input_L000021_22 ' JUMPV addrg
+11e8(0459):             ' C_tmpfilem16dVP_4d093705_gpio_direction_input_L000021_23
 11e8(0459): 01 66 fc a0 '  mov r0, #1 ' RET coni
-11ec(045a):             ' C_tmpfilezxjEZm_4d07ee05_gpio_direction_input_L000021_22
+11ec(045a):             ' C_tmpfilem16dVP_4d093705_gpio_direction_input_L000021_22
 11ec(045a): 23 00 7c 5c '  jmp #POPM
 11f0(045b): 00 0c 02 00 '  long $20c00 ' restore registers
 11f4(045c): 08 58 fc 80 '  add SP, #8 ' framesize
 11f8(045d): 0a 00 7c 5c '  jmp #RETF
 11fc(045e):             '  long ' align long
-11fc(045e):             ' C_tmpfileLmH0nT_4d07ee05_gpio_get_value_L000025 ' <symbol:gpio_get_value>
+11fc(045e):             ' C_tmpfiletOVxlQ_4d093705_gpio_get_value_L000025 ' <symbol:gpio_get_value>
 11fc(045e): 22 00 7c 5c '  jmp #PSHM
 1200(045f): 00 0e 02 00 '  long $20e00 ' save registers
 1204(0460): 35 88 bc a0 '  mov r17, r2 ' reg var <- reg arg
@@ -1355,7 +1355,7 @@ SEGMENT_LAYOUT = 0
 123c(046e): 00 0e 02 00 '  long $20e00 ' restore registers
 1240(046f): 0c 00 7c 5c '  jmp #RETN
 1244(0470):             '  long ' align long
-1244(0470):             ' C_tmpfilehyJnMp_4d07ee05_gpio_set_value_L000027 ' <symbol:gpio_set_value>
+1244(0470):             ' C_tmpfileoNtSLQ_4d093705_gpio_set_value_L000027 ' <symbol:gpio_set_value>
 1244(0470): 22 00 7c 5c '  jmp #PSHM
 1248(0471): 00 ec 03 00 '  long $3ec00 ' save registers
 124c(0472): 36 88 bc a0 '  mov r17, r3 ' reg var <- reg arg
@@ -1366,13 +1366,13 @@ SEGMENT_LAYOUT = 0
 1260(0477): 33 84 bc a0 '  mov r15, r0 ' CVI, CVU or LOAD
 1264(0478): 00 86 7c c2 '  cmps r16,  #0 wz
 1268(0479): 14 00 7c 5c '  jmp #BRNZ
-126c(047a): 00 12 00 00 '  long @C_tmpfilehyJnMp_4d07ee05_gpio_set_value_L000027_30 ' NEI4
+126c(047a): 00 12 00 00 '  long @C_tmpfileoNtSLQ_4d093705_gpio_set_value_L000027_30 ' NEI4
 1270(047b): 01 82 fc a0 '  mov r14, #1 ' reg <- coni
 1274(047c): 0e 00 7c 5c '  jmp #JMPA
-1278(047d): 04 12 00 00 '  long @C_tmpfilehyJnMp_4d07ee05_gpio_set_value_L000027_31 ' JUMPV addrg
-127c(047e):             ' C_tmpfilehyJnMp_4d07ee05_gpio_set_value_L000027_30
+1278(047d): 04 12 00 00 '  long @C_tmpfileoNtSLQ_4d093705_gpio_set_value_L000027_31 ' JUMPV addrg
+127c(047e):             ' C_tmpfileoNtSLQ_4d093705_gpio_set_value_L000027_30
 127c(047e): 00 82 fc a0 '  mov r14, #0 ' reg <- coni
-1280(047f):             ' C_tmpfilehyJnMp_4d07ee05_gpio_set_value_L000027_31
+1280(047f):             ' C_tmpfileoNtSLQ_4d093705_gpio_set_value_L000027_31
 1280(047f): 44 7c bc a0 '  mov r11, r17 ' CVI, CVU or LOAD
 1284(0480): 41 5c bc a0 '  mov RI, r14
 1288(0481): 3e 5c bc 2c '  shl RI, r11
@@ -1381,13 +1381,13 @@ SEGMENT_LAYOUT = 0
 1294(0484): 3e 84 bc 60 '  and r15, r11 ' BANDI/U (1)
 1298(0485): 00 86 7c c2 '  cmps r16,  #0 wz
 129c(0486): 13 00 7c 5c '  jmp #BR_Z
-12a0(0487): 34 12 00 00 '  long @C_tmpfilehyJnMp_4d07ee05_gpio_set_value_L000027_33 ' EQI4
+12a0(0487): 34 12 00 00 '  long @C_tmpfileoNtSLQ_4d093705_gpio_set_value_L000027_33 ' EQI4
 12a4(0488): 01 80 fc a0 '  mov r13, #1 ' reg <- coni
 12a8(0489): 0e 00 7c 5c '  jmp #JMPA
-12ac(048a): 38 12 00 00 '  long @C_tmpfilehyJnMp_4d07ee05_gpio_set_value_L000027_34 ' JUMPV addrg
-12b0(048b):             ' C_tmpfilehyJnMp_4d07ee05_gpio_set_value_L000027_33
+12ac(048a): 38 12 00 00 '  long @C_tmpfileoNtSLQ_4d093705_gpio_set_value_L000027_34 ' JUMPV addrg
+12b0(048b):             ' C_tmpfileoNtSLQ_4d093705_gpio_set_value_L000027_33
 12b0(048b): 00 80 fc a0 '  mov r13, #0 ' reg <- coni
-12b4(048c):             ' C_tmpfilehyJnMp_4d07ee05_gpio_set_value_L000027_34
+12b4(048c):             ' C_tmpfileoNtSLQ_4d093705_gpio_set_value_L000027_34
 12b4(048c): 40 7a bc a0 '  mov r10, r13 ' LSHI/U
 12b8(048d): 44 7a bc 2c '  shl r10, r17 ' LSHI/U (3)
 12bc(048e): 3d 84 bc 68 '  or r15, r10 ' BORI/U (1)
@@ -1406,7 +1406,7 @@ SEGMENT_LAYOUT = 0
 12f0(049b): 00 ec 03 00 '  long $3ec00 ' restore registers
 12f4(049c): 0c 00 7c 5c '  jmp #RETN
 12f8(049d):             '  long ' align long
-12f8(049d):             ' C_tmpfile5OFMaW_4d07ee05_gpio_direction_output_L000035 ' <symbol:gpio_direction_output>
+12f8(049d):             ' C_tmpfile1yLecR_4d093705_gpio_direction_output_L000035 ' <symbol:gpio_direction_output>
 12f8(049d): 09 00 7c 5c '  jmp #NEWF
 12fc(049e): 04 58 fc 84 '  sub SP, #4
 1300(049f): 22 00 7c 5c '  jmp #PSHM
@@ -1439,7 +1439,7 @@ SEGMENT_LAYOUT = 0
 136c(04ba): 08 5e fc a0 '  mov BC, #8 ' arg size
 1370(04bb): 08 58 fc 84 '  sub SP, #8 ' stack space for reg ARGs
 1374(04bc): 0b 00 7c 5c '  jmp #CALA
-1378(04bd): c8 11 00 00 '  long @C_tmpfilehyJnMp_4d07ee05_gpio_set_value_L000027
+1378(04bd): c8 11 00 00 '  long @C_tmpfileoNtSLQ_4d093705_gpio_set_value_L000027
 137c(04be): 08 58 fc 80 '  add SP, #8 ' CALL addrg
 1380(04bf): 00 66 fc a0 '  mov r0, #0 ' RET coni
 1384(04c0): 23 00 7c 5c '  jmp #POPM
@@ -1447,7 +1447,7 @@ SEGMENT_LAYOUT = 0
 138c(04c2): 04 58 fc 80 '  add SP, #4 ' framesize
 1390(04c3): 0a 00 7c 5c '  jmp #RETF
 1394(04c4):             '  long ' align long
-1394(04c4):             ' C_tmpfile3ZBd2K_4d07ee05_bbos_driver_idle_L000006 ' <symbol:bbos_driver_idle>
+1394(04c4):             ' C_tmpfilevIiZNN_4d093705_bbos_driver_idle_L000006 ' <symbol:bbos_driver_idle>
 1394(04c4): 0c 00 7c 5c '  jmp #RETN
 1398(04c5):             '  long ' align long
 1398(04c5):             ' C_p8x32a_gpio_init ' <symbol:p8x32a_gpio_init>
@@ -1465,7 +1465,7 @@ SEGMENT_LAYOUT = 0
 13c4(04d0): 08 5e fc a0 '  mov BC, #8 ' arg size
 13c8(04d1): 08 58 fc 84 '  sub SP, #8 ' stack space for reg ARGs
 13cc(04d2): 0b 00 7c 5c '  jmp #CALA
-13d0(04d3): 6c 0f 00 00 '  long @C_tmpfile7l3ION_4d07ee05_bbos_driver_bootstrapper_L000008
+13d0(04d3): 6c 0f 00 00 '  long @C_tmpfileJ2XpEO_4d093705_bbos_driver_bootstrapper_L000008
 13d4(04d4): 08 58 fc 80 '  add SP, #8 ' CALL addrg
 13d8(04d5): 04 00 7c 5c '  jmp #LODA
 13dc(04d6): 18 34 00 00 '  long @C_p8x32a_gpio_banks
@@ -1497,10 +1497,10 @@ SEGMENT_LAYOUT = 0
 143c(04ee):             ' C_p8x32a_gpio_messenger ' <symbol:p8x32a_gpio_messenger>
 143c(04ee): 00 5e fc a0 '  mov BC, #0 ' arg size
 1440(04ef): 0b 00 7c 5c '  jmp #CALA
-1444(04f0): 88 0f 00 00 '  long @C_tmpfile1bMZck_4d07ee05_bbos_driver_messenger_L000010 ' CALL addrg
+1444(04f0): 88 0f 00 00 '  long @C_tmpfilec9AE4O_4d093705_bbos_driver_messenger_L000010 ' CALL addrg
 1448(04f1): 0c 00 7c 5c '  jmp #RETN
 144c(04f2):             '  long ' align long
-144c(04f2):             ' C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L000007 ' <symbol:bbos_driver_demultiplexer>
+144c(04f2):             ' C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L000007 ' <symbol:bbos_driver_demultiplexer>
 144c(04f2): 22 00 7c 5c '  jmp #PSHM
 1450(04f3): 00 8c 03 00 '  long $38c00 ' save registers
 1454(04f4): 36 88 bc a0 '  mov r17, r3 ' reg var <- reg arg
@@ -1508,13 +1508,13 @@ SEGMENT_LAYOUT = 0
 145c(04f6): 43 84 bc a0 '  mov r15, r16 ' CVI, CVU or LOAD
 1460(04f7): 00 88 7c c2 '  cmps r17,  #0 wz
 1464(04f8): 13 00 7c 5c '  jmp #BR_Z
-1468(04f9): 04 14 00 00 '  long @C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L000007_47 ' EQI4
+1468(04f9): 04 14 00 00 '  long @C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L000007_47 ' EQI4
 146c(04fa): 01 88 7c c2 '  cmps r17,  #1 wz
 1470(04fb): 13 00 7c 5c '  jmp #BR_Z
-1474(04fc): dc 14 00 00 '  long @C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L000007_57 ' EQI4
+1474(04fc): dc 14 00 00 '  long @C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L000007_57 ' EQI4
 1478(04fd): 0e 00 7c 5c '  jmp #JMPA
-147c(04fe): 80 15 00 00 '  long @C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L000007_45 ' JUMPV addrg
-1480(04ff):             ' C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L000007_47
+147c(04fe): 80 15 00 00 '  long @C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L000007_45 ' JUMPV addrg
+1480(04ff):             ' C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L000007_47
 1480(04ff): 42 7c bc a0 '  mov r11, r15
 1484(0500): 04 7c fc d0 '  adds r11, #4 ' ADDP4 coni
 1488(0501): 3e 7c bc 08 '  rdlong r11, r11 ' reg <- INDIRU4 reg
@@ -1527,18 +1527,18 @@ SEGMENT_LAYOUT = 0
 14a4(0508): 10 7c fc 2c '  shl r11, #16
 14a8(0509): 10 7c fc 38 '  sar r11, #16 ' sign extend
 14ac(050a): 04 00 7c 5c '  jmp #LODA
-14b0(050b): 58 33 00 00 '  long @C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L00000_L000051
+14b0(050b): 58 33 00 00 '  long @C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L00000_L000051
 14b4(050c): 2e 7a bc 08 '  rdlong  r10, RI ' reg <- con
 14b8(050d): 3d 7c 3c c2 '  cmps r11, r10 wz
 14bc(050e): 13 00 7c 5c '  jmp #BR_Z
-14c0(050f): 60 14 00 00 '  long @C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L000007_48 ' EQI4
+14c0(050f): 60 14 00 00 '  long @C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L000007_48 ' EQI4
 14c4(0510): 42 7c bc a0 '  mov r11, r15
 14c8(0511): 0c 7c fc d0 '  adds r11, #12 ' ADDP4 coni
 14cc(0512): 01 7a fc a0 '  mov r10, #1 ' reg <- coni
 14d0(0513): 3e 7a 3c 08 '  wrlong r10, r11 ' ASGNI4 reg
 14d4(0514): 0e 00 7c 5c '  jmp #JMPA
-14d8(0515): 24 17 00 00 '  long @C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L000007_44 ' JUMPV addrg
-14dc(0516):             ' C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L000007_48
+14d8(0515): 24 17 00 00 '  long @C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L000007_44 ' JUMPV addrg
+14dc(0516):             ' C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L000007_48
 14dc(0516): 42 7c bc a0 '  mov r11, r15
 14e0(0517): 04 7c fc d0 '  adds r11, #4 ' ADDP4 coni
 14e4(0518): 3e 7c bc 08 '  rdlong r11, r11 ' reg <- INDIRU4 reg
@@ -1557,7 +1557,7 @@ SEGMENT_LAYOUT = 0
 1518(0525): 04 7c fc d0 '  adds r11, #4 ' ADDP4 coni
 151c(0526): 3e 6c bc 08 '  rdlong r3, r11 ' reg <- INDIRU4 reg
 1520(0527): 04 00 7c 5c '  jmp #LODA
-1524(0528): 40 33 00 00 '  long @C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L00000_L000056
+1524(0528): 40 33 00 00 '  long @C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L00000_L000056
 1528(0529): 2e 6e bc a0 '  mov r4, RI ' reg ARG ADDRG
 152c(052a): 0c 5e fc a0 '  mov BC, #12 ' arg size
 1530(052b): 0c 58 fc 84 '  sub SP, #12 ' stack space for reg ARGs
@@ -1569,8 +1569,8 @@ SEGMENT_LAYOUT = 0
 1548(0531): 00 7a fc a0 '  mov r10, #0 ' reg <- coni
 154c(0532): 3e 7a 3c 08 '  wrlong r10, r11 ' ASGNI4 reg
 1550(0533): 0e 00 7c 5c '  jmp #JMPA
-1554(0534): 24 17 00 00 '  long @C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L000007_44 ' JUMPV addrg
-1558(0535):             ' C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L000007_57
+1554(0534): 24 17 00 00 '  long @C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L000007_44 ' JUMPV addrg
+1558(0535):             ' C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L000007_57
 1558(0535): 42 7c bc a0 '  mov r11, r15
 155c(0536): 04 7c fc d0 '  adds r11, #4 ' ADDP4 coni
 1560(0537): 3e 7c bc 08 '  rdlong r11, r11 ' reg <- INDIRU4 reg
@@ -1583,18 +1583,18 @@ SEGMENT_LAYOUT = 0
 157c(053e): 10 7c fc 2c '  shl r11, #16
 1580(053f): 10 7c fc 38 '  sar r11, #16 ' sign extend
 1584(0540): 04 00 7c 5c '  jmp #LODA
-1588(0541): 58 33 00 00 '  long @C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L00000_L000051
+1588(0541): 58 33 00 00 '  long @C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L00000_L000051
 158c(0542): 2e 7a bc 08 '  rdlong  r10, RI ' reg <- con
 1590(0543): 3d 7c 3c c2 '  cmps r11, r10 wz
 1594(0544): 14 00 7c 5c '  jmp #BRNZ
-1598(0545): 38 15 00 00 '  long @C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L000007_58 ' NEI4
+1598(0545): 38 15 00 00 '  long @C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L000007_58 ' NEI4
 159c(0546): 42 7c bc a0 '  mov r11, r15
 15a0(0547): 0c 7c fc d0 '  adds r11, #12 ' ADDP4 coni
 15a4(0548): 01 7a fc a0 '  mov r10, #1 ' reg <- coni
 15a8(0549): 3e 7a 3c 08 '  wrlong r10, r11 ' ASGNI4 reg
 15ac(054a): 0e 00 7c 5c '  jmp #JMPA
-15b0(054b): 24 17 00 00 '  long @C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L000007_44 ' JUMPV addrg
-15b4(054c):             ' C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L000007_58
+15b0(054b): 24 17 00 00 '  long @C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L000007_44 ' JUMPV addrg
+15b4(054c):             ' C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L000007_58
 15b4(054c): 42 7c bc a0 '  mov r11, r15
 15b8(054d): 04 7c fc d0 '  adds r11, #4 ' ADDP4 coni
 15bc(054e): 3e 7c bc 08 '  rdlong r11, r11 ' reg <- INDIRU4 reg
@@ -1604,7 +1604,7 @@ SEGMENT_LAYOUT = 0
 15cc(0552): 2e 7a bc a0 '  mov r10, RI ' reg <- addrg
 15d0(0553): 3d 7c bc d0 '  adds r11, r10 ' ADDI/P (1)
 15d4(0554): 04 00 7c 5c '  jmp #LODA
-15d8(0555): 58 33 00 00 '  long @C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L00000_L000051
+15d8(0555): 58 33 00 00 '  long @C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L00000_L000051
 15dc(0556): 2e 7a bc 08 '  rdlong  r10, RI ' reg <- con
 15e0(0557): 3e 7a 3c 04 '  wrword r10, r11 ' ASGNI2 reg
 15e4(0558): 42 7c bc a0 '  mov r11, r15
@@ -1612,8 +1612,8 @@ SEGMENT_LAYOUT = 0
 15ec(055a): 00 7a fc a0 '  mov r10, #0 ' reg <- coni
 15f0(055b): 3e 7a 3c 08 '  wrlong r10, r11 ' ASGNI4 reg
 15f4(055c): 0e 00 7c 5c '  jmp #JMPA
-15f8(055d): 24 17 00 00 '  long @C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L000007_44 ' JUMPV addrg
-15fc(055e):             ' C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L000007_45
+15f8(055d): 24 17 00 00 '  long @C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L000007_44 ' JUMPV addrg
+15fc(055e):             ' C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L000007_45
 15fc(055e): 42 7c bc a0 '  mov r11, r15
 1600(055f): 04 7c fc d0 '  adds r11, #4 ' ADDP4 coni
 1604(0560): 3e 7c bc 08 '  rdlong r11, r11 ' reg <- INDIRU4 reg
@@ -1629,37 +1629,37 @@ SEGMENT_LAYOUT = 0
 162c(056a): 4e 7a bc 60 '  and r10, cviu_m2 ' zero extend
 1630(056b): 3d 7c 3c c2 '  cmps r11, r10 wz
 1634(056c): 13 00 7c 5c '  jmp #BR_Z
-1638(056d): d8 15 00 00 '  long @C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L000007_46 ' EQI4
+1638(056d): d8 15 00 00 '  long @C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L000007_46 ' EQI4
 163c(056e): 42 7c bc a0 '  mov r11, r15
 1640(056f): 0c 7c fc d0 '  adds r11, #12 ' ADDP4 coni
 1644(0570): 01 7a fc a0 '  mov r10, #1 ' reg <- coni
 1648(0571): 3e 7a 3c 08 '  wrlong r10, r11 ' ASGNI4 reg
 164c(0572): 0e 00 7c 5c '  jmp #JMPA
-1650(0573): 24 17 00 00 '  long @C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L000007_44 ' JUMPV addrg
-1654(0574):             ' C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L000007_46
+1650(0573): 24 17 00 00 '  long @C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L000007_44 ' JUMPV addrg
+1654(0574):             ' C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L000007_46
 1654(0574): 02 7c fc a0 '  mov r11, #2 ' reg <- coni
 1658(0575): 3e 88 3c c3 '  cmps r17, r11 wz,wc
 165c(0576): 18 00 7c 5c '  jmp #BR_B
-1660(0577): 14 17 00 00 '  long @C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L000007_67 ' LTI4
+1660(0577): 14 17 00 00 '  long @C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L000007_67 ' LTI4
 1664(0578): 05 88 7c c3 '  cmps r17,  #5 wz,wc
 1668(0579): 16 00 7c 5c '  jmp #BR_A
-166c(057a): 14 17 00 00 '  long @C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L000007_67 ' GTI4
+166c(057a): 14 17 00 00 '  long @C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L000007_67 ' GTI4
 1670(057b): 44 7c bc a0 '  mov r11, r17
 1674(057c): 02 7c fc 2c '  shl r11, #2 ' LSHI4 coni
 1678(057d): 04 00 7c 5c '  jmp #LODA
-167c(057e): 28 33 00 00 '  long @C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L00000_L000074-8
+167c(057e): 28 33 00 00 '  long @C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L00000_L000074-8
 1680(057f): 2e 7a bc a0 '  mov r10, RI ' reg <- addrg
 1684(0580): 3d 7c bc d0 '  adds r11, r10 ' ADDI/P (1)
 1688(0581): 3e 5c bc 08 '  rdlong RI, r11
 168c(0582): 0f 00 7c 5c '  jmp #JMPI ' JUMPV INDIR reg
-1690(0583):             ' C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L000007_68
+1690(0583):             ' C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L000007_68
 1690(0583): 42 7c bc a0 '  mov r11, r15
 1694(0584): 04 7c fc d0 '  adds r11, #4 ' ADDP4 coni
 1698(0585): 3e 6a bc 08 '  rdlong r2, r11 ' reg <- INDIRU4 reg
 169c(0586): 04 5e fc a0 '  mov BC, #4 ' arg size
 16a0(0587): 04 58 fc 84 '  sub SP, #4 ' stack space for reg ARGs
 16a4(0588): 0b 00 7c 5c '  jmp #CALA
-16a8(0589): c0 10 00 00 '  long @C_tmpfilezxjEZm_4d07ee05_gpio_direction_input_L000021
+16a8(0589): c0 10 00 00 '  long @C_tmpfilem16dVP_4d093705_gpio_direction_input_L000021
 16ac(058a): 04 58 fc 80 '  add SP, #4 ' CALL addrg
 16b0(058b): 42 7a bc a0 '  mov r10, r15
 16b4(058c): 0c 7a fc d0 '  adds r10, #12 ' ADDP4 coni
@@ -1667,7 +1667,7 @@ SEGMENT_LAYOUT = 0
 16bc(058e): 10 7c fc 2c '  shl r11, #16
 16c0(058f): 10 7c fc 38 '  sar r11, #16 ' sign extend
 16c4(0590): 3d 7c 3c 08 '  wrlong r11, r10 ' ASGNI4 reg
-16c8(0591):             ' C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L000007_69
+16c8(0591):             ' C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L000007_69
 16c8(0591): 42 7c bc a0 '  mov r11, r15
 16cc(0592): 08 7c fc d0 '  adds r11, #8 ' ADDP4 coni
 16d0(0593): 3e 7c bc 08 '  rdlong r11, r11 ' reg <- INDIRU4 reg
@@ -1678,7 +1678,7 @@ SEGMENT_LAYOUT = 0
 16e4(0598): 08 5e fc a0 '  mov BC, #8 ' arg size
 16e8(0599): 08 58 fc 84 '  sub SP, #8 ' stack space for reg ARGs
 16ec(059a): 0b 00 7c 5c '  jmp #CALA
-16f0(059b): 7c 12 00 00 '  long @C_tmpfile5OFMaW_4d07ee05_gpio_direction_output_L000035
+16f0(059b): 7c 12 00 00 '  long @C_tmpfile1yLecR_4d093705_gpio_direction_output_L000035
 16f4(059c): 08 58 fc 80 '  add SP, #8 ' CALL addrg
 16f8(059d): 42 7a bc a0 '  mov r10, r15
 16fc(059e): 0c 7a fc d0 '  adds r10, #12 ' ADDP4 coni
@@ -1686,7 +1686,7 @@ SEGMENT_LAYOUT = 0
 1704(05a0): 10 7c fc 2c '  shl r11, #16
 1708(05a1): 10 7c fc 38 '  sar r11, #16 ' sign extend
 170c(05a2): 3d 7c 3c 08 '  wrlong r11, r10 ' ASGNI4 reg
-1710(05a3):             ' C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L000007_70
+1710(05a3):             ' C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L000007_70
 1710(05a3): 42 7c bc a0 '  mov r11, r15
 1714(05a4): 08 7c fc d0 '  adds r11, #8 ' ADDP4 coni
 1718(05a5): 3e 7c bc 08 '  rdlong r11, r11 ' reg <- INDIRU4 reg
@@ -1697,7 +1697,7 @@ SEGMENT_LAYOUT = 0
 172c(05aa): 08 5e fc a0 '  mov BC, #8 ' arg size
 1730(05ab): 08 58 fc 84 '  sub SP, #8 ' stack space for reg ARGs
 1734(05ac): 0b 00 7c 5c '  jmp #CALA
-1738(05ad): c8 11 00 00 '  long @C_tmpfilehyJnMp_4d07ee05_gpio_set_value_L000027
+1738(05ad): c8 11 00 00 '  long @C_tmpfileoNtSLQ_4d093705_gpio_set_value_L000027
 173c(05ae): 08 58 fc 80 '  add SP, #8 ' CALL addrg
 1740(05af): 42 7a bc a0 '  mov r10, r15
 1744(05b0): 0c 7a fc d0 '  adds r10, #12 ' ADDP4 coni
@@ -1705,14 +1705,14 @@ SEGMENT_LAYOUT = 0
 174c(05b2): 10 7c fc 2c '  shl r11, #16
 1750(05b3): 10 7c fc 38 '  sar r11, #16 ' sign extend
 1754(05b4): 3d 7c 3c 08 '  wrlong r11, r10 ' ASGNI4 reg
-1758(05b5):             ' C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L000007_71
+1758(05b5):             ' C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L000007_71
 1758(05b5): 42 7c bc a0 '  mov r11, r15
 175c(05b6): 04 7c fc d0 '  adds r11, #4 ' ADDP4 coni
 1760(05b7): 3e 6a bc 08 '  rdlong r2, r11 ' reg <- INDIRU4 reg
 1764(05b8): 04 5e fc a0 '  mov BC, #4 ' arg size
 1768(05b9): 04 58 fc 84 '  sub SP, #4 ' stack space for reg ARGs
 176c(05ba): 0b 00 7c 5c '  jmp #CALA
-1770(05bb): 80 11 00 00 '  long @C_tmpfileLmH0nT_4d07ee05_gpio_get_value_L000025
+1770(05bb): 80 11 00 00 '  long @C_tmpfiletOVxlQ_4d093705_gpio_get_value_L000025
 1774(05bc): 04 58 fc 80 '  add SP, #4 ' CALL addrg
 1778(05bd): 42 7a bc a0 '  mov r10, r15
 177c(05be): 0c 7a fc d0 '  adds r10, #12 ' ADDP4 coni
@@ -1720,12 +1720,12 @@ SEGMENT_LAYOUT = 0
 1784(05c0): 10 7c fc 2c '  shl r11, #16
 1788(05c1): 10 7c fc 38 '  sar r11, #16 ' sign extend
 178c(05c2): 3d 7c 3c 08 '  wrlong r11, r10 ' ASGNI4 reg
-1790(05c3):             ' C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L000007_67
+1790(05c3):             ' C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L000007_67
 1790(05c3): 42 7c bc a0 '  mov r11, r15
 1794(05c4): 0c 7c fc d0 '  adds r11, #12 ' ADDP4 coni
 1798(05c5): 01 7a fc a0 '  mov r10, #1 ' reg <- coni
 179c(05c6): 3e 7a 3c 08 '  wrlong r10, r11 ' ASGNI4 reg
-17a0(05c7):             ' C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L000007_44
+17a0(05c7):             ' C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L000007_44
 17a0(05c7): 23 00 7c 5c '  jmp #POPM
 17a4(05c8): 00 8c 03 00 '  long $38c00 ' restore registers
 17a8(05c9): 0c 00 7c 5c '  jmp #RETN
@@ -3947,13 +3947,13 @@ SEGMENT_LAYOUT = 0
 33a8(0cc9):             ' C_gpio_register_chip_L000016 ' <symbol:17>
 33a8(0cc9): ff ff ff ff '  long -1
 33ac(0cca):             '  long ' align long
-33ac(0cca):             ' C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L00000_L000074 ' <symbol:72>
-33ac(0cca): 14 16 00 00 '  long @C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L000007_68
-33b0(0ccb): 4c 16 00 00 '  long @C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L000007_69
-33b4(0ccc): 94 16 00 00 '  long @C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L000007_70
-33b8(0ccd): dc 16 00 00 '  long @C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L000007_71
+33ac(0cca):             ' C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L00000_L000074 ' <symbol:72>
+33ac(0cca): 14 16 00 00 '  long @C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L000007_68
+33b0(0ccb): 4c 16 00 00 '  long @C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L000007_69
+33b4(0ccc): 94 16 00 00 '  long @C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L000007_70
+33b8(0ccd): dc 16 00 00 '  long @C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L000007_71
 33bc(0cce):             '  long ' align long
-33bc(0cce):             ' C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L00000_L000056 ' <symbol:55>
+33bc(0cce):             ' C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L00000_L000056 ' <symbol:55>
 33bc(0cce): 50          '  byte 80
 33bd(----): 69          '  byte 105
 33be(----): 6e          '  byte 110
@@ -3979,7 +3979,7 @@ SEGMENT_LAYOUT = 0
 33d2(----): 00          '  byte 0
 33d3(----): 00          
 33d4(0cd4):             '  long ' align long
-33d4(0cd4):             ' C_tmpfile7Agtqh_4d07ee05_bbos_driver_demultiplexer_L00000_L000051 ' <symbol:52>
+33d4(0cd4):             ' C_tmpfileokhceO_4d093705_bbos_driver_demultiplexer_L00000_L000051 ' <symbol:52>
 33d4(0cd4): ff ff ff ff '  long -1
 33d8(0cd5):             '  long ' align long
 33d8(0cd5):             ' C_p8x32a_gpio_init_41_L000042 ' <symbol:41>
@@ -4036,7 +4036,7 @@ SEGMENT_LAYOUT = 0
 340a(----): 00          '  byte 0
 340b(----): 00          
 340c(0ce2):             '  long ' align long
-340c(0ce2):             ' C_tmpfileNvAjBQ_4d07ee05_19_L000020 ' <symbol:19>
+340c(0ce2):             ' C_tmpfile1kVVuP_4d093705_19_L000020 ' <symbol:19>
 340c(0ce2): 41          '  byte 65
 340d(----): 00          '  byte 0
 340e(----): 00 00       
@@ -4109,7 +4109,7 @@ SEGMENT_LAYOUT = 0
 3490(0d03): 00 00 04 00 '  long $40000
 3494(0d04):             '  long ' align long
 3494(0d04):             ' C_p8x32a_gpio_banks ' <symbol:p8x32a_gpio_banks>
-3494(0d04): 90 33 00 00 '  long @C_tmpfileNvAjBQ_4d07ee05_19_L000020
+3494(0d04): 90 33 00 00 '  long @C_tmpfile1kVVuP_4d093705_19_L000020
 3498(0d05): 00 00       '  word 0
 349a(----): 20 00       '  word $20
 349c(0d06):             '  long ' align long
@@ -4733,18 +4733,18 @@ SEGMENT_LAYOUT = 0
 3dec(0f5a): 00 00 00 00 ' 
 3df0(0f5b): 00 00 00 00 ' 
 3df4(0f5c):             '  long ' align long
-3df4(0f5c):             ' C_tmpfileZ46XDe_4d07ee05_driver_message_L000005 ' <symbol:driver_message>
+3df4(0f5c):             ' C_tmpfileIPtMnN_4d093705_driver_message_L000005 ' <symbol:driver_message>
 3df4(0f5c): 00 00 00 00 '  byte 0[20]
 3df8(0f5d): 00 00 00 00 ' 
 3dfc(0f5e): 00 00 00 00 ' 
 3e00(0f5f): 00 00 00 00 ' 
 3e04(0f60): 00 00 00 00 ' 
 3e08(0f61):             '  long ' align long
-3e08(0f61):             ' C_tmpfilerULIfI_4d07ee05_driver_listen_port_id_L000004 ' <symbol:driver_listen_port_id>
+3e08(0f61):             ' C_tmpfilejdPzXM_4d093705_driver_listen_port_id_L000004 ' <symbol:driver_listen_port_id>
 3e08(0f61): 00 00       '  byte 0[2]
 3e0a(----): 00 00       
 3e0c(0f62):             '  long ' align long
-3e0c(0f62):             ' C_tmpfiler5stRb_4d07ee05_driver_thread_id_L000003 ' <symbol:driver_thread_id>
+3e0c(0f62):             ' C_tmpfilemTgnxM_4d093705_driver_thread_id_L000003 ' <symbol:driver_thread_id>
 3e0c(0f62): 00 00       '  byte 0[2]
 3e0e(----): 00 00       
 3e10(0f63):             '  long ' align long
