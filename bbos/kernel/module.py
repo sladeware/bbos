@@ -1,4 +1,11 @@
 
-class Module:
-	pass
+from bbos.config import Configurable
+
+class Module(Configurable):
+	def __init__(self, name):
+		self.name = name
+
+	def get_name(self):
+		return self.name
+
 

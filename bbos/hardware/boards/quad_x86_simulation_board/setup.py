@@ -16,8 +16,7 @@ class QuadX86SimulationBoard(Board):
     def __init__(self, processes):
         num_processes = len(processes)
         assert num_processes <= 4, "This quad core board cannot support %d processes" % num_processes
-
         processors = [x86x2(processes[0:1]), x86x2(processes[2:3])]
-        Board.__init__(self, processors)
+        Board.__init__(self, "Quad x86 simulation board", processors)
 
 

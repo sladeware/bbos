@@ -1,4 +1,6 @@
 
+__copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
+
 class Project:
 	board = None
 	processor = None
@@ -22,8 +24,20 @@ class Project:
 		pass
 
 	def config(self):
-		print "Configure"
+		print "Configure project"
+		print "Configure board '%s'" % self.board.get_name()
+		self.board.config(self)
+		print "Configure processor '%s'" % self.processor.get_name()
+		self.processor.config(self)
+		print "Configure core '%s'" % self.core.get_name()
+		self.core.config(self)
+		print "Configure process"
 		self.kernel.config(self)
+		# Configure modules
+		for mod in self.kernel.get_modules():
+			print "Configure module '%s'" % mod.get_name()
+			mod.config()
+		self.config_complete = True
 	
 	def compile(self):
 		pass

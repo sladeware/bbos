@@ -9,16 +9,21 @@ processor.
 __copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
 __revision__ = ""
 
+from bbos.config import Configurable
 from bbos.hardware.core import Core
 
-class Processor:
-    def __init__(self, cores, num_cores=1):
+class Processor(Configurable):
+    def __init__(self, name, cores, num_cores=1):
+        self.name = name
         self.num_cores = num_cores
         assert len(cores) <= num_cores, "The %s supports up to %d processes. " \
         "You have too many: %d" % (self.__class__.__name__, num_cores, len(cores))
         self.cores = cores
         for core in self.cores:
             assert isinstance(core, Core), "core is not a Core: %s" % core
+
+    def get_name(self):
+        return self.name
 
     def get_cores(self):
         return self.cores

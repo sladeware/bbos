@@ -14,4 +14,4 @@ class x86x2(Processor):
         cores = []
         for process in processes:
             cores.append(x86(process))
-        Processor.__init__(self, cores, num_cores=2)
+        Processor.__init__(self, "x86x2", cores, num_cores=2)

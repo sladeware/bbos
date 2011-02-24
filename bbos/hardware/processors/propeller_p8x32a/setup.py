@@ -16,5 +16,5 @@ class PropellerP8X32A(Processor):
         cores = []
         for process in processes:
             cores.append(PropellerCog(process))
-        Processor.__init__(self, cores, num_cores=8)
+        Processor.__init__(self, "Propeller P8X32A", cores, num_cores=8)
 

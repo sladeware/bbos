@@ -8,13 +8,12 @@ access to global resources sych as the main RAM/ROM, synchronization resources
 and specialized monitoring capabilities to know what the other cogs are doing.
 """
 
-__copyright__ = "Copyright (c) 2010 Slade Maurer, Alexander Sviridenko"
+__copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
 
 from bbos.hardware.core import *
 
-
 class PropellerCog(Core):
     def __init__(self, process):
-        Core.__init__(self, process)
+        Core.__init__(self, "Propeller Cog", process)
 
 

@@ -25,16 +25,26 @@ class Kernel(Configurable):
             self.add_messages(messages)
 
     def _config(self, proj):
-        proj.add_sources([os.path.join(os.environ['BBOSHOME'], 'bbos/kernel.c'),
-                            os.path.join(os.environ['BBOSHOME'], 'bbos/port.c'),
-                            os.path.join(os.environ['BBOSHOME'], 'bbos/thread.c')])
-        proj.add_include_dirs(['.', os.path.join(os.environ['BBOSHOME'], 'bbos')])
+        '''Generate the source code for the bbos.h header file used to late bind BBOS
+        processes, threads and etc just before building. We need this since the
+        C macro language is seriously underpowered for our purposes.'''
         try:
             f = open("bbos.h", "w")
         except IOError:
             print "There were problems writing to %s" % "bbos.h"
             traceback.print_exc(file=sys.stderr)
             raise
+        f.write("/*\n"
+                " * This is BBOS generated source code used for late binding application\n"
+                " * features just before compile time.\n"
+                " *\n"
+                " * Please do not edit this by hand, as your changes will be lost.\n"
+                " *\n"
+                " * %s\n"
+                " */\n"
+                "#ifndef __BBOS_H\n"
+                "#define __BBOS_H\n"
+                "\n"  % (__copyright__))
         print "Process %d thread(s)" % self.get_number_of_threads()
         f.write("/* Threads */\n")
         f.write("#define BBOS_NUMBER_OF_THREADS (%d)\n" % self.get_number_of_threads())
@@ -55,6 +65,12 @@ class Kernel(Configurable):
             print "Scheduler has been enabled"
             f.write("/* Scheduling */\n")
             f.write("#define BBOS_SCHED_ENABLED\n")
+        f.write("#endif /* __BBOS_H */\n")
+        # Compile
+        proj.add_sources([os.path.join(os.environ['BBOSHOME'], 'bbos/kernel.c'),
+                          os.path.join(os.environ['BBOSHOME'], 'bbos/port.c'),
+                          os.path.join(os.environ['BBOSHOME'], 'bbos/thread.c')])
+        proj.add_include_dirs(['.', os.path.join(os.environ['BBOSHOME'], 'bbos')])
 
     def get_number_of_threads(self):
         return len(self.get_threads())
@@ -145,6 +161,9 @@ class Kernel(Configurable):
 
     def get_module(self, module_name):
         pass
+
+    def get_modules(self):
+        return self.modules.values()
 
     def delete_module(self, module_name):
         pass

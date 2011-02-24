@@ -17,5 +17,5 @@ from bbos.hardware.processors import PropellerP8X32A
 class PropellerDemoBoard(Board):
     def __init__(self, processes):
         processors = [PropellerP8X32A(processes)]
-        Board.__init__(self, processors)
+        Board.__init__(self, "Propeller Demo Board", processors)
 
