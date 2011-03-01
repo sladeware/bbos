@@ -1,11 +1,11 @@
 /*
  * Copyright (c) 2011 Slade Maurer, Alexander Sviridenko
  */
+
 #ifndef __MEMPOOL_H
 #define __MEMPOOL_H
 
 /**
- * @ingroup mm
  * @file mempool.h
  * @brief Memory pool allocator
  *

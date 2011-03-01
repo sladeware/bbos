@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2011 Slade Maurer, Alexander Sviridenko
+ */
+
+#ifndef __BBOS_PORT_H
+#define __BBOS_PORT_H
+
 /**
  * @file port.h
  * @brief Message port communication interface for efficient and flexible 
@@ -29,17 +36,12 @@
  * the concurrency more robust.
  */
 
-#ifndef __BBOS_PORT_H
-#define __BBOS_PORT_H
-
 #include <bbos/kernel/types.h>
 
-bbos_error_t bbos_port_send(bbos_thread_id_t receiver, 
-                            bbos_message_t *message,
+bbos_error_t bbos_port_send(bbos_thread_id_t receiver, bbos_message_t *message,
                             bbos_thread_id_t owner);
 
-bbos_error_t bbos_port_receive(bbos_thread_id_t tid, 
-                               bbos_message_t *message);
+bbos_error_t bbos_port_receive(bbos_thread_id_t tid, bbos_message_t *message);
 
 void bbos_port_flush(bbos_thread_id_t tid);
 

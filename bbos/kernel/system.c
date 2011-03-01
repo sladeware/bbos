@@ -97,14 +97,14 @@ bbos_stop_thread(bbos_thread_id_t tid)
 void
 bbos_init()
 {
-	bbos_thread_id_t tid;
+  bbos_thread_id_t tid;
 
 #ifdef BBOS_DEBUG
   printf("Initialize BBOS kernel\n");
 #endif
 
-	for (tid=0; tid<BBOS_NUMBER_OF_THREADS; tid++)
-		bbos_thread_init(tid, NULL);
+  for (tid=0; tid<BBOS_NUMBER_OF_THREADS; tid++)
+    bbos_thread_init(tid, NULL);
 
 #ifdef BBOS_SCHED_ENABLED
   bbos_sched_init();

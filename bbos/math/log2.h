@@ -1,11 +1,14 @@
-
-/**
- * @file log2.h
- * @brief Log2
+/*
+ * Copyright (c) 2011 Slade Maurer, Alexander Sviridenko
  */
 
 #ifndef __BBOS_LOG2_H
 #define __BBOS_LOG2_H
+
+/**
+ * @file log2.h
+ * @brief Integer base 2 logarithm calculation
+ */
 
 static bool_t 
 is_power_of_2(uint32_t n)
@@ -39,7 +42,9 @@ __rounddown_pow_of_2(uint32_t n)
  * Round the given value down to nearest power of two.
  * @param n parameter.
  *
- * \warning The result is undefined when n is 0.
+ * @warning 
+ * 
+ * The result is undefined when n is 0.
  */
 #define rounddown_pow_of_2(n)			\
   (						\

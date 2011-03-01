@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2011 Slade Maurer, Alexander Sviridenko
+ */
 
 /**
  * Runs when the system is idle.

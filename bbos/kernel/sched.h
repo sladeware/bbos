@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2011 Slade Maurer, Alexander Sviridenko
+ */
+
+#ifndef __BBOS_SCHED_H
+#define __BBOS_SCHED_H
 
 /**
  * @file sched.h
@@ -6,9 +12,6 @@
  * A scheduler is the heart of every RTOS, as it provides the algorithms to 
  * select the threads for execution.
  */
-
-#ifndef __BBOS_SCHED_H
-#define __BBOS_SCHED_H
 
 #ifdef BBOS_SCHED_ENABLED
 
@@ -22,5 +25,5 @@ extern bbos_error_t bbos_sched_dequeue(bbos_thread_id_t tid);
 
 #endif /* BBOS_SCHED_ENABLED */
 
-#endif
+#endif /* __BBOS_SCHED_H */
 

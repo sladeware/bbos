@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2011 Slade Maurer, Alexander Sviridenko
+ */
 
 #include <bbos/config.h>
 #include <bbos/kernel/port.h>
@@ -34,8 +37,7 @@ bbos_port_is_empty(bbos_thread_id_t tid)
  * Kernel error code.
  */
 bbos_error_t
-bbos_port_send(bbos_thread_id_t receiver,
-               bbos_message_t *message, 
+bbos_port_send(bbos_thread_id_t receiver, bbos_message_t *message, 
                bbos_thread_id_t owner)
 {
   if (bbos_port_table[receiver].tail == NULL)

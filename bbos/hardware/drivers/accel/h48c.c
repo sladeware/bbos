@@ -65,19 +65,19 @@ static int h48c_zerog_pin;
 static void
 h48c_open(int dio_pin, int clk_pin, int cs_pin, int zerog_pin)
 {
-	h48c_dio_pin = dio_pin;
-	h48c_clk_pin = clk_pin;
-	h48c_cs_pin = cs_pin;
-	h48c_zerog_pin = zerog_pin;
+  h48c_dio_pin = dio_pin;
+  h48c_clk_pin = clk_pin;
+  h48c_cs_pin = cs_pin;
+  h48c_zerog_pin = zerog_pin;
 	
-	SET_HIGH(h48c_cs_pin); // deselect H48C
-	SET_OUTPUT(h48c_cs_pin); // set CS pin as an OUTPUT
+  SET_HIGH(h48c_cs_pin); // deselect H48C
+  SET_OUTPUT(h48c_cs_pin); // set CS pin as an OUTPUT
 }
 
 static void
 h48c_close()
 {
-	SET_HIGH(h48c_cs_pin); // deselect H48C
+  SET_HIGH(h48c_cs_pin); // deselect H48C
 }
 
 /**
@@ -108,21 +108,21 @@ h48c_close()
 static int
 h48c_gforce_of_axis(uint32_t select)
 {
-	int32_t vref_count; // ref voltage adc counts
-	int32_t axis_count; // axis voltage adc counts
+  int32_t vref_count; // ref voltage adc counts
+  int32_t axis_count; // axis voltage adc counts
 
-	// Read vref and axis counts
-	vref_count = h48c_read_value(H48C_SELECT_VREF);
-	_waitcnt(_cnt() + 300); // 1usec
-	axis_count = h48c_read_value(select);
+  // Read vref and axis counts
+  vref_count = h48c_read_value(H48C_SELECT_VREF);
+  _waitcnt(_cnt() + 300); // 1usec
+  axis_count = h48c_read_value(select);
 	
-	// Calculate g-force for axis
-	if (axis_count >= vref_count)
-		// positive g-force
-		return (axis_count - vref_count);// * GFORCE_CONVERSION;
-	else
-		// negative g-force
-		return -(vref_count - axis_count);// * GFORCE_CONVERSION;
+  // Calculate g-force for axis
+  if (axis_count >= vref_count)
+    // positive g-force
+    return (axis_count - vref_count);// * GFORCE_CONVERSION;
+  else
+    // negative g-force
+    return -(vref_count - axis_count);// * GFORCE_CONVERSION;
 }
 
 /**
@@ -149,7 +149,7 @@ h48c_gforce_of_axis(uint32_t select)
 static int8_t
 h48c_free_fall()
 {
-	return (!!(_ina() & PIN(h48c_zerog_pin)));
+  return (!!(_ina() & PIN(h48c_zerog_pin)));
 }
 
 /**
@@ -158,16 +158,16 @@ h48c_free_fall()
 static uint32_t
 h48c_read_value(uint32_t select)
 {
-	uint32_t value;
+  uint32_t value;
 	
-	SET_LOW(h48c_cs_pin); // make CS pin LOW (select H48C)
+  SET_LOW(h48c_cs_pin); // make CS pin LOW (select H48C)
 
-	stamp_shiftout(h48c_dio_pin, h48c_clk_pin, MSBFIRST, 5, select);
-	value = stamp_shiftin(h48c_dio_pin, h48c_clk_pin, MSBPOST, 13);
+  stamp_shiftout(h48c_dio_pin, h48c_clk_pin, MSBFIRST, 5, select);
+  value = stamp_shiftin(h48c_dio_pin, h48c_clk_pin, MSBPOST, 13);
 	
-	SET_HIGH(h48c_cs_pin); // make CS pin HIGH (deselect H48C)
+  SET_HIGH(h48c_cs_pin); // make CS pin HIGH (deselect H48C)
 	
-	return (value & DATA_MASK); // leave only the data
+  return (value & DATA_MASK); // leave only the data
 }
 
 /** 

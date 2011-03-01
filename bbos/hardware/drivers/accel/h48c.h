@@ -2,13 +2,13 @@
  * Copyright (c) 2011 Slade Maurer, Alexander Sviridenko
  */
 
+#ifndef __H48C_H
+#define __H48C_H
+
 /**
  * @file h48c.h
  * @brief Hitachi H48C 3 axis accelerometer driver interface
  */
-
-#ifndef __H48C_H
-#define __H48C_H
 
 /**
  * @name ADC control bit selections

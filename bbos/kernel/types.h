@@ -2,6 +2,9 @@
  * Copyright (c) 2011 Slade Maurer, Alexander Sviridenko
  */
  
+#ifndef __BBOS_TYPES_H
+#define __BBOS_TYPES_H
+
 /**
  * @file types.h
  * @brief Important data type definitions
@@ -10,9 +13,6 @@
  * of the underlying base type. By convention, all type names have postfix 
  * @b _t.
  */
-
-#ifndef __BBOS_TYPES_H
-#define __BBOS_TYPES_H
 
 #include <limits.h>
 

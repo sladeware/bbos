@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2011 Slade Maurer, Alexander Sviridenko
+ */
 
 #ifndef __BBOS_DEBUG_H
 #define __BBOS_DEBUG_H
