@@ -40,6 +40,9 @@ class Project:
 		self.core.config(self)
 		print "Configure process"
 		self.kernel.config(self)
+		if self.kernel.get_scheduler():
+			print "Configure scheduler '%s'" % self.kernel.scheduler.get_name()
+			self.get_scheduler().config()
 		# Configure modules
 		for mod in self.kernel.get_modules():
 			print "Configure module '%s'" % mod.get_name()

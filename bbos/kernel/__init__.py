@@ -22,7 +22,7 @@ class Kernel(Component):
     def __init__(self, threads=[], messages=[]):
         self.threads = {}
         self.messages = {}
-        self.sched = None
+        self.scheduler = None
         self.modules = {}
         self.add_messages(_default_messages)
         if len(threads):
@@ -68,7 +68,6 @@ class Kernel(Component):
             f.write("#define %s (%s)\n" % (message.get_name(), next_id))
             next_id += 1
         if self.get_scheduler():
-            print "Scheduler has been enabled"
             f.write("/* Scheduling */\n")
             f.write("#define BBOS_SCHED_ENABLED\n")
         f.write("#endif /* __BBOS_H */\n")
@@ -85,11 +84,11 @@ class Kernel(Component):
         return len(self.get_messages())
         
     def set_scheduler(self, sched):
-        self.sched = sched
+        self.scheduler = sched
         self.add_thread(Idle())
 
     def get_scheduler(self):
-        return self.sched
+        return self.scheduler
 
     def has_message(self, message):
         if type(message) == StringType:
