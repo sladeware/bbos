@@ -13,7 +13,7 @@ class Project:
 		if board:
 			self.set_board(board)
 		self.config_complete = False
-
+		
 	def set_board(self, board):
 		self.board = board
 		self.processor = board.get_processors()[0]
@@ -27,6 +27,10 @@ class Project:
 		pass
 
 	def config(self):
+		"""
+		Project configuration includes configuration of board, processor,
+		core, kernel and modules.
+		"""
 		print "Configure project"
 		print "Configure board '%s'" % self.board.get_name()
 		self.board.config(self)
