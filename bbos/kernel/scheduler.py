@@ -1,8 +1,11 @@
 
-import os
-from bbos.config import Configurable
+__copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
 
-class Scheduler(Configurable):
+import os
+
+from bbos.component import Component
+
+class Scheduler(Component):
 	"""
 	A scheduler is the heart of every RTOS, as it provides the algorithms to 
 	select the threads for execution.

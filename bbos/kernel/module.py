@@ -1,7 +1,7 @@
 
-from bbos.config import Configurable
+from bbos.component import Component
 
-class Module(Configurable):
+class Module(Component):
 	def __init__(self, name):
 		self.name = name
 

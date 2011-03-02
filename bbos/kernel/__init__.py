@@ -3,16 +3,22 @@ __copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
 
 import os
 import sys
+import traceback
 from types import *
 
 from bbos.kernel.thread import Thread
 from bbos.kernel.message import Message
 from bbos.kernel.idle import Idle
-from bbos.config import Configurable
+from bbos.component import Component
 
 _default_messages = ["BBOS_DRIVER_INIT", "BBOS_DRIVER_OPEN", "BBOS_DRIVER_CLOSE"]
 
-class Kernel(Configurable):
+#______________________________________________________________________________
+
+class Kernel(Component):
+    """
+    Kernel class.
+    """
     def __init__(self, threads=[], messages=[]):
         self.threads = {}
         self.messages = {}
@@ -149,7 +155,11 @@ class Kernel(Configurable):
             self.add_thread(thread)
 
     def add_module(self, mod_name):
-        __import__(mod_name)
+        try:
+            __import__(mod_name)
+        except ImportError:
+            traceback.print_exc(file=sys.stderr)
+            raise
         mod = sys.modules[mod_name]
         mod_class_name = mod.__name__.split('.').pop().upper()
         try:

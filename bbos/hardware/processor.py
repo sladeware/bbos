@@ -7,12 +7,11 @@ processor.
 """
 
 __copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
-__revision__ = ""
 
-from bbos.config import Configurable
+from bbos.component import Component
 from bbos.hardware.core import Core
 
-class Processor(Configurable):
+class Processor(Component):
     def __init__(self, name, cores, num_cores=1):
         self.name = name
         self.num_cores = num_cores

@@ -8,10 +8,10 @@ may be present on the board, but BBOS does not explicitly refer to them.
 
 __copyright__ = "Copyright (c) 2010 Slade Maurer, Alexander Sviridenko"
 
-from bbos.config import Configurable
+from bbos.component import Component
 from bbos.hardware.processor import *
 
-class Board(Configurable):
+class Board(Component):
     def __init__(self, name, processors):
         self.name = name
         # The list of processors on this board
