@@ -1,6 +1,4 @@
 """
-pkcs1.py
-
 An implementation of the PKCS#1 standard for RSA cryptography.
 PKCS#1 is the first of a family of standards called Public-Key Cryptography
 Standards (PKCS), It provides the basic definitions of and recommendations
@@ -11,10 +9,10 @@ syntax representations.
 """
 
 __version__ = '0.0.2'
-__copyright__ = "Copyright (c) 2010 Slade Maurer, Alexander Sviridenko"
+__copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
 
 import math
-import asn1
+import bbos.security.crypto.asn1 as asn1
 import sha
 import struct
 from binascii import a2b_hex, b2a_hex
@@ -36,12 +34,11 @@ class rsa_key:
 #______________________________________________________________________________
 
 class rsa_public_key(rsa_key):
-    """
-    n -- the RSA modulus, a positive integer
-    e -- the RSA public exponent, a positive integer
-    """
-
     def __init__(self, n, e):
+        """
+        n -- the RSA modulus, a positive integer
+        e -- the RSA public exponent, a positive integer
+        """
         rsa_key.__init__(self, n, e)
 
     def encrypt_primitive(self, encoded_msg):

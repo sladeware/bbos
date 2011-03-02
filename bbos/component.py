@@ -20,4 +20,7 @@ class Component:
         if hasattr(self, '_config'):
             self._config(proj)
 
+    def _config(self, proj):
+        pass
+
 

@@ -8,5 +8,4 @@ class FCFS(Scheduler):
 	def __init__(self):
 		Scheduler.__init__(self, "FCFS")
 
-	def _config(self):
-		pass
+

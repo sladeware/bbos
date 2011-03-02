@@ -13,16 +13,13 @@ from bbos.hardware.core import Core
 
 class Processor(Component):
     def __init__(self, name, cores, num_cores=1):
-        self.name = name
+        Component.__init__(self, name)
         self.num_cores = num_cores
         assert len(cores) <= num_cores, "The %s supports up to %d processes. " \
         "You have too many: %d" % (self.__class__.__name__, num_cores, len(cores))
         self.cores = cores
         for core in self.cores:
             assert isinstance(core, Core), "core is not a Core: %s" % core
-
-    def get_name(self):
-        return self.name
 
     def get_cores(self):
         return self.cores

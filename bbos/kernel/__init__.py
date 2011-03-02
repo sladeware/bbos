@@ -20,6 +20,7 @@ class Kernel(Component):
     Kernel class.
     """
     def __init__(self, threads=[], messages=[]):
+        Component.__init__(self, "Kernel")
         self.threads = {}
         self.messages = {}
         self.scheduler = None

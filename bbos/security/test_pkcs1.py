@@ -1,6 +1,7 @@
 
-__copyright__ = "Copyright (c) 2010 Slade Maurer, Alexander Sviridenko"
+__copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
 
+"""
 import sys
 import os.path
 import unittest
@@ -24,3 +25,4 @@ class SanityCheck(unittest.TestCase):
 	#print "Encoded message (hex):\n" + ciphertext.encode("hex") + "\n"
 	#print "Decoded message: " + rsaes_pkcs1_v1_5_decrypt(private_key, ciphertext)
         self.assertEquals(HEX_STRING, ciphertext.encode("hex"))
+"""

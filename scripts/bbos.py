@@ -25,7 +25,6 @@ USAGE: bbos.py [OPTIONS] [FILES]
 '''
 
 def touch(py_path):
-    py_dir = os.path.dirname(py_path)
     try:
         application = imp.load_source(hashlib.md5(py_path).hexdigest(), py_path)
     except ImportError:

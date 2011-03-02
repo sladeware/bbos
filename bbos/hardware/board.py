@@ -13,14 +13,11 @@ from bbos.hardware.processor import *
 
 class Board(Component):
     def __init__(self, name, processors):
-        self.name = name
+        Component.__init__(self, name)
         # The list of processors on this board
         self.processors = processors
         for processor in self.processors:
             assert isinstance(processor, Processor), "processor is not a Processor: %s" % processor
-
-    def get_name(self):
-        return self.name
 
     def get_processors(self):
         return self.processors

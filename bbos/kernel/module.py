@@ -3,9 +3,8 @@ from bbos.component import Component
 
 class Module(Component):
 	def __init__(self, name):
-		self.name = name
+		Component.__init__(self, name)
 
-	def get_name(self):
-		return self.name
+
 
 

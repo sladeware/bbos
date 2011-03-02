@@ -3,15 +3,11 @@ ASN.1 DER and PEM helper routines.
 '''
 # XXX replace all asserts with valueerrors
 
-
 from base64 import b64encode, b64decode
 from binascii import a2b_hex, b2a_hex
 from string import letters, digits
 
-
 __all__ = [ 'sequence', 'integer' ] # XXX
-
-
 
 # Class constants
 asn1_class_universal        = 0
@@ -20,33 +16,30 @@ asn1_class_context_specific = 2
 asn1_class_private          = 3
 asn1_classes = [ 'universal', 'application', 'context-specific', 'private' ]
 
-
-
-
-class asn1:
+class ASN1:
   'Base class for ASN.1 objects.'
 
   asn1_class = asn1_class_universal # default class
 
-  def value( self ):
+  def value(self):
     '''Overridden by subclasses to give an underlying value for hash and eq
     functions.'''
     raise NotImplementedError()
 
-  def der_encode( self ):
+  def der_encode(self):
     'Returns the DER encoding of the object.'
     raise NotImplementedError()
 
   @classmethod
-  def der_decode( cls, tag, contents, der_strict ):
+  def der_decode(cls, tag, contents, der_strict):
     'Returns a new object decoded from the given tag and contents octets.'
     raise NotImplementedError()
 
 
-  def __eq__( self, other ):
+  def __eq__(self, other):
     try:
-      return ( self.asn1_class == other.asn1_class and
-               self.tag == other.tag and self.value() == other.value() )
+      return (self.asn1_class == other.asn1_class and
+              self.tag == other.tag and self.value() == other.value())
     except AttributeError:
       return False
   def __ne__( self, other ):
@@ -57,7 +50,7 @@ class asn1:
 
 
 
-class context_specific( asn1 ):
+class context_specific(ASN1):
   der_constructed = True
   asn1_class = asn1_class_context_specific
 
@@ -83,9 +76,7 @@ class context_specific( asn1 ):
     assert rest == ''
     return cls( tag, value )
 
-
-
-class null( asn1 ):
+class null(ASN1):
   tag = 0x05
   der_constructed = False
 
@@ -105,11 +96,11 @@ class null( asn1 ):
     return cls()
 
 
-class integer( asn1 ):
+class integer(ASN1):
   tag = 0x02
   der_constructed = False
 
-  def __init__( self, i ):
+  def __init__(self, i):
     self.i = i
     assert i >= 0
 
@@ -129,14 +120,14 @@ class integer( asn1 ):
     return der_tlv( self.tag, a2b_hex( h ) )
 
   @classmethod
-  def der_decode( cls, tag, contents, der_strict ):
+  def der_decode(cls, tag, contents, der_strict):
     assert contents[0] != '\x00' or contents == '\x00' or ord(contents[1]) >= 0x80
-    assert ord( contents[0] ) < 0x80 # negative numbers not supported yet
+    assert ord(contents[0]) < 0x80 # negative numbers not supported yet
     h = b2a_hex( contents )
     return cls( long( h, 16 ) )
 
 
-class bit_string( asn1 ):
+class bit_string(ASN1):
   tag = 0x03
   der_constructed = False
 
@@ -166,7 +157,7 @@ class bit_string( asn1 ):
     return cls( contents[1:], ord( contents[0] ) )
 
 
-class octet_string( asn1 ):
+class octet_string(ASN1):
   tag = 0x04
   der_constructed = False
 
@@ -189,7 +180,7 @@ class octet_string( asn1 ):
     return cls( contents )
 
 
-class printable_string( asn1 ):
+class printable_string(ASN1):
   tag = 0x13
   der_constructed = False
 
@@ -216,7 +207,7 @@ class printable_string( asn1 ):
     return cls( contents )
 
 
-class ia5_string( asn1 ):
+class ia5_string(ASN1):
   tag = 0x16
   der_constructed = False
 
@@ -239,7 +230,7 @@ class ia5_string( asn1 ):
     return cls( contents )
 
 
-class utc_time( asn1 ):
+class utc_time(ASN1):
   tag = 0x17
   der_constructed = False
 
@@ -262,7 +253,7 @@ class utc_time( asn1 ):
     return cls( contents )
 
 
-class object_identifier( asn1 ):
+class object_identifier(ASN1):
   tag = 0x06
   der_constructed = False
 
@@ -311,7 +302,7 @@ class object_identifier( asn1 ):
     return cls( ints )
 
 
-class sequence( asn1 ):
+class sequence(ASN1):
   tag = 0x10
   der_constructed = True
 
@@ -344,7 +335,7 @@ class sequence( asn1 ):
     return cls( objs )
 
 
-class set_of( asn1 ):
+class set_of(ASN1):
   tag = 0x11
   der_constructed = True
 
@@ -373,10 +364,6 @@ class set_of( asn1 ):
       objs.append( obj )
     return cls( objs )
 
-
-
-
-
 def b128_encode( i ):
   octets = [ i % 0x80 ]
   i /= 0x80
@@ -397,7 +384,6 @@ def b128_decode( s ):
     raise ValueError( 'unexpected end of input while reading base128 integer' )
 
   return i, s[ pos+1: ]
-
 
 def der_encode_tag( tag, constructed, asn_class ):
   if constructed: first = 1 << 5
@@ -422,15 +408,13 @@ def der_encode_length( length ):
     len_octets.reverse()
   return ''.join(( chr(x) for x in len_octets ))
 
-def der_tlv( tag, contents, constructed = False,
-             asn_class = asn1_class_universal ):
+def der_tlv(tag, contents, constructed=False,
+            asn_class = asn1_class_universal):
   '''Helper routine to construct a DER encoding from the tag number and
   contents octets.'''
-  return ( der_encode_tag( tag, constructed, asn_class ) +
-           der_encode_length( len( contents ) ) +
-           contents )
-
-
+  return (der_encode_tag( tag, constructed, asn_class ) +
+          der_encode_length( len( contents ) ) +
+          contents)
 
 def der_decode_tag( octets ):
   assert len(octets) >= 2
@@ -545,14 +529,10 @@ def pem_decode( pem_text, type_string = None, der_strict = True ):
   return objs
 
 
-
-
 if __name__ == '__main__':
   from sys import stdin
   for obj in pem_decode( stdin.read(), der_strict = False ):
     print str( obj )
-
-
 
 class Test:
   def test_cert(self):
