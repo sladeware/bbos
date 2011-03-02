@@ -1,0 +1,19 @@
+.. _os-api-hardware:
+
+###########
+OS Hardware
+###########
+
+:Date: |today|
+
+Hardware support.
+
+.. toctree::
+   :maxdepth: 2
+
+   api.txt
+   boards/index.txt
+   cores/index.txt   
+   drivers/index.txt
+
+

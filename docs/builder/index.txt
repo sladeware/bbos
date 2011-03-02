@@ -1,0 +1,14 @@
+.. _builder-api-index:
+
+##############
+Builder Manual
+##############
+
+:Release: |version|
+:Data: |today|
+
+.. toctree::
+   :maxdepth: 1
+
+   api.txt
+

@@ -8,9 +8,6 @@
 /**
  * @file sched.h
  * @brief Scheduler interface for thread scheduling control
- *
- * A scheduler is the heart of every RTOS, as it provides the algorithms to 
- * select the threads for execution.
  */
 
 #ifdef BBOS_SCHED_ENABLED

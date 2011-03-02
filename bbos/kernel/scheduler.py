@@ -3,6 +3,10 @@ import os
 from bbos.config import Configurable
 
 class Scheduler(Configurable):
+	"""
+	A scheduler is the heart of every RTOS, as it provides the algorithms to 
+	select the threads for execution.
+	"""
 	def __init__(self):
 		pass
 		

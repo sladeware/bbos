@@ -2,6 +2,9 @@
 __copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
 
 class Project:
+	"""
+	Project.
+	"""
 	board = None
 	processor = None
 	core = None

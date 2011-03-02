@@ -1,0 +1,36 @@
+.. _index:
+
+BBOS |version| Documentation
+============================
+
+Welcome! This is the documentation for BBOS |version|, last updated |today|.
+
+:Authors:
+   Slade Maurer <slade@google.com>,
+   Alexander Sviridenko <oleks.sviridenko@gmail.com>
+:Version: 0.1
+
+Parts of the documentation
+--------------------------
+
+.. toctree::
+   :maxdepth: 1
+
+   using/index.txt
+   os/index.txt
+   builder/index.txt
+
+Indices and tables
+------------------
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+
+Meta information
+----------------
+
+.. toctree::
+   :maxdepth: 1
+
+   copyright.txt
