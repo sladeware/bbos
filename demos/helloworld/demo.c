@@ -2,13 +2,15 @@
 #include <stdio.h>
 #include <bbos/kernel.h>
 
-void demo() {
-	printf("Hello world!\n");
+void helloworld()
+{
+  printf("Hello world!\n");
 }
 
-void main() {
-	bbos_init();
-	bbos_start_thread(DEMO, demo);
-	bbos_start();
+void main()
+{
+  bbos_init();
+  bbos_start_thread(HELLOWORLD, helloworld);
+  bbos_start();
 }
 

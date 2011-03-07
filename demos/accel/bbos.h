@@ -1,4 +1,6 @@
 /*
+ * Mon Mar  7 22:09:48 2011
+ *
  * This is BBOS generated source code used for late binding application
  * features just before compile time.
  *
@@ -8,10 +10,9 @@
  */
 #ifndef __BBOS_H
 #define __BBOS_H
-
 /* Threads */
 #define BBOS_NUMBER_OF_THREADS (3)
-#define DEMO (0)
+#define FREEFALL (0)
 #define BBOS_IDLE (1)
 #define H48C (2)
 /* Messages */
@@ -24,5 +25,9 @@
 #define H48C_GFORCE_AOZ (5)
 #define H48C_FREE_FALL (6)
 /* Scheduling */
-#define BBOS_SCHED_ENABLED
+#define bbos_switch_thread()\
+	while(1) {\
+		freefall();\
+		h48c();\
+	}
 #endif /* __BBOS_H */

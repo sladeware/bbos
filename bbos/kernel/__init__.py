@@ -36,22 +36,12 @@ class Kernel(Component):
         processes, threads and etc just before building. We need this since the
         C macro language is seriously underpowered for our purposes.'''
         try:
-            f = open("bbos.h", "w")
+            f = open("bbos.h", "a")
         except IOError:
             print "There were problems writing to %s" % "bbos.h"
             traceback.print_exc(file=sys.stderr)
             raise
-        f.write("/*\n"
-                " * This is BBOS generated source code used for late binding application\n"
-                " * features just before compile time.\n"
-                " *\n"
-                " * Please do not edit this by hand, as your changes will be lost.\n"
-                " *\n"
-                " * %s\n"
-                " */\n"
-                "#ifndef __BBOS_H\n"
-                "#define __BBOS_H\n"
-                "\n"  % (__copyright__))
+        # Threads
         print "Process %d thread(s)" % self.get_number_of_threads()
         f.write("/* Threads */\n")
         f.write("#define BBOS_NUMBER_OF_THREADS (%d)\n" % self.get_number_of_threads())
@@ -59,7 +49,12 @@ class Kernel(Component):
         for thread in self.threads.values():
             print "%20s : %4d" % (thread.get_name(), next_id)
             f.write("#define %s (%s)\n" % (thread.get_name(), next_id))
+            # Create aliases for entry functions only if they are different
+            if thread.get_entry() != thread.get_alias():
+                f.write("#define %s(...) %s(...)\n" % (thread.get_alias(), 
+                        thread.get_entry()))
             next_id += 1
+        # Messages
         print "Process %d message(s)" % self.get_number_of_messages()
         f.write("/* Messages */\n")
         f.write("#define BBOS_NUMBER_OF_MESSAGES (%d)\n" % self.get_number_of_messages())
@@ -70,8 +65,7 @@ class Kernel(Component):
             next_id += 1
         if self.get_scheduler():
             f.write("/* Scheduling */\n")
-            f.write("#define BBOS_SCHED_ENABLED\n")
-        f.write("#endif /* __BBOS_H */\n")
+            #f.write("#define BBOS_SCHED_ENABLED\n")
         # Compile
         proj.add_sources([os.path.join(os.environ['BBOSHOME'], 'bbos/kernel.c'),
                           os.path.join(os.environ['BBOSHOME'], 'bbos/port.c'),
@@ -167,7 +161,9 @@ class Kernel(Component):
         except AttributeError:
             print "Module %s should have class %s" % (mod_name, mod_class_name)
             raise
-        self.modules[mod_name] = mod_class(self)
+        mod_class_inst = mod_class(self)
+        self.modules[mod_name] = mod_class_inst
+        return mod_class_inst
 
     def get_module(self, module_name):
         pass

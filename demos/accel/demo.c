@@ -10,7 +10,7 @@ static bool_t init_complete = 0;
 static int is_free_fall;
 	
 void
-demo()
+freefall()
 {
   static bbos_message_t message; // message to communicate with accelerometer
 
@@ -49,26 +49,14 @@ demo()
   bbos_port_send(H48C, &message, DEMO);
 }
 
-#if defined(BBOS_THREAD_SWITCH_HACK)
-void
-bbos_thread_switch()
-{
-  while (1)
-    {
-      demo();
-      h48c();
-    }
-}
-#endif
-
 void
 main()
 {
   bbos_init();
 
-  printf("Hitachi H48C 3 Axis Accelerometer Demo\n");
+  printf("Hitachi H48C 3 Axis Accelerometer Free Fall Demo\n");
 
-  bbos_start_thread(DEMO, demo);
+  bbos_start_thread(FREEFALL, freefall);
   bbos_start_thread(H48C, h48c);
   
   bbos_start();

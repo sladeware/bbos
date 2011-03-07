@@ -35,7 +35,7 @@ def touch(py_path):
     try:
         application_entry()
     except:
-        pass
+        raise
 
 def main(argv=None):
     if argv is None:

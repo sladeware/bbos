@@ -1,9 +1,28 @@
 
-class Thread:
-    def __init__(self, name):
-        self.name = name
+__copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
 
-    def get_name(self):
-        return self.name
+from bbos.component import Component
 
+class Thread(Component):
+    """
+    Thread base class.
+    """
+    def __init__(self, name, entry, alias=None):
+        Component.__init__(self, name)
+        self.entry = entry
+        if not alias:
+            alias = entry
+        self.alias = alias
+
+    def get_entry(self):
+        """
+        Get thread entry function.
+        """
+        return self.entry
+
+    def get_alias(self):
+        """
+        Get alias of entry function.
+        """
+        return self.alias
 
