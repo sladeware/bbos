@@ -10,14 +10,16 @@ from bbos.kernel.schedulers import FCFS
 from bbos.hardware.boards import PropellerDemoBoard
 
 def main():
+    # Start to build meta operating system
     demo = Kernel()
     # First-Come-First-Served scheduling policy
-    sched = FCFS()
-    demo.set_scheduler(sched)
+    demo.set_scheduler( FCFS() )
+    # Add application threads
     demo.add_thread("DEMO")
+    # Load modules
     demo.add_module("bbos.hardware.drivers.accel.h48c")
-    board = PropellerDemoBoard([demo])
-    proj = Project(board)
+    proj = Project(board=PropellerDemoBoard([demo]))
+    # Configure project
     proj.config()
 
 if __name__ == '__main__':

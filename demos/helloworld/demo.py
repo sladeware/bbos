@@ -12,15 +12,15 @@ from bbos.kernel.schedulers import FCFS
 from bbos.hardware.boards import QuadX86SimulationBoard
 
 def main():
-    # Start build the kernel
+    # Start build meta operating system
     demo = Kernel()
-    sched = FCFS()
-    demo.set_scheduler(sched)
+    # Scheduling
+    demo.set_scheduler( FCFS() )
+    # Threads
     demo.add_thread("DEMO")
-    # Specify hardware
-    simulator = QuadX86SimulationBoard([demo])
     # Create and configure project
-    proj = Project(simulator)
+    proj = Project(board=QuadX86SimulationBoard([demo]))
+    # Configure
     proj.config()
 
 if __name__ == '__main__':
