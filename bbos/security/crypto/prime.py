@@ -1,12 +1,9 @@
 """
-prime.py
-
 Prime numbers library
-
-Copyright (c) 2009 Sun Scoper Inc.
 """
 
 __version__ = '0.0.3'
+__copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
 
 from random import random, randint
 
@@ -62,9 +59,8 @@ def get_prime(k, r=0, s=1):
 
 def primality_test(n, s):
     """
-    Miller-Rabin primality test
-    Takes tested number n and s as number of tests. Returns false if n
-    is a composite number and true otherwise.
+    Miller-Rabin primality test.  Takes tested number n and s as number 
+    of tests. Returns false if n is a composite number and true otherwise.
     """
     for _ in range(s):
         a = randint(1, n-1)

@@ -7,5 +7,5 @@ Kernel Supported Schedulers
 .. toctree::
    :maxdepth: 2
    
-   fcfs.txt
-   
+   fcfs.rst
+

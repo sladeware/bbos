@@ -1,8 +1,8 @@
 .. overview:
 
-#############
-BBOS Overview
-#############
+########
+Overview
+########
 
 BBOS stands as **Bionic Bunny Operating System** and it is a small embedded 
 operating system built from a set of reusable 

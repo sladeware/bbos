@@ -1,5 +1,7 @@
-
+#
 # Makefile for Sphinx documentation
+#
+# Copyright (c) 2011 Slade Maurer, Alexander Sviridenko
 #
 
 # You can set these variables from the command line.

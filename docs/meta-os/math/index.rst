@@ -1,8 +1,8 @@
 .. _os-api-math:
 
-###########
-OS Math
-###########
+####
+Math
+####
 
 :Date: |today|
 

@@ -1,6 +1,7 @@
 '''
 ASN.1 DER and PEM helper routines.
 '''
+
 # XXX replace all asserts with valueerrors
 
 from base64 import b64encode, b64decode
@@ -478,12 +479,6 @@ def der_decode( octets, der_strict = True ):
     raise ValueError( 'cannot handle %s class tag %i' % ( asn1_classes[asn1_class], tag ) )
 
   return obj, rest
-
-
-
-
-
-
 
 # PEM routines.
 

@@ -1,8 +1,8 @@
 .. _using-index:
 
-##########################
-BBOS Setup and Usage
-##########################
+###############
+Setup and Usage
+###############
 
 Requirements and setup instructions
 

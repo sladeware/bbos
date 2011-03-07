@@ -1,20 +1,20 @@
 .. _meta-os-api-index:
 
-##################################
-Meta Operating System Manual
-##################################
+#####################
+Meta Operating System
+#####################
 
 :Release: |version|
 :Data: |today|
 
-This document describes the BBOS meta operating system.
+This manual documents the API for BBOS meta operating system.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
+   application/index.rst
    hardware/index.rst
    ipc/index.rst
    kernel/index.rst
-   math/index.rst
    security/index.rst
-
+   api/index.rst

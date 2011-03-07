@@ -7,6 +7,6 @@ Supported Boards
 .. toctree::
    :maxdepth: 2
    
-   quad_x86_simulation_board.txt
-   propeller_demo_board.txt
+   quad_x86_simulation_board.rst
+   propeller_demo_board.rst
 
