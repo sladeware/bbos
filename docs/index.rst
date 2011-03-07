@@ -17,8 +17,7 @@ Parts of the documentation
    :maxdepth: 1
 
    using/index.txt
-   os/index.txt
-   builder/index.txt
+   meta-os/index.txt
 
 Indices and tables
 ------------------

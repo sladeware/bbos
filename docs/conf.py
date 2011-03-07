@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# PyGoogleVoice documentation build configuration file, created by
+# BBOS documentation build configuration file, created by
 # sphinx-quickstart on Sun Nov 29 23:06:36 2009.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -29,7 +29,7 @@ extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest', 'sphinx.ext.coverage',
 templates_path = ['templates']
 
 # The suffix of source filenames.
-source_suffix = '.txt'
+source_suffix = '.rst'
 
 # The encoding of source files.
 #source_encoding = 'utf-8'
