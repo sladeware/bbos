@@ -1,7 +1,7 @@
 .. _kernel:
 
 #########
-OS Kernel
+Kernel
 #########
 
 :Date: |today|
@@ -9,7 +9,7 @@ OS Kernel
 .. toctree::
    :maxdepth: 2
 
-   api.txt
-   schedulers/index.txt
+   api.rst
+   schedulers/index.rst
 
 

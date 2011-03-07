@@ -8,7 +8,7 @@ Welcome! This is the documentation for BBOS |version|, last updated |today|.
 :Authors:
    Slade Maurer <slade@google.com>,
    Alexander Sviridenko <oleks.sviridenko@gmail.com>
-:Version: 0.1
+:Version: |version|
 
 Parts of the documentation
 --------------------------
@@ -16,8 +16,9 @@ Parts of the documentation
 .. toctree::
    :maxdepth: 1
 
-   using/index.txt
-   meta-os/index.txt
+   overview/index.rst
+   using/index.rst
+   meta-os/index.rst
 
 Indices and tables
 ------------------
@@ -32,4 +33,4 @@ Meta information
 .. toctree::
    :maxdepth: 1
 
-   copyright.txt
+   copyright.rst
