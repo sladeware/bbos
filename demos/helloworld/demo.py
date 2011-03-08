@@ -9,7 +9,8 @@ import os
 from bbos.project import Project
 from bbos.kernel import Kernel
 from bbos.kernel.thread import Thread
-from bbos.kernel.schedulers import FCFS, StateMachine
+from bbos.kernel.schedulers import FCFS
+from bbos.kernel.scheduler import StaticScheduler
 from bbos.hardware.boards import QuadX86SimulationBoard
 
 def main():
@@ -18,7 +19,7 @@ def main():
     # Threads
     helloworld = demo.add_thread(Thread("HELLOWORLD", "helloworld"))
     # Scheduling policy
-    demo.set_scheduler(StateMachine([helloworld]))
+    demo.set_scheduler(StaticScheduler("My own schedule!", order=[helloworld]))
     # Create and configure project
     proj = Project(board=QuadX86SimulationBoard([demo]))
     # Configure

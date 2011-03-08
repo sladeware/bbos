@@ -16,9 +16,7 @@ _default_messages = ["BBOS_DRIVER_INIT", "BBOS_DRIVER_OPEN", "BBOS_DRIVER_CLOSE"
 #______________________________________________________________________________
 
 class Kernel(Component):
-    """
-    Kernel class.
-    """
+    """Kernel class."""
     def __init__(self, threads=[], messages=[]):
         Component.__init__(self, "Kernel")
         self.threads = {}
@@ -30,11 +28,12 @@ class Kernel(Component):
             self.add_threads(threads)
         if len(messages):
             self.add_messages(messages)
+    # __init__()
 
-    def _config(self, proj):
-        '''Generate the source code for the bbos.h header file used to late bind BBOS
+    def config(self, proj):
+        """Generate the source code for the bbos.h header file used to late bind BBOS
         processes, threads and etc just before building. We need this since the
-        C macro language is seriously underpowered for our purposes.'''
+        C macro language is seriously underpowered for our purposes."""
         try:
             f = open("bbos.h", "a")
         except IOError:
@@ -44,15 +43,26 @@ class Kernel(Component):
         # Threads
         print "Process %d thread(s)" % self.get_number_of_threads()
         f.write("/* Threads */\n")
-        f.write("#define BBOS_NUMBER_OF_THREADS (%d)\n" % self.get_number_of_threads())
+        f.write("#define BBOS_NUMBER_OF_THREADS (%d)\n" 
+                % self.get_number_of_threads())
         next_id = 0
+        # Keep all thread entries. We will check all entry points and their 
+        # aliases so they should not repeat
+        entries = {}
         for thread in self.threads.values():
+            assert not entries.has_key(thread.get_entry()), \
+                "Thread '%s' has the same entry point as '%s'" \
+                % (thread.get_name(), entries[thread.get_entry()].get_name())
             print "%20s : %4d" % (thread.get_name(), next_id)
             f.write("#define %s (%s)\n" % (thread.get_name(), next_id))
+            # Register new entry point
+            entries[thread.get_entry()] = thread
             # Create aliases for entry functions only if they are different
             if thread.get_entry() != thread.get_alias():
                 f.write("#define %s(...) %s(...)\n" % (thread.get_alias(), 
                         thread.get_entry()))
+                # Register alias as a new entry point
+                entries[thread.get_alias()] = thread
             next_id += 1
         # Messages
         print "Process %d message(s)" % self.get_number_of_messages()
@@ -71,6 +81,7 @@ class Kernel(Component):
                           os.path.join(os.environ['BBOSHOME'], 'bbos/port.c'),
                           os.path.join(os.environ['BBOSHOME'], 'bbos/thread.c')])
         proj.add_include_dirs(['.', os.path.join(os.environ['BBOSHOME'], 'bbos')])
+    # config()
 
     def get_number_of_threads(self):
         return len(self.get_threads())
