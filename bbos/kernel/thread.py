@@ -14,6 +14,9 @@ class Thread(Component):
             alias = entry
         self.alias = alias
 
+    def set_alias(self, alias):
+        pass
+
     def get_entry(self):
         """
         Get thread entry function.

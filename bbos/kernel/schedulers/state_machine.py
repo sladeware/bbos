@@ -16,7 +16,7 @@ class StateMachine(Scheduler):
         machine construct.
 	"""
 	def __init__(self, order=[]):
-		Scheduler.__init__(self, "State Machine", is_dynamic=False)
+		Scheduler.__init__(self, "State Machine")
                 self.set_order(order)
         # __init__()
 
@@ -47,7 +47,7 @@ class StateMachine(Scheduler):
             f.write("\twhile(1) {\\\n")
             for i in range(len(self.get_order())):
                 thread = self.order[i]
-                print "\t%d. %s" % (i, thread.get_name())
+                print "\t%d. %s" % (i+1, thread.get_name())
                 f.write("\t\t%s();\\\n" % thread.get_entry())
             f.write("\t}\n")
             f.close()

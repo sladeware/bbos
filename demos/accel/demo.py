@@ -8,6 +8,7 @@ from bbos.project import Project
 from bbos.kernel import Kernel
 from bbos.kernel.thread import Thread
 from bbos.kernel.schedulers import FCFS, StateMachine
+from bbos.kernel.scheduler import StaticScheduler
 from bbos.hardware.boards import PropellerDemoBoard
 
 def main():
@@ -18,8 +19,8 @@ def main():
     # Load modules
     h48c = demo.add_module("bbos.hardware.drivers.accel.h48c")
     # Select scheduling policy
-    #demo.set_scheduler( FCFS() )
-    demo.set_scheduler( StateMachine([freefall, h48c.get_thread()]) )
+    demo.set_scheduler( FCFS() )
+    #demo.set_scheduler( StaticScheduler(order=[freefall, h48c.get_thread()]) )
     # Create the project
     proj = Project(board=PropellerDemoBoard([demo]))
     # Configure project

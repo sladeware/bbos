@@ -1,11 +1,12 @@
 
-from bbos.kernel.scheduler import Scheduler
+__copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
 
-class FCFS(Scheduler):
-	"""
-	First-Come-First-Served scheduling policy.
-	"""
-	def __init__(self):
-		Scheduler.__init__(self, "FCFS")
+from bbos.kernel.scheduler import DynamicScheduler
+
+class FCFS(DynamicScheduler):
+    """First-Come-First-Served scheduling policy."""
+    def __init__(self):
+	DynamicScheduler.__init__(self, "FCFS")
+    # __init__()
 
 

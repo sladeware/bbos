@@ -1,5 +1,5 @@
 /*
- * Mon Mar  7 22:09:48 2011
+ * Tue Mar  8 21:59:12 2011
  *
  * This is BBOS generated source code used for late binding application
  * features just before compile time.
@@ -25,9 +25,5 @@
 #define H48C_GFORCE_AOZ (5)
 #define H48C_FREE_FALL (6)
 /* Scheduling */
-#define bbos_switch_thread()\
-	while(1) {\
-		freefall();\
-		h48c();\
-	}
+#define BBOS_SCHED_ENABLED
 #endif /* __BBOS_H */

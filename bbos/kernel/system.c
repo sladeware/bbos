@@ -32,7 +32,6 @@ bbos_panic(const char *fmt, ...)
 }
 
 #ifdef BBOS_SCHED_ENABLED
-#ifndef BBOS_SWITCH_THREAD_HACK
 /**
  * Switch to the next thread.
  */
@@ -43,10 +42,9 @@ bbos_switch_thread()
   bbos_thread_execute( bbos_sched_myself() );
 }
 #endif
-#endif
 
 /**
- * Start the thread and schedule it.
+ * Start the thread and schedule it. Wrapper for bbos_sched_enqueue().
  *
  * @param tid Thread identifier.
  * @param thread Pointer to the thread.

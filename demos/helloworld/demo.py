@@ -18,7 +18,7 @@ def main():
     # Threads
     helloworld = demo.add_thread(Thread("HELLOWORLD", "helloworld"))
     # Scheduling policy
-    demo.set_scheduler( StateMachine([helloworld]) )
+    demo.set_scheduler(StateMachine([helloworld]))
     # Create and configure project
     proj = Project(board=QuadX86SimulationBoard([demo]))
     # Configure
