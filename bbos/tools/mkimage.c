@@ -37,7 +37,7 @@ typedef		unsigned int	uint32_t;
 #define O_BINARY 0
 #endif
 
-#include <bbos/image.h>
+#include <bbos/boot/image.h>
 
 extern int errno;
 

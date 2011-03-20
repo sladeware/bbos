@@ -1,5 +1,10 @@
 
-#include <bbos/kernel/types.h>
+#include <stdlib.h>
+
+typedef unsigned char uint8_t;
+typedef unsigned short uint16_t;
+typedef unsigned int uint32_t;
+
 #include <bbos/boot/image.h>
 #include <bbos/lib/elf.h>
 #include <stdio.h>
@@ -7,7 +12,6 @@
 #include <errno.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <stdlib.h>
 #include <sys/types.h>
 #include <string.h>
 
@@ -17,7 +21,7 @@ main()
   int err;
   struct stat info;
 	
-  char *fname = "demos/boot/image";
+  char *fname = "image";
 
   int fd = open(fname, O_RDONLY|O_SYNC);
   fstat(fd, &info);
