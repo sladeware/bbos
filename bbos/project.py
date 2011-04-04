@@ -100,6 +100,10 @@ class Project:
 	    # Initialization has been completed
 	self.config_complete = True
     # config()
+
+    def build(self):
+        pass
+    # build()
 	
     def compile(self):
 	pass
