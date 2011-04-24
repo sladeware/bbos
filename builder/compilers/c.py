@@ -148,6 +148,15 @@ class CCompiler(Compiler):
         return None
     # _find_macro()
 
+    def add_include_dirs(self, dirs):
+        """Add a list of dirs 'dirs' to the list of directories that will be
+        searched for header files. See add_include_dir()."""
+        if type(dirs) is ListType:
+            for dir in dirs:
+                self.add_include_dir(dir)
+        else:
+            raise TypeError
+
     def add_include_dir(self, dir):
         """Add 'dir' to the list of directories that will be searched for
         header files. The compiler is instructed to search directories in

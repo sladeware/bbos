@@ -30,12 +30,16 @@ class Kernel(Component):
             self.add_messages(messages)
     # __init__()
 
-    def config(self, proj):
+    def _attach(self, proj):
         """Generate the source code for the bbos.h header file used to late bind BBOS
         processes, threads and etc just before building. We need this since the
         C macro language is seriously underpowered for our purposes."""
+        sources = [os.path.join(os.environ['BBOSHOME'], 'bbos/kernel/system.c'), 
+                   os.path.join(os.environ['BBOSHOME'], 'bbos/kernel/port.c'),
+                   os.path.join(os.environ['BBOSHOME'], 'bbos/kernel/thread.c')]
+        proj.env['bbos.h'] = os.path.join(proj.compiler.get_output_dir(), "bbos.h")
         try:
-            f = open("bbos.h", "a")
+            f = open(proj.env['bbos.h'], "a")
         except IOError:
             print "There were problems writing to %s" % "bbos.h"
             traceback.print_exc(file=sys.stderr)
@@ -75,12 +79,10 @@ class Kernel(Component):
             next_id += 1
         if self.get_scheduler():
             f.write("/* Scheduling */\n")
-            #f.write("#define BBOS_SCHED_ENABLED\n")
+            sources.append(self.get_scheduler())
         # Compile
-        proj.add_sources([os.path.join(os.environ['BBOSHOME'], 'bbos/kernel.c'),
-                          os.path.join(os.environ['BBOSHOME'], 'bbos/port.c'),
-                          os.path.join(os.environ['BBOSHOME'], 'bbos/thread.c')])
-        proj.add_include_dirs(['.', os.path.join(os.environ['BBOSHOME'], 'bbos')])
+        proj.add_sources(sources)
+        proj.compiler.add_include_dirs([os.environ['BBOSHOME']])
     # config()
 
     def get_number_of_threads(self):

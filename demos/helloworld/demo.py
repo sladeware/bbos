@@ -6,7 +6,8 @@ __copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
 import sys
 import os
 
-from bbos.project import Project
+#from bbos.project import Project
+from builder.projects import CProject
 from bbos.kernel import Kernel
 from bbos.kernel.thread import Thread
 from bbos.kernel.schedulers import FCFS
@@ -21,9 +22,13 @@ def main():
     # Scheduling policy
     demo.set_scheduler(StaticScheduler("My own schedule!", order=[helloworld]))
     # Create and configure project
-    proj = Project(board=QuadX86SimulationBoard([demo]))
+    #proj = Project(board=QuadX86SimulationBoard([demo]))
     # Configure
-    proj.config()
+    project = CProject("demo", verbose=True)
+    project.build([demo, os.path.join(os.path.dirname(__file__), "demo.c")], 
+                  output_dir=os.path.abspath(os.path.dirname(__file__)),
+                  include_dirs=[os.path.abspath(os.path.dirname(__file__))])
+    #proj.config()
 
 if __name__ == '__main__':
     sys.exit(main())

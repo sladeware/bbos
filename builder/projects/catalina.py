@@ -15,10 +15,10 @@ class CatalinaProject(CProject):
         self.compiler = CatalinaCompiler(self.verbose, self.dry_run)
     # __init__()
 
-    def _build(self, sources=None, include_dirs=[], macros=[], libraries=[], 
-               library_dirs=[]):
+    def _build(self, sources=None, output_dir=None, include_dirs=[], macros=[], 
+               libraries=[], library_dirs=[]):
         """Start to build Catalina project."""
-        CProject._build(self, sources, include_dirs, macros, libraries, 
+        CProject._build(self, sources, output_dir, include_dirs, macros, libraries, 
                library_dirs)
 
         # Catalina will add to the output_path file .binary extension in case 

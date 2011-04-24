@@ -14,8 +14,8 @@ from builder.errors import *
 #______________________________________________________________________________
 
 class Extension(MetaData):
-    def __init__(self):
-        MetaData.__init__(self)
+    def __init__(self, name=None, version=None):
+        MetaData.__init__(self, name, version)
 
     def attach(self, project):
         """A concrete extension class can either override this method
@@ -50,6 +50,8 @@ class Project(MetaData):
         self.add_sources(sources)
         self.compiler = None
         self.loader = None
+        # A mapping object representing the string environment.
+        self.env = {}
         # XXX Hmmm.... so what about os.name?
         self.host_os = platform.system()
         self.host_processor = platform.processor()
@@ -59,9 +61,12 @@ class Project(MetaData):
         self.extensions.append(ext)
 
     def add_source(self, source):
+        """In the case when source is a path, it will be normalized by
+        using os.path.abspath()."""
         if source:
             if isinstance(source, Extension):
                 return self.add_extension(source)
+            source = os.path.abspath(source)
             self.sources.append(source)
 
     def add_sources(self, sources):
@@ -83,7 +88,8 @@ class Project(MetaData):
     def rebuild(self):
         pass
 
-    def build(self, sources=[], *arg_list, **arg_dict):
+    def build(self, sources=[], output_dir=None, *arg_list, **arg_dict):
+        self.compiler.set_output_dir(output_dir)
         if self.verbose:
             print "Build project '%s' version '%s'" % (self.name, self.version)
         if sources:
@@ -93,7 +99,7 @@ class Project(MetaData):
             print "Attach extension '%s' version '%s'" % (extension.name, extension.version)
             extension.attach(self)
         # Run specific build process
-        self._build(*arg_list, **arg_dict)
+        self._build(output_dir=output_dir, *arg_list, **arg_dict)
         
     def _build(self, *arg_list, **arg_dict):
         raise NotImplemented

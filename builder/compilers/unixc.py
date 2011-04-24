@@ -24,7 +24,6 @@ class UnixCCompiler(CCompiler):
 
     def __init__(self, verbose=False, dry_run=False):
         CCompiler.__init__(self, verbose, dry_run)
-    # __init__()
 
     def _compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts):
         compiler = self.executables['compiler']
@@ -34,7 +33,6 @@ class UnixCCompiler(CCompiler):
                   dry_run=self.dry_run)
         except BuilderExecutionError, msg:
             raise CompileError, msg
-    # _compile()
 
     def link(self, objects, output_filename, output_dir=None, 
              libraries=None, library_dirs=None,
@@ -68,10 +66,8 @@ class UnixCCompiler(CCompiler):
             spawn(linker + ld_options, verbose=self.verbose, dry_run=self.dry_run)
         except BuilderExecutionError, msg:
             raise LinkError, msg
-    # link()
 
     def get_library_option(self, lib):
         return "-l" + lib
-    # get_library_option()
 
-# class UnixCCompiler
+

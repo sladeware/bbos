@@ -47,10 +47,10 @@ class StaticScheduler(Scheduler):
         return self.order
     # get_order()
 
-    def config(self, proj):
+    def _attach(self, proj):
         # Open bbos.h file
         try:
-            f = open("bbos.h", "a")
+            f = open(proj.env["bbos.h"], "a")
         except IOError:
             print "There were problems writing to the end of %s" % "bbos.h"
             traceback.print_exc(file=sys.stderr)
@@ -66,8 +66,6 @@ class StaticScheduler(Scheduler):
         f.write("\t}\n")
         # Close bbos.h file
         f.close()
-        # Configure base class
-        Scheduler.config(self, proj)
     # config()
 
 #_______________________________________________________________________________
@@ -77,10 +75,10 @@ class DynamicScheduler(Scheduler):
         Scheduler.__init__(self, name)
     # __init__()
 
-    def config(self, proj):
+    def _attach(self, proj):
         # Open bbos.h file
         try:
-            f = open("bbos.h", "a")
+            f = open(proj.env["bbos.h"], "a")
         except IOError:
             print "There were problems writing to the end of %s" % "bbos.h"
             traceback.print_exc(file=sys.stderr)
@@ -88,6 +86,4 @@ class DynamicScheduler(Scheduler):
         f.write("#define BBOS_SCHED_ENABLED\n")
         # Close bbos.h file
         f.close()
-        # Configure base class
-        Scheduler.config(self, proj)
     # config()
