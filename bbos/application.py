@@ -1,26 +1,28 @@
 
 __copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
 
+import os
 import time
 
 # The following files will be automatically regenerated each time the project
 # will be configured
 generated_files = ["bbos.h"]
 
+from builder.project import Extension
+
 #_______________________________________________________________________________
 
-class Project:
+class Application(Extension):
     """Project base class."""
     board = None
     processor = None
     core = None
 
     def __init__(self, board=None, processor=None, core=None):
+        Extension.__init__(self)
 	if board:
 	    self.set_board(board)
 	self.config_complete = False
-	self.sources = []
-	self.add_sources(generated_files)
     # __init__()
 		
     def set_board(self, board):
@@ -31,35 +33,23 @@ class Project:
 	self.kernel = self.core.get_process()
     # set_board()
 
-    def add_sources(self, sources):
-	self.sources.extend(sources)
-    # add_sources()
-	
-    def get_sources(self):
-	"""Get source files."""
-	return self.sources
-    # get_sources()
-
-    def add_include_dirs(self, dirs):
-	pass
-    # add_include_dirs()
-
-    def config(self):
+    def _attach(self, proj):
 	"""Project configuration includes configuration of board, processor,
 	core, kernel and modules."""
 	# Start to configure project
-	print "Configure project"
+	print "Configure application"
 	# Create files that have to be generated
 	for fpath in generated_files:
+            proj.env[fpath] = os.path.join(proj.compiler.get_output_dir(), fpath)
 	    try:
-		f = open(fpath, "w")
-		print "Create '%s' file" % fpath
+		f = open(proj.env[fpath], "w")
+		print "Create '%s' file" % proj.env[fpath]
 	    except IOError:
-		print "There were problems creating %s" % fpath
+		print "There were problems creating %s" % proj.env[fpath]
 		traceback.print_exc(file=sys.stderr)
 		raise
 	# Generate the top of bbos.h file
-	f = open('bbos.h', 'a')
+	f = open(proj.env['bbos.h'], 'a')
 	f.write("/*\n"
 		" * %s\n"
 		" *\n"
@@ -94,20 +84,13 @@ class Project:
 	    print "Configure module '%s'" % mod.get_name()
 	    mod.config(self)
 	# Generate the bottom of the bbos.h
-	f = open('bbos.h', 'a')
+	f = open(proj.env['bbos.h'], 'a')
 	f.write("#endif /* __BBOS_H */\n")
 	f.close()
-	    # Initialization has been completed
+
+        proj.add_sources([self.kernel])
+
+        # Initialization has been completed
 	self.config_complete = True
     # config()
-
-    def build(self):
-        pass
-    # build()
-	
-    def compile(self):
-	pass
-    # compile()
-	
-	
 
