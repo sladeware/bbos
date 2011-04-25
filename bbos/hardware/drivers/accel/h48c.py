@@ -23,5 +23,6 @@ class H48C(Module):
 
     def _attach(self, proj):
         proj.compiler.add_include_dir(os.path.dirname(__file__))
-        proj.add_sources([os.path.join(os.path.dirname(__file__), "h48c.c")])
+        proj.add_sources([os.path.join(os.path.dirname(__file__), "h48c.c"),
+                          os.path.join(os.path.dirname(__file__), "../spi/spi_stamp.c")])
 
