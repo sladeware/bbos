@@ -18,14 +18,17 @@ class UnknownLoader(Exception):
     """"""
 
 # Exception classes used by the CCompiler implementation classes
-class CCompilerError (Exception):
+class CCompilerError(Exception):
     """Some compile/link operation failed."""
 
 class UnknownCompiler(Exception):
     """"""
 
-class UnknownFileError (CCompilerError):
+class UnknownFileError(CCompilerError):
     """Attempt to process an unknown file type."""
 
 class CompileError(CCompilerError):
+    pass
+
+class LinkError(CCompilerError):
     pass

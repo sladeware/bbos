@@ -12,7 +12,7 @@ class CatalinaProject(CProject):
     (see builder.compilers.catalina.CatalinaCompiler)."""
     def __init__(self, *arglist, **argdict):
         CProject.__init__(self, *arglist, **argdict)
-        self.compiler = CatalinaCompiler(self.verbose, self.dry_run)
+        self.compiler = CatalinaCompiler()
     # __init__()
 
     def _build(self, sources=None, output_dir=None, include_dirs=[], macros=[], 

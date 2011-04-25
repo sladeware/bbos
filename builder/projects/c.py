@@ -8,12 +8,10 @@ from builder.project import Extension, Project
 
 class CProject(Project):
     """C project for c-like compilers."""
-    def __init__(self, name, sources=[], version=None, verbose=False, 
-                 dry_run=False):
-        Project.__init__(self, name, sources, version, verbose, dry_run)
+    def __init__(self, name, sources=[], version=None, verbose=False):
+        Project.__init__(self, name, sources, version, verbose)
         # Set the compiler
-        self.compiler = new_ccompiler(verbose=self.verbose, 
-                                      dry_run=self.dry_run)
+        self.compiler = new_ccompiler()
 
     def _build(self, sources=None, output_dir=None, include_dirs=[], macros=[], 
                libraries=[], library_dirs=[]):

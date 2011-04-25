@@ -34,7 +34,7 @@ class UnixCCompiler(CCompiler):
         except BuilderExecutionError, msg:
             raise CompileError, msg
 
-    def link(self, objects, output_filename, output_dir=None, 
+    def _link(self, objects, output_filename, output_dir=None, 
              libraries=None, library_dirs=None,
              debug=False, 
 	     extra_preargs=None, extra_postargs=None, target_lang=None):

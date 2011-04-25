@@ -41,10 +41,9 @@ class Extension(MetaData):
 
 class Project(MetaData):
     def __init__(self, 
-                 name, sources=[], version=None, verbose=False, dry_run=False):
+                 name, sources=[], version=None, verbose=False):
         MetaData.__init__(self, name, version)
         self.verbose = verbose
-        self.dry_run = dry_run
         self.sources = []
         self.extensions = []
         self.add_sources(sources)
@@ -90,14 +89,14 @@ class Project(MetaData):
 
     def build(self, sources=[], output_dir=None, *arg_list, **arg_dict):
         self.compiler.set_output_dir(output_dir)
-        if self.verbose:
-            print "Build project '%s' version '%s'" % (self.name, self.version)
         if sources:
             self.add_sources(sources)
         # Attach existed extensions
         for extension in self.extensions:
-            print "Attach extension '%s' version '%s'" % (extension.name, extension.version)
+            print "Attaching extension '%s' version '%s'" % (extension.name, extension.version)
             extension.attach(self)
+        if self.verbose:
+            print "Building project '%s' version '%s'" % (self.name, self.version)
         # Run specific build process
         self._build(output_dir=output_dir, *arg_list, **arg_dict)
         

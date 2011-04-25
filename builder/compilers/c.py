@@ -385,6 +385,7 @@ class CCompiler(Compiler):
                 src, ext = build[obj]
             except KeyError:
                 continue
+            print "Compiling:", src
             self._compile(obj, src, ext, cc_options, extra_postopts, pp_options)
 	
 	return objects
@@ -438,10 +439,13 @@ class CCompiler(Compiler):
 	return macros, objects, extra, pp_options, build
     # _setup_compile()
 
-    def link(self, objects, output_filename, output_dir=None, debug=False, 
+    def link(self, objects, output_filename, *list_args, **dict_args):
+        print "Linking executable:", output_filename
+        self._link(objects, output_filename, *list_args, **dict_args)
+
+    def _link(self, objects, output_filename, output_dir=None, debug=False, 
 	     extra_preargs=None, extra_postargs=None, target_lang=None):
-	raise NotImplementedError
-    # link()
+        raise NotImplementedError
 
     def _setup_link(self, objects, output_dir, libraries, library_dirs):
         """Typecheck and fix up some of the arguments supplied to the
