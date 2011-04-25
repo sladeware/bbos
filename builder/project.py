@@ -87,14 +87,19 @@ class Project(MetaData):
     def rebuild(self):
         pass
 
+    def has_extensions(self):
+        return len(self.extensions)
+
     def build(self, sources=[], output_dir=None, *arg_list, **arg_dict):
         self.compiler.set_output_dir(output_dir)
         if sources:
             self.add_sources(sources)
-        # Attach existed extensions
-        for extension in self.extensions:
-            print "Attaching extension '%s' version '%s'" % (extension.name, extension.version)
-            extension.attach(self)
+        # Assembling the project: attach existed extensions
+        if self.has_extensions():
+            print "Assembling project"
+            for extension in self.extensions:
+                print "Attaching extension '%s' version '%s'" % (extension.name, extension.version)
+                extension.attach(self)
         if self.verbose:
             print "Building project '%s' version '%s'" % (self.name, self.version)
         # Run specific build process

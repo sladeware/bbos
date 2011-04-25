@@ -15,7 +15,7 @@ freefall()
   static bbos_message_t message; // message to communicate with accelerometer
 
   // Demo has a new message
-  if (bbos_port_receive(DEMO, &message) == BBOS_SUCCESS)
+  if (bbos_port_receive(FREEFALL, &message) == BBOS_SUCCESS)
     {
       // Try to figure out the command
       switch (message.id)
@@ -40,13 +40,13 @@ freefall()
       printf("Send open-message to H48C device driver\n");
       message.id = BBOS_DRIVER_OPEN;
       message.data = &demo_pins;
-      bbos_port_send(H48C, &message, DEMO);
+      bbos_port_send(H48C, &message, FREEFALL);
       return;
     }
 
   message.id = H48C_FREE_FALL;
   message.data = &is_free_fall;
-  bbos_port_send(H48C, &message, DEMO);
+  bbos_port_send(H48C, &message, FREEFALL);
 }
 
 void

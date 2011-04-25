@@ -118,21 +118,15 @@ segtable
 
 ' input file /usr/local/lib/catalina/target/catalina_default.s 
 
-' input file /tmp/lcc54512.o 
+' input file /home/d2rk/Workspace/bbos/trunk/demos/accel/home/d2rk/Workspace/bbos/trunk/demos/accel/demo.o 
 
-' input file /tmp/lcc54513.o 
+' input file /home/d2rk/Workspace/bbos/trunk/demos/accel/home/d2rk/Workspace/bbos/trunk/bbos/hardware/drivers/accel/h48c.o 
 
-' input file /tmp/lcc54514.o 
+' input file /home/d2rk/Workspace/bbos/trunk/demos/accel/home/d2rk/Workspace/bbos/trunk/bbos/kernel/system.o 
 
-' input file /tmp/lcc54515.o 
+' input file /home/d2rk/Workspace/bbos/trunk/demos/accel/home/d2rk/Workspace/bbos/trunk/bbos/kernel/port.o 
 
-' input file /tmp/lcc54516.o 
-
-' input file /tmp/lcc54517.o 
-
-' input file /tmp/lcc54518.o 
-
-' input file /tmp/lcc54519.o 
+' input file /home/d2rk/Workspace/bbos/trunk/demos/accel/home/d2rk/Workspace/bbos/trunk/bbos/kernel/thread.o 
 
 ' input file /usr/local/lib/catalina/lib/libci/abort.s 
 
@@ -278,267 +272,172 @@ DAT ' code segment
 ' (Catalina v2.5 Code Generator by Ross Higson)
 '
 
-' Catalina Export bbos_idle
-
- long ' align long
-C_bbos_idle ' <symbol:bbos_idle>
-' C_bbos_idle_1 ' (symbol refcount = 0)
- jmp #RETN
-
-' end
-
-DAT ' code segment
-'
-' LCC 4.2 for Parallax Propeller
-' (Catalina v2.5 Code Generator by Ross Higson)
-'
-
 
 DAT ' code segment
 
  long ' align long
-C_bbos_panic ' <symbol:bbos_panic>
- jmp #NEWF
- sub SP, #4
+C_freefall ' <symbol:freefall>
  jmp #PSHM
- long $800 ' save registers
- mov RI, FP
- add RI, #8
- sub BC, #4
- cmp BC, RI wz,wc
- if_ae wrlong r2, BC ' spill reg (varadic)
- sub BC, #4
- cmp BC, RI wz,wc
- if_ae wrlong r3, BC ' spill reg (varadic)
- sub BC, #4
- cmp BC, RI wz,wc
- if_ae wrlong r4, BC ' spill reg (varadic)
- sub BC, #4
- cmp BC, RI wz,wc
- if_ae wrlong r5, BC ' spill reg (varadic)
- mov r11, FP
- add r11, #12 ' reg <- addrfi
- jmp #LODF
- long -4
- wrlong r11, RI ' ASGNP4 addrl
+ long $20800 ' save registers
  jmp #LODA
- long @C_bbos_panic_buf_L000004
+ long @C_freefall_message_L000007
  mov r2, RI ' reg ARG ADDRG
+ mov r3, #0 ' reg ARG coni
+ mov BC, #8 ' arg size
+ sub SP, #8 ' stack space for reg ARGs
+ jmp #CALA
+ long @C_bbos_port_receive
+ add SP, #8 ' CALL addrg
+ cmps r0,  #0 wz
+ jmp #BRNZ
+ long @C_freefall_8 ' NEI4
  jmp #LODA
- long @C_bbos_panic_6_L000007
+ long @C_freefall_message_L000007
+ rdlong r17, RI ' reg <- INDIRI4 addrg
+ cmps r17,  #4 wz
+ jmp #BR_Z
+ long @C_freefall_13 ' EQI4
+ cmps r17,  #6 wz
+ jmp #BR_Z
+ long @C_freefall_16 ' EQI4
+ jmp #JMPA
+ long @C_freefall_10 ' JUMPV addrg
+C_freefall_13
+ jmp #LODA
+ long @C_freefall_14_L000015
+ mov r2, RI ' reg ARG ADDRG
+ mov BC, #4 ' arg size
+ sub SP, #4 ' stack space for reg ARGs
+ jmp #CALA
+ long @C_printf
+ add SP, #4 ' CALL addrg
+ mov r11, #1 ' reg <- coni
+ jmp #LODA
+ long @C_tmpfileRYnH5U_4db599ed_init_complete_L000003
+ wrbyte r11, RI ' ASGNU1 addrg
+ jmp #JMPA
+ long @C_freefall_11 ' JUMPV addrg
+C_freefall_16
+ jmp #LODA
+ long @C_freefall_message_L000007+8
+ rdlong r11, RI ' reg <- INDIRP4 addrg
+ rdlong r11, r11 ' reg <- INDIRI4 reg
+ cmps r11,  #1 wz
+ jmp #BRNZ
+ long @C_freefall_11 ' NEI4
+ jmp #LODA
+ long @C_freefall_20_L000021
+ mov r2, RI ' reg ARG ADDRG
+ mov BC, #4 ' arg size
+ sub SP, #4 ' stack space for reg ARGs
+ jmp #CALA
+ long @C_printf
+ add SP, #4 ' CALL addrg
+ jmp #JMPA
+ long @C_freefall_11 ' JUMPV addrg
+C_freefall_10
+ jmp #LODA
+ long @C_freefall_22_L000023
+ mov r2, RI ' reg ARG ADDRG
+ mov BC, #4 ' arg size
+ sub SP, #4 ' stack space for reg ARGs
+ jmp #CALA
+ long @C_bbos_panic
+ add SP, #4 ' CALL addrg
+C_freefall_11
+C_freefall_8
+ jmp #LODA
+ long @C_tmpfileRYnH5U_4db599ed_init_complete_L000003
+ rdbyte r11, RI ' reg <- INDIRU1 addrg
+ and r11, cviu_m1 ' zero extend
+ cmps r11,  #0 wz
+ jmp #BRNZ
+ long @C_freefall_24 ' NEI4
+ jmp #LODA
+ long @C_freefall_26_L000027
+ mov r2, RI ' reg ARG ADDRG
+ mov BC, #4 ' arg size
+ sub SP, #4 ' stack space for reg ARGs
+ jmp #CALA
+ long @C_printf
+ add SP, #4 ' CALL addrg
+ mov r11, #4 ' reg <- coni
+ jmp #LODA
+ long @C_freefall_message_L000007
+ wrlong r11, RI ' ASGNI4 addrg
+ jmp #LODA
+ long @C_tmpfileovvbaA_4db599ed_demo_pins_L000002
+ mov r11, RI ' reg <- addrg
+ jmp #LODA
+ long @C_freefall_message_L000007+8
+ wrlong r11, RI ' ASGNP4 addrg
+ mov r2, #0 ' reg ARG coni
+ jmp #LODA
+ long @C_freefall_message_L000007
  mov r3, RI ' reg ARG ADDRG
- mov BC, #8 ' arg size
- sub SP, #8 ' stack space for reg ARGs
+ mov r4, #2 ' reg ARG coni
+ mov BC, #12 ' arg size
+ sub SP, #12 ' stack space for reg ARGs
  jmp #CALA
- long @C_printf
- add SP, #8 ' CALL addrg
-' C_bbos_panic_2 ' (symbol refcount = 0)
- jmp #POPM
- long $800 ' restore registers
- add SP, #4 ' framesize
- jmp #RETF
-
-
-' Catalina Export bbos_switch_thread
-
- long ' align long
-C_bbos_switch_thread ' <symbol:bbos_switch_thread>
- jmp #PSHM
- long $800 ' save registers
- mov BC, #0 ' arg size
- jmp #CALA
- long @C_bbos_sched_myself ' CALL addrg
- mov r11, r0 ' CVI, CVU or LOAD
- and r11, cviu_m1 ' zero extend
- cmps r11,  #3 wz,wc
- jmp #BRAE
- long @C_bbos_switch_thread_11 ' GEI4
+ long @C_bbos_port_send
+ add SP, #12 ' CALL addrg
  jmp #JMPA
- long @C_bbos_switch_thread_12 ' JUMPV addrg
-C_bbos_switch_thread_11
+ long @C_freefall_5 ' JUMPV addrg
+C_freefall_24
+ mov r11, #6 ' reg <- coni
  jmp #LODA
- long @C_bbos_switch_thread_9_L000010
- mov r2, RI ' reg ARG ADDRG
- mov BC, #4 ' arg size
- sub SP, #4 ' stack space for reg ARGs
- jmp #CALA
- long @C___bad_assertion
- add SP, #4 ' CALL addrg
-C_bbos_switch_thread_12
- mov BC, #0 ' arg size
- jmp #CALA
- long @C_bbos_sched_myself ' CALL addrg
- mov r11, r0 ' CVI, CVU or LOAD
- mov r2, r11 ' CVUI
- and r2, cviu_m1 ' zero extend
- mov BC, #4 ' arg size
- sub SP, #4 ' stack space for reg ARGs
- jmp #CALA
- long @C_bbos_thread_execute
- add SP, #4 ' CALL addrg
-' C_bbos_switch_thread_8 ' (symbol refcount = 0)
- jmp #POPM
- long $800 ' restore registers
- jmp #RETN
-
-
-' Catalina Export bbos_start_thread
-
- long ' align long
-C_bbos_start_thread ' <symbol:bbos_start_thread>
- jmp #PSHM
- long $30800 ' save registers
- mov r17, r3 ' reg var <- reg arg
- mov r16, r2 ' reg var <- reg arg
- mov r11, r17 ' CVUI
- and r11, cviu_m1 ' zero extend
- cmps r11,  #3 wz,wc
- jmp #BRAE
- long @C_bbos_start_thread_16 ' GEI4
- jmp #JMPA
- long @C_bbos_start_thread_17 ' JUMPV addrg
-C_bbos_start_thread_16
+ long @C_freefall_message_L000007
+ wrlong r11, RI ' ASGNI4 addrg
  jmp #LODA
- long @C_bbos_start_thread_14_L000015
- mov r2, RI ' reg ARG ADDRG
- mov BC, #4 ' arg size
- sub SP, #4 ' stack space for reg ARGs
- jmp #CALA
- long @C___bad_assertion
- add SP, #4 ' CALL addrg
-C_bbos_start_thread_17
- mov r2, r16 ' CVI, CVU or LOAD
- mov r3, r17 ' CVUI
- and r3, cviu_m1 ' zero extend
- mov BC, #8 ' arg size
- sub SP, #8 ' stack space for reg ARGs
- jmp #CALA
- long @C_bbos_thread_init
- add SP, #8 ' CALL addrg
- mov r2, r17 ' CVUI
- and r2, cviu_m1 ' zero extend
- mov BC, #4 ' arg size
- sub SP, #4 ' stack space for reg ARGs
- jmp #CALA
- long @C_bbos_sched_enqueue
- add SP, #4 ' CALL addrg
- mov r0, #0 ' RET coni
-' C_bbos_start_thread_13 ' (symbol refcount = 0)
- jmp #POPM
- long $30800 ' restore registers
- jmp #RETN
-
-
-' Catalina Export bbos_stop_thread
-
- long ' align long
-C_bbos_stop_thread ' <symbol:bbos_stop_thread>
- jmp #PSHM
- long $20800 ' save registers
- mov r17, r2 ' reg var <- reg arg
- mov r11, r17 ' CVUI
- and r11, cviu_m1 ' zero extend
- cmps r11,  #3 wz,wc
- jmp #BRAE
- long @C_bbos_stop_thread_21 ' GEI4
- jmp #JMPA
- long @C_bbos_stop_thread_22 ' JUMPV addrg
-C_bbos_stop_thread_21
+ long @C_tmpfileYqvd1f_4db599ed_is_free_fall_L000004
+ mov r11, RI ' reg <- addrg
  jmp #LODA
- long @C_bbos_stop_thread_19_L000020
- mov r2, RI ' reg ARG ADDRG
- mov BC, #4 ' arg size
- sub SP, #4 ' stack space for reg ARGs
- jmp #CALA
- long @C___bad_assertion
- add SP, #4 ' CALL addrg
-C_bbos_stop_thread_22
+ long @C_freefall_message_L000007+8
+ wrlong r11, RI ' ASGNP4 addrg
+ mov r2, #0 ' reg ARG coni
  jmp #LODA
- long @C_bbos_stop_thread_L000024
- rdlong r2, RI ' reg ARG con
- mov r3, r17 ' CVUI
- and r3, cviu_m1 ' zero extend
- mov BC, #8 ' arg size
- sub SP, #8 ' stack space for reg ARGs
+ long @C_freefall_message_L000007
+ mov r3, RI ' reg ARG ADDRG
+ mov r4, #2 ' reg ARG coni
+ mov BC, #12 ' arg size
+ sub SP, #12 ' stack space for reg ARGs
  jmp #CALA
- long @C_bbos_thread_init
- add SP, #8 ' CALL addrg
- mov r2, r17 ' CVUI
- and r2, cviu_m1 ' zero extend
- mov BC, #4 ' arg size
- sub SP, #4 ' stack space for reg ARGs
- jmp #CALA
- long @C_bbos_sched_dequeue
- add SP, #4 ' CALL addrg
- mov r0, #0 ' RET coni
-' C_bbos_stop_thread_18 ' (symbol refcount = 0)
+ long @C_bbos_port_send
+ add SP, #12 ' CALL addrg
+C_freefall_5
  jmp #POPM
  long $20800 ' restore registers
  jmp #RETN
 
 
-' Catalina Export bbos_init
+' Catalina Export main
 
  long ' align long
-C_bbos_init ' <symbol:bbos_init>
- jmp #PSHM
- long $20800 ' save registers
+C_main ' <symbol:main>
+ jmp #CALA
+ long @C_arg_setup
+ mov BC, #0 ' arg size
+ jmp #CALA
+ long @C_bbos_init ' CALL addrg
  jmp #LODA
- long @C_bbos_init_28_L000029
+ long @C_main_31_L000032
  mov r2, RI ' reg ARG ADDRG
  mov BC, #4 ' arg size
  sub SP, #4 ' stack space for reg ARGs
  jmp #CALA
  long @C_printf
  add SP, #4 ' CALL addrg
- mov r17, #0 ' reg <- coni
- jmp #JMPA
- long @C_bbos_init_33 ' JUMPV addrg
-C_bbos_init_30
  jmp #LODA
- long @C_bbos_stop_thread_L000024
- rdlong r2, RI ' reg ARG con
- mov r3, r17 ' CVUI
- and r3, cviu_m1 ' zero extend
+ long @C_freefall
+ mov r2, RI ' reg ARG ADDRG
+ mov r3, #0 ' reg ARG coni
  mov BC, #8 ' arg size
  sub SP, #8 ' stack space for reg ARGs
  jmp #CALA
- long @C_bbos_thread_init
+ long @C_bbos_start_thread
  add SP, #8 ' CALL addrg
-' C_bbos_init_31 ' (symbol refcount = 0)
- mov r11, r17 ' CVUI
- and r11, cviu_m1 ' zero extend
- adds r11, #1 ' ADDI4 coni
- mov r17, r11 ' CVI, CVU or LOAD
-C_bbos_init_33
- mov r11, r17 ' CVUI
- and r11, cviu_m1 ' zero extend
- cmps r11,  #3 wz,wc
- jmp #BR_B
- long @C_bbos_init_30 ' LTI4
- mov BC, #0 ' arg size
- jmp #CALA
- long @C_bbos_sched_init ' CALL addrg
-' C_bbos_init_27 ' (symbol refcount = 0)
- jmp #POPM
- long $20800 ' restore registers
- jmp #RETN
-
-
-' Catalina Export bbos_start
-
- long ' align long
-C_bbos_start ' <symbol:bbos_start>
  jmp #LODA
- long @C_bbos_start_35_L000036
- mov r2, RI ' reg ARG ADDRG
- mov BC, #4 ' arg size
- sub SP, #4 ' stack space for reg ARGs
- jmp #CALA
- long @C_printf
- add SP, #4 ' CALL addrg
- jmp #LODA
- long @C_bbos_idle
+ long @C_h48c
  mov r2, RI ' reg ARG ADDRG
  mov r3, #2 ' reg ARG coni
  mov BC, #8 ' arg size
@@ -546,408 +445,43 @@ C_bbos_start ' <symbol:bbos_start>
  jmp #CALA
  long @C_bbos_start_thread
  add SP, #8 ' CALL addrg
- jmp #JMPA
- long @C_bbos_start_38 ' JUMPV addrg
-C_bbos_start_37
  mov BC, #0 ' arg size
  jmp #CALA
- long @C_bbos_sched_move ' CALL addrg
- mov BC, #0 ' arg size
- jmp #CALA
- long @C_bbos_switch_thread ' CALL addrg
-C_bbos_start_38
+ long @C_bbos_start ' CALL addrg
+' C_main_30 ' (symbol refcount = 0)
  jmp #JMPA
- long @C_bbos_start_37 ' JUMPV addrg
-' C_bbos_start_34 ' (symbol refcount = 0)
- jmp #RETN
+ long @C__exit
 
-
-' Catalina Import bbos_thread_init
-
-' Catalina Import bbos_thread_execute
-
-' Catalina Import bbos_idle
-
-' Catalina Import bbos_sched_dequeue
-
-' Catalina Import bbos_sched_enqueue
-
-' Catalina Import bbos_sched_myself
-
-' Catalina Import bbos_sched_move
-
-' Catalina Import bbos_sched_init
-
-' Catalina Import __bad_assertion
+' Catalina Import bbos_port_send
 
 ' Catalina Import printf
 
-
-DAT ' code segment
-' end
-
-DAT ' code segment
-'
-' LCC 4.2 for Parallax Propeller
-' (Catalina v2.5 Code Generator by Ross Higson)
-'
-
-' Catalina Export bbos_port_is_empty
-
- long ' align long
-C_bbos_port_is_empty ' <symbol:bbos_port_is_empty>
- jmp #PSHM
- long $20c00 ' save registers
- mov r17, r2 ' reg var <- reg arg
- mov r11, #12 ' reg <- coni
- mov r10, r17 ' CVUI
- and r10, cviu_m1 ' zero extend
- mov r0, r11 ' setup r0/r1 (2)
- mov r1, r10 ' setup r0/r1 (2)
- jmp #MULT ' MULT(I/U)
- jmp #LODA
- long @C_tmpfileatW53h_4d613fe7_bbos_port_table_L000002+8
- mov r10, RI ' reg <- addrg
- mov r11, r0 ' ADDI/P
- adds r11, r10 ' ADDI/P (3)
- rdword r11, r11 ' reg <- INDIRU2 reg
- mov r0, r11 ' CVUI
- and r0, cviu_m2 ' zero extend
-' C_bbos_port_is_empty_3 ' (symbol refcount = 0)
- jmp #POPM
- long $20c00 ' restore registers
- jmp #RETN
-
-
-' Catalina Export bbos_port_send
-
- long ' align long
-C_bbos_port_send ' <symbol:bbos_port_send>
- jmp #PSHM
- long $38e00 ' save registers
- mov r17, r4 ' reg var <- reg arg
- mov r16, r3 ' reg var <- reg arg
- mov r15, r2 ' reg var <- reg arg
- mov r11, #12 ' reg <- coni
- mov r10, r17 ' CVUI
- and r10, cviu_m1 ' zero extend
- mov r0, r11 ' setup r0/r1 (2)
- mov r1, r10 ' setup r0/r1 (2)
- jmp #MULT ' MULT(I/U)
- jmp #LODA
- long @C_tmpfileatW53h_4d613fe7_bbos_port_table_L000002+4
- mov r10, RI ' reg <- addrg
- mov r11, r0 ' ADDI/P
- adds r11, r10 ' ADDI/P (3)
- rdlong r11, r11 ' reg <- INDIRP4 reg
- cmp r11,  #0 wz
- jmp #BRNZ
- long @C_bbos_port_send_6 ' NEU4
- mov r11, #12 ' reg <- coni
- mov r10, r17 ' CVUI
- and r10, cviu_m1 ' zero extend
- mov r0, r11 ' setup r0/r1 (2)
- mov r1, r10 ' setup r0/r1 (2)
- jmp #MULT ' MULT(I/U)
- jmp #LODA
- long @C_tmpfileatW53h_4d613fe7_bbos_port_table_L000002
- mov r10, RI ' reg <- addrg
- mov r11, r0 ' ADDI/P
- adds r11, r10 ' ADDI/P (3)
- wrlong r16, r11 ' ASGNP4 reg
- mov r11, #12 ' reg <- coni
- mov r10, r17 ' CVUI
- and r10, cviu_m1 ' zero extend
- mov r0, r11 ' setup r0/r1 (2)
- mov r1, r10 ' setup r0/r1 (2)
- jmp #MULT ' MULT(I/U)
- jmp #LODA
- long @C_tmpfileatW53h_4d613fe7_bbos_port_table_L000002+4
- mov r10, RI ' reg <- addrg
- mov r11, r0 ' ADDI/P
- adds r11, r10 ' ADDI/P (3)
- wrlong r16, r11 ' ASGNP4 reg
- mov r11, r16
- adds r11, #16 ' ADDP4 coni
- jmp #LODA
- long @C_bbos_port_send_L000011
- rdlong  r10, RI ' reg <- con
- wrlong r10, r11 ' ASGNP4 reg
- mov r0, #0 ' RET coni
- jmp #JMPA
- long @C_bbos_port_send_5 ' JUMPV addrg
-C_bbos_port_send_6
- mov r11, #12 ' reg <- coni
- mov r10, r17 ' CVUI
- and r10, cviu_m1 ' zero extend
- mov r0, r11 ' setup r0/r1 (2)
- mov r1, r10 ' setup r0/r1 (2)
- jmp #MULT ' MULT(I/U)
- mov r10, r16
- adds r10, #16 ' ADDP4 coni
- jmp #LODA
- long @C_tmpfileatW53h_4d613fe7_bbos_port_table_L000002+4
- mov r9, RI ' reg <- addrg
- mov r11, r0 ' ADDI/P
- adds r11, r9 ' ADDI/P (3)
- rdlong r11, r11 ' reg <- INDIRP4 reg
- adds r11, #16 ' ADDP4 coni
- rdlong r11, r11 ' reg <- INDIRP4 reg
- wrlong r11, r10 ' ASGNP4 reg
- mov r11, #12 ' reg <- coni
- mov r10, r17 ' CVUI
- and r10, cviu_m1 ' zero extend
- mov r0, r11 ' setup r0/r1 (2)
- mov r1, r10 ' setup r0/r1 (2)
- jmp #MULT ' MULT(I/U)
- jmp #LODA
- long @C_tmpfileatW53h_4d613fe7_bbos_port_table_L000002+4
- mov r10, RI ' reg <- addrg
- mov r11, r0 ' ADDI/P
- adds r11, r10 ' ADDI/P (3)
- rdlong r11, r11 ' reg <- INDIRP4 reg
- adds r11, #16 ' ADDP4 coni
- wrlong r16, r11 ' ASGNP4 reg
- mov r11, r16
- adds r11, #4 ' ADDP4 coni
- wrbyte r15, r11 ' ASGNU1 reg
- mov r0, #0 ' RET coni
-C_bbos_port_send_5
- jmp #POPM
- long $38e00 ' restore registers
- jmp #RETN
-
-
-' Catalina Export bbos_port_receive
-
- long ' align long
-C_bbos_port_receive ' <symbol:bbos_port_receive>
- jmp #PSHM
- long $30e00 ' save registers
- mov r17, r3 ' reg var <- reg arg
- mov r16, r2 ' reg var <- reg arg
- mov r11, #12 ' reg <- coni
- mov r10, r17 ' CVUI
- and r10, cviu_m1 ' zero extend
- mov r0, r11 ' setup r0/r1 (2)
- mov r1, r10 ' setup r0/r1 (2)
- jmp #MULT ' MULT(I/U)
- jmp #LODA
- long @C_tmpfileatW53h_4d613fe7_bbos_port_table_L000002
- mov r10, RI ' reg <- addrg
- mov r11, r0 ' ADDI/P
- adds r11, r10 ' ADDI/P (3)
- rdlong r11, r11 ' reg <- INDIRP4 reg
- cmp r11,  #0 wz
- jmp #BRNZ
- long @C_bbos_port_receive_17 ' NEU4
- mov r0, #1 ' RET coni
- jmp #JMPA
- long @C_bbos_port_receive_16 ' JUMPV addrg
-C_bbos_port_receive_17
- mov r11, #12 ' reg <- coni
- mov r10, r17 ' CVUI
- and r10, cviu_m1 ' zero extend
- mov r0, r11 ' setup r0/r1 (2)
- mov r1, r10 ' setup r0/r1 (2)
- jmp #MULT ' MULT(I/U)
- mov r11, r0 ' CVI, CVU or LOAD
- mov r0, r16 ' CVI, CVU or LOAD
- jmp #LODA
- long @C_tmpfileatW53h_4d613fe7_bbos_port_table_L000002
- mov r10, RI ' reg <- addrg
- adds r11, r10 ' ADDI/P (1)
- rdlong r1, r11 ' reg <- INDIRP4 reg
- jmp #CPYB
- long 20 ' ASGNB
- mov r11, #12 ' reg <- coni
- mov r10, r17 ' CVUI
- and r10, cviu_m1 ' zero extend
- mov r0, r11 ' setup r0/r1 (2)
- mov r1, r10 ' setup r0/r1 (2)
- jmp #MULT ' MULT(I/U)
- jmp #LODA
- long @C_tmpfileatW53h_4d613fe7_bbos_port_table_L000002
- mov r10, RI ' reg <- addrg
- adds r10, r0 ' ADDI/P (2)
- rdlong r10, r10 ' reg <- INDIRP4 reg
- jmp #LODA
- long @C_tmpfileatW53h_4d613fe7_bbos_port_table_L000002+4
- mov r9, RI ' reg <- addrg
- mov r11, r0 ' ADDI/P
- adds r11, r9 ' ADDI/P (3)
- rdlong r11, r11 ' reg <- INDIRP4 reg
- cmp r10, r11 wz
- jmp #BRNZ
- long @C_bbos_port_receive_19 ' NEU4
- mov r11, #12 ' reg <- coni
- mov r10, r17 ' CVUI
- and r10, cviu_m1 ' zero extend
- mov r0, r11 ' setup r0/r1 (2)
- mov r1, r10 ' setup r0/r1 (2)
- jmp #MULT ' MULT(I/U)
- jmp #LODA
- long @C_tmpfileatW53h_4d613fe7_bbos_port_table_L000002+4
- mov r10, RI ' reg <- addrg
- mov r11, r0 ' ADDI/P
- adds r11, r10 ' ADDI/P (3)
- jmp #LODA
- long @C_bbos_port_send_L000011
- rdlong  r10, RI ' reg <- con
- wrlong r10, r11 ' ASGNP4 reg
- jmp #JMPA
- long @C_bbos_port_receive_20 ' JUMPV addrg
-C_bbos_port_receive_19
- mov r11, #12 ' reg <- coni
- mov r10, r17 ' CVUI
- and r10, cviu_m1 ' zero extend
- mov r0, r11 ' setup r0/r1 (2)
- mov r1, r10 ' setup r0/r1 (2)
- jmp #MULT ' MULT(I/U)
- jmp #LODA
- long @C_tmpfileatW53h_4d613fe7_bbos_port_table_L000002
- mov r10, RI ' reg <- addrg
- mov r11, r0 ' ADDI/P
- adds r11, r10 ' ADDI/P (3)
- rdlong r10, r11 ' reg <- INDIRP4 reg
- adds r10, #16 ' ADDP4 coni
- rdlong r10, r10 ' reg <- INDIRP4 reg
- wrlong r10, r11 ' ASGNP4 reg
-C_bbos_port_receive_20
- mov r0, #0 ' RET coni
-C_bbos_port_receive_16
- jmp #POPM
- long $30e00 ' restore registers
- jmp #RETN
-
-
-' Catalina Export bbos_port_flush
-
- long ' align long
-C_bbos_port_flush ' <symbol:bbos_port_flush>
- jmp #PSHM
- long $20e00 ' save registers
- mov r17, r2 ' reg var <- reg arg
- mov r11, #12 ' reg <- coni
- mov r10, r17 ' CVUI
- and r10, cviu_m1 ' zero extend
- mov r0, r11 ' setup r0/r1 (2)
- mov r1, r10 ' setup r0/r1 (2)
- jmp #MULT ' MULT(I/U)
- jmp #LODA
- long @C_bbos_port_send_L000011
- rdlong  r10, RI ' reg <- con
- jmp #LODA
- long @C_tmpfileatW53h_4d613fe7_bbos_port_table_L000002+4
- mov r9, RI ' reg <- addrg
- adds r9, r0 ' ADDI/P (2)
- wrlong r10, r9 ' ASGNP4 reg
- jmp #LODA
- long @C_tmpfileatW53h_4d613fe7_bbos_port_table_L000002
- mov r9, RI ' reg <- addrg
- mov r11, r0 ' ADDI/P
- adds r11, r9 ' ADDI/P (3)
- wrlong r10, r11 ' ASGNP4 reg
- mov r11, #12 ' reg <- coni
- mov r10, r17 ' CVUI
- and r10, cviu_m1 ' zero extend
- mov r0, r11 ' setup r0/r1 (2)
- mov r1, r10 ' setup r0/r1 (2)
- jmp #MULT ' MULT(I/U)
- jmp #LODA
- long @C_tmpfileatW53h_4d613fe7_bbos_port_table_L000002+8
- mov r10, RI ' reg <- addrg
- mov r11, r0 ' ADDI/P
- adds r11, r10 ' ADDI/P (3)
- mov r10, #0 ' reg <- coni
- wrword r10, r11 ' ASGNU2 reg
-' C_bbos_port_flush_23 ' (symbol refcount = 0)
- jmp #POPM
- long $20e00 ' restore registers
- jmp #RETN
-
-
-
-DAT ' code segment
-' end
-
-DAT ' code segment
-'
-' LCC 4.2 for Parallax Propeller
-' (Catalina v2.5 Code Generator by Ross Higson)
-'
-
-' Catalina Export bbos_thread_init
-
- long ' align long
-C_bbos_thread_init ' <symbol:bbos_thread_init>
- jmp #PSHM
- long $c00 ' save registers
- mov r11, r3 ' CVUI
- and r11, cviu_m1 ' zero extend
- shl r11, #2 ' LSHI4 coni
- jmp #LODA
- long @C_tmpfilefQx4hi_4d613fe7_bbos_thread_table_L000002
- mov r10, RI ' reg <- addrg
- adds r11, r10 ' ADDI/P (1)
- wrlong r2, r11 ' ASGNP4 reg
-' C_bbos_thread_init_3 ' (symbol refcount = 0)
- jmp #POPM
- long $c00 ' restore registers
- jmp #RETN
-
-
-' Catalina Export bbos_thread_execute
-
- long ' align long
-C_bbos_thread_execute ' <symbol:bbos_thread_execute>
- jmp #PSHM
- long $20c00 ' save registers
- mov r17, r2 ' reg var <- reg arg
- mov r11, r17 ' CVUI
- and r11, cviu_m1 ' zero extend
- shl r11, #2 ' LSHI4 coni
- jmp #LODA
- long @C_tmpfilefQx4hi_4d613fe7_bbos_thread_table_L000002
- mov r10, RI ' reg <- addrg
- adds r11, r10 ' ADDI/P (1)
- rdlong r11, r11 ' reg <- INDIRP4 reg
- cmp r11,  #0 wz
- jmp #BR_Z
- long @C_bbos_thread_execute_7 ' EQU4
- jmp #JMPA
- long @C_bbos_thread_execute_8 ' JUMPV addrg
-C_bbos_thread_execute_7
- jmp #LODA
- long @C_bbos_thread_execute_5_L000006
- mov r2, RI ' reg ARG ADDRG
- mov BC, #4 ' arg size
- sub SP, #4 ' stack space for reg ARGs
- jmp #CALA
- long @C___bad_assertion
- add SP, #4 ' CALL addrg
-C_bbos_thread_execute_8
- mov r11, r17 ' CVUI
- and r11, cviu_m1 ' zero extend
- shl r11, #2 ' LSHI4 coni
- jmp #LODA
- long @C_tmpfilefQx4hi_4d613fe7_bbos_thread_table_L000002
- mov r10, RI ' reg <- addrg
- adds r11, r10 ' ADDI/P (1)
- rdlong r11, r11 ' reg <- INDIRP4 reg
- mov BC, #0 ' arg size
- mov RI, r11
- jmp #CALI ' CALL indirect
-' C_bbos_thread_execute_4 ' (symbol refcount = 0)
- jmp #POPM
- long $20c00 ' restore registers
- jmp #RETN
-
+' Catalina Import bbos_port_receive
 
 
 DAT ' code segment
 
-' Catalina Import __bad_assertion
+' Catalina Import h48c
+
+
+DAT ' code segment
+
+' Catalina Import bbos_start_thread
+
+
+DAT ' code segment
+
+' Catalina Import bbos_panic
+
+
+DAT ' code segment
+
+' Catalina Import bbos_start
+
+
+DAT ' code segment
+
+' Catalina Import bbos_init
 
 
 DAT ' code segment
@@ -960,7 +494,7 @@ DAT ' code segment
 '
 
  long ' align long
-C_tmpfileUN1INR_4d613fe7_h48c_open_L000006 ' <symbol:h48c_open>
+C_tmpfile8hj93V_4db599ed_h48c_open_L000006 ' <symbol:h48c_open>
  jmp #PSHM
  long $3cc00 ' save registers
  mov r17, r5 ' reg var <- reg arg
@@ -968,19 +502,19 @@ C_tmpfileUN1INR_4d613fe7_h48c_open_L000006 ' <symbol:h48c_open>
  mov r15, r3 ' reg var <- reg arg
  mov r14, r2 ' reg var <- reg arg
  jmp #LODA
- long @C_tmpfileIz6eXk_4d613fe7_h48c_dio_pin_L000002
+ long @C_tmpfileyXm0gA_4db599ed_h48c_dio_pin_L000002
  wrlong r17, RI ' ASGNI4 addrg
  jmp #LODA
- long @C_tmpfilejSqmat_4d613fe7_h48c_clk_pin_L000003
+ long @C_tmpfileXb0MdV_4db599ed_h48c_clk_pin_L000003
  wrlong r16, RI ' ASGNI4 addrg
  jmp #LODA
- long @C_tmpfileEaRtnB_4d613fe7_h48c_cs_pin_L000004
+ long @C_tmpfileumFzag_4db599ed_h48c_cs_pin_L000004
  mov r11, RI ' reg <- addrg
  jmp #LODA
- long @C_tmpfileEaRtnB_4d613fe7_h48c_cs_pin_L000004
+ long @C_tmpfileumFzag_4db599ed_h48c_cs_pin_L000004
  wrlong r15, RI ' ASGNI4 addrg
  jmp #LODA
- long @C_tmpfilexgkBAJ_4d613fe7_h48c_zerog_pin_L000005
+ long @C_tmpfilejaom7A_4db599ed_h48c_zerog_pin_L000005
  wrlong r14, RI ' ASGNI4 addrg
  mov r10, #1 ' reg <- coni
  rdlong r11, r11 ' reg <- INDIRI4 reg
@@ -996,7 +530,7 @@ C_tmpfileUN1INR_4d613fe7_h48c_open_L000006 ' <symbol:h48c_open>
  add SP, #8 ' CALL addrg
  mov r11, #1 ' reg <- coni
  jmp #LODA
- long @C_tmpfileEaRtnB_4d613fe7_h48c_cs_pin_L000004
+ long @C_tmpfileumFzag_4db599ed_h48c_cs_pin_L000004
  rdlong r10, RI ' reg <- INDIRI4 addrg
  shl r11, r10 ' LSHI/U (1)
  mov r2, r11 ' CVI, CVU or LOAD
@@ -1006,19 +540,19 @@ C_tmpfileUN1INR_4d613fe7_h48c_open_L000006 ' <symbol:h48c_open>
  jmp #CALA
  long @C__dira
  add SP, #8 ' CALL addrg
-' C_tmpfileUN1INR_4d613fe7_h48c_open_L000006_7 ' (symbol refcount = 0)
+' C_tmpfile8hj93V_4db599ed_h48c_open_L000006_7 ' (symbol refcount = 0)
  jmp #POPM
  long $3cc00 ' restore registers
  jmp #RETN
 
 
  long ' align long
-C_tmpfile33RS0Z_4d613fe7_h48c_close_L000008 ' <symbol:h48c_close>
+C_tmpfileXt2X0g_4db599ed_h48c_close_L000008 ' <symbol:h48c_close>
  jmp #PSHM
  long $c00 ' save registers
  mov r11, #1 ' reg <- coni
  jmp #LODA
- long @C_tmpfileEaRtnB_4d613fe7_h48c_cs_pin_L000004
+ long @C_tmpfileumFzag_4db599ed_h48c_cs_pin_L000004
  rdlong r10, RI ' reg <- INDIRI4 addrg
  shl r11, r10 ' LSHI/U (1)
  mov r2, r11 ' CVI, CVU or LOAD
@@ -1028,14 +562,14 @@ C_tmpfile33RS0Z_4d613fe7_h48c_close_L000008 ' <symbol:h48c_close>
  jmp #CALA
  long @C__outa
  add SP, #8 ' CALL addrg
-' C_tmpfile33RS0Z_4d613fe7_h48c_close_L000008_9 ' (symbol refcount = 0)
+' C_tmpfileXt2X0g_4db599ed_h48c_close_L000008_9 ' (symbol refcount = 0)
  jmp #POPM
  long $c00 ' restore registers
  jmp #RETN
 
 
  long ' align long
-C_tmpfileKzp3d8_4d613fe7_h48c_gforce_of_axis_L000010 ' <symbol:h48c_gforce_of_axis>
+C_tmpfilemWsNXB_4db599ed_h48c_gforce_of_axis_L000010 ' <symbol:h48c_gforce_of_axis>
  jmp #PSHM
  long $38800 ' save registers
  mov r17, r2 ' reg var <- reg arg
@@ -1066,23 +600,23 @@ C_tmpfileKzp3d8_4d613fe7_h48c_gforce_of_axis_L000010 ' <symbol:h48c_gforce_of_ax
  mov r15, r0 ' CVI, CVU or LOAD
  cmps r15, r16 wz,wc
  jmp #BR_B
- long @C_tmpfileKzp3d8_4d613fe7_h48c_gforce_of_axis_L000010_12 ' LTI4
+ long @C_tmpfilemWsNXB_4db599ed_h48c_gforce_of_axis_L000010_12 ' LTI4
  mov r0, r15 ' SUBI/P
  subs r0, r16 ' SUBI/P (3)
  jmp #JMPA
- long @C_tmpfileKzp3d8_4d613fe7_h48c_gforce_of_axis_L000010_11 ' JUMPV addrg
-C_tmpfileKzp3d8_4d613fe7_h48c_gforce_of_axis_L000010_12
+ long @C_tmpfilemWsNXB_4db599ed_h48c_gforce_of_axis_L000010_11 ' JUMPV addrg
+C_tmpfilemWsNXB_4db599ed_h48c_gforce_of_axis_L000010_12
  mov r11, r16 ' SUBI/P
  subs r11, r15 ' SUBI/P (3)
  neg r0, r11 ' NEGI4
-C_tmpfileKzp3d8_4d613fe7_h48c_gforce_of_axis_L000010_11
+C_tmpfilemWsNXB_4db599ed_h48c_gforce_of_axis_L000010_11
  jmp #POPM
  long $38800 ' restore registers
  jmp #RETN
 
 
  long ' align long
-C_tmpfileHbsfrg_4d613fe7_h48c_free_fall_L000014 ' <symbol:h48c_free_fall>
+C_tmpfilevAbEUW_4db599ed_h48c_free_fall_L000014 ' <symbol:h48c_free_fall>
  jmp #PSHM
  long $20e00 ' save registers
  mov BC, #0 ' arg size
@@ -1090,24 +624,24 @@ C_tmpfileHbsfrg_4d613fe7_h48c_free_fall_L000014 ' <symbol:h48c_free_fall>
  long @C__ina ' CALL addrg
  mov r10, #1 ' reg <- coni
  jmp #LODA
- long @C_tmpfilexgkBAJ_4d613fe7_h48c_zerog_pin_L000005
+ long @C_tmpfilejaom7A_4db599ed_h48c_zerog_pin_L000005
  rdlong r9, RI ' reg <- INDIRI4 addrg
  shl r10, r9 ' LSHI/U (1)
  mov r11, r0 ' BANDI/U
  and r11, r10 ' BANDI/U (3)
  cmp r11,  #0 wz
  jmp #BR_Z
- long @C_tmpfileHbsfrg_4d613fe7_h48c_free_fall_L000014_17 ' EQU4
+ long @C_tmpfilevAbEUW_4db599ed_h48c_free_fall_L000014_17 ' EQU4
  mov r17, #1 ' reg <- coni
  jmp #JMPA
- long @C_tmpfileHbsfrg_4d613fe7_h48c_free_fall_L000014_18 ' JUMPV addrg
-C_tmpfileHbsfrg_4d613fe7_h48c_free_fall_L000014_17
+ long @C_tmpfilevAbEUW_4db599ed_h48c_free_fall_L000014_18 ' JUMPV addrg
+C_tmpfilevAbEUW_4db599ed_h48c_free_fall_L000014_17
  mov r17, #0 ' reg <- coni
-C_tmpfileHbsfrg_4d613fe7_h48c_free_fall_L000014_18
+C_tmpfilevAbEUW_4db599ed_h48c_free_fall_L000014_18
  mov r11, r17 ' CVI, CVU or LOAD
  mov r0, r11 ' CVUI
  and r0, cviu_m1 ' zero extend
-' C_tmpfileHbsfrg_4d613fe7_h48c_free_fall_L000014_15 ' (symbol refcount = 0)
+' C_tmpfilevAbEUW_4db599ed_h48c_free_fall_L000014_15 ' (symbol refcount = 0)
  jmp #POPM
  long $20e00 ' restore registers
  jmp #RETN
@@ -1123,7 +657,7 @@ C_h48c_read_value ' <symbol:h48c_read_value>
  mov r2, #0 ' reg ARG coni
  mov r11, #1 ' reg <- coni
  jmp #LODA
- long @C_tmpfileEaRtnB_4d613fe7_h48c_cs_pin_L000004
+ long @C_tmpfileumFzag_4db599ed_h48c_cs_pin_L000004
  rdlong r10, RI ' reg <- INDIRI4 addrg
  shl r11, r10 ' LSHI/U (1)
  mov r3, r11 ' CVI, CVU or LOAD
@@ -1137,11 +671,11 @@ C_h48c_read_value ' <symbol:h48c_read_value>
  mov r3, r11 ' CVI, CVU or LOAD
  mov r4, r11 ' CVI, CVU or LOAD
  jmp #LODA
- long @C_tmpfilejSqmat_4d613fe7_h48c_clk_pin_L000003
+ long @C_tmpfileXb0MdV_4db599ed_h48c_clk_pin_L000003
  rdlong r11, RI ' reg <- INDIRI4 addrg
  mov r5, r11 ' CVI, CVU or LOAD
  jmp #LODA
- long @C_tmpfileIz6eXk_4d613fe7_h48c_dio_pin_L000002
+ long @C_tmpfileyXm0gA_4db599ed_h48c_dio_pin_L000002
  rdlong r11, RI ' reg <- INDIRI4 addrg
  sub SP, #16 ' stack space for reg ARGs
  mov RI, r11
@@ -1153,11 +687,11 @@ C_h48c_read_value ' <symbol:h48c_read_value>
  mov r2, #13 ' reg ARG coni
  mov r3, #2 ' reg ARG coni
  jmp #LODA
- long @C_tmpfilejSqmat_4d613fe7_h48c_clk_pin_L000003
+ long @C_tmpfileXb0MdV_4db599ed_h48c_clk_pin_L000003
  rdlong r11, RI ' reg <- INDIRI4 addrg
  mov r4, r11 ' CVI, CVU or LOAD
  jmp #LODA
- long @C_tmpfileIz6eXk_4d613fe7_h48c_dio_pin_L000002
+ long @C_tmpfileyXm0gA_4db599ed_h48c_dio_pin_L000002
  rdlong r11, RI ' reg <- INDIRI4 addrg
  mov r5, r11 ' CVI, CVU or LOAD
  mov BC, #16 ' arg size
@@ -1170,7 +704,7 @@ C_h48c_read_value ' <symbol:h48c_read_value>
  wrlong r0, RI ' ASGNU4 addrl
  mov r11, #1 ' reg <- coni
  jmp #LODA
- long @C_tmpfileEaRtnB_4d613fe7_h48c_cs_pin_L000004
+ long @C_tmpfileumFzag_4db599ed_h48c_cs_pin_L000004
  rdlong r10, RI ' reg <- INDIRI4 addrg
  shl r11, r10 ' LSHI/U (1)
  mov r2, r11 ' CVI, CVU or LOAD
@@ -1199,15 +733,15 @@ C_h48c_read_value ' <symbol:h48c_read_value>
 DAT ' code segment
 
  long ' align long
-C_h48c_driver ' <symbol:h48c_driver>
+C_h48c ' <symbol:h48c>
  jmp #NEWF
  sub SP, #4
  jmp #PSHM
  long $20c00 ' save registers
  jmp #LODA
- long @C_h48c_driver_message_L000026
+ long @C_h48c_message_L000026
  mov r2, RI ' reg ARG ADDRG
- mov r3, #1 ' reg ARG coni
+ mov r3, #2 ' reg ARG coni
  mov BC, #8 ' arg size
  sub SP, #8 ' stack space for reg ARGs
  jmp #CALA
@@ -1215,23 +749,23 @@ C_h48c_driver ' <symbol:h48c_driver>
  add SP, #8 ' CALL addrg
  cmps r0,  #0 wz
  jmp #BR_Z
- long @C_h48c_driver_27 ' EQI4
+ long @C_h48c_27 ' EQI4
  jmp #JMPA
- long @C_h48c_driver_24 ' JUMPV addrg
-C_h48c_driver_27
+ long @C_h48c_24 ' JUMPV addrg
+C_h48c_27
  jmp #LODA
- long @C_h48c_driver_message_L000026
+ long @C_h48c_message_L000026
  rdlong r17, RI ' reg <- INDIRI4 addrg
  cmps r17,  #0 wz,wc
  jmp #BR_B
- long @C_h48c_driver_29 ' LTI4
- cmps r17,  #4 wz,wc
+ long @C_h48c_29 ' LTI4
+ cmps r17,  #6 wz,wc
  jmp #BR_A
- long @C_h48c_driver_29 ' GTI4
+ long @C_h48c_29 ' GTI4
  mov r11, r17
  shl r11, #2 ' LSHI4 coni
  jmp #LODA
- long @C_h48c_driver_41_L000043
+ long @C_h48c_41_L000043
  mov r10, RI ' reg <- addrg
  adds r11, r10 ' ADDI/P (1)
  rdlong RI, r11
@@ -1239,9 +773,9 @@ C_h48c_driver_27
 
 
 DAT ' code segment
-C_h48c_driver_33
+C_h48c_33
  jmp #LODA
- long @C_h48c_driver_message_L000026+8
+ long @C_h48c_message_L000026+8
  rdlong r11, RI ' reg <- INDIRP4 addrg
  jmp #LODF
  long -4
@@ -1262,44 +796,44 @@ C_h48c_driver_33
  mov BC, #16 ' arg size
  sub SP, #16 ' stack space for reg ARGs
  jmp #CALA
- long @C_tmpfileUN1INR_4d613fe7_h48c_open_L000006
+ long @C_tmpfile8hj93V_4db599ed_h48c_open_L000006
  add SP, #16 ' CALL addrg
  jmp #JMPA
- long @C_h48c_driver_30 ' JUMPV addrg
-C_h48c_driver_35
+ long @C_h48c_30 ' JUMPV addrg
+C_h48c_35
  mov BC, #0 ' arg size
  jmp #CALA
- long @C_tmpfile33RS0Z_4d613fe7_h48c_close_L000008 ' CALL addrg
+ long @C_tmpfileXt2X0g_4db599ed_h48c_close_L000008 ' CALL addrg
  jmp #JMPA
- long @C_h48c_driver_30 ' JUMPV addrg
-C_h48c_driver_37
+ long @C_h48c_30 ' JUMPV addrg
+C_h48c_37
  mov BC, #0 ' arg size
  jmp #CALA
- long @C_tmpfileHbsfrg_4d613fe7_h48c_free_fall_L000014 ' CALL addrg
+ long @C_tmpfilevAbEUW_4db599ed_h48c_free_fall_L000014 ' CALL addrg
  jmp #LODA
- long @C_h48c_driver_message_L000026+8
+ long @C_h48c_message_L000026+8
  rdlong r10, RI ' reg <- INDIRP4 addrg
  mov r11, r0 ' CVI, CVU or LOAD
  and r11, cviu_m1 ' zero extend
  wrlong r11, r10 ' ASGNI4 reg
  jmp #JMPA
- long @C_h48c_driver_30 ' JUMPV addrg
-C_h48c_driver_29
+ long @C_h48c_30 ' JUMPV addrg
+C_h48c_29
  jmp #LODA
- long @C_h48c_driver_message_L000026
+ long @C_h48c_message_L000026
  rdlong r2, RI ' reg ARG INDIR ADDRG
  jmp #LODA
- long @C_h48c_driver_39_L000040
+ long @C_h48c_39_L000040
  mov r3, RI ' reg ARG ADDRG
  mov BC, #8 ' arg size
  sub SP, #8 ' stack space for reg ARGs
  jmp #CALA
- long @C_bbos_kernel_panic
+ long @C_bbos_panic
  add SP, #8 ' CALL addrg
-C_h48c_driver_30
- mov r2, #1 ' reg ARG coni
+C_h48c_30
+ mov r2, #2 ' reg ARG coni
  jmp #LODA
- long @C_h48c_driver_message_L000026
+ long @C_h48c_message_L000026
  mov r3, RI ' reg ARG ADDRG
  mov r4, #0 ' reg ARG coni
  mov BC, #12 ' arg size
@@ -1307,7 +841,7 @@ C_h48c_driver_30
  jmp #CALA
  long @C_bbos_port_send
  add SP, #12 ' CALL addrg
-C_h48c_driver_24
+C_h48c_24
  jmp #POPM
  long $20c00 ' restore registers
  add SP, #4 ' framesize
@@ -1315,8 +849,6 @@ C_h48c_driver_24
 
 
 ' Catalina Import bbos_port_send
-
-' Catalina Import bbos_kernel_panic
 
 ' Catalina Import bbos_port_receive
 
@@ -1357,6 +889,11 @@ DAT ' code segment
 
 
 DAT ' code segment
+
+' Catalina Import bbos_panic
+
+
+DAT ' code segment
 ' end
 
 DAT ' code segment
@@ -1365,362 +902,184 @@ DAT ' code segment
 ' (Catalina v2.5 Code Generator by Ross Higson)
 '
 
-' Catalina Export post_clock_pulse
+' Catalina Export bbos_panic
 
  long ' align long
-C_post_clock_pulse ' <symbol:post_clock_pulse>
- jmp #PSHM
- long $20c00 ' save registers
- mov r17, r2 ' reg var <- reg arg
- mov BC, #0 ' arg size
- jmp #CALA
- long @C__cnt ' CALL addrg
- mov r11, r0 ' CVI, CVU or LOAD
- jmp #LODA
- long @C_post_clock_pulse_L000003
- rdlong  r10, RI ' reg <- con
- mov r2, r11 ' ADDU
- add r2, r10 ' ADDU (3)
- mov BC, #4 ' arg size
- sub SP, #4 ' stack space for reg ARGs
- jmp #CALA
- long @C__waitcnt
- add SP, #4 ' CALL addrg
- mov r11, #1 ' reg <- coni
- mov r10, r17 ' CVI, CVU or LOAD
- shl r11, r10 ' LSHI/U (1)
- mov r2, r11 ' CVI, CVU or LOAD
- mov r3, r11 ' CVI, CVU or LOAD
- mov BC, #8 ' arg size
- sub SP, #8 ' stack space for reg ARGs
- jmp #CALA
- long @C__outa
- add SP, #8 ' CALL addrg
- mov BC, #0 ' arg size
- jmp #CALA
- long @C__cnt ' CALL addrg
- mov r11, r0 ' CVI, CVU or LOAD
- jmp #LODA
- long @C_post_clock_pulse_L000003
- rdlong  r10, RI ' reg <- con
- mov r2, r11 ' ADDU
- add r2, r10 ' ADDU (3)
- mov BC, #4 ' arg size
- sub SP, #4 ' stack space for reg ARGs
- jmp #CALA
- long @C__waitcnt
- add SP, #4 ' CALL addrg
- mov r2, #0 ' reg ARG coni
- mov r11, #1 ' reg <- coni
- mov r10, r17 ' CVI, CVU or LOAD
- shl r11, r10 ' LSHI/U (1)
- mov r3, r11 ' CVI, CVU or LOAD
- mov BC, #8 ' arg size
- sub SP, #8 ' stack space for reg ARGs
- jmp #CALA
- long @C__outa
- add SP, #8 ' CALL addrg
-' C_post_clock_pulse_1 ' (symbol refcount = 0)
- jmp #POPM
- long $20c00 ' restore registers
- jmp #RETN
-
-
-' Catalina Export pre_clock_pulse
-
- long ' align long
-C_pre_clock_pulse ' <symbol:pre_clock_pulse>
- jmp #PSHM
- long $20c00 ' save registers
- mov r17, r2 ' reg var <- reg arg
- mov r11, #1 ' reg <- coni
- mov r10, r17 ' CVI, CVU or LOAD
- shl r11, r10 ' LSHI/U (1)
- mov r2, r11 ' CVI, CVU or LOAD
- mov r3, r11 ' CVI, CVU or LOAD
- mov BC, #8 ' arg size
- sub SP, #8 ' stack space for reg ARGs
- jmp #CALA
- long @C__outa
- add SP, #8 ' CALL addrg
- mov BC, #0 ' arg size
- jmp #CALA
- long @C__cnt ' CALL addrg
- mov r11, r0 ' CVI, CVU or LOAD
- jmp #LODA
- long @C_post_clock_pulse_L000003
- rdlong  r10, RI ' reg <- con
- mov r2, r11 ' ADDU
- add r2, r10 ' ADDU (3)
- mov BC, #4 ' arg size
- sub SP, #4 ' stack space for reg ARGs
- jmp #CALA
- long @C__waitcnt
- add SP, #4 ' CALL addrg
- mov r2, #0 ' reg ARG coni
- mov r11, #1 ' reg <- coni
- mov r10, r17 ' CVI, CVU or LOAD
- shl r11, r10 ' LSHI/U (1)
- mov r3, r11 ' CVI, CVU or LOAD
- mov BC, #8 ' arg size
- sub SP, #8 ' stack space for reg ARGs
- jmp #CALA
- long @C__outa
- add SP, #8 ' CALL addrg
- mov BC, #0 ' arg size
- jmp #CALA
- long @C__cnt ' CALL addrg
- mov r11, r0 ' CVI, CVU or LOAD
- jmp #LODA
- long @C_post_clock_pulse_L000003
- rdlong  r10, RI ' reg <- con
- mov r2, r11 ' ADDU
- add r2, r10 ' ADDU (3)
- mov BC, #4 ' arg size
- sub SP, #4 ' stack space for reg ARGs
- jmp #CALA
- long @C__waitcnt
- add SP, #4 ' CALL addrg
-' C_pre_clock_pulse_6 ' (symbol refcount = 0)
- jmp #POPM
- long $20c00 ' restore registers
- jmp #RETN
-
-
-' Catalina Export stamp_shiftout
-
- long ' align long
-C_stamp_shiftout ' <symbol:stamp_shiftout>
+C_bbos_panic ' <symbol:bbos_panic>
  jmp #NEWF
- jmp #PSHM
- long $3cc00 ' save registers
- mov r17, r5 ' reg var <- reg arg
- mov r16, r4 ' reg var <- reg arg
- mov r15, r3 ' reg var <- reg arg
- mov r14, r2 ' reg var <- reg arg
- mov r2, #0 ' reg ARG coni
- mov r11, #1 ' reg <- coni
- mov r10, FP
- add r10, #8 ' reg <- addrfi
- rdlong r10, r10 ' reg <- INDIRU4 reg
- shl r11, r10 ' LSHI/U (1)
- mov r3, r11 ' CVI, CVU or LOAD
- mov BC, #8 ' arg size
- sub SP, #8 ' stack space for reg ARGs
- jmp #CALA
- long @C__outa
- add SP, #8 ' CALL addrg
- mov r11, #1 ' reg <- coni
- mov r10, FP
- add r10, #8 ' reg <- addrfi
- rdlong r10, r10 ' reg <- INDIRU4 reg
- shl r11, r10 ' LSHI/U (1)
- mov r2, r11 ' CVI, CVU or LOAD
- mov r3, r11 ' CVI, CVU or LOAD
- mov BC, #8 ' arg size
- sub SP, #8 ' stack space for reg ARGs
- jmp #CALA
- long @C__dira
- add SP, #8 ' CALL addrg
- mov r2, #0 ' reg ARG coni
- mov r11, #1 ' reg <- coni
- mov r10, r17 ' CVI, CVU or LOAD
- shl r11, r10 ' LSHI/U (1)
- mov r3, r11 ' CVI, CVU or LOAD
- mov BC, #8 ' arg size
- sub SP, #8 ' stack space for reg ARGs
- jmp #CALA
- long @C__outa
- add SP, #8 ' CALL addrg
- mov r11, #1 ' reg <- coni
- mov r10, r17 ' CVI, CVU or LOAD
- shl r11, r10 ' LSHI/U (1)
- mov r2, r11 ' CVI, CVU or LOAD
- mov r3, r11 ' CVI, CVU or LOAD
- mov BC, #8 ' arg size
- sub SP, #8 ' stack space for reg ARGs
- jmp #CALA
- long @C__dira
- add SP, #8 ' CALL addrg
- cmp r16,  #5 wz
- jmp #BRNZ
- long @C_stamp_shiftout_8 ' NEU4
- mov r11, #32 ' reg <- coni
- sub r11, r15 ' SUBU (1)
- shl r14, r11 ' LSHI/U (1)
- jmp #JMPA
- long @C_stamp_shiftout_11 ' JUMPV addrg
-C_stamp_shiftout_10
- mov r11, r14
- shl r11, #1 ' LSHU4 coni
- mov r10, r14
- shr r10, #31 ' RSHU4 coni
- mov r14, r11 ' BORI/U
- or r14, r10 ' BORI/U (3)
- mov r11, r14
- and r11, #1 ' BANDU4 coni
- cmp r11,  #0 wz
- jmp #BR_Z
- long @C_stamp_shiftout_13 ' EQU4
- mov r11, #1 ' reg <- coni
- mov r10, FP
- add r10, #8 ' reg <- addrfi
- rdlong r10, r10 ' reg <- INDIRU4 reg
- shl r11, r10 ' LSHI/U (1)
- mov r2, r11 ' CVI, CVU or LOAD
- mov r3, r11 ' CVI, CVU or LOAD
- mov BC, #8 ' arg size
- sub SP, #8 ' stack space for reg ARGs
- jmp #CALA
- long @C__outa
- add SP, #8 ' CALL addrg
- jmp #JMPA
- long @C_stamp_shiftout_14 ' JUMPV addrg
-C_stamp_shiftout_13
- mov r2, #0 ' reg ARG coni
- mov r11, #1 ' reg <- coni
- mov r10, FP
- add r10, #8 ' reg <- addrfi
- rdlong r10, r10 ' reg <- INDIRU4 reg
- shl r11, r10 ' LSHI/U (1)
- mov r3, r11 ' CVI, CVU or LOAD
- mov BC, #8 ' arg size
- sub SP, #8 ' stack space for reg ARGs
- jmp #CALA
- long @C__outa
- add SP, #8 ' CALL addrg
-C_stamp_shiftout_14
- mov r2, r17 ' CVI, CVU or LOAD
- mov BC, #4 ' arg size
- sub SP, #4 ' stack space for reg ARGs
- jmp #CALA
- long @C_post_clock_pulse
- add SP, #4 ' CALL addrg
-C_stamp_shiftout_11
- mov r11, r15 ' CVI, CVU or LOAD
- mov r15, r11
- sub r15, #1 ' SUBU4 coni
- cmp r11,  #0 wz
- jmp #BRNZ
- long @C_stamp_shiftout_10 ' NEU4
- mov r2, #0 ' reg ARG coni
- mov r11, #1 ' reg <- coni
- mov r10, FP
- add r10, #8 ' reg <- addrfi
- rdlong r10, r10 ' reg <- INDIRU4 reg
- shl r11, r10 ' LSHI/U (1)
- mov r3, r11 ' CVI, CVU or LOAD
- mov BC, #8 ' arg size
- sub SP, #8 ' stack space for reg ARGs
- jmp #CALA
- long @C__outa
- add SP, #8 ' CALL addrg
-C_stamp_shiftout_8
-' C_stamp_shiftout_7 ' (symbol refcount = 0)
- jmp #POPM
- long $3cc00 ' restore registers
+ mov RI, FP
+ add RI, #8
+ sub BC, #4
+ cmp BC, RI wz,wc
+ if_ae wrlong r2, BC ' spill reg (varadic)
+ sub BC, #4
+ cmp BC, RI wz,wc
+ if_ae wrlong r3, BC ' spill reg (varadic)
+ sub BC, #4
+ cmp BC, RI wz,wc
+ if_ae wrlong r4, BC ' spill reg (varadic)
+ sub BC, #4
+ cmp BC, RI wz,wc
+ if_ae wrlong r5, BC ' spill reg (varadic)
+' C_bbos_panic_2 ' (symbol refcount = 0)
  jmp #RETF
 
 
-' Catalina Export stamp_shiftin
+' Catalina Export bbos_start_thread
 
  long ' align long
-C_stamp_shiftin ' <symbol:stamp_shiftin>
+C_bbos_start_thread ' <symbol:bbos_start_thread>
  jmp #PSHM
- long $3fe00 ' save registers
- mov r17, r5 ' reg var <- reg arg
- mov r16, r4 ' reg var <- reg arg
- mov r15, r3 ' reg var <- reg arg
- mov r14, r2 ' reg var <- reg arg
- mov r2, #0 ' reg ARG coni
- mov r11, #1 ' reg <- coni
- mov r10, r17 ' CVI, CVU or LOAD
- shl r11, r10 ' LSHI/U (1)
- mov r3, r11 ' CVI, CVU or LOAD
- mov BC, #8 ' arg size
- sub SP, #8 ' stack space for reg ARGs
- jmp #CALA
- long @C__dira
- add SP, #8 ' CALL addrg
- mov r2, #0 ' reg ARG coni
- mov r11, #1 ' reg <- coni
- mov r10, r16 ' CVI, CVU or LOAD
- shl r11, r10 ' LSHI/U (1)
- mov r3, r11 ' CVI, CVU or LOAD
- mov BC, #8 ' arg size
- sub SP, #8 ' stack space for reg ARGs
- jmp #CALA
- long @C__outa
- add SP, #8 ' CALL addrg
- mov r11, #1 ' reg <- coni
- mov r10, r16 ' CVI, CVU or LOAD
- shl r11, r10 ' LSHI/U (1)
- mov r2, r11 ' CVI, CVU or LOAD
- mov r3, r11 ' CVI, CVU or LOAD
- mov BC, #8 ' arg size
- sub SP, #8 ' stack space for reg ARGs
- jmp #CALA
- long @C__dira
- add SP, #8 ' CALL addrg
- mov r13, #0 ' reg <- coni
- cmp r15,  #2 wz
- jmp #BRNZ
- long @C_stamp_shiftin_16 ' NEU4
+ long $30800 ' save registers
+ mov r17, r3 ' reg var <- reg arg
+ mov r16, r2 ' reg var <- reg arg
+ mov r11, r17 ' CVUI
+ and r11, cviu_m1 ' zero extend
+ cmps r11,  #3 wz,wc
+ jmp #BRAE
+ long @C_bbos_start_thread_6 ' GEI4
  jmp #JMPA
- long @C_stamp_shiftin_19 ' JUMPV addrg
-C_stamp_shiftin_18
- mov r2, r16 ' CVI, CVU or LOAD
+ long @C_bbos_start_thread_7 ' JUMPV addrg
+C_bbos_start_thread_6
+ jmp #LODA
+ long @C_bbos_start_thread_4_L000005
+ mov r2, RI ' reg ARG ADDRG
  mov BC, #4 ' arg size
  sub SP, #4 ' stack space for reg ARGs
  jmp #CALA
- long @C_pre_clock_pulse
+ long @C___bad_assertion
  add SP, #4 ' CALL addrg
- mov BC, #0 ' arg size
+C_bbos_start_thread_7
+ mov r2, r16 ' CVI, CVU or LOAD
+ mov r3, r17 ' CVUI
+ and r3, cviu_m1 ' zero extend
+ mov BC, #8 ' arg size
+ sub SP, #8 ' stack space for reg ARGs
  jmp #CALA
- long @C__ina ' CALL addrg
- mov r10, #1 ' reg <- coni
- mov r9, r17 ' CVI, CVU or LOAD
- shl r10, r9 ' LSHI/U (1)
- mov r11, r0 ' BANDI/U
- and r11, r10 ' BANDI/U (3)
- cmp r11,  #0 wz
- jmp #BR_Z
- long @C_stamp_shiftin_22 ' EQU4
- mov r12, #1 ' reg <- coni
- jmp #JMPA
- long @C_stamp_shiftin_23 ' JUMPV addrg
-C_stamp_shiftin_22
- mov r12, #0 ' reg <- coni
-C_stamp_shiftin_23
- mov r11, r13
- shl r11, #1 ' LSHU4 coni
- mov r10, r12 ' CVI, CVU or LOAD
- mov r13, r11 ' BORI/U
- or r13, r10 ' BORI/U (3)
-C_stamp_shiftin_19
- mov r11, r14 ' CVI, CVU or LOAD
- mov r14, r11
- sub r14, #1 ' SUBU4 coni
- cmp r11,  #0 wz
- jmp #BRNZ
- long @C_stamp_shiftin_18 ' NEU4
-C_stamp_shiftin_16
- mov r0, r13 ' CVI, CVU or LOAD
-' C_stamp_shiftin_15 ' (symbol refcount = 0)
+ long @C_bbos_thread_init
+ add SP, #8 ' CALL addrg
+ mov r0, #0 ' RET coni
+' C_bbos_start_thread_3 ' (symbol refcount = 0)
  jmp #POPM
- long $3fe00 ' restore registers
+ long $30800 ' restore registers
  jmp #RETN
 
 
-' Catalina Import _outa
+' Catalina Export bbos_stop_thread
 
-' Catalina Import _dira
+ long ' align long
+C_bbos_stop_thread ' <symbol:bbos_stop_thread>
+ jmp #PSHM
+ long $20800 ' save registers
+ mov r17, r2 ' reg var <- reg arg
+ mov r11, r17 ' CVUI
+ and r11, cviu_m1 ' zero extend
+ cmps r11,  #3 wz,wc
+ jmp #BRAE
+ long @C_bbos_stop_thread_11 ' GEI4
+ jmp #JMPA
+ long @C_bbos_stop_thread_12 ' JUMPV addrg
+C_bbos_stop_thread_11
+ jmp #LODA
+ long @C_bbos_stop_thread_9_L000010
+ mov r2, RI ' reg ARG ADDRG
+ mov BC, #4 ' arg size
+ sub SP, #4 ' stack space for reg ARGs
+ jmp #CALA
+ long @C___bad_assertion
+ add SP, #4 ' CALL addrg
+C_bbos_stop_thread_12
+ jmp #LODA
+ long @C_bbos_stop_thread_L000014
+ rdlong r2, RI ' reg ARG con
+ mov r3, r17 ' CVUI
+ and r3, cviu_m1 ' zero extend
+ mov BC, #8 ' arg size
+ sub SP, #8 ' stack space for reg ARGs
+ jmp #CALA
+ long @C_bbos_thread_init
+ add SP, #8 ' CALL addrg
+ mov r0, #0 ' RET coni
+' C_bbos_stop_thread_8 ' (symbol refcount = 0)
+ jmp #POPM
+ long $20800 ' restore registers
+ jmp #RETN
 
-' Catalina Import _ina
 
-' Catalina Import _cnt
+' Catalina Export bbos_init
 
-' Catalina Import _waitcnt
+ long ' align long
+C_bbos_init ' <symbol:bbos_init>
+ jmp #PSHM
+ long $20800 ' save registers
+ mov r17, #0 ' reg <- coni
+ jmp #JMPA
+ long @C_bbos_init_21 ' JUMPV addrg
+C_bbos_init_18
+ jmp #LODA
+ long @C_bbos_stop_thread_L000014
+ rdlong r2, RI ' reg ARG con
+ mov r3, r17 ' CVUI
+ and r3, cviu_m1 ' zero extend
+ mov BC, #8 ' arg size
+ sub SP, #8 ' stack space for reg ARGs
+ jmp #CALA
+ long @C_bbos_thread_init
+ add SP, #8 ' CALL addrg
+' C_bbos_init_19 ' (symbol refcount = 0)
+ mov r11, r17 ' CVUI
+ and r11, cviu_m1 ' zero extend
+ adds r11, #1 ' ADDI4 coni
+ mov r17, r11 ' CVI, CVU or LOAD
+C_bbos_init_21
+ mov r11, r17 ' CVUI
+ and r11, cviu_m1 ' zero extend
+ cmps r11,  #3 wz,wc
+ jmp #BR_B
+ long @C_bbos_init_18 ' LTI4
+ jmp #LODA
+ long @C_bbos_init_22_L000023
+ mov r2, RI ' reg ARG ADDRG
+ mov BC, #4 ' arg size
+ sub SP, #4 ' stack space for reg ARGs
+ jmp #CALA
+ long @C_printf
+ add SP, #4 ' CALL addrg
+' C_bbos_init_17 ' (symbol refcount = 0)
+ jmp #POPM
+ long $20800 ' restore registers
+ jmp #RETN
+
+
+' Catalina Export bbos_start
+
+ long ' align long
+C_bbos_start ' <symbol:bbos_start>
+ jmp #JMPA
+ long @C_bbos_start_26 ' JUMPV addrg
+C_bbos_start_25
+ mov BC, #0 ' arg size
+ jmp #CALA
+ long @C_freefall ' CALL addrg
+ mov BC, #0 ' arg size
+ jmp #CALA
+ long @C_h48c ' CALL addrg
+C_bbos_start_26
+ jmp #JMPA
+ long @C_bbos_start_25 ' JUMPV addrg
+' C_bbos_start_24 ' (symbol refcount = 0)
+ jmp #RETN
+
+
+' Catalina Import h48c
+
+' Catalina Import freefall
+
+' Catalina Import bbos_thread_init
+
+' Catalina Import __bad_assertion
+
+' Catalina Import printf
 
 
 DAT ' code segment
@@ -1732,411 +1091,355 @@ DAT ' code segment
 ' (Catalina v2.5 Code Generator by Ross Higson)
 '
 
-
-DAT ' code segment
-
- long ' align long
-C_bbos_sched_myself ' <symbol:bbos_sched_myself>
- jmp #PSHM
- long $800 ' save registers
- jmp #LODA
- long @C_tmpfileA4x2Yl_4d613fe7_myself_L000002
- rdbyte r11, RI ' reg <- INDIRU1 addrg
- mov r0, r11 ' CVUI
- and r0, cviu_m1 ' zero extend
-' C_bbos_sched_myself_3 ' (symbol refcount = 0)
- jmp #POPM
- long $800 ' restore registers
- jmp #RETN
-
-
-' Catalina Export bbos_sched_enqueue
+' Catalina Export bbos_port_is_empty
 
  long ' align long
-C_bbos_sched_enqueue ' <symbol:bbos_sched_enqueue>
+C_bbos_port_is_empty ' <symbol:bbos_port_is_empty>
  jmp #PSHM
  long $20c00 ' save registers
  mov r17, r2 ' reg var <- reg arg
- mov r11, r17 ' CVUI
- and r11, cviu_m1 ' zero extend
- cmps r11,  #3 wz,wc
- jmp #BR_A
- long @C_bbos_sched_enqueue_8 ' GTI4
- jmp #JMPA
- long @C_bbos_sched_enqueue_9 ' JUMPV addrg
-C_bbos_sched_enqueue_8
+ mov r11, #12 ' reg <- coni
+ mov r10, r17 ' CVUI
+ and r10, cviu_m1 ' zero extend
+ mov r0, r11 ' setup r0/r1 (2)
+ mov r1, r10 ' setup r0/r1 (2)
+ jmp #MULT ' MULT(I/U)
  jmp #LODA
- long @C_bbos_sched_enqueue_6_L000007
- mov r2, RI ' reg ARG ADDRG
- mov BC, #4 ' arg size
- sub SP, #4 ' stack space for reg ARGs
- jmp #CALA
- long @C___bad_assertion
- add SP, #4 ' CALL addrg
-C_bbos_sched_enqueue_9
- mov r11, r17 ' CVUI
- and r11, cviu_m1 ' zero extend
- shl r11, #1 ' LSHI4 coni
- jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004
+ long @C_tmpfilegq1bhz_4db599ed_bbos_port_table_L000002+8
  mov r10, RI ' reg <- addrg
- adds r11, r10 ' ADDI/P (1)
- rdbyte r11, r11 ' reg <- INDIRU1 reg
- and r11, cviu_m1 ' zero extend
- cmps r11,  #2 wz
- jmp #BR_Z
- long @C_bbos_sched_enqueue_10 ' EQI4
- mov r0, #1 ' RET coni
- jmp #JMPA
- long @C_bbos_sched_enqueue_5 ' JUMPV addrg
-C_bbos_sched_enqueue_10
- jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004+4
- rdbyte r11, RI ' reg <- INDIRU1 addrg
- and r11, cviu_m1 ' zero extend
- cmps r11,  #2 wz
- jmp #BRNZ
- long @C_bbos_sched_enqueue_12 ' NEI4
- jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004+4
- wrbyte r17, RI ' ASGNU1 addrg
- jmp #JMPA
- long @C_bbos_sched_enqueue_13 ' JUMPV addrg
-C_bbos_sched_enqueue_12
- jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004+4+1
- rdbyte r11, RI ' reg <- INDIRU1 addrg
- and r11, cviu_m1 ' zero extend
- shl r11, #1 ' LSHI4 coni
- jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004
- mov r10, RI ' reg <- addrg
- adds r11, r10 ' ADDI/P (1)
- wrbyte r17, r11 ' ASGNU1 reg
-C_bbos_sched_enqueue_13
- mov r11, r17 ' CVUI
- and r11, cviu_m1 ' zero extend
- shl r11, #1 ' LSHI4 coni
- jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004
- mov r10, RI ' reg <- addrg
- adds r11, r10 ' ADDI/P (1)
- jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004+4
- rdbyte r10, RI ' reg <- INDIRU1 addrg
- wrbyte r10, r11 ' ASGNU1 reg
- mov r11, r17 ' CVUI
- and r11, cviu_m1 ' zero extend
- shl r11, #1 ' LSHI4 coni
- jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004+1
- mov r10, RI ' reg <- addrg
- adds r11, r10 ' ADDI/P (1)
- jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004+4+1
- rdbyte r10, RI ' reg <- INDIRU1 addrg
- wrbyte r10, r11 ' ASGNU1 reg
- jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004+4+1
- wrbyte r17, RI ' ASGNU1 addrg
- mov r0, #0 ' RET coni
-C_bbos_sched_enqueue_5
+ mov r11, r0 ' ADDI/P
+ adds r11, r10 ' ADDI/P (3)
+ rdword r11, r11 ' reg <- INDIRU2 reg
+ mov r0, r11 ' CVUI
+ and r0, cviu_m2 ' zero extend
+' C_bbos_port_is_empty_3 ' (symbol refcount = 0)
  jmp #POPM
  long $20c00 ' restore registers
  jmp #RETN
 
 
-' Catalina Export bbos_sched_dequeue
+' Catalina Export bbos_port_send
 
  long ' align long
-C_bbos_sched_dequeue ' <symbol:bbos_sched_dequeue>
+C_bbos_port_send ' <symbol:bbos_port_send>
+ jmp #PSHM
+ long $38e00 ' save registers
+ mov r17, r4 ' reg var <- reg arg
+ mov r16, r3 ' reg var <- reg arg
+ mov r15, r2 ' reg var <- reg arg
+ mov r11, #12 ' reg <- coni
+ mov r10, r17 ' CVUI
+ and r10, cviu_m1 ' zero extend
+ mov r0, r11 ' setup r0/r1 (2)
+ mov r1, r10 ' setup r0/r1 (2)
+ jmp #MULT ' MULT(I/U)
+ jmp #LODA
+ long @C_tmpfilegq1bhz_4db599ed_bbos_port_table_L000002+4
+ mov r10, RI ' reg <- addrg
+ mov r11, r0 ' ADDI/P
+ adds r11, r10 ' ADDI/P (3)
+ rdlong r11, r11 ' reg <- INDIRP4 reg
+ cmp r11,  #0 wz
+ jmp #BRNZ
+ long @C_bbos_port_send_6 ' NEU4
+ mov r11, #12 ' reg <- coni
+ mov r10, r17 ' CVUI
+ and r10, cviu_m1 ' zero extend
+ mov r0, r11 ' setup r0/r1 (2)
+ mov r1, r10 ' setup r0/r1 (2)
+ jmp #MULT ' MULT(I/U)
+ jmp #LODA
+ long @C_tmpfilegq1bhz_4db599ed_bbos_port_table_L000002
+ mov r10, RI ' reg <- addrg
+ mov r11, r0 ' ADDI/P
+ adds r11, r10 ' ADDI/P (3)
+ wrlong r16, r11 ' ASGNP4 reg
+ mov r11, #12 ' reg <- coni
+ mov r10, r17 ' CVUI
+ and r10, cviu_m1 ' zero extend
+ mov r0, r11 ' setup r0/r1 (2)
+ mov r1, r10 ' setup r0/r1 (2)
+ jmp #MULT ' MULT(I/U)
+ jmp #LODA
+ long @C_tmpfilegq1bhz_4db599ed_bbos_port_table_L000002+4
+ mov r10, RI ' reg <- addrg
+ mov r11, r0 ' ADDI/P
+ adds r11, r10 ' ADDI/P (3)
+ wrlong r16, r11 ' ASGNP4 reg
+ mov r11, r16
+ adds r11, #16 ' ADDP4 coni
+ jmp #LODA
+ long @C_bbos_port_send_L000011
+ rdlong  r10, RI ' reg <- con
+ wrlong r10, r11 ' ASGNP4 reg
+ mov r0, #0 ' RET coni
+ jmp #JMPA
+ long @C_bbos_port_send_5 ' JUMPV addrg
+C_bbos_port_send_6
+ mov r11, #12 ' reg <- coni
+ mov r10, r17 ' CVUI
+ and r10, cviu_m1 ' zero extend
+ mov r0, r11 ' setup r0/r1 (2)
+ mov r1, r10 ' setup r0/r1 (2)
+ jmp #MULT ' MULT(I/U)
+ mov r10, r16
+ adds r10, #16 ' ADDP4 coni
+ jmp #LODA
+ long @C_tmpfilegq1bhz_4db599ed_bbos_port_table_L000002+4
+ mov r9, RI ' reg <- addrg
+ mov r11, r0 ' ADDI/P
+ adds r11, r9 ' ADDI/P (3)
+ rdlong r11, r11 ' reg <- INDIRP4 reg
+ adds r11, #16 ' ADDP4 coni
+ rdlong r11, r11 ' reg <- INDIRP4 reg
+ wrlong r11, r10 ' ASGNP4 reg
+ mov r11, #12 ' reg <- coni
+ mov r10, r17 ' CVUI
+ and r10, cviu_m1 ' zero extend
+ mov r0, r11 ' setup r0/r1 (2)
+ mov r1, r10 ' setup r0/r1 (2)
+ jmp #MULT ' MULT(I/U)
+ jmp #LODA
+ long @C_tmpfilegq1bhz_4db599ed_bbos_port_table_L000002+4
+ mov r10, RI ' reg <- addrg
+ mov r11, r0 ' ADDI/P
+ adds r11, r10 ' ADDI/P (3)
+ rdlong r11, r11 ' reg <- INDIRP4 reg
+ adds r11, #16 ' ADDP4 coni
+ wrlong r16, r11 ' ASGNP4 reg
+ mov r11, r16
+ adds r11, #4 ' ADDP4 coni
+ wrbyte r15, r11 ' ASGNU1 reg
+ mov r0, #0 ' RET coni
+C_bbos_port_send_5
+ jmp #POPM
+ long $38e00 ' restore registers
+ jmp #RETN
+
+
+' Catalina Export bbos_port_receive
+
+ long ' align long
+C_bbos_port_receive ' <symbol:bbos_port_receive>
+ jmp #PSHM
+ long $30e00 ' save registers
+ mov r17, r3 ' reg var <- reg arg
+ mov r16, r2 ' reg var <- reg arg
+ mov r11, #12 ' reg <- coni
+ mov r10, r17 ' CVUI
+ and r10, cviu_m1 ' zero extend
+ mov r0, r11 ' setup r0/r1 (2)
+ mov r1, r10 ' setup r0/r1 (2)
+ jmp #MULT ' MULT(I/U)
+ jmp #LODA
+ long @C_tmpfilegq1bhz_4db599ed_bbos_port_table_L000002
+ mov r10, RI ' reg <- addrg
+ mov r11, r0 ' ADDI/P
+ adds r11, r10 ' ADDI/P (3)
+ rdlong r11, r11 ' reg <- INDIRP4 reg
+ cmp r11,  #0 wz
+ jmp #BRNZ
+ long @C_bbos_port_receive_17 ' NEU4
+ mov r0, #1 ' RET coni
+ jmp #JMPA
+ long @C_bbos_port_receive_16 ' JUMPV addrg
+C_bbos_port_receive_17
+ mov r11, #12 ' reg <- coni
+ mov r10, r17 ' CVUI
+ and r10, cviu_m1 ' zero extend
+ mov r0, r11 ' setup r0/r1 (2)
+ mov r1, r10 ' setup r0/r1 (2)
+ jmp #MULT ' MULT(I/U)
+ mov r11, r0 ' CVI, CVU or LOAD
+ mov r0, r16 ' CVI, CVU or LOAD
+ jmp #LODA
+ long @C_tmpfilegq1bhz_4db599ed_bbos_port_table_L000002
+ mov r10, RI ' reg <- addrg
+ adds r11, r10 ' ADDI/P (1)
+ rdlong r1, r11 ' reg <- INDIRP4 reg
+ jmp #CPYB
+ long 20 ' ASGNB
+ mov r11, #12 ' reg <- coni
+ mov r10, r17 ' CVUI
+ and r10, cviu_m1 ' zero extend
+ mov r0, r11 ' setup r0/r1 (2)
+ mov r1, r10 ' setup r0/r1 (2)
+ jmp #MULT ' MULT(I/U)
+ jmp #LODA
+ long @C_tmpfilegq1bhz_4db599ed_bbos_port_table_L000002
+ mov r10, RI ' reg <- addrg
+ adds r10, r0 ' ADDI/P (2)
+ rdlong r10, r10 ' reg <- INDIRP4 reg
+ jmp #LODA
+ long @C_tmpfilegq1bhz_4db599ed_bbos_port_table_L000002+4
+ mov r9, RI ' reg <- addrg
+ mov r11, r0 ' ADDI/P
+ adds r11, r9 ' ADDI/P (3)
+ rdlong r11, r11 ' reg <- INDIRP4 reg
+ cmp r10, r11 wz
+ jmp #BRNZ
+ long @C_bbos_port_receive_19 ' NEU4
+ mov r11, #12 ' reg <- coni
+ mov r10, r17 ' CVUI
+ and r10, cviu_m1 ' zero extend
+ mov r0, r11 ' setup r0/r1 (2)
+ mov r1, r10 ' setup r0/r1 (2)
+ jmp #MULT ' MULT(I/U)
+ jmp #LODA
+ long @C_tmpfilegq1bhz_4db599ed_bbos_port_table_L000002+4
+ mov r10, RI ' reg <- addrg
+ mov r11, r0 ' ADDI/P
+ adds r11, r10 ' ADDI/P (3)
+ jmp #LODA
+ long @C_bbos_port_send_L000011
+ rdlong  r10, RI ' reg <- con
+ wrlong r10, r11 ' ASGNP4 reg
+ jmp #JMPA
+ long @C_bbos_port_receive_20 ' JUMPV addrg
+C_bbos_port_receive_19
+ mov r11, #12 ' reg <- coni
+ mov r10, r17 ' CVUI
+ and r10, cviu_m1 ' zero extend
+ mov r0, r11 ' setup r0/r1 (2)
+ mov r1, r10 ' setup r0/r1 (2)
+ jmp #MULT ' MULT(I/U)
+ jmp #LODA
+ long @C_tmpfilegq1bhz_4db599ed_bbos_port_table_L000002
+ mov r10, RI ' reg <- addrg
+ mov r11, r0 ' ADDI/P
+ adds r11, r10 ' ADDI/P (3)
+ rdlong r10, r11 ' reg <- INDIRP4 reg
+ adds r10, #16 ' ADDP4 coni
+ rdlong r10, r10 ' reg <- INDIRP4 reg
+ wrlong r10, r11 ' ASGNP4 reg
+C_bbos_port_receive_20
+ mov r0, #0 ' RET coni
+C_bbos_port_receive_16
+ jmp #POPM
+ long $30e00 ' restore registers
+ jmp #RETN
+
+
+' Catalina Export bbos_port_flush
+
+ long ' align long
+C_bbos_port_flush ' <symbol:bbos_port_flush>
  jmp #PSHM
  long $20e00 ' save registers
  mov r17, r2 ' reg var <- reg arg
- mov r11, r17 ' CVUI
- and r11, cviu_m1 ' zero extend
- cmps r11,  #3 wz,wc
- jmp #BR_A
- long @C_bbos_sched_dequeue_27 ' GTI4
- jmp #JMPA
- long @C_bbos_sched_dequeue_28 ' JUMPV addrg
-C_bbos_sched_dequeue_27
- jmp #LODA
- long @C_bbos_sched_dequeue_25_L000026
- mov r2, RI ' reg ARG ADDRG
- mov BC, #4 ' arg size
- sub SP, #4 ' stack space for reg ARGs
- jmp #CALA
- long @C___bad_assertion
- add SP, #4 ' CALL addrg
-C_bbos_sched_dequeue_28
- mov r11, r17 ' CVUI
- and r11, cviu_m1 ' zero extend
- shl r11, #1 ' LSHI4 coni
- jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004
- mov r10, RI ' reg <- addrg
- adds r11, r10 ' ADDI/P (1)
- rdbyte r11, r11 ' reg <- INDIRU1 reg
- and r11, cviu_m1 ' zero extend
- cmps r11,  #2 wz
- jmp #BRNZ
- long @C_bbos_sched_dequeue_29 ' NEI4
- mov r0, #1 ' RET coni
- jmp #JMPA
- long @C_bbos_sched_dequeue_24 ' JUMPV addrg
-C_bbos_sched_dequeue_29
- mov r11, r17 ' CVUI
- and r11, cviu_m1 ' zero extend
- jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004+4
- rdbyte r10, RI ' reg <- INDIRU1 addrg
- and r10, cviu_m1 ' zero extend
- subs r10, r11 ' SUBI/P (1)
- jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004+4+1
- rdbyte r9, RI ' reg <- INDIRU1 addrg
- and r9, cviu_m1 ' zero extend
- subs r11, r9 ' SUBI/P (1)
- or r11, r10 ' BORI/U (2)
- cmps r11,  #0 wz
- jmp #BRNZ
- long @C_bbos_sched_dequeue_31 ' NEI4
- mov r11, #2 ' reg <- coni
- jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004+4
- wrbyte r11, RI ' ASGNU1 addrg
- mov r11, #2 ' reg <- coni
- jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004+4+1
- wrbyte r11, RI ' ASGNU1 addrg
- jmp #JMPA
- long @C_bbos_sched_dequeue_32 ' JUMPV addrg
-C_bbos_sched_dequeue_31
- jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004+4
- rdbyte r11, RI ' reg <- INDIRU1 addrg
- and r11, cviu_m1 ' zero extend
+ mov r11, #12 ' reg <- coni
  mov r10, r17 ' CVUI
  and r10, cviu_m1 ' zero extend
- cmps r11, r10 wz
- jmp #BRNZ
- long @C_bbos_sched_dequeue_39 ' NEI4
- mov r11, r17 ' CVUI
- and r11, cviu_m1 ' zero extend
- shl r11, #1 ' LSHI4 coni
+ mov r0, r11 ' setup r0/r1 (2)
+ mov r1, r10 ' setup r0/r1 (2)
+ jmp #MULT ' MULT(I/U)
  jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004
- mov r10, RI ' reg <- addrg
- adds r11, r10 ' ADDI/P (1)
- rdbyte r11, r11 ' reg <- INDIRU1 reg
+ long @C_bbos_port_send_L000011
+ rdlong  r10, RI ' reg <- con
  jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004+4
- wrbyte r11, RI ' ASGNU1 addrg
+ long @C_tmpfilegq1bhz_4db599ed_bbos_port_table_L000002+4
+ mov r9, RI ' reg <- addrg
+ adds r9, r0 ' ADDI/P (2)
+ wrlong r10, r9 ' ASGNP4 reg
  jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004+4
- rdbyte r11, RI ' reg <- INDIRU1 addrg
- and r11, cviu_m1 ' zero extend
- shl r11, #1 ' LSHI4 coni
- jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004+1
- mov r10, RI ' reg <- addrg
- adds r11, r10 ' ADDI/P (1)
- jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004+4+1
- rdbyte r10, RI ' reg <- INDIRU1 addrg
- wrbyte r10, r11 ' ASGNU1 reg
- jmp #JMPA
- long @C_bbos_sched_dequeue_40 ' JUMPV addrg
-C_bbos_sched_dequeue_39
- jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004+4+1
- rdbyte r11, RI ' reg <- INDIRU1 addrg
- and r11, cviu_m1 ' zero extend
+ long @C_tmpfilegq1bhz_4db599ed_bbos_port_table_L000002
+ mov r9, RI ' reg <- addrg
+ mov r11, r0 ' ADDI/P
+ adds r11, r9 ' ADDI/P (3)
+ wrlong r10, r11 ' ASGNP4 reg
+ mov r11, #12 ' reg <- coni
  mov r10, r17 ' CVUI
  and r10, cviu_m1 ' zero extend
- cmps r11, r10 wz
- jmp #BRNZ
- long @C_bbos_sched_dequeue_47 ' NEI4
- mov r11, r17 ' CVUI
- and r11, cviu_m1 ' zero extend
- shl r11, #1 ' LSHI4 coni
+ mov r0, r11 ' setup r0/r1 (2)
+ mov r1, r10 ' setup r0/r1 (2)
+ jmp #MULT ' MULT(I/U)
  jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004+1
+ long @C_tmpfilegq1bhz_4db599ed_bbos_port_table_L000002+8
  mov r10, RI ' reg <- addrg
- adds r11, r10 ' ADDI/P (1)
- rdbyte r11, r11 ' reg <- INDIRU1 reg
- jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004+4+1
- wrbyte r11, RI ' ASGNU1 addrg
- jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004+4+1
- rdbyte r11, RI ' reg <- INDIRU1 addrg
- and r11, cviu_m1 ' zero extend
- shl r11, #1 ' LSHI4 coni
- jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004
- mov r10, RI ' reg <- addrg
- adds r11, r10 ' ADDI/P (1)
- jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004+4
- rdbyte r10, RI ' reg <- INDIRU1 addrg
- wrbyte r10, r11 ' ASGNU1 reg
- jmp #JMPA
- long @C_bbos_sched_dequeue_48 ' JUMPV addrg
-C_bbos_sched_dequeue_47
- mov r11, r17 ' CVUI
- and r11, cviu_m1 ' zero extend
- shl r11, #1 ' LSHI4 coni
- jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004
- mov r10, RI ' reg <- addrg
- jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004+1
- mov r9, RI ' reg <- addrg
- adds r9, r11 ' ADDI/P (2)
- rdbyte r9, r9 ' reg <- INDIRU1 reg
- and r9, cviu_m1 ' zero extend
- shl r9, #1 ' LSHI4 coni
- adds r9, r10 ' ADDI/P (1)
- adds r11, r10 ' ADDI/P (1)
- rdbyte r11, r11 ' reg <- INDIRU1 reg
- wrbyte r11, r9 ' ASGNU1 reg
- mov r11, r17 ' CVUI
- and r11, cviu_m1 ' zero extend
- shl r11, #1 ' LSHI4 coni
- jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004
- mov r10, RI ' reg <- addrg
- adds r10, r11 ' ADDI/P (2)
- rdbyte r10, r10 ' reg <- INDIRU1 reg
- and r10, cviu_m1 ' zero extend
- shl r10, #1 ' LSHI4 coni
- jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004+1
- mov r9, RI ' reg <- addrg
- adds r10, r9 ' ADDI/P (1)
- jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004+1
- mov r9, RI ' reg <- addrg
- adds r11, r9 ' ADDI/P (1)
- rdbyte r11, r11 ' reg <- INDIRU1 reg
- wrbyte r11, r10 ' ASGNU1 reg
-C_bbos_sched_dequeue_48
-C_bbos_sched_dequeue_40
-C_bbos_sched_dequeue_32
- mov r11, r17 ' CVUI
- and r11, cviu_m1 ' zero extend
- shl r11, #1 ' LSHI4 coni
- jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004
- mov r10, RI ' reg <- addrg
- adds r11, r10 ' ADDI/P (1)
- mov r10, #2 ' reg <- coni
- wrbyte r10, r11 ' ASGNU1 reg
- mov r11, r17 ' CVUI
- and r11, cviu_m1 ' zero extend
- shl r11, #1 ' LSHI4 coni
- jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004+1
- mov r10, RI ' reg <- addrg
- adds r11, r10 ' ADDI/P (1)
- mov r10, #2 ' reg <- coni
- wrbyte r10, r11 ' ASGNU1 reg
- jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004+4
- rdbyte r11, RI ' reg <- INDIRU1 addrg
- and r11, cviu_m1 ' zero extend
- subs r11, #2 ' SUBI4 coni
- jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004+4+1
- rdbyte r10, RI ' reg <- INDIRU1 addrg
- and r10, cviu_m1 ' zero extend
- subs r10, #2 ' SUBI4 coni
- or r11, r10 ' BORI/U (1)
- cmps r11,  #0 wz
- jmp #BRNZ
- long @C_bbos_sched_dequeue_61 ' NEI4
- mov r11, #2 ' reg <- coni
- jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004+4
- wrbyte r11, RI ' ASGNU1 addrg
-C_bbos_sched_dequeue_61
- mov r0, #0 ' RET coni
-C_bbos_sched_dequeue_24
+ mov r11, r0 ' ADDI/P
+ adds r11, r10 ' ADDI/P (3)
+ mov r10, #0 ' reg <- coni
+ wrword r10, r11 ' ASGNU2 reg
+' C_bbos_port_flush_23 ' (symbol refcount = 0)
  jmp #POPM
  long $20e00 ' restore registers
  jmp #RETN
 
 
-' Catalina Export bbos_sched_init
+
+DAT ' code segment
+' end
+
+DAT ' code segment
+'
+' LCC 4.2 for Parallax Propeller
+' (Catalina v2.5 Code Generator by Ross Higson)
+'
+
+' Catalina Export bbos_thread_init
 
  long ' align long
-C_bbos_sched_init ' <symbol:bbos_sched_init>
+C_bbos_thread_init ' <symbol:bbos_thread_init>
  jmp #PSHM
- long $20c00 ' save registers
- mov r17, #0 ' reg <- coni
- jmp #JMPA
- long @C_bbos_sched_init_71 ' JUMPV addrg
-C_bbos_sched_init_68
- mov r11, r17 ' CVUI
+ long $c00 ' save registers
+ mov r11, r3 ' CVUI
  and r11, cviu_m1 ' zero extend
- shl r11, #1 ' LSHI4 coni
+ shl r11, #2 ' LSHI4 coni
  jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004
+ long @C_tmpfilewjh7Wz_4db599ed_bbos_thread_table_L000002
  mov r10, RI ' reg <- addrg
  adds r11, r10 ' ADDI/P (1)
- mov r10, #2 ' reg <- coni
- wrbyte r10, r11 ' ASGNU1 reg
- mov r11, r17 ' CVUI
- and r11, cviu_m1 ' zero extend
- shl r11, #1 ' LSHI4 coni
- jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004+1
- mov r10, RI ' reg <- addrg
- adds r11, r10 ' ADDI/P (1)
- mov r10, #2 ' reg <- coni
- wrbyte r10, r11 ' ASGNU1 reg
-' C_bbos_sched_init_69 ' (symbol refcount = 0)
- mov r11, r17 ' CVUI
- and r11, cviu_m1 ' zero extend
- adds r11, #1 ' ADDI4 coni
- mov r17, r11 ' CVI, CVU or LOAD
-C_bbos_sched_init_71
- mov r11, r17 ' CVUI
- and r11, cviu_m1 ' zero extend
- cmps r11,  #3 wz,wc
- jmp #BR_B
- long @C_bbos_sched_init_68 ' LTI4
-' C_bbos_sched_init_67 ' (symbol refcount = 0)
+ wrlong r2, r11 ' ASGNP4 reg
+' C_bbos_thread_init_3 ' (symbol refcount = 0)
  jmp #POPM
- long $20c00 ' restore registers
+ long $c00 ' restore registers
  jmp #RETN
 
 
-' Catalina Export bbos_sched_move
+' Catalina Export bbos_thread_execute
 
  long ' align long
-C_bbos_sched_move ' <symbol:bbos_sched_move>
+C_bbos_thread_execute ' <symbol:bbos_thread_execute>
  jmp #PSHM
- long $c00 ' save registers
- mov BC, #0 ' arg size
- jmp #CALA
- long @C_bbos_sched_myself ' CALL addrg
- mov r11, r0 ' CVI, CVU or LOAD
+ long $20c00 ' save registers
+ mov r17, r2 ' reg var <- reg arg
+ mov r11, r17 ' CVUI
  and r11, cviu_m1 ' zero extend
- shl r11, #1 ' LSHI4 coni
+ shl r11, #2 ' LSHI4 coni
  jmp #LODA
- long @C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004
+ long @C_tmpfilewjh7Wz_4db599ed_bbos_thread_table_L000002
  mov r10, RI ' reg <- addrg
  adds r11, r10 ' ADDI/P (1)
- rdbyte r11, r11 ' reg <- INDIRU1 reg
+ rdlong r11, r11 ' reg <- INDIRP4 reg
+ cmp r11,  #0 wz
+ jmp #BR_Z
+ long @C_bbos_thread_execute_7 ' EQU4
+ jmp #JMPA
+ long @C_bbos_thread_execute_8 ' JUMPV addrg
+C_bbos_thread_execute_7
  jmp #LODA
- long @C_tmpfileA4x2Yl_4d613fe7_myself_L000002
- wrbyte r11, RI ' ASGNU1 addrg
-' C_bbos_sched_move_73 ' (symbol refcount = 0)
+ long @C_bbos_thread_execute_5_L000006
+ mov r2, RI ' reg ARG ADDRG
+ mov BC, #4 ' arg size
+ sub SP, #4 ' stack space for reg ARGs
+ jmp #CALA
+ long @C___bad_assertion
+ add SP, #4 ' CALL addrg
+C_bbos_thread_execute_8
+ mov r11, r17 ' CVUI
+ and r11, cviu_m1 ' zero extend
+ shl r11, #2 ' LSHI4 coni
+ jmp #LODA
+ long @C_tmpfilewjh7Wz_4db599ed_bbos_thread_table_L000002
+ mov r10, RI ' reg <- addrg
+ adds r11, r10 ' ADDI/P (1)
+ rdlong r11, r11 ' reg <- INDIRP4 reg
+ mov BC, #0 ' arg size
+ mov RI, r11
+ jmp #CALI ' CALL indirect
+' C_bbos_thread_execute_4 ' (symbol refcount = 0)
  jmp #POPM
- long $c00 ' restore registers
+ long $20c00 ' restore registers
  jmp #RETN
 
 
@@ -2144,227 +1447,6 @@ C_bbos_sched_move ' <symbol:bbos_sched_move>
 DAT ' code segment
 
 ' Catalina Import __bad_assertion
-
-
-DAT ' code segment
-' end
-
-DAT ' code segment
-'
-' LCC 4.2 for Parallax Propeller
-' (Catalina v2.5 Code Generator by Ross Higson)
-'
-
-
-DAT ' code segment
-
- long ' align long
-C_demo ' <symbol:demo>
- jmp #PSHM
- long $20800 ' save registers
- jmp #LODA
- long @C_demo_message_L000007
- mov r2, RI ' reg ARG ADDRG
- mov r3, #0 ' reg ARG coni
- mov BC, #8 ' arg size
- sub SP, #8 ' stack space for reg ARGs
- jmp #CALA
- long @C_bbos_port_receive
- add SP, #8 ' CALL addrg
- cmps r0,  #0 wz
- jmp #BRNZ
- long @C_demo_8 ' NEI4
- jmp #LODA
- long @C_demo_message_L000007
- rdlong r17, RI ' reg <- INDIRI4 addrg
- cmps r17,  #1 wz
- jmp #BR_Z
- long @C_demo_13 ' EQI4
- cmps r17,  #3 wz
- jmp #BR_Z
- long @C_demo_16 ' EQI4
- jmp #JMPA
- long @C_demo_10 ' JUMPV addrg
-C_demo_13
- jmp #LODA
- long @C_demo_14_L000015
- mov r2, RI ' reg ARG ADDRG
- mov BC, #4 ' arg size
- sub SP, #4 ' stack space for reg ARGs
- jmp #CALA
- long @C_printf
- add SP, #4 ' CALL addrg
- mov r11, #1 ' reg <- coni
- jmp #LODA
- long @C_tmpfileNYWBfs_4d613fe7_init_complete_L000003
- wrbyte r11, RI ' ASGNU1 addrg
- jmp #JMPA
- long @C_demo_11 ' JUMPV addrg
-C_demo_16
- jmp #LODA
- long @C_demo_message_L000007+8
- rdlong r11, RI ' reg <- INDIRP4 addrg
- rdlong r11, r11 ' reg <- INDIRI4 reg
- cmps r11,  #1 wz
- jmp #BRNZ
- long @C_demo_11 ' NEI4
- jmp #LODA
- long @C_demo_20_L000021
- mov r2, RI ' reg ARG ADDRG
- mov BC, #4 ' arg size
- sub SP, #4 ' stack space for reg ARGs
- jmp #CALA
- long @C_printf
- add SP, #4 ' CALL addrg
- jmp #JMPA
- long @C_demo_11 ' JUMPV addrg
-C_demo_10
- jmp #LODA
- long @C_demo_22_L000023
- mov r2, RI ' reg ARG ADDRG
- mov BC, #4 ' arg size
- sub SP, #4 ' stack space for reg ARGs
- jmp #CALA
- long @C_bbos_panic
- add SP, #4 ' CALL addrg
-C_demo_11
-C_demo_8
- jmp #LODA
- long @C_tmpfileNYWBfs_4d613fe7_init_complete_L000003
- rdbyte r11, RI ' reg <- INDIRU1 addrg
- and r11, cviu_m1 ' zero extend
- cmps r11,  #0 wz
- jmp #BRNZ
- long @C_demo_24 ' NEI4
- jmp #LODA
- long @C_demo_26_L000027
- mov r2, RI ' reg ARG ADDRG
- mov BC, #4 ' arg size
- sub SP, #4 ' stack space for reg ARGs
- jmp #CALA
- long @C_printf
- add SP, #4 ' CALL addrg
- mov r11, #1 ' reg <- coni
- jmp #LODA
- long @C_demo_message_L000007
- wrlong r11, RI ' ASGNI4 addrg
- jmp #LODA
- long @C_tmpfilepxGVZj_4d613fe7_demo_pins_L000002
- mov r11, RI ' reg <- addrg
- jmp #LODA
- long @C_demo_message_L000007+8
- wrlong r11, RI ' ASGNP4 addrg
- mov r2, #0 ' reg ARG coni
- jmp #LODA
- long @C_demo_message_L000007
- mov r3, RI ' reg ARG ADDRG
- mov r4, #1 ' reg ARG coni
- mov BC, #12 ' arg size
- sub SP, #12 ' stack space for reg ARGs
- jmp #CALA
- long @C_bbos_port_send
- add SP, #12 ' CALL addrg
- jmp #JMPA
- long @C_demo_5 ' JUMPV addrg
-C_demo_24
- mov r11, #3 ' reg <- coni
- jmp #LODA
- long @C_demo_message_L000007
- wrlong r11, RI ' ASGNI4 addrg
- jmp #LODA
- long @C_tmpfileD4mivA_4d613fe7_is_free_fall_L000004
- mov r11, RI ' reg <- addrg
- jmp #LODA
- long @C_demo_message_L000007+8
- wrlong r11, RI ' ASGNP4 addrg
- mov r2, #0 ' reg ARG coni
- jmp #LODA
- long @C_demo_message_L000007
- mov r3, RI ' reg ARG ADDRG
- mov r4, #1 ' reg ARG coni
- mov BC, #12 ' arg size
- sub SP, #12 ' stack space for reg ARGs
- jmp #CALA
- long @C_bbos_port_send
- add SP, #12 ' CALL addrg
-C_demo_5
- jmp #POPM
- long $20800 ' restore registers
- jmp #RETN
-
-
-' Catalina Export main
-
- long ' align long
-C_main ' <symbol:main>
- jmp #CALA
- long @C_arg_setup
- mov BC, #0 ' arg size
- jmp #CALA
- long @C_bbos_init ' CALL addrg
- jmp #LODA
- long @C_main_31_L000032
- mov r2, RI ' reg ARG ADDRG
- mov BC, #4 ' arg size
- sub SP, #4 ' stack space for reg ARGs
- jmp #CALA
- long @C_printf
- add SP, #4 ' CALL addrg
- jmp #LODA
- long @C_demo
- mov r2, RI ' reg ARG ADDRG
- mov r3, #0 ' reg ARG coni
- mov BC, #8 ' arg size
- sub SP, #8 ' stack space for reg ARGs
- jmp #CALA
- long @C_bbos_start_thread
- add SP, #8 ' CALL addrg
- jmp #LODA
- long @C_h48c_driver
- mov r2, RI ' reg ARG ADDRG
- mov r3, #1 ' reg ARG coni
- mov BC, #8 ' arg size
- sub SP, #8 ' stack space for reg ARGs
- jmp #CALA
- long @C_bbos_start_thread
- add SP, #8 ' CALL addrg
- mov BC, #0 ' arg size
- jmp #CALA
- long @C_bbos_start ' CALL addrg
-' C_main_30 ' (symbol refcount = 0)
- jmp #JMPA
- long @C__exit
-
-' Catalina Import bbos_port_send
-
-' Catalina Import printf
-
-' Catalina Import bbos_port_receive
-
-
-DAT ' code segment
-
-' Catalina Import h48c_driver
-
-
-DAT ' code segment
-
-' Catalina Import bbos_start_thread
-
-
-DAT ' code segment
-
-' Catalina Import bbos_panic
-
-
-DAT ' code segment
-
-' Catalina Import bbos_start
-
-
-DAT ' code segment
-
-' Catalina Import bbos_init
 
 
 DAT ' code segment
@@ -4838,56 +3920,268 @@ Catalina_Cnst
 DAT ' const data segment
 
  long ' align long
-C_bbos_start_35_L000036 ' <symbol:35>
- byte 83
+C_main_31_L000032 ' <symbol:31>
+ byte 72
+ byte 105
  byte 116
  byte 97
- byte 114
- byte 116
+ byte 99
+ byte 104
+ byte 105
  byte 32
- byte 66
- byte 66
- byte 79
- byte 83
+ byte 72
+ byte 52
+ byte 56
+ byte 67
  byte 32
- byte 107
- byte 101
- byte 114
- byte 110
+ byte 51
+ byte 32
+ byte 65
+ byte 120
+ byte 105
+ byte 115
+ byte 32
+ byte 65
+ byte 99
+ byte 99
  byte 101
  byte 108
+ byte 101
+ byte 114
+ byte 111
+ byte 109
+ byte 101
+ byte 116
+ byte 101
+ byte 114
+ byte 32
+ byte 70
+ byte 114
+ byte 101
+ byte 101
+ byte 32
+ byte 70
+ byte 97
+ byte 108
+ byte 108
+ byte 32
+ byte 68
+ byte 101
+ byte 109
+ byte 111
  byte 10
  byte 0
 
  long ' align long
-C_bbos_init_28_L000029 ' <symbol:28>
- byte 73
+C_freefall_26_L000027 ' <symbol:26>
+ byte 83
+ byte 101
  byte 110
- byte 105
- byte 116
- byte 105
+ byte 100
+ byte 32
+ byte 111
+ byte 112
+ byte 101
+ byte 110
+ byte 45
+ byte 109
+ byte 101
+ byte 115
+ byte 115
  byte 97
- byte 108
- byte 105
- byte 122
+ byte 103
  byte 101
  byte 32
- byte 66
- byte 66
- byte 79
- byte 83
+ byte 116
+ byte 111
  byte 32
- byte 107
+ byte 72
+ byte 52
+ byte 56
+ byte 67
+ byte 32
+ byte 100
+ byte 101
+ byte 118
+ byte 105
+ byte 99
+ byte 101
+ byte 32
+ byte 100
+ byte 114
+ byte 105
+ byte 118
  byte 101
  byte 114
- byte 110
- byte 101
- byte 108
  byte 10
  byte 0
 
  long ' align long
-C_bbos_stop_thread_19_L000020 ' <symbol:19>
+C_freefall_22_L000023 ' <symbol:22>
+ byte 85
+ byte 110
+ byte 107
+ byte 110
+ byte 111
+ byte 119
+ byte 110
+ byte 32
+ byte 109
+ byte 101
+ byte 115
+ byte 115
+ byte 97
+ byte 103
+ byte 101
+ byte 0
+
+ long ' align long
+C_freefall_20_L000021 ' <symbol:20>
+ byte 70
+ byte 114
+ byte 101
+ byte 101
+ byte 32
+ byte 102
+ byte 97
+ byte 108
+ byte 108
+ byte 32
+ byte 100
+ byte 101
+ byte 116
+ byte 101
+ byte 99
+ byte 116
+ byte 101
+ byte 100
+ byte 33
+ byte 10
+ byte 0
+
+ long ' align long
+C_freefall_14_L000015 ' <symbol:14>
+ byte 72
+ byte 52
+ byte 56
+ byte 67
+ byte 32
+ byte 100
+ byte 101
+ byte 118
+ byte 105
+ byte 99
+ byte 101
+ byte 32
+ byte 104
+ byte 97
+ byte 115
+ byte 32
+ byte 98
+ byte 101
+ byte 101
+ byte 110
+ byte 32
+ byte 111
+ byte 112
+ byte 101
+ byte 110
+ byte 101
+ byte 100
+ byte 10
+ byte 0
+
+
+DAT ' const data segment
+
+ long ' align long
+C_h48c_41_L000043 ' <symbol:41>
+ long @C_h48c_30
+ long @C_h48c_35
+ long @C_h48c_30
+ long @C_h48c_29
+ long @C_h48c_33
+ long @C_h48c_29
+ long @C_h48c_37
+
+
+DAT ' const data segment
+
+ long ' align long
+C_h48c_39_L000040 ' <symbol:39>
+ byte 104
+ byte 52
+ byte 56
+ byte 99
+ byte 32
+ byte 114
+ byte 101
+ byte 99
+ byte 101
+ byte 105
+ byte 118
+ byte 101
+ byte 100
+ byte 32
+ byte 105
+ byte 108
+ byte 108
+ byte 101
+ byte 103
+ byte 97
+ byte 108
+ byte 32
+ byte 109
+ byte 101
+ byte 115
+ byte 115
+ byte 97
+ byte 103
+ byte 101
+ byte 32
+ byte 37
+ byte 100
+ byte 0
+
+ long ' align long
+C_h48c_read_value_L000021 ' <symbol:22>
+ long 8191
+
+
+DAT ' const data segment
+
+ long ' align long
+C_bbos_init_22_L000023 ' <symbol:22>
+ byte 83
+ byte 99
+ byte 104
+ byte 101
+ byte 100
+ byte 117
+ byte 108
+ byte 101
+ byte 114
+ byte 32
+ byte 119
+ byte 97
+ byte 115
+ byte 32
+ byte 110
+ byte 111
+ byte 116
+ byte 32
+ byte 101
+ byte 110
+ byte 97
+ byte 98
+ byte 108
+ byte 101
+ byte 100
+ byte 10
+ byte 0
+
+ long ' align long
+C_bbos_stop_thread_9_L000010 ' <symbol:9>
  byte 65
  byte 115
  byte 115
@@ -4943,11 +4237,37 @@ C_bbos_stop_thread_19_L000020 ' <symbol:19>
  byte 101
  byte 32
  byte 34
- byte 46
- byte 46
  byte 47
- byte 46
- byte 46
+ byte 104
+ byte 111
+ byte 109
+ byte 101
+ byte 47
+ byte 100
+ byte 50
+ byte 114
+ byte 107
+ byte 47
+ byte 87
+ byte 111
+ byte 114
+ byte 107
+ byte 115
+ byte 112
+ byte 97
+ byte 99
+ byte 101
+ byte 47
+ byte 98
+ byte 98
+ byte 111
+ byte 115
+ byte 47
+ byte 116
+ byte 114
+ byte 117
+ byte 110
+ byte 107
  byte 47
  byte 98
  byte 98
@@ -4960,6 +4280,13 @@ C_bbos_stop_thread_19_L000020 ' <symbol:19>
  byte 110
  byte 101
  byte 108
+ byte 47
+ byte 115
+ byte 121
+ byte 115
+ byte 116
+ byte 101
+ byte 109
  byte 46
  byte 99
  byte 34
@@ -4971,12 +4298,16 @@ C_bbos_stop_thread_19_L000020 ' <symbol:19>
  byte 101
  byte 32
  byte 55
- byte 56
+ byte 57
  byte 10
  byte 0
 
  long ' align long
-C_bbos_start_thread_14_L000015 ' <symbol:14>
+C_bbos_stop_thread_L000014 ' <symbol:15>
+ long 0
+
+ long ' align long
+C_bbos_start_thread_4_L000005 ' <symbol:4>
  byte 65
  byte 115
  byte 115
@@ -5032,11 +4363,37 @@ C_bbos_start_thread_14_L000015 ' <symbol:14>
  byte 101
  byte 32
  byte 34
- byte 46
- byte 46
  byte 47
- byte 46
- byte 46
+ byte 104
+ byte 111
+ byte 109
+ byte 101
+ byte 47
+ byte 100
+ byte 50
+ byte 114
+ byte 107
+ byte 47
+ byte 87
+ byte 111
+ byte 114
+ byte 107
+ byte 115
+ byte 112
+ byte 97
+ byte 99
+ byte 101
+ byte 47
+ byte 98
+ byte 98
+ byte 111
+ byte 115
+ byte 47
+ byte 116
+ byte 114
+ byte 117
+ byte 110
+ byte 107
  byte 47
  byte 98
  byte 98
@@ -5049,6 +4406,13 @@ C_bbos_start_thread_14_L000015 ' <symbol:14>
  byte 110
  byte 101
  byte 108
+ byte 47
+ byte 115
+ byte 121
+ byte 115
+ byte 116
+ byte 101
+ byte 109
  byte 46
  byte 99
  byte 34
@@ -5060,130 +4424,7 @@ C_bbos_start_thread_14_L000015 ' <symbol:14>
  byte 101
  byte 32
  byte 53
- byte 56
- byte 10
- byte 0
-
- long ' align long
-C_bbos_stop_thread_L000024 ' <symbol:25>
- long 0
-
- long ' align long
-C_bbos_switch_thread_9_L000010 ' <symbol:9>
- byte 65
- byte 115
- byte 115
- byte 101
- byte 114
- byte 116
- byte 105
- byte 111
- byte 110
- byte 32
- byte 34
- byte 98
- byte 98
- byte 111
- byte 115
- byte 95
- byte 115
- byte 99
- byte 104
- byte 101
- byte 100
- byte 95
- byte 109
- byte 121
- byte 115
- byte 101
- byte 108
- byte 102
- byte 40
- byte 41
- byte 32
- byte 60
- byte 32
- byte 66
- byte 66
- byte 79
- byte 83
- byte 95
- byte 78
- byte 85
- byte 77
- byte 66
- byte 69
- byte 82
- byte 95
- byte 79
- byte 70
- byte 95
- byte 84
- byte 72
- byte 82
- byte 69
- byte 65
- byte 68
- byte 83
- byte 34
- byte 32
- byte 102
- byte 97
- byte 105
- byte 108
- byte 101
- byte 100
- byte 44
- byte 32
- byte 102
- byte 105
- byte 108
- byte 101
- byte 32
- byte 34
- byte 46
- byte 46
- byte 47
- byte 46
- byte 46
- byte 47
- byte 98
- byte 98
- byte 111
- byte 115
- byte 47
- byte 107
- byte 101
- byte 114
- byte 110
- byte 101
- byte 108
- byte 46
- byte 99
- byte 34
- byte 44
- byte 32
- byte 108
- byte 105
- byte 110
- byte 101
- byte 32
- byte 51
  byte 57
- byte 10
- byte 0
-
- long ' align long
-C_bbos_panic_6_L000007 ' <symbol:6>
- byte 80
- byte 97
- byte 110
- byte 105
- byte 99
- byte 58
- byte 32
- byte 37
- byte 115
  byte 10
  byte 0
 
@@ -5256,462 +4497,68 @@ C_bbos_thread_execute_5_L000006 ' <symbol:5>
  byte 101
  byte 32
  byte 34
- byte 46
- byte 46
  byte 47
- byte 46
- byte 46
- byte 47
- byte 98
- byte 98
- byte 111
- byte 115
- byte 47
- byte 116
  byte 104
- byte 114
+ byte 111
+ byte 109
  byte 101
- byte 97
+ byte 47
  byte 100
- byte 46
- byte 99
- byte 34
- byte 44
- byte 32
- byte 108
- byte 105
- byte 110
- byte 101
- byte 32
  byte 50
- byte 49
- byte 10
- byte 0
-
-
-DAT ' const data segment
-
- long ' align long
-C_h48c_driver_41_L000043 ' <symbol:41>
- long @C_h48c_driver_30
- long @C_h48c_driver_33
- long @C_h48c_driver_35
- long @C_h48c_driver_37
- long @C_h48c_driver_30
-
-
-DAT ' const data segment
-
- long ' align long
-C_h48c_driver_39_L000040 ' <symbol:39>
- byte 104
- byte 52
- byte 56
- byte 99
- byte 32
  byte 114
- byte 101
- byte 99
- byte 101
- byte 105
- byte 118
- byte 101
- byte 100
- byte 32
- byte 105
- byte 108
- byte 108
- byte 101
- byte 103
- byte 97
- byte 108
- byte 32
- byte 109
- byte 101
- byte 115
- byte 115
- byte 97
- byte 103
- byte 101
- byte 32
- byte 37
- byte 100
- byte 0
-
- long ' align long
-C_h48c_read_value_L000021 ' <symbol:22>
- long 8191
-
-
-DAT ' const data segment
-
- long ' align long
-C_post_clock_pulse_L000003 ' <symbol:4>
- long 600
-
-
-DAT ' const data segment
-
- long ' align long
-C_bbos_sched_dequeue_25_L000026 ' <symbol:25>
- byte 65
- byte 115
- byte 115
- byte 101
+ byte 107
+ byte 47
+ byte 87
+ byte 111
  byte 114
- byte 116
- byte 105
- byte 111
- byte 110
- byte 32
- byte 34
- byte 116
- byte 105
- byte 100
- byte 32
- byte 60
- byte 61
- byte 32
- byte 66
- byte 66
- byte 79
- byte 83
- byte 95
- byte 78
- byte 85
- byte 77
- byte 66
- byte 69
- byte 82
- byte 95
- byte 79
- byte 70
- byte 95
- byte 84
- byte 72
- byte 82
- byte 69
- byte 65
- byte 68
- byte 83
- byte 34
- byte 32
- byte 102
- byte 97
- byte 105
- byte 108
- byte 101
- byte 100
- byte 44
- byte 32
- byte 102
- byte 105
- byte 108
- byte 101
- byte 32
- byte 34
- byte 46
- byte 46
- byte 47
- byte 46
- byte 46
- byte 47
- byte 98
- byte 98
- byte 111
+ byte 107
  byte 115
- byte 47
- byte 115
- byte 99
- byte 104
- byte 101
- byte 100
- byte 117
- byte 108
- byte 101
- byte 114
- byte 115
- byte 47
- byte 102
- byte 99
- byte 102
- byte 115
- byte 46
- byte 99
- byte 34
- byte 44
- byte 32
- byte 108
- byte 105
- byte 110
- byte 101
- byte 32
- byte 52
- byte 53
- byte 10
- byte 0
-
- long ' align long
-C_bbos_sched_enqueue_6_L000007 ' <symbol:6>
- byte 65
- byte 115
- byte 115
- byte 101
- byte 114
- byte 116
- byte 105
- byte 111
- byte 110
- byte 32
- byte 34
- byte 116
- byte 105
- byte 100
- byte 32
- byte 60
- byte 61
- byte 32
- byte 66
- byte 66
- byte 79
- byte 83
- byte 95
- byte 78
- byte 85
- byte 77
- byte 66
- byte 69
- byte 82
- byte 95
- byte 79
- byte 70
- byte 95
- byte 84
- byte 72
- byte 82
- byte 69
- byte 65
- byte 68
- byte 83
- byte 34
- byte 32
- byte 102
- byte 97
- byte 105
- byte 108
- byte 101
- byte 100
- byte 44
- byte 32
- byte 102
- byte 105
- byte 108
- byte 101
- byte 32
- byte 34
- byte 46
- byte 46
- byte 47
- byte 46
- byte 46
- byte 47
- byte 98
- byte 98
- byte 111
- byte 115
- byte 47
- byte 115
- byte 99
- byte 104
- byte 101
- byte 100
- byte 117
- byte 108
- byte 101
- byte 114
- byte 115
- byte 47
- byte 102
- byte 99
- byte 102
- byte 115
- byte 46
- byte 99
- byte 34
- byte 44
- byte 32
- byte 108
- byte 105
- byte 110
- byte 101
- byte 32
- byte 50
- byte 53
- byte 10
- byte 0
-
-
-DAT ' const data segment
-
- long ' align long
-C_main_31_L000032 ' <symbol:31>
- byte 72
- byte 105
- byte 116
- byte 97
- byte 99
- byte 104
- byte 105
- byte 32
- byte 72
- byte 52
- byte 56
- byte 67
- byte 32
- byte 51
- byte 32
- byte 65
- byte 120
- byte 105
- byte 115
- byte 32
- byte 65
- byte 99
- byte 99
- byte 101
- byte 108
- byte 101
- byte 114
- byte 111
- byte 109
- byte 101
- byte 116
- byte 101
- byte 114
- byte 32
- byte 68
- byte 101
- byte 109
- byte 111
- byte 10
- byte 0
-
- long ' align long
-C_demo_26_L000027 ' <symbol:26>
- byte 83
- byte 101
- byte 110
- byte 100
- byte 32
- byte 111
  byte 112
- byte 101
- byte 110
- byte 45
- byte 109
- byte 101
- byte 115
- byte 115
  byte 97
- byte 103
- byte 101
- byte 32
- byte 116
- byte 111
- byte 32
- byte 72
- byte 52
- byte 56
- byte 67
- byte 32
- byte 100
- byte 101
- byte 118
- byte 105
  byte 99
  byte 101
- byte 32
- byte 100
+ byte 47
+ byte 98
+ byte 98
+ byte 111
+ byte 115
+ byte 47
+ byte 116
  byte 114
- byte 105
- byte 118
- byte 101
- byte 114
- byte 10
- byte 0
-
- long ' align long
-C_demo_22_L000023 ' <symbol:22>
- byte 85
+ byte 117
  byte 110
  byte 107
- byte 110
+ byte 47
+ byte 98
+ byte 98
  byte 111
- byte 119
+ byte 115
+ byte 47
+ byte 107
+ byte 101
+ byte 114
  byte 110
- byte 32
- byte 109
  byte 101
- byte 115
- byte 115
- byte 97
- byte 103
- byte 101
- byte 0
-
- long ' align long
-C_demo_20_L000021 ' <symbol:20>
- byte 70
+ byte 108
+ byte 47
+ byte 116
+ byte 104
  byte 114
  byte 101
- byte 101
- byte 32
- byte 102
  byte 97
- byte 108
- byte 108
- byte 32
  byte 100
- byte 101
- byte 116
- byte 101
+ byte 46
  byte 99
- byte 116
- byte 101
- byte 100
- byte 33
- byte 10
- byte 0
-
- long ' align long
-C_demo_14_L000015 ' <symbol:14>
- byte 72
- byte 52
- byte 56
- byte 67
+ byte 34
+ byte 44
  byte 32
- byte 100
- byte 101
- byte 118
+ byte 108
  byte 105
- byte 99
- byte 101
- byte 32
- byte 104
- byte 97
- byte 115
- byte 32
- byte 98
- byte 101
- byte 101
- byte 110
- byte 32
- byte 111
- byte 112
- byte 101
  byte 110
  byte 101
- byte 100
+ byte 32
+ byte 50
+ byte 52
  byte 10
  byte 0
 
@@ -5821,23 +4668,14 @@ C_errno long 0
 DAT ' initialized data segment
 
  long ' align long
-C_tmpfileA4x2Yl_4d613fe7_myself_L000002 ' <symbol:myself>
- byte $2
-
-' Catalina Export bbos_sched_myself
-
-
-DAT ' initialized data segment
-
- long ' align long
-C_tmpfilepxGVZj_4d613fe7_demo_pins_L000002 ' <symbol:demo_pins>
+C_tmpfileovvbaA_4db599ed_demo_pins_L000002 ' <symbol:demo_pins>
  long 1
  long 2
  long 0
  long 3
 
  long ' align long
-C_tmpfileNYWBfs_4d613fe7_init_complete_L000003 ' <symbol:init_complete>
+C_tmpfileRYnH5U_4db599ed_init_complete_L000003 ' <symbol:init_complete>
  byte $0
 
 
@@ -5923,114 +4761,98 @@ Catalina_Data
 DAT ' uninitialized data segment
 
  long ' align long
-C_bbos_panic_buf_L000004 ' <symbol:buf>
- byte 0[128]
+C_freefall_message_L000007 ' <symbol:message>
+ byte 0[20]
 
-' Catalina Export bbos_panic
+' Catalina Export freefall
 
 
 DAT ' uninitialized data segment
 
  long ' align long
-C_tmpfileatW53h_4d613fe7_bbos_port_table_L000002 ' <symbol:bbos_port_table>
+C_tmpfileYqvd1f_4db599ed_is_free_fall_L000004 ' <symbol:is_free_fall>
+ byte 0[4]
+
+
+DAT ' uninitialized data segment
+
+
+DAT ' uninitialized data segment
+
+
+DAT ' uninitialized data segment
+
+
+DAT ' uninitialized data segment
+
+
+DAT ' uninitialized data segment
+
+
+DAT ' uninitialized data segment
+
+ long ' align long
+C_h48c_message_L000026 ' <symbol:message>
+ byte 0[20]
+
+' Catalina Export h48c
+
+
+DAT ' uninitialized data segment
+
+ long ' align long
+C_tmpfilejaom7A_4db599ed_h48c_zerog_pin_L000005 ' <symbol:h48c_zerog_pin>
+ byte 0[4]
+
+ long ' align long
+C_tmpfileumFzag_4db599ed_h48c_cs_pin_L000004 ' <symbol:h48c_cs_pin>
+ byte 0[4]
+
+ long ' align long
+C_tmpfileXb0MdV_4db599ed_h48c_clk_pin_L000003 ' <symbol:h48c_clk_pin>
+ byte 0[4]
+
+ long ' align long
+C_tmpfileyXm0gA_4db599ed_h48c_dio_pin_L000002 ' <symbol:h48c_dio_pin>
+ byte 0[4]
+
+
+DAT ' uninitialized data segment
+
+
+DAT ' uninitialized data segment
+
+
+DAT ' uninitialized data segment
+
+
+DAT ' uninitialized data segment
+
+
+DAT ' uninitialized data segment
+
+
+DAT ' uninitialized data segment
+
+
+DAT ' uninitialized data segment
+
+
+DAT ' uninitialized data segment
+
+
+DAT ' uninitialized data segment
+
+ long ' align long
+C_tmpfilegq1bhz_4db599ed_bbos_port_table_L000002 ' <symbol:bbos_port_table>
  byte 0[36]
 
 
 DAT ' uninitialized data segment
 
  long ' align long
-C_tmpfilefQx4hi_4d613fe7_bbos_thread_table_L000002 ' <symbol:bbos_thread_table>
+C_tmpfilewjh7Wz_4db599ed_bbos_thread_table_L000002 ' <symbol:bbos_thread_table>
  byte 0[12]
-
-
-DAT ' uninitialized data segment
-
-
-DAT ' uninitialized data segment
-
- long ' align long
-C_h48c_driver_message_L000026 ' <symbol:message>
- byte 0[20]
-
-' Catalina Export h48c_driver
-
-
-DAT ' uninitialized data segment
-
- long ' align long
-C_tmpfilexgkBAJ_4d613fe7_h48c_zerog_pin_L000005 ' <symbol:h48c_zerog_pin>
- byte 0[4]
-
- long ' align long
-C_tmpfileEaRtnB_4d613fe7_h48c_cs_pin_L000004 ' <symbol:h48c_cs_pin>
- byte 0[4]
-
- long ' align long
-C_tmpfilejSqmat_4d613fe7_h48c_clk_pin_L000003 ' <symbol:h48c_clk_pin>
- byte 0[4]
-
- long ' align long
-C_tmpfileIz6eXk_4d613fe7_h48c_dio_pin_L000002 ' <symbol:h48c_dio_pin>
- byte 0[4]
-
-
-DAT ' uninitialized data segment
-
-
-DAT ' uninitialized data segment
-
-
-DAT ' uninitialized data segment
-
-
-DAT ' uninitialized data segment
-
-
-DAT ' uninitialized data segment
-
-
-DAT ' uninitialized data segment
-
-
-DAT ' uninitialized data segment
-
-
-DAT ' uninitialized data segment
-
- long ' align long
-C_tmpfileFZ1Tdu_4d613fe7_schedule_L000004 ' <symbol:schedule>
- byte 0[6]
-
-
-DAT ' uninitialized data segment
-
-
-DAT ' uninitialized data segment
-
- long ' align long
-C_demo_message_L000007 ' <symbol:message>
- byte 0[20]
-
-' Catalina Export demo
-
-
-DAT ' uninitialized data segment
-
- long ' align long
-C_tmpfileD4mivA_4d613fe7_is_free_fall_L000004 ' <symbol:is_free_fall>
- byte 0[4]
-
-
-DAT ' uninitialized data segment
-
-
-DAT ' uninitialized data segment
-
-
-DAT ' uninitialized data segment
-
-
-DAT ' uninitialized data segment
 
 
 DAT ' uninitialized data segment

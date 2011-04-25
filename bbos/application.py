@@ -37,7 +37,7 @@ class Application(Extension):
 	"""Project configuration includes configuration of board, processor,
 	core, kernel and modules."""
 	# Start to configure project
-	print "Configure application"
+	print "Configuring application"
 	# Create files that have to be generated
 	for fpath in generated_files:
             proj.env[fpath] = os.path.join(proj.compiler.get_output_dir(), fpath)
@@ -65,24 +65,25 @@ class Application(Extension):
 		% (time.asctime(), __copyright__))
 	f.close()
 	# Start to configure board
-	print "Configure board '%s'" % self.board.get_name()
+	print "Configuring board '%s'" % self.board.get_name()
 	self.board.config(self)
 	# Start to configure processor
-	print "Configure processor '%s'" % self.processor.get_name()
+	print "Configuring processor '%s'" % self.processor.get_name()
 	self.processor.config(self)
 	# Start to configure core
-	print "Configure core '%s'" % self.core.get_name()
+	print "Configuring core '%s'" % self.core.get_name()
 	self.core.config(self)
 	# Start to configure process
-	print "Configure process"
+	print "Configuring process"
 	self.kernel.config(self)
 	if self.kernel.get_scheduler():
-	    print "Configure scheduler '%s'" % self.kernel.scheduler.get_name()
+	    print "Configuring scheduler '%s'" % self.kernel.scheduler.get_name()
 	    self.kernel.get_scheduler().config(self)
 	# Start to configure modules
 	for mod in self.kernel.get_modules():
-	    print "Configure module '%s'" % mod.get_name()
+	    print "Configuring module '%s'" % mod.get_name()
 	    mod.config(self)
+            proj.add_source(mod)
 	# Generate the bottom of the bbos.h
 	f = open(proj.env['bbos.h'], 'a')
 	f.write("#endif /* __BBOS_H */\n")

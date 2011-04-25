@@ -1,6 +1,8 @@
 
 __copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
 
+import os
+
 from bbos.kernel.thread import Thread
 from bbos.kernel.module import Module
 
@@ -19,5 +21,7 @@ class H48C(Module):
         return ["H48C_FREE_FALL", "H48C_GFORCE_AOX", 
                 "H48C_GFORCE_AOY", "H48C_GFORCE_AOZ"]
 
-
+    def _attach(self, proj):
+        proj.compiler.add_include_dir(os.path.dirname(__file__))
+        proj.add_sources([os.path.join(os.path.dirname(__file__), "h48c.c")])
 
