@@ -206,10 +206,8 @@ h48c()
       break;
     }
 
-  // Do we need to send a response?
-  //if (message.sender) {
-  bbos_port_send(FREEFALL, &message, H48C);
-  //}
+  // Send the response
+  bbos_port_send(message.owner, &message, H48C);
 }
 
 
