@@ -1,5 +1,5 @@
 /*
- * Mon Apr 25 17:58:35 2011
+ * Thu Apr 28 01:13:32 2011
  *
  * This is BBOS generated source code used for late binding application
  * features just before compile time.
@@ -20,7 +20,6 @@
 #define BBOS_DRIVER_INIT (0)
 #define BBOS_DRIVER_CLOSE (1)
 #define BBOS_DRIVER_OPEN (2)
-/* Scheduling */
 #define bbos_switch_thread()\
 	while(1) {\
 		helloworld();\

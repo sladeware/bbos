@@ -47,7 +47,7 @@ class StaticScheduler(Scheduler):
         return self.order
     # get_order()
 
-    def _attach(self, proj):
+    def on_build(self, proj):
         # Open bbos.h file
         try:
             f = open(proj.env["bbos.h"], "a")

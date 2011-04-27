@@ -30,13 +30,7 @@ class Kernel(Component):
             self.add_messages(messages)
     # __init__()
 
-    def _attach(self, proj):
-        """Generate the source code for the bbos.h header file used to late bind BBOS
-        processes, threads and etc just before building. We need this since the
-        C macro language is seriously underpowered for our purposes."""
-        sources = [os.path.join(os.environ['BBOSHOME'], 'bbos/kernel/system.c'), 
-                   os.path.join(os.environ['BBOSHOME'], 'bbos/kernel/port.c'),
-                   os.path.join(os.environ['BBOSHOME'], 'bbos/kernel/thread.c')]
+    def on_build(self, proj):
         proj.env['bbos.h'] = os.path.join(proj.compiler.get_output_dir(), "bbos.h")
         try:
             f = open(proj.env['bbos.h'], "a")
@@ -76,11 +70,19 @@ class Kernel(Component):
         for message in self.messages.values():
             print "%20s : %4d" % (message.get_name(), next_id)
             f.write("#define %s (%s)\n" % (message.get_name(), next_id))
-            next_id += 1
+            next_id += 1        
+
+    def on_add(self, proj):
+        """Generate the source code for the bbos.h header file used to late bind BBOS
+        processes, threads and etc just before building. We need this since the
+        C macro language is seriously underpowered for our purposes."""
+        sources = [os.path.join(os.environ['BBOSHOME'], 'bbos/kernel/system.c'), 
+                   os.path.join(os.environ['BBOSHOME'], 'bbos/kernel/port.c'),
+                   os.path.join(os.environ['BBOSHOME'], 'bbos/kernel/thread.c')]
+
         if self.get_scheduler():
-            f.write("/* Scheduling */\n")
             sources.append(self.get_scheduler())
-        # Compile
+
         proj.add_sources(sources)
         proj.compiler.add_include_dirs([os.environ['BBOSHOME']])
     # config()

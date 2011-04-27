@@ -8,14 +8,31 @@ from builder.loader import Loader
 from builder.metadata import MetaData
 from builder.errors import *
 
-#def bind_extension(?, extension):
-#    pass
-
 #______________________________________________________________________________
 
 class Extension(MetaData):
     def __init__(self, name=None, version=None):
         MetaData.__init__(self, name, version)
+
+    def on_add(self, project):
+        """This event will be called each time the extension will be added to 
+        the project. Initially it's called from project.add_source() or
+        project.add_extension()."""
+        pass
+
+    def on_remove(self, project):
+        """This event will be called each time the extension will be removed 
+        from the project. Initially it's called from project.remove_source() 
+        or project.remove_extension()."""
+        pass
+
+    def on_build(self, project):
+        """Called each time before the project is going to be built."""
+        pass
+
+    def on_load(self, project):
+        """Called each time before the project os going to be load."""
+        pass
 
     def attach(self, project):
         """A concrete extension class can either override this method
@@ -58,6 +75,7 @@ class Project(MetaData):
 
     def add_extension(self, ext):
         self.extensions.append(ext)
+        ext.on_add(self)
 
     def add_source(self, source):
         """In the case when source is a path, it will be normalized by
@@ -84,9 +102,6 @@ class Project(MetaData):
             raise UnknownLoader
         self.loader = loader
 
-    def rebuild(self):
-        pass
-
     def has_extensions(self):
         return len(self.extensions)
 
@@ -94,14 +109,11 @@ class Project(MetaData):
         self.compiler.set_output_dir(output_dir)
         if sources:
             self.add_sources(sources)
-        # Assembling the project: attach existed extensions
-        if self.has_extensions():
-            print "Assembling project"
-            for extension in self.extensions:
-                print "Attaching extension '%s' version '%s'" % (extension.name, extension.version)
-                extension.attach(self)
         if self.verbose:
             print "Building project '%s' version '%s'" % (self.name, self.version)
+        if self.has_extensions():
+            for extension in self.extensions:
+                extension.on_build(self)
         # Run specific build process
         self._build(output_dir=output_dir, *arg_list, **arg_dict)
         

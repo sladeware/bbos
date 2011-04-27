@@ -33,7 +33,18 @@ class Application(Extension):
 	self.kernel = self.core.get_process()
     # set_board()
 
-    def _attach(self, proj):
+    def on_build(self, proj):
+        pass
+
+    def on_add(self, proj):
+        proj.add_sources([self.kernel])
+
+	for mod in self.kernel.get_modules():
+	    print "Configuring module '%s'" % mod.get_name()
+	    mod.config(self)
+            proj.add_source(mod)
+
+    def on_build(self, proj):
 	"""Project configuration includes configuration of board, processor,
 	core, kernel and modules."""
 	# Start to configure project
@@ -79,17 +90,11 @@ class Application(Extension):
 	if self.kernel.get_scheduler():
 	    print "Configuring scheduler '%s'" % self.kernel.scheduler.get_name()
 	    self.kernel.get_scheduler().config(self)
-	# Start to configure modules
-	for mod in self.kernel.get_modules():
-	    print "Configuring module '%s'" % mod.get_name()
-	    mod.config(self)
-            proj.add_source(mod)
+
 	# Generate the bottom of the bbos.h
 	f = open(proj.env['bbos.h'], 'a')
 	f.write("#endif /* __BBOS_H */\n")
 	f.close()
-
-        proj.add_sources([self.kernel])
 
         # Initialization has been completed
 	self.config_complete = True

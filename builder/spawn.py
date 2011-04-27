@@ -38,7 +38,7 @@ def _spawn_posix(cmd, search_path=True, verbose=False, dry_run=False):
         return
 
     # XXX add debug to arguments
-    debug = False
+    debug = True
 
     exec_fn = search_path and os.execvp or os.execcv
 
