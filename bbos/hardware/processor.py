@@ -10,14 +10,15 @@ __copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
 
 from bbos.component import Component
 from bbos.hardware.core import Core
+from builder.utils.type_util import *
 
 class Processor(Component):
     def __init__(self, name, cores, num_cores=1):
         Component.__init__(self, name)
         self.num_cores = num_cores
         assert len(cores) <= num_cores, "The %s supports up to %d processes. " \
-        "You have too many: %d" % (self.__class__.__name__, num_cores, len(cores))
-        self.cores = cores
+            "You have too many: %d" % (self.__class__.__name__, num_cores, len(cores))
+        self.cores = verify_list(cores)
         for core in self.cores:
             assert isinstance(core, Core), "core is not a Core: %s" % core
 
