@@ -16,6 +16,10 @@ class Loader(object):
     # __init__()
 
     def load(self, *arg_list, **arg_dict):
+        print "Loading"
+        self._load(*arg_list, **arg_dict)
+
+    def _load(self, *arg_list, **arg_dict):
         raise NotImplemented
     # load()
 

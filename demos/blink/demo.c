@@ -6,6 +6,9 @@
 
 #define PIN(i) (1<<(i))
 
+static int mask = PIN(27);
+static int on_off = PIN(27);
+
 void
 wait(int milliseconds)
 {
@@ -14,33 +17,17 @@ wait(int milliseconds)
 
 void blink()
 {
+  _dira(mask, on_off);
+  _outa(mask, on_off);
+  wait(200);
 
+  on_off ^= mask;
 }
 
 void main()
 {
-  static int mask;
-  static int on_off;
-
-	bbos_init();
-
-  // Clear DIRA and OUTA registers
-  _dira(0xFFFFFFFF, 0xFFFFFFFF); // 0-31 GPIO pin
-  _outa(0xFFFFFFFF, 0);
-
-  mask = PIN(27);
-  on_off = mask;
-
-  while (1)
-    {
-      _dira(mask, on_off);
-      _outa(mask, on_off);
-      wait(1000);
-
-      on_off ^= mask;
-    }  
-
-  //bbos_start_thread(HELLOWORLD, helloworld);
+  bbos_init();
+  bbos_start_thread(BLINK, blink);
   bbos_start();
 }
 

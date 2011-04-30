@@ -11,6 +11,7 @@ from bbos.kernel.scheduler import StaticScheduler
 from bbos.hardware.board import Board
 from bbos.hardware.processors import PropellerP8X32A
 from builder.projects import CatalinaProject
+from builder.loaders import BSTLLoader
 
 def main():
     demo = Kernel()
@@ -19,6 +20,7 @@ def main():
     app = Application(board=Board("My board", [PropellerP8X32A([demo])]))
 
     project = CatalinaProject("demo", verbose=True)
+    project.set_loader(BSTLLoader())
     project.compiler.add_library('ci')
 
     try:
@@ -27,6 +29,8 @@ def main():
                       include_dirs=[os.path.abspath(os.path.dirname(__file__))])
     except:
         pass
+
+    project.load()
 
     return 0
 

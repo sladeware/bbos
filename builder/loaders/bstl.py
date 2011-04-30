@@ -20,16 +20,14 @@ class BSTLLoader(Loader):
     def __init__(self, verbose=False):
         Loader.__init__(self, verbose)
         self.device = None
-        self.mode = None
-    # __init__()
+        self.mode = 1
         
-    def load(self, filename, device=None):
+    def _load(self, filename, device=None, mode=1):
         loader = self.executables['loader']
         try:
             spawn(loader + [filename],
                   verbose=self.verbose)
         except BuilderExecutionError, msg:
             raise LoaderError, msg
-    # load()
-        
-# class BSTLLoader
+
+
