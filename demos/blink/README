@@ -1,0 +1,6 @@
+
+Please, edit demo.c file and define macro LED.
+
+To run the demo do as follows:
+
+   $ python ../../scripts/bbos.py demo.py
