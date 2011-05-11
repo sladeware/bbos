@@ -35,6 +35,7 @@ def touch(py_path):
     try:
         application_entry()
     except:
+        traceback.print_exc(file=sys.stderr)
         raise
 
 def main(argv=None):

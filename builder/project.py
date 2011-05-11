@@ -57,21 +57,22 @@ class Extension(MetaData):
 #______________________________________________________________________________
 
 class Project(MetaData):
-    def __init__(self, 
-                 name, sources=[], version=None, verbose=False):
+    def __init__(self, name, sources=[], version=None, verbose=False, 
+                 compiler=None, loader=None):
         MetaData.__init__(self, name, version)
         self.verbose = verbose
         self.sources = []
         self.extensions = []
-        self.add_sources(sources)
-        self.compiler = None
-        self.loader = None
+        self.compiler = compiler
+        self.loader = loader
         # A mapping object representing the string environment.
-        self.env = {}
-        # XXX Hmmm.... so what about os.name?
-        self.host_os = platform.system()
-        self.host_processor = platform.processor()
-        self.host_arch = platform.machine()
+        self.env = {
+            'HOST_OS': platform.system(), # XXX Hmmm.... so what about os.name?
+            'HOST_PROCESSOR': platform.processor(),
+            'HOST_ARCH': platform.machine(),
+            }
+        # ! The sources must be added at the end of initialization
+        self.add_sources(sources)
 
     def add_extension(self, ext):
         self.extensions.append(ext)
@@ -105,12 +106,19 @@ class Project(MetaData):
     def has_extensions(self):
         return len(self.extensions)
 
-    def build(self, sources=[], output_dir=None, *arg_list, **arg_dict):
-        self.compiler.set_output_dir(output_dir)
+    def build(self, sources=[], output_dir=None, verbose=None, dry_run=None, 
+              *arg_list, **arg_dict):
+        if verbose is not None:
+            self.verbose = verbose
         if sources:
             self.add_sources(sources)
         if self.verbose:
             print "Building project '%s' version '%s'" % (self.name, self.version)
+        self.compiler.set_output_dir(output_dir)
+        # Dry run
+        if dry_run is not None:
+            self.compiler.dry_run = dry_run
+        # Prepare extensions
         if self.has_extensions():
             for extension in self.extensions:
                 extension.on_build(self)
