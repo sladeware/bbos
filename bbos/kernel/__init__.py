@@ -13,6 +13,12 @@ from bbos.component import Component
 
 _default_messages = ["BBOS_DRIVER_INIT", "BBOS_DRIVER_OPEN", "BBOS_DRIVER_CLOSE"]
 
+class KernelError(Exception):
+    pass
+
+class NoThreads(KernelError):
+    pass
+
 #______________________________________________________________________________
 
 class Kernel(Component):
@@ -32,7 +38,6 @@ class Kernel(Component):
 
     def on_build(self, proj):
         print "Configuring kernel"
-        proj.env['bbos.h'] = os.path.join(proj.compiler.get_output_dir(), "bbos.h")
         try:
             f = open(proj.env['bbos.h'], "a")
         except IOError:
@@ -40,6 +45,9 @@ class Kernel(Component):
             traceback.print_exc(file=sys.stderr)
             raise
         # Threads
+        if self.get_number_of_threads() == 0:
+            raise NoThreads, "At least one thread has to be created"
+
         print "Number of threads: %d" % self.get_number_of_threads()
         f.write("/* Threads */\n")
         f.write("#define BBOS_NUMBER_OF_THREADS (%d)\n" 
@@ -85,7 +93,6 @@ class Kernel(Component):
             sources.append(self.get_scheduler())
 
         proj.add_sources(sources)
-        proj.compiler.add_include_dirs([os.environ['BBOSHOME']])
     # config()
 
     def get_number_of_threads(self):

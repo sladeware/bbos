@@ -14,3 +14,5 @@ class Hardware(Component):
     def on_build(self, project):
         print "Configuring hardware"
         project.add_source(self.board)
+        project.add_source(self.processor)
+        project.add_source(self.core)

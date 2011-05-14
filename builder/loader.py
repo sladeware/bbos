@@ -13,7 +13,6 @@ class Loader(object):
 
     def __init__(self, verbose=False):
         self.verbose = verbose
-    # __init__()
 
     def load(self, *arg_list, **arg_dict):
         print "Loading"
@@ -21,5 +20,4 @@ class Loader(object):
 
     def _load(self, *arg_list, **arg_dict):
         raise NotImplemented
-    # load()
 

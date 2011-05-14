@@ -34,6 +34,6 @@ class CatalinaProject(CProject):
                 "produced" % self.output_filename
     # _build()
         
-    def load(self):
-        self.loader.load(self.output_filename)
+    def load(self, *arg_list, **arg_dict):
+        self.loader.load(self.output_filename, *arg_list, **arg_dict)
     # load()

@@ -69,3 +69,5 @@ class Processor(Component):
             processes.append(core.get_process())
         return processes
 
+    def on_build(self, project):
+        print "'%s' processor" % self.get_name()

@@ -93,6 +93,15 @@ class Project(MetaData):
         for source in sources:
             self.add_source(source)
 
+    def get_sources(self):
+        return self.sources
+
+    def get_fixed_sources(self):
+        sources = []
+        for source in self.get_sources():
+            sources.append(os.path.abspath(source))
+        return sources
+
     def set_compiler(self, compiler):
         if not isinstance(compiler, Compiler):
             raise UnknownCompiler
@@ -123,12 +132,13 @@ class Project(MetaData):
             for extension in self.extensions:
                 extension.on_build(self)
         # Run specific build process
-        self._build(output_dir=output_dir, *arg_list, **arg_dict)
+        assert len(self.get_fixed_sources()), "Nothing to build"
+        self._build(sources=self.get_fixed_sources(), *arg_list, **arg_dict)
         
     def _build(self, *arg_list, **arg_dict):
         raise NotImplemented
 
-    def load(self):
+    def load(self, *arg_list, **arg_dict):
         raise NotImplemented
 
 

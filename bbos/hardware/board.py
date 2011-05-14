@@ -72,3 +72,6 @@ class Board(Component):
         for processor in self.processors:
             processes += processor.get_processes()
         return processes
+
+    def on_build(self, project):
+        print "'%s' board" % self.get_name()

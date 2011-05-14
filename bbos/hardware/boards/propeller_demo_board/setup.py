@@ -18,5 +18,3 @@ class PropellerDemoBoard(Board):
         processors = [PropellerP8X32A(processes)]
         Board.__init__(self, "Propeller Demo Board", 1, processors)
 
-    def on_build(self, project):
-        pass

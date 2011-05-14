@@ -16,17 +16,13 @@ class CProject(Project):
         if not self.compiler:
             self.compiler = new_ccompiler()
 
-    def _build(self, sources=None, output_dir=None, include_dirs=[], macros=[], 
+    def _build(self, sources, include_dirs=[], macros=[], 
                libraries=[], library_dirs=[], dry_run=False):
+        self.output_filename = os.path.join(self.compiler.get_output_dir(), self.get_name())
 
-        assert len(self.sources), "Nothing to build"
-
-        self.output_filename = os.path.join(output_dir, self.get_name())
-
-        built_objects = self.compiler.compile(self.sources, 
+        built_objects = self.compiler.compile(sources, 
                                               include_dirs=include_dirs,
-                                              macros=macros,
-                                              output_dir=output_dir)
+                                              macros=macros)
         self.compiler.link(built_objects, self.output_filename, 
                            libraries=libraries,
                            library_dirs=library_dirs)

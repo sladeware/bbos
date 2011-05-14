@@ -1,5 +1,6 @@
 
-import os, re, sys
+import os, re, sys, string
+import os.path
 from types import *
 
 from builder.compiler import Compiler
@@ -157,13 +158,15 @@ class CCompiler(Compiler):
         else:
             raise TypeError
 
+    def get_include_dirs(self):
+        return self.include_dirs
+
     def add_include_dir(self, dir):
         """Add 'dir' to the list of directories that will be searched for
         header files. The compiler is instructed to search directories in
         the order in which they are supplied by successive calls to
         'add_include_dir()'."""
         self.include_dirs.append(dir)
-    # add_include_dir()
 
     def add_library(self, library_name):
         """Add 'library_name' to the list of libraries that will be included in
@@ -440,7 +443,7 @@ class CCompiler(Compiler):
     # _setup_compile()
 
     def link(self, objects, output_filename, *list_args, **dict_args):
-        print "Linking executable:", output_filename
+        print "Linking executable:", os.path.relpath(output_filename, self.output_dir)
         self._link(objects, output_filename, *list_args, **dict_args)
 
     def _link(self, objects, output_filename, output_dir=None, debug=False, 

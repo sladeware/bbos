@@ -25,7 +25,7 @@ class BSTLLoader(Loader):
     def _load(self, filename, device=None, mode=1):
         loader = self.executables['loader']
         try:
-            spawn(loader + [filename],
+            spawn(loader + ['-d', device] + [filename],
                   verbose=self.verbose)
         except BuilderExecutionError, msg:
             raise LoaderError, msg
