@@ -15,4 +15,4 @@ class BBOS(Component):
         pass
 
     def on_add(self, project):
-        project.add_source(self.kernel)
+        project.add_sources([self.hardware, self.kernel])

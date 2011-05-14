@@ -12,10 +12,10 @@ class PropellerP8X32A(Processor):
     eight cogs (a.k.a BBOS cores). Its system clock runs up to 80MHz.
     The processor contains 32K RAM and 32K ROM globally that all cogs
     share using a multiplexed system bus. There are 32 IO pins."""
-    def __init__(self, processes):
+    def __init__(self, processes=[]):
         verify_list(processes)
         cores = []
         for process in processes:
             cores.append(PropellerCog(process))
-        Processor.__init__(self, "Propeller P8X32A", cores, num_cores=8)
+        Processor.__init__(self, "Propeller P8X32A", 8, cores)
 

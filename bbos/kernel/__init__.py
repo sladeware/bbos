@@ -31,6 +31,7 @@ class Kernel(Component):
     # __init__()
 
     def on_build(self, proj):
+        print "Configuring kernel"
         proj.env['bbos.h'] = os.path.join(proj.compiler.get_output_dir(), "bbos.h")
         try:
             f = open(proj.env['bbos.h'], "a")
@@ -39,7 +40,7 @@ class Kernel(Component):
             traceback.print_exc(file=sys.stderr)
             raise
         # Threads
-        print "Process %d thread(s)" % self.get_number_of_threads()
+        print "Number of threads: %d" % self.get_number_of_threads()
         f.write("/* Threads */\n")
         f.write("#define BBOS_NUMBER_OF_THREADS (%d)\n" 
                 % self.get_number_of_threads())
@@ -63,7 +64,7 @@ class Kernel(Component):
                 entries[thread.get_alias()] = thread
             next_id += 1
         # Messages
-        print "Process %d message(s)" % self.get_number_of_messages()
+        print "Number of messages: %d" % self.get_number_of_messages()
         f.write("/* Messages */\n")
         f.write("#define BBOS_NUMBER_OF_MESSAGES (%d)\n" % self.get_number_of_messages())
         next_id = 0

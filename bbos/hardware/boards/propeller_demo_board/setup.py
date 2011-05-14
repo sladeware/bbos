@@ -16,5 +16,7 @@ class PropellerDemoBoard(Board):
     It has a 5.000MHz replacable crystal oscillator."""
     def __init__(self, processes):
         processors = [PropellerP8X32A(processes)]
-        Board.__init__(self, "Propeller Demo Board", processors)
+        Board.__init__(self, "Propeller Demo Board", 1, processors)
 
+    def on_build(self, project):
+        pass
