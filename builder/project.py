@@ -5,14 +5,14 @@ from types import *
 
 from builder.compiler import Compiler
 from builder.loader import Loader
-from builder.metadata import MetaData
+from builder.metadata import Metadata
 from builder.errors import *
 
 #______________________________________________________________________________
 
-class Extension(MetaData):
+class Extension(Metadata):
     def __init__(self, name=None, version=None):
-        MetaData.__init__(self, name, version)
+        Metadata.__init__(self, name, version)
 
     def on_add(self, project):
         """This event will be called each time the extension will be added to 
@@ -56,10 +56,10 @@ class Extension(MetaData):
 
 #______________________________________________________________________________
 
-class Project(MetaData):
+class Project(Metadata):
     def __init__(self, name, sources=[], version=None, verbose=False, 
                  compiler=None, loader=None):
-        MetaData.__init__(self, name, version)
+        Metadata.__init__(self, name, version)
         self.verbose = verbose
         self.sources = []
         self.extensions = []
@@ -123,7 +123,8 @@ class Project(MetaData):
             self.add_sources(sources)
         if self.verbose:
             print "Building project '%s' version '%s'" % (self.name, self.version)
-        self.compiler.set_output_dir(output_dir)
+        if output_dir:
+            self.compiler.set_output_dir(output_dir)
         # Dry run
         if dry_run is not None:
             self.compiler.dry_run = dry_run

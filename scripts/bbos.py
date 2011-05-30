@@ -8,11 +8,12 @@ import hashlib
 import imp
 import traceback
 
+SCRIPT_DIR = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
+
 # Setup the path properly for bbos builder imports
 if not os.environ.has_key('BBOSHOME'):
-    path = os.path.abspath(os.path.dirname(sys.argv[0])) + "/.."
-    sys.path.insert(0, path)
-    os.environ['BBOSHOME'] = path
+    os.environ['BBOSHOME'] = os.path.join(SCRIPT_DIR, "..")
+    sys.path = [os.environ["BBOSHOME"]] + sys.path
 else:
     sys.path.insert(0, os.environ['BBOSHOME'])
 
@@ -27,13 +28,6 @@ USAGE: bbos.py [OPTIONS] [FILES]
 def touch(py_path):
     try:
         application = imp.load_source(hashlib.md5(py_path).hexdigest(), py_path)
-    except ImportError:
-        traceback.print_exc(file=sys.stderr)
-        raise
-    application_entry = application.main
-    assert application_entry, "You must define main() in your application"
-    try:
-        application_entry()
     except:
         traceback.print_exc(file=sys.stderr)
         raise
