@@ -10,14 +10,22 @@ import hashlib
 import imp
 import traceback
 
+if not hasattr(sys, 'version_info'):
+    sys.stderr.write('Very old versions of Python are not supported. Please '
+                     'use version 2.5 or greater.\n')
+    sys.exit(1)
+version_tuple = tuple(sys.version_info[:2])
+if version_tuple < (2, 4):
+    sys.stderr.write('Error: Python %d.%d is not supported. Please use '
+                     'version 2.5 or greater.\n' % version_tuple)
+    sys.exit(1)
+
 SCRIPT_DIR = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 
 # Setup the path properly for bb platform imports
 if not os.environ.has_key('BBHOME'):
     os.environ['BBHOME'] = os.path.join(SCRIPT_DIR, "..")
-    sys.path = [os.environ["BBHOME"]] + sys.path
-else:
-    sys.path.insert(0, os.environ['BBHOME'])
+sys.path = [os.environ["BBHOME"]] + sys.path
 
 def usage():
     print'''Welcome to the Bionic Bunny platform!
