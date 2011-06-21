@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+
+"""BBOS kernel."""
 
 __copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
 
@@ -10,7 +13,9 @@ from types import *
 
 class KernelError(Exception):
     """The root error."""
-    pass
+
+class KernelTypeError(Exception):
+    """Type error."""
 
 class KernelModuleError(KernelError):
     """Unable to load an expected module."""
@@ -36,17 +41,20 @@ class Command(object):
     def get_doc(cls):
         return cls.__doc__
 
+#______________________________________________________________________________
+
 class BBOS_DRIVER_OPEN(Command):
-    """Command to driver to open target device."""
+    """Driver Command to open target device."""
 
 class BBOS_DRIVER_CLOSE(Command):
-    """Command to driver to close target device."""
+    """Driver command to close target device."""
 
-default_commands = [BBOS_DRIVER_OPEN, BBOS_DRIVER_CLOSE]
+DEFAULT_COMMANDS = [BBOS_DRIVER_OPEN, BBOS_DRIVER_CLOSE]
 
 #______________________________________________________________________________
 
 class Message:
+    """A message passed between threads."""
     def __init__(self, sender, command, data):
         self.set_command(command)
         self.set_sender(sender)
@@ -54,7 +62,8 @@ class Message:
 
     def set_command(self, command):
         if not isinstance(command, Command):
-            raise KernelError("Command '%s' has to inherit from bb.os.kernel.Command class." % command)
+            raise KernelTypeError('Command "%s" must be bb.os.kernel.Command '
+                                  'sub-class.' % command)
         self.__command = command
 
     def get_command(self):
@@ -99,7 +108,8 @@ class Thread:
 
     def put_message(self, message):
         if not isinstance(message, Message):
-            raise KernelError("Message '%s' has to inherit from bb.os.kernel.Message class" % message)
+            raise KernelTypeError('Message "%s" must be bb.os.kernel.Message '
+                                  'sub-class' % message)
         self.messages.append(message)
 
     def get_message(self):
@@ -152,55 +162,74 @@ class Scheduler:
 
 #______________________________________________________________________________
 
+class Module(Thread):
+    pass
+
+#______________________________________________________________________________
+
+from bb.os.hardware import Hardware
+
 class Kernel:
     def __init__(self, threads=[], commands=[]):
+        print self.banner()
         print "Initialize kernel"
-        self.threads = {}
-        self.commands = {}
-        self.scheduler = None
-        self.modules = {}
-        self.add_commands(default_commands)
+        self.__hardware = Hardware()
+        self.__threads = {}
+        self.__commands = {}
+        self.__scheduler = None
+        self.__modules = {}
+        self.add_commands(DEFAULT_COMMANDS)
         if len(threads):
             self.add_threads(threads)
         if len(commands):
             self.add_commands(commands)
 
+    def banner(self):
+        return "BBOS Kernel v"
+
+    # Hardware Management
+
+    def get_hardware(self):
+        return self.__hardware
+
     # Thread Management
 
     def get_thread(self, thread):
-        """Test for presence of thread and return thread's object."""
-        if not self.has_thread(thread):
-            return None
-        if type(thread) == StringType:
-            return self.threads[thread]
-        elif type(thread) == InstanceType:
-            return thread
+        """Test for presence of thread and return thread's object. Return 
+        None if kernel does have such thread."""
+        if type(thread) is StringType:
+            if thread in self.__threads:
+                return self.__threads[thread]
+        elif isinstance(thread, Thread):
+            if thread.get_name() in self.__threads:
+                return thread
+        else:
+            raise KernelTypeError('Thread "%s" must be bb.os.kernel.Thread '
+                                  'sub-class' % thread)
+        return None
 
     def has_thread(self, thread):
         """Test for presence of thread in the kernel's list of threads."""
-        if type(thread) == StringType:
-            return thread in self.threads
-        if not isinstance(thread, Thread):
-            raise KernelError("Thread '%s' should inherit from bb.os.kernel.Thread class" % thread)
-        return thread.get_name() in self.threads
+        return not self.get_thread(thread) is None
 
     def remove_thread(self, thread):
-        raise NotImplemented
+        raise NotImplemented()
 
     def add_thread(self, *arg_list):
+        """Add a new thread to the kernel."""
         if not len(arg_list):
-            raise NotImplemented
+            raise NotImplemented()
         thread = self.get_thread(arg_list[0])
         if thread:
             raise KernelError("Thread '%s' has been already added" % thread.get_name())
-        if type(arg_list[0]) == StringType:
+        if type(arg_list[0]) is StringType:
             thread = Thread(*arg_list)
         else:
             thread = arg_list[0]
         print "Add thread '%s'" % thread.get_name()
-        self.threads[ thread.get_name() ] = thread
+        self.__threads[ thread.get_name() ] = thread
         if self.get_scheduler():
-            self.scheduler.enqueue(thread)
+            self.__scheduler.enqueue(thread)
         return thread
 
     def add_threads(self, threads):
@@ -208,7 +237,7 @@ class Kernel:
             self.add_thread(thread)
 
     def get_threads(self):
-        return self.threads.values()
+        return self.__threads.values()
 
     def get_number_of_threads(self):
         return len(self.get_threads())
@@ -217,25 +246,27 @@ class Kernel:
 
     def set_scheduler(self, scheduler):
         if not isinstance(scheduler, Scheduler):
-            raise KernelError("Scheduler '%s' has to inherit from bb.os.kernel.Scheduler class" % scheduler)
-        self.scheduler = scheduler
+            raise KernelTypeError('Scheduler "%s" must be bb.os.kernel.Scheduler '
+                                  'sub-class' % scheduler)
+        self.__scheduler = scheduler
         self.add_thread(Idle())
 
     def get_scheduler(self):
-        return self.scheduler
+        return self.__scheduler
 
     def has_scheduler(self):
         return not self.get_scheduler() is None
 
     def switch_thread(self):
-        thread = self.get_thread(self.scheduler.get_next_thread())
+        thread = self.get_thread(self.get_scheduler().get_next_thread())
         thread.start()
 
     # Inter-Thread Communication (ITC)
 
     def send_message(self, receiver, message):
         if not isinstance(message, Message):
-            raise KernelError("Message '%s' has to inherit from bb.os.kernel.Message class" % message)
+            raise KernelTypeError('Message "%s" must be bb.os.kernel.Message '
+                                  'sub-class' % message)
         receiver = self.get_thread(receiver)
         receiver.put_message(message)
 
@@ -253,15 +284,15 @@ class Kernel:
         return len(self.get_commands())
 
     def get_commands(self):
-        return self.commands.values()
+        return self.__commands.values()
 
     def get_command(self, command):
         if not self.has_command(command):
             return None
         if type(command) == StringType:
-            return self.commands[command]
+            return self.__commands[command]
         elif type(command) == InstanceType:
-            return self.commands[ command.get_name() ]
+            return self.__commands[ command.get_name() ]
 
     def add_commands(self, commands):
         for command in commands:
@@ -269,16 +300,17 @@ class Kernel:
 
     def has_command(self, command):
         if type(command) == StringType:
-            return command in self.commands
+            return command in self.__commands
         if type(command) != TypeType or not issubclass(command, Command):
-            raise KernelError("Command '%s' has to inherit from bb.os.kernel.Command class." % command)
-        return command.get_name() in self.commands
+            raise KernelTypeError('Command "%s" must be bb.os.kernel.Command '
+                                  'sub-class' % command)
+        return command.get_name() in self.__commands
 
     def add_command(self, command):
         if self.has_command(command):
             raise KernelError("Command '%s' has been already added" % 
                               command.get_name())
-        self.commands[ command.get_name() ] = command
+        self.__commands[ command.get_name() ] = command
         return command
 
     # Module Management
@@ -297,11 +329,11 @@ class Kernel:
             raise KernelModuleError("Module '%s' should have class '%s'" % 
                                     mod_path, mod_class_name)
         mod_inst = mod_class()
-        self.modules[mod_path] = mod_inst
+        self.__modules[mod_path] = mod_inst
         return mod_inst
 
     def get_modules(self):
-        return self.modules.values()
+        return self.__modules.values()
 
     def get_module(self, mod_path):
         raise NotImplemented
@@ -318,13 +350,17 @@ class Kernel:
     def start(self):
         self.test()
         print "Start kernel"
-        if self.has_scheduler():
-            while True:
-                self.get_scheduler().move()
-                self.switch_thread()
+        try:
+            if self.has_scheduler():
+                while True:
+                    self.get_scheduler().move()
+                    self.switch_thread()
+        except KeyboardInterrupt:
+            self.stop()
 
     def stop(self):
-        raise NotImplemented
+        """Shutdown everything and perform a clean system stop."""
+        print "Kernel stoped."
 
     def panic(self, text):
         """Halt the system. Display a message, then perform cleanups with exit."""
