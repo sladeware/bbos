@@ -170,7 +170,12 @@ class Module(Thread):
 from bb.os.hardware import Hardware
 
 class Kernel:
-    def __init__(self, threads=[], commands=[]):
+    def __init__(self, *arg_list, **arg_dict):
+        self.init(*arg_list, **arg_dict)
+
+    # System Management
+
+    def init(self, threads=[], commands=[]):
         print self.banner()
         print "Initialize kernel"
         self.__hardware = Hardware()
@@ -178,14 +183,42 @@ class Kernel:
         self.__commands = {}
         self.__scheduler = None
         self.__modules = {}
+        self.__status = None
         self.add_commands(DEFAULT_COMMANDS)
         if len(threads):
             self.add_threads(threads)
         if len(commands):
             self.add_commands(commands)
 
+    def get_status(self):
+        return self.__status
+
+    def test(self):
+        if not self.get_number_of_threads():
+            raise KernelError("At least one thread has to be added")
+
+    def start(self):
+        self.test()
+        print "Start kernel"
+        try:
+            if self.has_scheduler():
+                while True:
+                    self.get_scheduler().move()
+                    self.switch_thread()
+        except KeyboardInterrupt:
+            self.stop()
+
+    def stop(self):
+        """Shutdown everything and perform a clean system stop."""
+        print "Kernel stoped."
+
+    def panic(self, text):
+        """Halt the system. Display a message, then perform cleanups with exit."""
+        print "Panic: %s" % text
+        exit()
+
     def banner(self):
-        return "BBOS Kernel v"
+        return "BBOS Kernel vALPHA"
 
     # Hardware Management
 
@@ -340,30 +373,4 @@ class Kernel:
 
     def remove_module(self, mod_path):
         raise NotImplemented
-
-    # System Management
-
-    def test(self):
-        if not self.get_number_of_threads():
-            raise NoThreads("At least one thread has to be added")
-
-    def start(self):
-        self.test()
-        print "Start kernel"
-        try:
-            if self.has_scheduler():
-                while True:
-                    self.get_scheduler().move()
-                    self.switch_thread()
-        except KeyboardInterrupt:
-            self.stop()
-
-    def stop(self):
-        """Shutdown everything and perform a clean system stop."""
-        print "Kernel stoped."
-
-    def panic(self, text):
-        """Halt the system. Display a message, then perform cleanups with exit."""
-        print "Panic: %s" % text
-        exit()
 
