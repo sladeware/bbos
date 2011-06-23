@@ -1,6 +1,11 @@
 
 import time
 
+import sys
+
+#print sys.path
+#exit()
+
 from bb.os.kernel import Kernel, Thread
 from bb.os.kernel.schedulers import StaticScheduler
 

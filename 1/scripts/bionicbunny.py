@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 __copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
 
@@ -10,22 +10,9 @@ import hashlib
 import imp
 import traceback
 
-if not hasattr(sys, 'version_info'):
-    sys.stderr.write('Very old versions of Python are not supported. Please '
-                     'use version 2.5 or greater.\n')
-    sys.exit(1)
-version_tuple = tuple(sys.version_info[:2])
-if version_tuple < (2, 4):
-    sys.stderr.write('Error: Python %d.%d is not supported. Please use '
-                     'version 2.5 or greater.\n' % version_tuple)
-    sys.exit(1)
+import bbenv
 
-SCRIPT_DIR = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
-
-# Setup the path properly for bb platform imports
-if not os.environ.has_key('BBHOME'):
-    os.environ['BBHOME'] = os.path.join(SCRIPT_DIR, "..")
-sys.path = [os.environ["BBHOME"]] + sys.path
+#_______________________________________________________________________________
 
 def usage():
     print'''Welcome to the Bionic Bunny platform!
@@ -35,12 +22,23 @@ USAGE: bb.py [OPTIONS] [FILES]
 -h, --help  : print this help message
 '''
 
-def touch(py_path):
+def touch(target_file):
+    """Execute the file at the specified path. 
+
+    When we use Python directly it automatically adds the directory containing 
+    the script that was used to invoke the Python interpreter to the search 
+    path for modules. Therefore we will compensate this and for each target_file
+    on the time when it's running its directory will be added to the search 
+    path."""
+    target_dir = os.path.abspath(os.path.dirname(os.path.realpath(target_file)))
+    sys.path = [target_dir] + sys.path
     try:
-        application = imp.load_source(hashlib.md5(py_path).hexdigest(), py_path)
+        imp.load_source(hashlib.md5(target_file).hexdigest(), target_file)
     except:
         traceback.print_exc(file=sys.stderr)
         raise
+    # Sefely remove target_dir from the search path
+    sys.path.remove(target_dir)
 
 def main(argv=None):
     if argv is None:
@@ -57,8 +55,8 @@ def main(argv=None):
                 usage()
             else:
                 raise Exception("Unhandled argument")
-        for application in args:
-            touch(application)
+        for target_file in args:
+            touch(target_file)
     except Exception, err:
         print >>sys.stderr, err
         print >>sys.stderr, "for help use --help"
