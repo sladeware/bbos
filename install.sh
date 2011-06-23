@@ -1,7 +1,8 @@
 #!/bin/sh
 
-SCRIPT=$(readlink -f $0)
-SCRIPTS_DIR=`dirname $SCRIPT`
+ROOT=$(readlink -f $0)
+ROOT_DIR=`dirname $ROOT`
 
-ln -vs "$SCRIPTS_DIR/bionicbunny.py" /usr/bin/bb
+rm /usr/bin/bb
+ln -vs "$ROOT_DIR/tools/scripts/bbtouch.py" /usr/bin/bb
 
