@@ -1,0 +1,13 @@
+Bionic Bunny Project version alpha 1
+====================================
+
+Copyright (c) 2011 Slade Maurer, Alexander Sviridenko
+
+Installation
+------------
+
+Copy the latest version of BB platform to the place where it will live
+(e.g. /opt/bbproject/). Go to this directory and run install.sh script
+from the root as follows:
+
+$ sudo install.sh
