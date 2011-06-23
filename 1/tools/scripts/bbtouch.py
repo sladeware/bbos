@@ -17,7 +17,7 @@ import bbenv
 def usage():
     print'''Welcome to the Bionic Bunny platform!
 
-USAGE: bb.py [OPTIONS] [FILES]
+USAGE: bbtouch [OPTIONS] [FILES]
 
 -h, --help  : print this help message
 '''
