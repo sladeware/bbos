@@ -1,10 +1,6 @@
 
 import time
-
 import sys
-
-#print sys.path
-#exit()
 
 from bb.os.kernel import Kernel, Thread
 from bb.os.kernel.schedulers import StaticScheduler
@@ -19,6 +15,6 @@ blinker = Kernel()
 blinker.set_scheduler(StaticScheduler())
 blinker.add_thread("BLINK", blink_runner)
 
-blinker.start()
+
 
 

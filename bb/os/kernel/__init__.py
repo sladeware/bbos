@@ -8,6 +8,7 @@ import sys
 import traceback
 from types import *
 
+
 #______________________________________________________________________________
 # Kernel exceptions
 
@@ -166,8 +167,6 @@ class Module(Thread):
     pass
 
 #______________________________________________________________________________
-
-from bb.os.hardware import Hardware
 
 class Kernel:
     def __init__(self, *arg_list, **arg_dict):
@@ -374,3 +373,42 @@ class Kernel:
     def remove_module(self, mod_path):
         raise NotImplemented
 
+#______________________________________________________________________________
+
+from bb.os.hardware import Core
+
+class Hardware(object):
+    """This class represents interface between kernel and hardware abstraction.
+    """
+    def __init__(self):
+        self.__core = None
+        self.__drivers = {}
+
+    def set_core(self, core):
+        if not isinstance(core, Core):
+            raise TypeError('Core must be bb.os.hardware.Core sub-class')
+        self.__core = core
+
+    def get_core(self):
+        return self.__core
+
+    def add_driver(self, driver):
+        if not isinstance(driver, Driver):
+            raise TypeError('Driver must be bb.os.hardware.Driver sub-class')
+        self.__drivers[ driver.get_name() ] = driver
+
+    def has_driver(self, *arg_list):
+        if type(arg_list[0]) is types.StringType:
+            return not self.find_driver(arg_list[0]) is None
+        elif isinstance(arg_list[0], Driver):
+            return not self.find_driver(arg_list[0].get_name()) is None
+
+    def find_driver(self, name):
+        if not type(name) is types.StringType:
+            raise TypeError("Driver name must be a string")
+        if name in self.__drivers:
+            return self.__drivers[name]
+        return None
+
+    def remove_driver(self, *arg_list):
+        raise NotImplemented()
