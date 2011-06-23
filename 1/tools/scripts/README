@@ -1,4 +1,5 @@
 This directory contains a collection of executable scripts that
 are useful while building, extending or managing BB platform.
 
-bbenv.py Fix environment pathes
+bbenv.py   Fix environment pathes
+bbtouch.py Run scripts
