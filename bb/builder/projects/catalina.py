@@ -13,8 +13,7 @@ class CatalinaProject(CProject):
     """This type of project is working with Catalina compiler 
     (see builder.compilers.catalina.CatalinaCompiler)."""
     def __init__(self, *arglist, **argdict):
-        CProject.__init__(self, *arglist, **argdict)
-        self.compiler = CatalinaCompiler()
+        CProject.__init__(self, compiler=CatalinaCompiler(), *arglist, **argdict)
 
     def _build(self, sources=None, output_dir=None, include_dirs=[], macros=[], 
                libraries=[], library_dirs=[]):

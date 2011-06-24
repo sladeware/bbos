@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+
+__copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
 
 import os
 import platform
@@ -10,49 +13,63 @@ from bb.builder.errors import *
 
 #______________________________________________________________________________
 
-class Extension(DistributionMetadata):
-    def __init__(self, name=None, version=None):
-        DistributionMetadata.__init__(self, name, version)
-
+class Extension(object):
+    """Interface!"""
     def on_add(self, project):
         """This event will be called each time the extension will be added to 
         the project. Initially it's called from project.add_source() or
         project.add_extension()."""
-        pass
+        raise NotImplementedError
 
     def on_remove(self, project):
         """This event will be called each time the extension will be removed 
         from the project. Initially it's called from project.remove_source() 
         or project.remove_extension()."""
-        pass
+        raise NotImplementedError
 
     def on_build(self, project):
         """Called each time before the project is going to be built."""
-        pass
+        raise NotImplementedError
 
     def on_load(self, project):
         """Called each time before the project os going to be load."""
-        pass
+        raise NotImplementedError
 
-    def attach(self, project):
-        """A concrete extension class can either override this method
-        entirely or implement _attach(), which is more secure."""
-        if not isinstance(project, Project):
-            raise Exception
-        self._attach(project)
+#______________________________________________________________________________
 
-    def _attach(self, project):
-        raise NotImplemented
+_wrappers = {}
 
-    def detach(self, project):
-        """A concrete extension class can either override this method
-        entirely or implment _detach(), which is more secure."""
-        if not isinstance(project, Project):
-            raise Exception
-        self._detach(project)
+def get_wrapper(klass):
+    if not klass.__name__ in _wrappers:
+        return None
+    return _wrappers[klass.__name__]
 
-    def _detach(self, project):
-        raise NotImplemented
+def wrap(obj):
+    wrapper = get_wrapper(obj.__class__)
+    if not wrapper:
+        return None
+    return wrapper(obj)
+
+class Wrapper(Extension):
+    """Interface!"""
+    _MAPPING = {}
+
+    def __init__(self, target):
+        Extension.__init__(self)
+        for (event, action) in self._MAPPING.items():
+            method = MethodType(action, target)
+            setattr(self, event, method)
+
+    @classmethod
+    def bind(_, event, klass):
+        def decorate(action):
+            target_klass = klass
+            if not isinstance(target_klass, Extension):
+                target_klass = type('_' + klass.__name__, (Wrapper,), dict())
+                _wrappers[klass.__name__] = target_klass
+                target_klass._MAPPING[event] = action
+            return action
+        return decorate
 
 #______________________________________________________________________________
 
@@ -76,16 +93,27 @@ class Project(DistributionMetadata):
 
     def add_extension(self, ext):
         self.extensions.append(ext)
-        ext.on_add(self)
+        try:
+            ext.on_add(self)
+        except NotImplementedError:
+            pass
 
     def add_source(self, source):
         """In the case when source is a path, it will be normalized by
         using os.path.abspath()."""
         if source:
-            if isinstance(source, Extension):
-                return self.add_extension(source)
-            source = os.path.abspath(source)
-            self.sources.append(source)
+            if type(source) is InstanceType:
+                if isinstance(source, Extension):
+                    return self.add_extension(source)
+                wrapper = wrap(source)
+                if not wrapper:
+                    raise TypeError("unknown instance")
+                return self.add_extension(wrapper)
+            elif type(source) is StringType:
+                source = os.path.abspath(source)
+                self.sources.append(source)
+            else:
+                raise TypeError("unknown source type")
 
     def add_sources(self, sources):
         if not type(sources) == ListType:
@@ -102,10 +130,17 @@ class Project(DistributionMetadata):
             sources.append(os.path.abspath(source))
         return sources
 
+    # Compiler methods
+
     def set_compiler(self, compiler):
         if not isinstance(compiler, Compiler):
             raise UnknownCompiler
         self.compiler = compiler
+
+    def get_compiler(self):
+        return self.compiler
+
+    # Loader methods
 
     def set_loader(self, loader):
         if not isinstance(loader, Loader):
@@ -131,16 +166,19 @@ class Project(DistributionMetadata):
         # Prepare extensions
         if self.has_extensions():
             for extension in self.extensions:
-                extension.on_build(self)
+                try:
+                    extension.on_build(self)
+                except NotImplementedError:
+                    pass
         # Run specific build process
         assert len(self.get_fixed_sources()), "Nothing to build"
         self._build(sources=self.get_fixed_sources(), *arg_list, **arg_dict)
         
     def _build(self, *arg_list, **arg_dict):
-        raise NotImplemented
+        raise NotImplementedError
 
     def load(self, *arg_list, **arg_dict):
-        raise NotImplemented
+        raise NotImplementedError
 
 
 

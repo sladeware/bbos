@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 
 __copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
 
@@ -5,6 +6,8 @@ import sys, os
 from types import *
 
 from bb.builder.errors import *
+
+#_______________________________________________________________________________
 
 def spawn(cmd, search_path=True, verbose=False, dry_run=False):
     """Run another program, specified as a command list 'cmd', in a new
@@ -27,10 +30,10 @@ def spawn(cmd, search_path=True, verbose=False, dry_run=False):
     if os.name == 'posix':
         _spawn_posix(cmd, search_path, verbose, dry_run)
     else:
-        raise BuilderPlatformError, \
-            "Don't know how to spawn programs on platform '%s'" % os.name
-# spawn()
+        raise BuilderPlatformError(
+            "Don't know how to spawn programs on platform '%s'" % os.name)
 
+# TODO: replace _std*_fd with sys.std*.fileno()
 _stdin_fd = sys.stdin.fileno()
 _stdout_fd = sys.stdout.fileno()
 _stderr_fd = sys.stderr.fileno()
@@ -74,8 +77,8 @@ def _spawn_posix(cmd, search_path=True, verbose=False, dry_run=False):
                 import errno
                 if exc.errno == errno.EINTR:
                     continue
-                raise BuilderExecutionError, \
-                    "command '%s' failed: %s" % (cmd[0], exc[-1])
+                raise BuilderExecutionError("command '%s' failed: %s" 
+                                            % (cmd[0], exc[-1]))
 
             if not debug:
                 os.close(child_stdin)
@@ -83,21 +86,21 @@ def _spawn_posix(cmd, search_path=True, verbose=False, dry_run=False):
                 os.close(child_stderr)
 
             if os.WIFSIGNALED(status):
-                raise BuilderExecutionError, \
-                    "command '%s' terminated by signal %d" % \
-                    (cmd[0], os.WTERMSIG(status))
+                raise BuilderExecutionError(
+                    "command '%s' terminated by signal %d" 
+                    % (cmd[0], os.WTERMSIG(status)))
             elif os.WIFEXITED(status):
                 exit_status = os.WEXITSTATUS(status)
                 if exit_status == 0:
                     return # hey, it succeeded!
                 else:
-                    raise BuilderExecutionError, \
-                        "command '%s' failed with exit status %d" % \
-                        (cmd[0], exit_status)
+                    raise BuilderExecutionError(
+                        "command '%s' failed with exit status %d" 
+                        % (cmd[0], exit_status))
             elif os.WIFSTOPPED(status):
                 continue
             else:
-                raise BuilderExecutionError, \
-                    "unknown error executing '%s': termination status %d" % \
-                    (cmd[0], status)
+                raise BuilderExecutionError(
+                    "unknown error executing '%s': termination status %d" 
+                    % (cmd[0], status))
 # _spawn_posix()
