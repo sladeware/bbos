@@ -378,14 +378,12 @@ class CCompiler(Compiler):
     # get_object_filenames()
 
     def compile(self, sources, output_dir=None, macros=None, include_dirs=None,
-		debug=0, extra_preopts=None, extra_postopts=None,
-		depends=None):
-	macros, objects, extra_postopts, pp_options, build = \
+                debug=0, extra_preopts=None, extra_postopts=None, depends=None):
+        macros, objects, extra_postopts, pp_options, build = \
 	    self._setup_compile(sources, output_dir, macros, include_dirs, extra_postopts, depends)
-
 	cc_options = self._gen_cc_options(pp_options, debug, extra_preopts)
 
-	for obj in objects:
+        for obj in objects:
             try:
                 src, ext = build[obj]
             except KeyError:

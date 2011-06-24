@@ -6,7 +6,7 @@ from types import *
 
 from bb.builder.compilers.c import CCompiler
 from bb.builder.errors import *
-from bb.builder.spawn import spawn
+from bb.apps.utils.spawn import spawn, ExecutionError
 from bb.apps.utils.dir import mkpath
 
 #_______________________________________________________________________________
@@ -28,13 +28,15 @@ class UnixCCompiler(CCompiler):
         CCompiler.__init__(self, verbose, dry_run)
 
     def _compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts):
+        print 2222222222222222222222222
+        exit()
         compiler = self.executables['compiler']
         try:
             spawn(compiler + cc_args + [src, '-o', obj] + extra_postargs, 
                   verbose=self.verbose,
                   dry_run=self.dry_run)
-        except BuilderExecutionError, msg:
-            raise CompileError, msg
+        except ExecutionError, msg:
+            raise CompileError(msg)
 
     def _link(self, objects, output_filename, output_dir=None, 
              libraries=None, library_dirs=None,
