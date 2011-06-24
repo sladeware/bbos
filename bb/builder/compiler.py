@@ -1,4 +1,6 @@
 
+__copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
+
 from types import *
 
 from bb.builder.errors import *

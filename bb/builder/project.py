@@ -130,7 +130,7 @@ class Project(DistributionMetadata):
             sources.append(os.path.abspath(source))
         return sources
 
-    # Compiler methods
+    # --- Compiler methods ---
 
     def set_compiler(self, compiler):
         if not isinstance(compiler, Compiler):
@@ -140,7 +140,7 @@ class Project(DistributionMetadata):
     def get_compiler(self):
         return self.compiler
 
-    # Loader methods
+    # --- Loader methods ---
 
     def set_loader(self, loader):
         if not isinstance(loader, Loader):
@@ -163,6 +163,7 @@ class Project(DistributionMetadata):
         # Dry run
         if dry_run is not None:
             self.compiler.dry_run = dry_run
+        self.compiler.check_executables()
         # Prepare extensions
         if self.has_extensions():
             for extension in self.extensions:

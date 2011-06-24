@@ -5,9 +5,10 @@ import os, re, sys, string
 import os.path
 from types import *
 
-from bb.apps.utils.dir import mkpath
 from bb.builder.compiler import Compiler
 from bb.builder.errors import *
+from bb.apps.utils.dir import mkpath
+from bb.apps.utils.spawn import which, ExecutionError
 
 #_______________________________________________________________________________
 
@@ -47,7 +48,6 @@ def get_default_compiler(osname=None, platform=None):
             return compiler
     # Default to Unix compiler
     return 'unix'
-# get_default_compiler()
 
 #_______________________________________________________________________________
 
@@ -81,17 +81,14 @@ def new_ccompiler(platform=None, compiler=None, verbose=False, dry_run=False,
         module = sys.modules[module_name]
         klass = vars(module)[class_name]
     except ImportError:
-        raise BuilderError, \
-            "can't compile C/C++ code: unable to load module '%s'" % \
-            module_name
+        raise BuilderError("can't compile C/C++ code: unable to load module '%s'" 
+                           % module_name)
     except KeyError:
-        raise BuilderError, \
-            ("can't compile C/C++ code: unable to find class '%s' " +
-             "in module '%s'") % (class_name, module_name)
+        raise BuilderError("can't compile C/C++ code: unable to find class '%s' " 
+                           + "in module '%s'") % (class_name, module_name)
     # XXX The None is necessary to preserve backwards compatibility
     # with classes that expect verbose to be the first positional argument.
     return klass(verbose, dry_run)
-# new_ccompiler()
 
 #_______________________________________________________________________________
 
@@ -105,41 +102,49 @@ class CCompiler(Compiler):
     include directories, macros to define, libraries to link against, etc. -- 
     are attributes to the compiler instance."""
 
+    executables = None
+
     source_extensions = None # list of strings
     object_extension = None
 
     # Default language settings. 
     # language_map is used to detect a source file target language, checking 
     # source filenames.
-    # language_order is used to detect the language precedence, when deciding
-    # what language to use when mixing source types. For example, if some
-    # extension has two files with ".c" extension, and one with ".cpp", it
-    # is still linked as c++.
     language_map = {".c"   : "c",
                     ".cc"  : "c++",
                     ".cpp" : "c++",
                     ".cxx" : "c++",
                     ".m"   : "objc",
                    }
+    # language_order is used to detect the language precedence, when deciding
+    # what language to use when mixing source types. For example, if some
+    # extension has two files with ".c" extension, and one with ".cpp", it
+    # is still linked as c++.
     language_order = ["c++", "objc", "c"]
 
     def __init__(self, verbose=False, dry_run=False):
 	Compiler.__init__(self, verbose, dry_run)
 	# A list of macro definitions (we are using list since the order is 
-        # important). A macro definition is a 2-tuple 
-	# (name, value), where the value is either a string or None.
-	# A macro undefinition is a 1-tuple (name, ).
+        # important). A macro definition is a 2-tuple (name, value), where 
+        # the value is either a string or None. A macro undefinition is a 
+        # 1-tuple (name, ).
 	self.macros = []
 	# A list of directories
 	self.include_dirs = []
-        # A list of library names (not filenames: eg. "foo" not "libfoo.a") to 
-        # include in any link
+        # A list of library names (not filenames: eg. "foo" not "libfoo.a") 
+        # to include in any link
 	self.libraries = []
 	# A list of directories to seach for libraries
         self.library_dirs = []
 	# A list of object files
 	self.objects = []
-    # __init__()
+
+    def check_executables(self):
+        if not self.executables:
+            return
+        for (name, cmd) in self.executables.items():
+            if not which(cmd[0]):
+                raise ExecutionError("compiler '%s' can not be found" % cmd[0])
 
     def _find_macro(self, name):
         """Return position of the macro 'name' in the list of macros."""
@@ -149,7 +154,6 @@ class CCompiler(Compiler):
                 return i
             i += 1
         return None
-    # _find_macro()
 
     def add_include_dirs(self, dirs):
         """Add a list of dirs 'dirs' to the list of directories that will be
@@ -184,7 +188,6 @@ class CCompiler(Compiler):
         names; the linker will be instructed to link against libraries as
         many times as they are mentioned."""
         self.libraries.append(library_name)
-    # add_library()
 
     def add_libraries(self, libraries):
         if libraries and type(libraries) in (ListType, TupleType):
@@ -192,9 +195,7 @@ class CCompiler(Compiler):
                 self.add_library(library)
             libraries = list (libraries) + (self.libraries or [])
         else:
-            raise TypeError, \
-                "'libraries' (if supplied) must be a list of strings"
-    # add_libraries()
+            raise TypeError("'libraries' (if supplied) must be a list of strings")
 
     def add_library_dir(self, library_dir):
         """Add 'library_dir' to the list of directories that will be searched 
@@ -202,16 +203,14 @@ class CCompiler(Compiler):
         linker will be instructed to search for libraries in the order they
         are supplied to 'add_library_dir()' and/or 'set_library_dirs()'."""
         self.library_dirs.append(library_dir)
-    # add_library_dir()
 
     def add_library_dirs(self, library_dirs):
         if library_dirs and type(library_dirs) in (ListType, TupleType):
             for library_dir in list(library_dirs):
                 self.add_library_dir(library_dir)
         else:
-            raise TypeError, \
-                "'library_dirs' (if supplied) must be a list of strings"
-    # add_library_dirs()
+            raise TypeError("'library_dirs' (if supplied) must be a list of "
+                            + "strings")
 
     def add_link_object(self, obj):
         """Add 'object' to the list of object files (or analogues, such as
@@ -219,16 +218,13 @@ class CCompiler(Compiler):
         compilers") to be included in every link driven by this compiler
         object."""
         self.objects.append(obj)
-    # add_link_object()
 
     def add_link_objects(self, objects):
         """See add_link_object()."""
         if type(objects) not in (ListType, TupleType):
-            raise TypeError, \
-                "'objects' must be a list or tuple of strings"
+            raise TypeError("'objects' must be a list or tuple of strings")
         for obj in list(objects):
             self.add_link_object(obj)
-    # add_link_objects()
 
     def define_macro(self, name, value=None):
         """Define a preprocessor macro for all compilations driven by this
@@ -243,9 +239,8 @@ class CCompiler(Compiler):
             del self.macros[i]
         defn = (name, value)
         self.macros.append(defn)
-    # define_macro()
 
-    def get_language(self, sources):
+    def detect_language(self, sources):
         """Detect the language of a given file, or list of files. Uses
         language_map, and language_order to do the job."""
         if type(sources) is not ListType:
@@ -263,19 +258,16 @@ class CCompiler(Compiler):
             except ValueError:
                 pass
         return lang
-    # get_language()
 
     def get_library_dir_option(self, dir):
         """Return the compiler option to add 'dir' to the list of
         directories searched for libraries."""
         raise NotImplemented
-    # get_library_dir_option()
 
     def get_library_option (self, lib):
         """Return the compiler option to add 'dir' to the list of libraries
         linked into the shared library or executable."""
         raise NotImplementedError
-    # get_library_option()
 
     def find_library_file (self, dirs, lib, debug=0):
         """Search the specified list of directories for a static or shared
@@ -284,7 +276,6 @@ class CCompiler(Compiler):
         the current platform).  Return None if 'lib' wasn't found in any of
         the specified directories."""
         raise NotImplementedError
-    # find_library_file()
 
     def _gen_lib_options(self, library_dirs, libraries):
         """Generate linker options for searching library directories and
@@ -316,7 +307,6 @@ class CCompiler(Compiler):
                 lib_options.append(self.get_library_option(lib))
 
         return lib_options
-    # _get_lib_options()
 
     def _gen_preprocess_options(self, macros, include_dirs):
 	pp_options = []
@@ -341,7 +331,6 @@ class CCompiler(Compiler):
 	    pp_options.append ("-I%s" % dir)
 
 	return pp_options
-    # _gen_preprocess_options()
 
     def _gen_cc_options(self, pp_options, debug, before):
         cc_opts = pp_options + ['-c']
@@ -350,7 +339,6 @@ class CCompiler(Compiler):
         if before:
             cc_opts[:0] = before
         return cc_opts
-    # get_cc_options
 
     def _gen_ld_options(self, debug, before):
         ld_opts = []
@@ -359,7 +347,6 @@ class CCompiler(Compiler):
         if before:
             ld_opts[:0] = before
         return ld_opts
-    # _gen_ld_opts
 
     def get_object_filenames(self, src_filenames, output_dir=""):
 	if output_dir is None:
@@ -375,7 +362,6 @@ class CCompiler(Compiler):
 	    obj_filenames.append(os.path.join(output_dir, \
 						  base + self.object_extension))
 	return obj_filenames
-    # get_object_filenames()
 
     def compile(self, sources, output_dir=None, macros=None, include_dirs=None,
                 debug=0, extra_preopts=None, extra_postopts=None, depends=None):
@@ -392,12 +378,10 @@ class CCompiler(Compiler):
             self._compile(obj, src, ext, cc_options, extra_postopts, pp_options)
 	
 	return objects
-    # compile()
 
     def _compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts):
         """Compile source to product objects."""
 	raise NotImplemented
-    # _compile()
 
     def _setup_compile(self, sources, output_dir, macros, include_dirs, extra, 
 		       depends):
@@ -405,22 +389,20 @@ class CCompiler(Compiler):
 	if output_dir is None:
 	    outputdir = self.output_dir
 	elif type(output_dir) is not StringType:
-	    raise TypeError, "'output_dir' must be a string or None"
+	    raise TypeError("'output_dir' must be a string or None")
 
         if macros is None:
             macros = self.macros
         elif type(macros) is ListType:
             macros = macros + (self.macros or [])
         else:
-            raise TypeError, "'macros' (if supplied) must be a list of tuples"
-
+            raise TypeError("'macros' (if supplied) must be a list of tuples")
         if include_dirs is None:
             include_dirs = self.include_dirs
         elif type(include_dirs) in (ListType, TupleType):
             include_dirs = list(include_dirs) + (self.include_dirs or [])
         else:
-            raise TypeError, \
-                  "'include_dirs' (if supplied) must be a list of strings"
+            raise TypeError("'include_dirs' (if supplied) must be a list of strings")
 
 	if extra is None:
 	    extra = []
@@ -440,7 +422,6 @@ class CCompiler(Compiler):
 	    build[obj] = (src, ext)
 	
 	return macros, objects, extra, pp_options, build
-    # _setup_compile()
 
     def link(self, objects, output_filename, *list_args, **dict_args):
         print "Linking executable:", os.path.relpath(output_filename, self.output_dir)
@@ -457,32 +438,27 @@ class CCompiler(Compiler):
         (eg. 'self.libraries' augments 'libraries').  Return a tuple with
         fixed versions of all arguments."""
         if type (objects) not in (ListType, TupleType):
-            raise TypeError, \
-                "'objects' must be a list or tuple of strings"
+            raise TypeError("'objects' must be a list or tuple of strings")
         objects = list(objects)
 
         if output_dir is None:
             output_dir = self.output_dir
         elif type (output_dir) is not StringType:
-            raise TypeError, "'output_dir' must be a string or None"
+            raise TypeError("'output_dir' must be a string or None")
 
         if libraries is None:
             libraries = self.libraries
         elif type(libraries) in (ListType, TupleType):
             libraries = list(libraries) + (self.libraries or [])
         else:
-            raise TypeError, \
-                "'libraries' (if supplied) must be a list of strings"
+            raise TypeError("'libraries' (if supplied) must be a list of strings")
 
         if library_dirs is None:
             library_dirs = self.library_dirs
         elif type (library_dirs) in (ListType, TupleType):
             library_dirs = list (library_dirs) + (self.library_dirs or [])
         else:
-            raise TypeError, \
-                "'library_dirs' (if supplied) must be a list of strings"
+            raise TypeError("'library_dirs' (if supplied) must be a list of strings")
 
         return objects, output_dir, libraries, library_dirs
-    # _setup_link()
 
-# class CCompiler
