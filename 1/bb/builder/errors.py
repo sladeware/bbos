@@ -1,4 +1,6 @@
 
+__copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
+
 class BuilderError(Exception):
     pass
 
@@ -17,18 +19,19 @@ class LoaderError(Exception):
 class UnknownLoader(Exception):
     """"""
 
-# Exception classes used by the CCompiler implementation classes
-class CCompilerError(Exception):
-    """Some compile/link operation failed."""
-
 class UnknownCompiler(Exception):
     """"""
 
-class UnknownFileError(CCompilerError):
+class UnknownFileError(Exception):
     """Attempt to process an unknown file type."""
 
-class CompileError(CCompilerError):
+class CompileError(Exception):
     pass
 
-class LinkError(CCompilerError):
+class LinkError(Exception):
     pass
+
+# Exception classes used by the CCompiler implementation classes
+class CCompilerError(CompileError):
+    """Some compile/link operation failed."""
+
