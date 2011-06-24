@@ -2,13 +2,12 @@
 
 """BBOS kernel."""
 
-__version__ = ""
+__version__ = "$Rev$"
 __copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
 
 import sys
 import traceback
 from types import *
-
 
 #______________________________________________________________________________
 # Kernel exceptions
