@@ -412,3 +412,5 @@ class Hardware(object):
 
     def remove_driver(self, *arg_list):
         raise NotImplemented()
+
+import bb.os.kernel.setup
