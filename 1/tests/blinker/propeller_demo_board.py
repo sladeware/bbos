@@ -10,4 +10,4 @@ from bb.builder.projects import CatalinaProject
 
 board = PropellerDemoBoard([blinker])
 project = CatalinaProject("Blinker", [blinker])
-#project.build()
+project.build()
