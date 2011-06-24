@@ -2,6 +2,7 @@
 
 """BBOS kernel."""
 
+__version__ = ""
 __copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
 
 import sys
