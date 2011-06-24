@@ -9,5 +9,6 @@ from bb.os.hardware.boards import PropellerDemoBoard
 from bb.builder.projects import CatalinaProject
 
 board = PropellerDemoBoard([blinker])
-project = CatalinaProject("Blinker", [blinker])
+project = CatalinaProject("Blinker", ['propeller_demo_board.c'])
+project.compiler.add_library('ci')
 project.build()
