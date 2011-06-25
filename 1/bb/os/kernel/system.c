@@ -4,9 +4,9 @@
 
 #include <stdio.h>
 
-#include <bbos/kernel/system.h>
-#include <bbos/kernel/error_codes.h>
-#include <bbos/kernel/idle.h>
+#include <bb/os/kernel/system.h>
+#include <bb/os/kernel/errors.h>
+#include <bb/os/kernel/idle.h>
 
 /**
  * Halt the system. Display a message, then perfom cleanups with exit.
@@ -44,7 +44,8 @@ bbos_switch_thread()
 #endif
 
 /**
- * Start the thread and schedule it. Wrapper for bbos_sched_enqueue().
+ * Start the thread and schedule it. Wrapper for bbos_thread_init() and 
+ * bbos_sched_enqueue().
  *
  * @param tid Thread identifier.
  * @param thread Pointer to the thread.
@@ -54,7 +55,7 @@ bbos_switch_thread()
  * Kernel error code.
  */
 bbos_error_t 
-bbos_start_thread(bbos_thread_id_t tid, void (*thread)(void)) 
+bbos_add_thread(bbos_thread_id_t tid, void (*thread)(void)) 
 {
   assert(tid < BBOS_NUMBER_OF_THREADS);
   bbos_thread_init(tid, thread);
@@ -65,7 +66,8 @@ bbos_start_thread(bbos_thread_id_t tid, void (*thread)(void))
 }
 
 /**
- * Stop the thread and dequeue it from schedule.
+ * Stop the thread and dequeue it from schedule. Wrapper for bbos_thread_init()
+ * and bbos_sched_dequeue().
  *
  * @param tid Thread identifier.
  *
@@ -74,7 +76,7 @@ bbos_start_thread(bbos_thread_id_t tid, void (*thread)(void))
  * Kernel error code.
  */
 bbos_error_t
-bbos_stop_thread(bbos_thread_id_t tid)
+bbos_remove_thread(bbos_thread_id_t tid)
 {
   assert(tid < BBOS_NUMBER_OF_THREADS);
   bbos_thread_init(tid, NULL);
@@ -124,11 +126,10 @@ bbos_start()
 #ifdef BBOS_SCHED_ENABLED
   bbos_start_thread(BBOS_IDLE, bbos_idle);
 
-  while (1)
-    {
-      bbos_sched_move();
-      bbos_switch_thread();
-    }
+  while (1) {
+	bbos_sched_move();
+	bbos_switch_thread();
+  }
 #else
   bbos_switch_thread();
 #endif

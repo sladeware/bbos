@@ -29,9 +29,10 @@ class CatalinaProject(CProject):
 
         # We have to be sure that output_path file has been produced, otherwise
         # it want be load
-        if not os.path.exists(self.output_filename):
-            raise BuilderError, "It seems like output file '%s' has not been " \
-                "produced" % self.output_filename
+        if not self.get_compiler().dry_run:
+            if not os.path.exists(self.output_filename):
+                raise BuilderError("It seems like output file '%s' has not been " \
+                    "produced" % self.output_filename)
         
     def load(self, *arg_list, **arg_dict):
         self.loader.load(self.output_filename, *arg_list, **arg_dict)

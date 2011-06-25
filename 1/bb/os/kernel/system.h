@@ -20,18 +20,18 @@
  */
 #include <assert.h>
 
-#include <bbos/config.h>
-#include <bbos/kernel/types.h>
+#include <bb/os/config.h>
+#include <bb/os/kernel/types.h>
 
 #ifdef BBOS_SCHED_ENABLED
-#include <bbos/kernel/sched.h>
+#include <bb/os/kernel/sched.h>
 #endif
 
 void bbos_init();
 void bbos_start();
 void bbos_panic(const char *fmt, ...);
-bbos_error_t bbos_start_thread(bbos_thread_id_t tid, void (*thread)(void));
-bbos_error_t bbos_stop_thread(bbos_thread_id_t tid);
+bbos_error_t bbos_add_thread(bbos_thread_id_t tid, void (*thread)(void));
+bbos_error_t bbos_remove_thread(bbos_thread_id_t tid);
 
 #endif
 
