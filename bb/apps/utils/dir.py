@@ -2,17 +2,47 @@
 import os
 from types import *
 
+import inspect
+
+def caller():
+    """Return the context of the current function call. Return a tuple 
+    (function name, module name, file name, line)."""
+    function_name = inspect.getouterframes(inspect.currentframe())[2][3]
+    mod_name = inspect.getmodule(inspect.stack()[2][0]).__name__
+    file_name = inspect.getmodule(inspect.stack()[2][0]).__file__
+    line = inspect.getouterframes(inspect.currentframe())[2][2]
+    return (function_name, mod_name, file_name, line)
+
+def script_dir():
+    script_file = caller()[2]
+    return os.path.abspath(os.path.dirname(os.path.realpath(script_file)))
+
+import os.path
+
+def script_relpath(path):
+    script_file = caller()[2]
+    script_dir = os.path.abspath(os.path.dirname(os.path.realpath(script_file)))
+    if type(path) is ListType:
+        result = []
+        for p in path:
+            target_path = os.path.join(script_dir, p)
+            result.append(target_path)
+        return result
+    else:
+        target_path = os.path.join(script_dir, path)
+        return os.path.relpath(target_path)
+
+# cache for by mkpath() -- in addition to cheapening redundant calls
 _path_created = {}
 
 def mkpath(name, mode=0777, verbose=0, dry_run=0):
     """Create a directory and any missing ancestor directories.  If the
     directory already exists (or if 'name' is the empty string, which
     means the current directory, which of course exists), then do
-    nothing.  Raise OSError if unable to create some
-    directory along the way (eg. some sub-path exists, but is a file
-    rather than a directory).  If 'verbose' is true, print a one-line
-    summary of each mkdir to stdout.  Return the list of directories
-    actually created."""    
+    nothing. Raise OSError if unable to create some directory along the 
+    way (eg. some sub-path exists, but is a file rather than a directory). 
+    If 'verbose' is true, print a one-line summary of each mkdir to stdout. 
+    Return the list of directories actually created."""    
     global _path_created
 
     # Detect a common bug -- name is None

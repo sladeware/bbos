@@ -4,11 +4,11 @@
 
 #include <stdio.h>
 
-#include <bbos/config.h>
-#include <bbos/kernel/thread.h>
-#include <bbos/kernel/sched.h>
-#include <bbos/kernel/error_codes.h>
-#include <bbos/kernel/debug.h>
+#include <bb/os/config.h>
+#include <bb/os/kernel/thread.h>
+#include <bb/os/kernel/sched.h>
+#include <bb/os/kernel/errors.h>
+#include <bb/os/kernel/debug.h>
 
 static bbos_thread_t bbos_thread_table[BBOS_NUMBER_OF_THREADS];
 
@@ -21,7 +21,7 @@ bbos_thread_init(bbos_thread_id_t tid, void (*thread)(void))
 void
 bbos_thread_execute(bbos_thread_id_t tid)
 {
-	assert(bbos_thread_table[tid] != NULL);
-	(*bbos_thread_table[tid])();
+  assert(bbos_thread_table[tid] != NULL);
+  (*bbos_thread_table[tid])();
 }
 
