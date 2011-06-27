@@ -12,8 +12,8 @@
 
 #include <bb/os/kernel/types.h>
 
-bbos_error_t bbos_thread_start(bbos_thread_id_t tid, bbos_thread_t thread);
-bbos_error_t bbos_thread_stop(bbos_thread_id_t tid);
+void bbos_thread_init(bbos_thread_id_t tid, bbos_thread_t thread);
+void bbos_thread_run(bbos_thread_id_t tid);
 
 #endif
 

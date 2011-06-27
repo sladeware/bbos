@@ -6,6 +6,7 @@
 
 #include <bb/os/kernel/system.h>
 #include <bb/os/kernel/errors.h>
+#include <bb/os/kernel/thread.h>
 #include <bb/os/kernel/idle.h>
 
 /**
@@ -39,7 +40,7 @@ void
 bbos_switch_thread()
 {
   assert(bbos_sched_myself() < BBOS_NUMBER_OF_THREADS);
-  bbos_thread_execute( bbos_sched_myself() );
+  bbos_thread_run( bbos_sched_myself() );
 }
 #endif
 

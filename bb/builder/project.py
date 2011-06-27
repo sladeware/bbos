@@ -52,11 +52,11 @@ def wrap(obj):
 
 class Wrapper(Extension):
     """Interface!"""
-    _MAPPING = {}
+    mapping = {}
 
     def __init__(self, target):
         Extension.__init__(self)
-        for (event, action) in self._MAPPING.items():
+        for (event, action) in self.mapping.items():
             method = MethodType(action, target)
             setattr(self, event, method)
 
@@ -65,9 +65,11 @@ class Wrapper(Extension):
         def decorate(action):
             target_klass = klass
             if not isinstance(target_klass, Extension):
-                target_klass = type('_' + klass.__name__, (Wrapper,), dict())
-                _wrappers[klass.__name__] = target_klass
-                target_klass._MAPPING[event] = action
+                target_klass = get_wrapper(klass)
+                if not target_klass:
+                    target_klass = type('_' + klass.__name__, (Wrapper,), dict(mapping={}))
+                    _wrappers[klass.__name__] = target_klass
+                target_klass.mapping[event] = action
             return action
         return decorate
 
@@ -157,7 +159,8 @@ class Project(DistributionMetadata):
         if sources:
             self.add_sources(sources)
         if self.verbose:
-            print "Building project '%s' version '%s'" % (self.name, self.version)
+            print "Building project '%s' version '%s'" % (self.get_name(), self.get_version())
+            self.compiler.verbose = self.verbose
         if output_dir:
             self.compiler.set_output_dir(output_dir)
         # Dry run

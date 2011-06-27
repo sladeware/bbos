@@ -10,7 +10,7 @@ from bb.builder.project import Extension, Project
 
 class CProject(Project):
     """C project for c-like compilers."""
-    def __init__(self, name, sources=[], version=None, verbose=False, 
+    def __init__(self, name, sources=[], version=None, verbose=None,
                  compiler=None, loader=None):
         Project.__init__(self, name, sources, version, verbose, compiler, 
                          loader)

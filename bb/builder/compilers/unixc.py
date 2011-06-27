@@ -24,7 +24,7 @@ class UnixCCompiler(CCompiler):
                    'ranlib'       : None,
                   }
 
-    def __init__(self, verbose=False, dry_run=False):
+    def __init__(self, verbose=None, dry_run=False):
         CCompiler.__init__(self, verbose, dry_run)
 
     def _compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts):
@@ -64,6 +64,7 @@ class UnixCCompiler(CCompiler):
                     while '=' in linker[i]:
                         i = i + 1
                 linker[i] = self.compiler_cxx[i]
+            print self.verbose
             spawn(linker + ld_options, verbose=self.verbose, dry_run=self.dry_run)
         except BuilderExecutionError, msg:
             raise LinkError, msg

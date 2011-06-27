@@ -10,7 +10,7 @@ from bb.builder.errors import *
 class Compiler(object):
     executables = {}
 
-    def __init__(self, verbose=False, dry_run=False):
+    def __init__(self, verbose=None, dry_run=False):
         self.verbose = verbose
         self.dry_run = dry_run
         # A common output directory for objects, libraries, etc.
