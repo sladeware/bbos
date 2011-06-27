@@ -81,6 +81,6 @@ def _build(kernel, project):
 @Wrapper.bind("on_add", Kernel)
 def _add_source(kernel, project):
     if isinstance(project.get_compiler(), CCompiler):
-        project.get_compiler().add_include_dir(script_dir)
+        project.get_compiler().add_include_dir(os.path.join(script_dir(), "../../.."))
         project.add_sources(script_relpath(["system.c", "thread.c", "idle.c"]))
-        #project.add_source(kernel.get_scheduler())
+        project.add_source(kernel.get_scheduler())

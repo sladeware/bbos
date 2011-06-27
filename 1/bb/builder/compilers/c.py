@@ -62,7 +62,7 @@ compiler_class = {
         )
     }
 
-def new_ccompiler(platform=None, compiler=None, verbose=False, dry_run=False, 
+def new_ccompiler(platform=None, compiler=None, verbose=None, dry_run=False, 
 		  force=False):
     if platform is None:
         platform = os.name

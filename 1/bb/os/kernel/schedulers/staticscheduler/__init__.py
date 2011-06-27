@@ -34,3 +34,8 @@ class StaticScheduler(Scheduler):
         else:
             self.__cursor += 1
         return self.get_next_thread()
+
+    def get_order(self):
+        return self.__order
+
+import bb.os.kernel.schedulers.staticscheduler.setup

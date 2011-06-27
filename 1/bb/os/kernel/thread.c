@@ -19,7 +19,7 @@ bbos_thread_init(bbos_thread_id_t tid, void (*thread)(void))
 }
 
 void
-bbos_thread_execute(bbos_thread_id_t tid)
+bbos_thread_run(bbos_thread_id_t tid)
 {
   assert(bbos_thread_table[tid] != NULL);
   (*bbos_thread_table[tid])();
