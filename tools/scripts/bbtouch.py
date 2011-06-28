@@ -15,15 +15,15 @@ import bbenv
 #_______________________________________________________________________________
 
 def usage():
-    print'''Welcome to the Bionic Bunny platform!
+    print '''Welcome to the Bionic Bunny platform!
 
-USAGE: bbtouch [OPTIONS] [FILES]
+USAGE: %s [OPTIONS] [FILES]
 
 -h, --help  : print this help message
-'''
+''' % os.path.basename(__file__)
 
 def touch(target_file):
-    """Execute the file at the specified path. 
+    """Execute the target_file at the specified path. 
 
     When we use Python directly it automatically adds the directory containing 
     the script that was used to invoke the Python interpreter to the search 
@@ -41,6 +41,7 @@ def touch(target_file):
     sys.path.remove(target_dir)
 
 def main(argv=None):
+    """The main entry point for the script."""
     if argv is None:
         argv = sys.argv
     try:

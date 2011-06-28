@@ -64,7 +64,6 @@ class UnixCCompiler(CCompiler):
                     while '=' in linker[i]:
                         i = i + 1
                 linker[i] = self.compiler_cxx[i]
-            print self.verbose
             spawn(linker + ld_options, verbose=self.verbose, dry_run=self.dry_run)
         except BuilderExecutionError, msg:
             raise LinkError, msg

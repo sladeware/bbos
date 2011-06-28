@@ -1,24 +1,30 @@
 
-#include <catalina_cog.h>
+#include <bb/os/config.h>
+#include BBOS_FIND_PROCESSOR_FILE(delay.h)
+
 #include <stdio.h>
 
 #define GET_PIN(p) (1<<p)
-#define LED 2
 
-static int mask = GET_PIN(LED);
-static int on_off = GET_PIN(LED);
+static int mask = GET_PIN(__CATALINA_LED);
+static int on_off = GET_PIN(__CATALINA_LED);
 
 void
 blink_runner()
 {
-  _dira(on_off, on_off);
-  _outa(on_off, on_off);
+	_dira(mask, on_off);
+  _outa(mask, on_off);
+  bbos_delay_sec(3);
   on_off ^= mask;
 }
 
 int
 main()
 {
-  blink_runner();
+	while (1) {
+	  blink_runner();
+	}
+	
   return 0;
 }
+

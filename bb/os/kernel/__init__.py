@@ -377,12 +377,24 @@ class Kernel:
 
 from bb.os.hardware import Core
 
-class Hardware(object):
+class Hardware:
     """This class represents interface between kernel and hardware abstraction.
     """
     def __init__(self):
         self.__core = None
         self.__drivers = {}
+
+    # Board Management
+
+    def get_board(self):
+        return self.get_processor().get_owner()
+
+    # Processor Management
+
+    def get_processor(self):
+        return self.__core.get_owner()
+
+    # Core Management
 
     def set_core(self, core):
         if not isinstance(core, Core):
@@ -391,6 +403,8 @@ class Hardware(object):
 
     def get_core(self):
         return self.__core
+
+    # Driver Management
 
     def add_driver(self, driver):
         if not isinstance(driver, Driver):

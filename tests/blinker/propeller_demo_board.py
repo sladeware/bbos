@@ -13,4 +13,5 @@ board = PropellerDemoBoard([blinker])
 project = CatalinaProject("Blinker", [blinker, script_relpath('propeller_demo_board.c')])
 project.get_compiler().add_include_dir(script_dir())
 project.get_compiler().add_library('ci')
-project.build(verbose=True) # dry_run=True
+project.get_compiler().define_macro("LED", 18)
+project.build(verbose=False, dry_run=False)
