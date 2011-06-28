@@ -7,7 +7,7 @@ import time
 
 from bb.builder.project import Wrapper
 from bb.builder.compilers import CCompiler
-from bb.os.kernel import Kernel
+from bb.os.kernel import Kernel, Hardware
 from bb.apps.utils.dir import script_relpath, script_dir
 
 def _gen_bbos_h(self, proj):
@@ -82,5 +82,14 @@ def _build(kernel, project):
 def _add_source(kernel, project):
     if isinstance(project.get_compiler(), CCompiler):
         project.get_compiler().add_include_dir(os.path.join(script_dir(), "../../.."))
-        project.add_sources(script_relpath(["system.c", "thread.c", "idle.c"]))
-        project.add_source(kernel.get_scheduler())
+        #project.add_sources(script_relpath(["system.c", "thread.c", "idle.c"]))
+        for filename in ("system.c", "thread.c", "idle.c"):
+            project.add_source(script_relpath(filename))
+    project.add_source(kernel.get_scheduler())
+    project.add_source(kernel.get_hardware())
+
+@Wrapper.bind("on_add", Hardware)
+def _add_hardware(hardware, project):
+    processor = hardware.get_processor()
+    project.add_source(processor)
+    

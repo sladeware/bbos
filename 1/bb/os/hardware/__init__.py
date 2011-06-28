@@ -25,6 +25,7 @@ class Core(DistributionMetadata):
     core per processes and one process per core."""
 
     __process = None
+    __owner = None
 
     def __init__(self, name, process=None):
         DistributionMetadata.__init__(self, name)
@@ -41,20 +42,27 @@ class Core(DistributionMetadata):
     def get_process(self):
         return self.__process
 
+    def get_owner(self):
+        return self.__owner
+
+    def set_owner(self, processor):
+        self.__owner = processor
+
 #______________________________________________________________________________
 
-class Processor(object):
+class Processor(DistributionMetadata):
     """Base class used for creating a BBOS processor.
 
     A processor contains one or more cores. It is a discrete semiconductor
     based device used for computation. For example, the PIC32MX5 
-    microcontroller is a processor.
-    """
+    microcontroller is a processor."""
     
     __cores = []
     __number_of_cores = 0
+    __owner = None
 
     def __init__(self, name, number_of_cores=0, cores=[]):
+        DistributionMetadata.__init__(self, name)
         if number_of_cores < 1:
             raise NotImplemented("Number of cores must be more than zero.")
         self.__number_of_cores = number_of_cores
@@ -62,8 +70,13 @@ class Processor(object):
         if cores:
             self.set_cores(cores)
 
+    # Owner Management
+
     def set_owner(self, board):
-        pass
+        self.__owner = board
+
+    def get_owner(self):
+        return self.__owner
 
     # Core Management
 
@@ -78,6 +91,7 @@ class Processor(object):
         self.validate_core(core)
         self.validate_core_id(i)
         self.__cores[i] = core
+        core.set_owner(self)
 
     def validate_core(self, core):
         if not self.is_valid_core(core):
@@ -108,7 +122,7 @@ class Processor(object):
 
 #______________________________________________________________________________
 
-class Board(object):
+class Board(DistributionMetadata):
     """Base class representing a board -- i.e. computing hardware.
 
     A board contains one or more processors. Each processor may or may not be
@@ -120,6 +134,7 @@ class Board(object):
     __number_of_processors = 0
 
     def __init__(self, name, number_of_processors, processors=[]):
+        DistributionMetadata.__init__(self, name)
         self.__number_of_processors = number_of_processors
         # By default will be created a list of None's
         self.__processors = [None] * number_of_processors
@@ -143,6 +158,7 @@ class Board(object):
         self.validate_processor_id(i)
         processor.set_owner(self)
         self.__processors[i] = processor
+        processor.set_owner(self)
 
     def get_processor(self, i=0):
         self.validate_processor_id(i)

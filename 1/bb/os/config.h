@@ -7,10 +7,16 @@
 
 /**
  * @file config.h
- * @brief Wrapper for bbos.h config
+ * @brief BB Operating System config
  */
 
+// Always goes first
 #include <bbos.h>
 
+// Hardware
+#ifndef BBOS_PROCESSOR
+#error "BBOS_PROCESSOR was not defined"
 #endif
+#define BBOS_FIND_PROCESSOR_FILE(filename) <bb/os/hardware/processors/BBOS_PROCESSOR/filename>
 
+#endif

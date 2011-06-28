@@ -20,3 +20,5 @@ class PropellerP8X32A(Processor):
         for process in processes:
             cores.append(PropellerCog(process))
         Processor.__init__(self, "Propeller P8X32A", 8, cores)
+
+import bb.os.hardware.processors.propeller_p8x32a.setup
