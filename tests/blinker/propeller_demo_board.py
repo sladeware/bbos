@@ -11,7 +11,8 @@ from bb.apps.utils.dir import script_relpath, script_dir
 
 board = PropellerDemoBoard([blinker])
 project = CatalinaProject("Blinker", [blinker, script_relpath('propeller_demo_board.c')])
-project.get_compiler().add_include_dir(script_dir())
-project.get_compiler().add_library('ci')
-project.get_compiler().define_macro("LED", 18)
+compiler = project.get_compiler()
+compiler.add_include_dir(script_dir())
+compiler.add_library('ci')
+compiler.define_macro("LED", 18)
 project.build(verbose=False, dry_run=False)
