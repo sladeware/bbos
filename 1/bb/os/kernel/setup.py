@@ -4,11 +4,11 @@ __copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
 
 import os.path
 import time
+import module
 
 from bb.builder.project import Wrapper
 from bb.builder.compilers import CCompiler
 from bb.os.kernel import Kernel, Hardware
-from bb.apps.utils.dir import script_relpath, script_dir
 
 def _gen_bbos_h(self, proj):
     # Generate the top of bbos.h file
@@ -81,10 +81,9 @@ def _build(kernel, project):
 @Wrapper.bind("on_add", Kernel)
 def _add_source(kernel, project):
     if isinstance(project.get_compiler(), CCompiler):
-        project.get_compiler().add_include_dir(os.path.join(script_dir(), "../../.."))
-        #project.add_sources(script_relpath(["system.c", "thread.c", "idle.c"]))
+        project.get_compiler().add_include_dir(os.path.join(module.get_dir(), "../../.."))
         for filename in ("system.c", "thread.c", "idle.c"):
-            project.add_source(script_relpath(filename))
+            project.add_source(module.get_file(__name__, filename))
     project.add_source(kernel.get_scheduler())
     project.add_source(kernel.get_hardware())
 

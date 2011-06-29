@@ -61,12 +61,9 @@ def _spawn_posix(cmd, search_path=True, verbose=False, dry_run=False):
     if dry_run:
         return
 
-    # XXX add debug to arguments
-    debug = True
-
     exec_fn = search_path and os.execvp or os.execcv
 
-    if not debug:
+    if not verbose:
         child_stdin, parent_stdout = os.pipe()
         parent_stdin, child_stdout = os.pipe()
         (_, child_stderr) = os.pipe()
@@ -75,7 +72,7 @@ def _spawn_posix(cmd, search_path=True, verbose=False, dry_run=False):
 
     if not pid: # in a new child
         # Redirect STDIN, STDOUT and STDERR
-        if not debug:
+        if not verbose:
             os.dup2(child_stdin, _stdin_fd)
             os.dup2(child_stdout, _stdout_fd)
             os.dup2(child_stderr, _stderr_fd)
@@ -83,7 +80,7 @@ def _spawn_posix(cmd, search_path=True, verbose=False, dry_run=False):
         try:
             exec_fn(cmd[0], cmd)
         except OSError, e:
-            sys.stderr.write("unable to execute %s: %s\n" % (cmd[0], e.strerror))
+            sys.stderr.write("unable to execute %s: %s\n" % (cmd[0],e.strerror))
             os._exit(1)
     else: # inside the parent
         # Loop until the child either exits or is terminated by a signal
@@ -98,7 +95,7 @@ def _spawn_posix(cmd, search_path=True, verbose=False, dry_run=False):
                 raise ExecutionError("command '%s' failed: %s" 
                                             % (cmd[0], exc[-1]))
 
-            if not debug:
+            if not verbose:
                 os.close(child_stdin)
                 os.close(child_stdout)
                 os.close(child_stderr)
