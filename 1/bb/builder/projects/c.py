@@ -3,20 +3,20 @@ __copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
 
 import os
 
-from bb.builder.compilers.c import new_ccompiler
+from bb.builder.compilers import new_compiler
 from bb.builder.project import Extension, Project
 
 #_______________________________________________________________________________
 
 class CProject(Project):
-    """C project for c-like compilers."""
+    """C project for C-like compilers."""
     def __init__(self, name, sources=[], version=None, verbose=None,
                  compiler=None, loader=None):
         Project.__init__(self, name, sources, version, verbose, compiler, 
                          loader)
         # Set the compiler if such was not defined
         if not self.compiler:
-            self.compiler = new_ccompiler()
+            self.compiler = new_compiler()
 
     def _build(self, sources, include_dirs=[], macros=[], 
                libraries=[], library_dirs=[], dry_run=False):
