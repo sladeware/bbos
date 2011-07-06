@@ -18,4 +18,5 @@ def blink_runner():
 blinker = Kernel()
 blinker.set_scheduler(StaticScheduler())
 blinker.add_thread("BLINK", blink_runner)
+blinker.start()
 
