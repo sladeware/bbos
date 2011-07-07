@@ -10,10 +10,11 @@ import bb.app as app
 from bb.os.hardware.boards import PropellerDemoBoard
 from bb.builder.projects import CatalinaProject
 
+app.MODE = "BUILING"
 
 def build(process):
-    board = PropellerDemoBoard([blinker])
-    project = CatalinaProject("Blinker", [blinker])
+    board = PropellerDemoBoard([process.kernel])
+    project = CatalinaProject("Blinker", [process.kernel])
     for source_file in ('propeller_demo_board.c',):
         project.add_source(module.get_file(__name__, source_file))
     compiler = project.get_compiler()
@@ -23,6 +24,6 @@ def build(process):
     project.build(verbose=False, dry_run=False)
 
 if not app.has_processes():
-    app.add_process("model")
+    app.add_process("blinker")
 for process in app.load_processes():
     build(process)
