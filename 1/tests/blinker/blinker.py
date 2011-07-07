@@ -15,8 +15,8 @@ def blink_runner():
     print "Blink LED#%d!" % LED
     time.sleep(TIMEOUT) # in seconds
 
-blinker = Kernel()
-blinker.set_scheduler(StaticScheduler())
-blinker.add_thread("BLINK", blink_runner)
-blinker.start()
+kernel = Kernel()
+kernel.set_scheduler(StaticScheduler())
+kernel.add_thread("BLINK", blink_runner)
+kernel.start()
 

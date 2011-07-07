@@ -9,6 +9,9 @@ import sys
 import traceback
 from types import *
 
+from bb.apps.utils.type_verification import verify_list
+from bb.os.object import Object
+
 #______________________________________________________________________________
 # Kernel exceptions
 
@@ -168,21 +171,24 @@ class Module(Thread):
 
 #______________________________________________________________________________
 
-class Kernel:
+class Kernel(Object):
     def __init__(self, *arg_list, **arg_dict):
-        self.init(*arg_list, **arg_dict)
-
-    # System Management
-
-    def init(self, threads=[], commands=[]):
-        print self.banner()
-        print "Initialize kernel"
+        Object.__init__(self)
         self.__hardware = Hardware()
         self.__threads = {}
         self.__commands = {}
         self.__scheduler = None
         self.__modules = {}
-        self.__status = None
+        # Start initialization (simulation only)
+        self.init(*arg_list, **arg_dict)
+
+    # System Management
+
+    def init(self, threads=[], commands=[]):
+        if self.mode != "SIMULATION":
+            return
+        print self.banner()
+        print "Initialize kernel"
         self.add_commands(DEFAULT_COMMANDS)
         if len(threads):
             self.add_threads(threads)
@@ -197,6 +203,8 @@ class Kernel:
             raise KernelError("At least one thread has to be added")
 
     def start(self):
+        if self.mode != "SIMULATION":
+            return
         self.test()
         print "Start kernel"
         try:
@@ -264,7 +272,8 @@ class Kernel:
             self.__scheduler.enqueue(thread)
         return thread
 
-    def add_threads(self, threads):
+    def add_threads(self, *threads):
+        verify_list(threads)
         for thread in threads:
             self.add_thread(thread)
 

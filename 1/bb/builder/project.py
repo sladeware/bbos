@@ -109,13 +109,13 @@ class Project(DistributionMetadata):
                     return self.add_extension(source)
                 wrapper = wrap(source)
                 if not wrapper:
-                    raise TypeError("unknown instance")
+                    raise TypeError("unknown wrapper")
                 return self.add_extension(wrapper)
             elif type(source) is StringType:
                 source = os.path.abspath(source)
                 self.sources.append(source)
             else:
-                raise TypeError("unknown source type")
+                raise TypeError("unknown source type: %s" % type(source))
 
     def add_sources(self, sources):
         if not type(sources) == ListType:
