@@ -85,7 +85,6 @@ def _add_source(kernel, project):
         for filename in ("system.c", "thread.c", "idle.c"):
             project.add_source(module.get_file(__name__, filename))
     project.add_source(kernel.get_scheduler())
-    project.add_source(kernel.get_hardware())
 
 @Wrapper.bind("on_add", Hardware)
 def _add_hardware(hardware, project):

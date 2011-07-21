@@ -7,10 +7,19 @@ __copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
 
 import sys
 import traceback
+import threading
 from types import *
 
 from bb.apps.utils.type_verification import verify_list
 from bb.os.object import Object
+
+running_kernels = {}
+
+def get_running_kernel():
+    tid = threading.current_thread().ident
+    if not tid in running_kernels:
+        return None
+    return running_kernels[tid]
 
 #______________________________________________________________________________
 # Kernel exceptions
@@ -182,11 +191,14 @@ class Kernel(Object):
         # Start initialization (simulation only)
         self.init(*arg_list, **arg_dict)
 
+    @Object.sim_method
+    def printk(self, message):
+        print message
+
     # System Management
 
+    @Object.sim_method
     def init(self, threads=[], commands=[]):
-        if self.mode != "SIMULATION":
-            return
         print self.banner()
         print "Initialize kernel"
         self.add_commands(DEFAULT_COMMANDS)
@@ -198,13 +210,15 @@ class Kernel(Object):
     def get_status(self):
         return self.__status
 
+    @Object.sim_method
     def test(self):
         if not self.get_number_of_threads():
             raise KernelError("At least one thread has to be added")
 
+    @Object.sim_method
     def start(self):
-        if self.mode != "SIMULATION":
-            return
+        tid = threading.current_thread().ident
+        running_kernels[tid] = self
         self.test()
         print "Start kernel"
         try:
@@ -215,15 +229,18 @@ class Kernel(Object):
         except KeyboardInterrupt:
             self.stop()
 
+    @Object.sim_method
     def stop(self):
         """Shutdown everything and perform a clean system stop."""
         print "Kernel stoped."
 
+    @Object.sim_method
     def panic(self, text):
         """Halt the system. Display a message, then perform cleanups with exit."""
         print "Panic: %s" % text
         exit()
 
+    @Object.sim_method
     def banner(self):
         return "BBOS Kernel vALPHA"
 
@@ -256,7 +273,8 @@ class Kernel(Object):
         raise NotImplemented()
 
     def add_thread(self, *arg_list):
-        """Add a new thread to the kernel."""
+        """Add a new thread to the kernel. This method is available in all modes, so be
+        carefull to make changes."""
         if not len(arg_list):
             raise NotImplemented()
         thread = self.get_thread(arg_list[0])
@@ -266,7 +284,7 @@ class Kernel(Object):
             thread = Thread(*arg_list)
         else:
             thread = arg_list[0]
-        print "Add thread '%s'" % thread.get_name()
+        self.printk("Add thread '%s'" % thread.get_name())
         self.__threads[ thread.get_name() ] = thread
         if self.get_scheduler():
             self.__scheduler.enqueue(thread)

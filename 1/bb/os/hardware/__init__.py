@@ -9,6 +9,7 @@ import types
 from bb.apps.utils.type_verification import verify_list
 from bb.apps.utils.distribution import DistributionMetadata
 from bb.os.kernel import Kernel, Module
+from bb import app
 
 #______________________________________________________________________________
 
@@ -33,9 +34,9 @@ class Core(DistributionMetadata):
             self.set_process(process)
 
     def set_process(self, process):
-        if not isinstance(process, Kernel):
+        if not isinstance(process, app.Process):
             raise TypeError('process must be %s sub-class' 
-                            % Kernel.__class__.__name__)
+                            % app.Process.__class__.__name__)
         self.__process = process
         process.get_hardware().set_core(self)
 
