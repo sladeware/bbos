@@ -24,7 +24,7 @@ kernel.add_thread("BLINK", blink_runner)
 from bb import app
 from bb.os.hardware.boards import PropellerDemoBoard
 
-blinker = app.new_process('blinker', kernel)
+blinker = app.Process('blinker', kernel)
 board = PropellerDemoBoard([blinker])
 
 if app.get_mode() is app.SIMULATION_MODE:
