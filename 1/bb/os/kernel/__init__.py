@@ -144,12 +144,12 @@ class Thread:
 
 #______________________________________________________________________________
 
-def idle_runner():
+def bbos_idle_runner():
     return
 
 class Idle(Thread):
     def __init__(self):
-        Thread.__init__(self, "BBOS_IDLE", idle_runner)
+        Thread.__init__(self, "BBOS_IDLE", bbos_idle_runner)
 
 #______________________________________________________________________________
 

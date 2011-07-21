@@ -125,7 +125,7 @@ bbos_start()
 #endif
 
 #ifdef BBOS_SCHED_ENABLED
-  bbos_start_thread(BBOS_IDLE, bbos_idle);
+  bbos_add_thread(BBOS_IDLE, bbos_idle_runner);
 
   while (1) {
 	bbos_sched_move();

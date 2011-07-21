@@ -10,7 +10,7 @@
  * @brief Kernel idle control
  */
 
-void bbos_idle();
+void bbos_idle_runner();
 
 #endif
 
