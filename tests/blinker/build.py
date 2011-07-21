@@ -8,7 +8,7 @@ import module
 from bb import app
 from bb.builder.projects import CatalinaProject
 
-from model import blinker
+from blinker import blinker
 
 project = CatalinaProject("Blinker", [blinker])
 for source_file in ('blinker.c',):

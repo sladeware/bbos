@@ -11,6 +11,7 @@ import imp
 import traceback
 
 import bbenv
+from bb import app
 
 #_______________________________________________________________________________
 
@@ -40,13 +41,16 @@ def touch(target_file):
     # Sefely remove target_dir from the search path
     sys.path.remove(target_dir)
 
+APP_ARGS = ('simulation',)
+FLAG_SPEC = (['help'] + list(APP_ARGS))
+
 def main(argv=None):
     """The main entry point for the script."""
     if argv is None:
         argv = sys.argv
     try:
         try:
-            opts, args = getopt.getopt(argv[1:], "h:", ["help"])
+            opts, args = getopt.getopt(argv[1:], "h:", FLAG_SPEC)
             if not len(opts) and not len(args):
                 usage()
         except getopt.error, msg:
@@ -54,6 +58,9 @@ def main(argv=None):
         for o, a in opts:
             if o in ("-h", "--help"):
                 usage()
+                exit(0)
+            elif o in ('--simulation'):
+                app.select_mode(app.SIMULATION_MODE)
             else:
                 raise Exception("Unhandled argument")
         for target_file in args:
