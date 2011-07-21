@@ -8,7 +8,7 @@ import module
 from bb import app
 from bb.builder.projects import CatalinaProject
 
-from application import blinker
+from model import blinker
 
 project = CatalinaProject("Blinker", [blinker])
 for source_file in ('blinker.c',):
@@ -21,6 +21,6 @@ compiler.add_library('ci')
 compiler.define_macro("LED", 18)
 
 # Build application
-project.build(verbose=False, dry_run=False)
+project.build(verbose=False, dry_run=True)
 
 
