@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
+"""Design blinker's process"""
+
 __copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
 
 import time
-import sys
 
-from bb.os.kernel import Kernel, Thread
-from bb.os.kernel.schedulers import StaticScheduler
+from bb import os
+from bb import app
 
 LED=1
 TIMEOUT=3
@@ -15,8 +16,10 @@ def blink_runner():
     print "Blink LED#%d!" % LED
     time.sleep(TIMEOUT) # in seconds
 
-kernel = Kernel()
-kernel.set_scheduler(StaticScheduler())
+kernel = os.Kernel()
+kernel.set_scheduler(os.StaticScheduler())
 kernel.add_thread("BLINK", blink_runner)
-kernel.start()
+
+if app.get_mode() is app.SIMULATION_MODE:
+	kernel.start()	
 
