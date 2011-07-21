@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2011 Slade Maurer, Alexander Sviridenko
+ */
 
 #include <bb/os/config.h>
 #include BBOS_FIND_PROCESSOR_FILE(delay.h)
