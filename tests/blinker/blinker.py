@@ -1,17 +1,25 @@
 #!/usr/bin/env python
 
-"""Design blinker's application"""
+"""Design blinker's process"""
 
 __copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
 
+import time
+
+from bb import os
 from bb import app
 
-blinker = app.new_application()
-process = blinker.add_process('blinker')
+LED=1
+TIMEOUT=3
 
-from bb.os.hardware.boards import PropellerDemoBoard
-board = PropellerDemoBoard([process])
+def blink_runner():
+    print "Blink LED#%d!" % LED
+    time.sleep(TIMEOUT) # in seconds
+
+kernel = os.Kernel()
+kernel.set_scheduler(os.StaticScheduler())
+kernel.add_thread("BLINK", blink_runner)
 
 if app.get_mode() is app.SIMULATION_MODE:
-	blinker.run()
+	kernel.start()	
 
