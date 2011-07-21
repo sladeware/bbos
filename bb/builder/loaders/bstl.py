@@ -1,7 +1,7 @@
 
-from builder.errors import *
-from builder.loader import Loader
-from builder.spawn import spawn
+from bb.builder.errors import *
+from bb.builder.loader import Loader
+from bb.apps.utils.spawn import spawn
 
 #_______________________________________________________________________________
 
@@ -24,8 +24,11 @@ class BSTLLoader(Loader):
         
     def _load(self, filename, device=None, mode=1):
         loader = self.executables['loader']
+        device_flag = []
         try:
-            spawn(loader + ['-d', device] + [filename],
+            if device:
+                device_flag = ['-d', device]
+            spawn(loader + device_flag + [filename],
                   verbose=self.verbose)
         except BuilderExecutionError, msg:
             raise LoaderError, msg

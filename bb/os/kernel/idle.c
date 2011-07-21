@@ -6,7 +6,7 @@
  * Runs when the system is idle.
  */
 void
-bbos_idle()
+bbos_idle_runner()
 {
 }
 

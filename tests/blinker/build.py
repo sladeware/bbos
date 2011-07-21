@@ -20,7 +20,12 @@ compiler.add_include_dir(module.get_dir())
 compiler.add_library('ci')
 compiler.define_macro("LED", 18)
 
-# Build application
-project.build(verbose=False, dry_run=True)
+# Loader
+from bb.builder.loaders import BSTLLoader
+project.set_loader(BSTLLoader())
 
+# Build application
+project.build(verbose=False, dry_run=False)
+
+project.load()
 

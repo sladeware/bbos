@@ -16,6 +16,7 @@ def _build(sched, proj):
     f.write("#define bbos_switch_thread()\\\n"
             "\twhile (1) {\\\n")
     for thread in sched.get_order():
-        f.write("\t\tbbos_thread_run(%s);\\\n" % thread.get_name())
+        #f.write("\t\tbbos_thread_run(%s);\\\n" % thread.get_name())
+        f.write("\t\t%s();\\\n" % thread.get_runner_name())
     f.write("\t}\n\n")
     f.close()
