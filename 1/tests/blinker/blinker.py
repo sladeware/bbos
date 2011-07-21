@@ -9,8 +9,8 @@ import time
 from bb import os
 from bb import app
 
-LED=1
-TIMEOUT=3
+LED = 1
+TIMEOUT = 3
 
 def blink_runner():
     print "Blink LED#%d!" % LED
