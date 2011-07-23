@@ -4,6 +4,5 @@
 
 __copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
 
-from bb.os.hardware.drivers.accel.h48c import H48CDriver
 
 

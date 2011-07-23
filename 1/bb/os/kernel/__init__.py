@@ -12,6 +12,7 @@ from types import *
 
 from bb.apps.utils.type_verification import verify_list
 from bb.os.object import Object
+from bb import app
 
 running_kernels = {}
 
@@ -54,8 +55,6 @@ class Command(object):
     def get_doc(cls):
         return cls.__doc__
 
-#______________________________________________________________________________
-
 class BBOS_DRIVER_OPEN(Command):
     """Driver Command to open target device."""
 
@@ -74,7 +73,7 @@ class Message:
         self.set_data(data)
 
     def set_command(self, command):
-        if not isinstance(command, Command):
+        if not issubclass(command, Command): # not isinstance
             raise KernelTypeError('Command "%s" must be bb.os.kernel.Command '
                                   'sub-class.' % command)
         self.__command = command
@@ -119,17 +118,6 @@ class Thread:
     def set_name(self, name):
         self.name = name
 
-    def put_message(self, message):
-        if not isinstance(message, Message):
-            raise KernelTypeError('Message "%s" must be bb.os.kernel.Message '
-                                  'sub-class' % message)
-        self.messages.append(message)
-
-    def get_message(self):
-        if self.has_messages():
-            return self.messages.pop(0)
-        return None
-
     def start(self):
         self.run()
 
@@ -141,6 +129,22 @@ class Thread:
     def runner(cls, target):
         cls.target = target
         return target
+
+		# Inter-Thread Communication
+
+    def put_message(self, message):
+        if not isinstance(message, Message):
+            raise KernelTypeError('Message "%s" must be bb.os.kernel.Message '
+                                  'sub-class' % message)
+        self.messages.append(message)
+
+    def get_message(self):
+        if self.has_messages():
+            return self.messages.pop(0)
+        return None
+
+    def has_messages(self):
+        return not not len(self.messages)
 
 #______________________________________________________________________________
 
@@ -176,9 +180,47 @@ class Scheduler:
 #______________________________________________________________________________
 
 class Module(Thread):
-    pass
+    commands=[]
+
+    def __init__(self, *arg_list, **arg_dict):
+        Thread.__init__(self, *arg_list, **arg_dict)
+        for command in self.commands:
+            setattr(self, command.get_name(), command)
+
+    def get_commands(self):
+        return self.commands
 
 #______________________________________________________________________________
+
+import os.path
+
+def importer(mod_path):
+    """Replacement for built-in __import__ primitive. importer allows to import modules 
+    as in the standard fashion os.importer('os.path'), and also as os.importer('os/path') 
+    or os.importer('os/path.py')."""
+    if os.path.isfile(mod_path) or os.path.isdir(mod_path):
+        head = mod_path
+        mod_path = ''
+        while head:
+            head, tail = os.path.split(head)
+            if not len(mod_path):
+                mod_path = tail
+            else:
+                mod_path = '.'.join([tail, mod_path])
+    try:
+        __import__(mod_path)
+    except ImportError:
+        traceback.print_exc(file=sys.stderr)
+        raise KernelModuleError("Cannot import module %s" % mod_path)
+    mod = sys.modules[mod_path]
+    mod_class_name = mod.__name__.split('.').pop()
+    try:
+        mod_class = getattr(mod, mod_class_name)
+    except AttributeError:
+        raise KernelModuleError("Module '%s' should have class '%s'" % 
+                                mod_path, mod_class_name)
+    mod_inst = mod_class()
+    return mod_inst
 
 class Kernel(Object):
     def __init__(self, *arg_list, **arg_dict):
@@ -375,20 +417,13 @@ class Kernel(Object):
     # Module Management
 
     def add_module(self, mod_path):
-        try:
-            __import__(mod_path)
-        except ImportError:
-            traceback.print_exc(file=sys.stderr)
-            raise KernelModuleError
-        mod = sys.modules[mod_path]
-        mod_class_name = mod.__name__.split(".").pop()
-        try:
-            mod_class = getattr(mod, mod_class_name)
-        except AttributeError:
-            raise KernelModuleError("Module '%s' should have class '%s'" % 
-                                    mod_path, mod_class_name)
-        mod_inst = mod_class()
+        """Load and register module by using importer"""
+        mod_inst = importer(mod_path)
         self.__modules[mod_path] = mod_inst
+        # If module is recognised as a driver
+        if isinstance(mod_inst, Driver):
+            self.get_hardware().add_driver(mod_inst)
+        self.add_thread(mod_inst)
         return mod_inst
 
     def get_modules(self):
@@ -402,7 +437,7 @@ class Kernel(Object):
 
 #______________________________________________________________________________
 
-from bb.os.hardware import Core
+from bb.os.hardware import Core, Driver
 
 class Hardware:
     """This class represents interface between kernel and hardware abstraction.
@@ -435,7 +470,7 @@ class Hardware:
 
     def add_driver(self, driver):
         if not isinstance(driver, Driver):
-            raise TypeError('Driver must be bb.os.hardware.Driver sub-class')
+            raise TypeError('%s must be bb.os.hardware.Driver sub-class' % driver)
         self.__drivers[ driver.get_name() ] = driver
 
     def has_driver(self, *arg_list):
@@ -455,3 +490,4 @@ class Hardware:
         raise NotImplemented()
 
 import bb.os.kernel.setup
+

@@ -3,11 +3,9 @@
 __copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
 
 import types
+import threading
 
 from bb.apps.utils.type_verification import verify_list
-
-processes = {}
-options = {}
 
 SIMULATION_MODE = 0x1
 DEV_MODE = 0x3
