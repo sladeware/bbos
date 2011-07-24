@@ -20,7 +20,8 @@ def usage():
 
 USAGE: %s [OPTIONS] [FILES]
 
--h, --help  : print this help message
+-h, --help        : print this help message
+    --simulation  : run in simulation mode
 ''' % os.path.basename(__file__)
 
 def touch(target_file):
