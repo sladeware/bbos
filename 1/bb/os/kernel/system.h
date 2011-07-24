@@ -21,6 +21,7 @@
 #include <assert.h>
 
 #include <bb/os/config.h>
+#include <bb/os/kernel/errors.h>
 #include <bb/os/kernel/types.h>
 
 #ifdef BBOS_SCHED_ENABLED

@@ -18,6 +18,8 @@ for source_file in ('accel.c',):
 compiler = project.get_compiler()
 compiler.add_include_dir(module.get_dir())
 compiler.add_library('ci')
+compiler.define_macro('DEMO')
+compiler.define_macro('PC')
 
 # Loader
 from bb.builder.loaders import BSTLLoader
@@ -26,5 +28,5 @@ project.set_loader(BSTLLoader())
 # Build application
 project.build(verbose=True, dry_run=False)
 
-#project.load()
+project.load()
 
