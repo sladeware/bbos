@@ -5,7 +5,6 @@
 #include <stdio.h>
 
 #include <bb/os/kernel/system.h>
-#include <bb/os/kernel/errors.h>
 #include <bb/os/kernel/thread.h>
 #include <bb/os/kernel/idle.h>
 

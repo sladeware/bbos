@@ -23,6 +23,8 @@ class CatalinaCompiler(UnixCCompiler):
         ld_opts = UnixCCompiler._gen_ld_options(self, debug, before)
         if self.verbose:
             ld_opts[:0] = ['-v']
+        # Add macro! 
+        ld_opts.extend(self._gen_preprocess_options(self.macros, []))
         return ld_opts
 
 

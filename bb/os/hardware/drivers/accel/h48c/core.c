@@ -112,7 +112,7 @@ h48c_gforce_of_axis(uint32_t select)
   int32_t axis_count; // axis voltage adc counts
 
   // Read vref and axis counts
-  vref_count = h48c_read_value(H48C_SELECT_VREF);
+  vref_count = h48c_read_value((uint32_t)H48C_SELECT_VREF);
   _waitcnt(_cnt() + 300); // 1usec
   axis_count = h48c_read_value(select);
 	
