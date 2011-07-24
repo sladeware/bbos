@@ -109,7 +109,8 @@ class Project(DistributionMetadata):
                     return self.add_extension(source)
                 wrapper = wrap(source)
                 if not wrapper:
-                    raise TypeError("unknown wrapper")
+                    raise TypeError("Don't know how to work with %s object, "
+                                    "the wrapper wasn't provided" % source)
                 return self.add_extension(wrapper)
             elif type(source) is StringType:
                 source = os.path.abspath(source)

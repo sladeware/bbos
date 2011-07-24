@@ -32,10 +32,10 @@
  */
 
 #include <stdio.h>
-#include <bbos/kernel/system.h>
-#include <bbos/kernel/error_codes.h>
-#include <bbos/hardware/drivers/spi/spi_stamp.h>	
-#include <bbos/hardware/drivers/accel/h48c.h>
+#include <bb/os/kernel/system.h>
+#include <bb/os/kernel/errors.h>
+#include <bb/os/hardware/drivers/spi/spi_stamp.h>	
+#include <bb/os/hardware/drivers/accel/h48c/core.h>
 #include <catalina_cog.h>
 #include <catalina_hmi.h>
 
@@ -174,7 +174,7 @@ h48c_read_value(uint32_t select)
  * H48C accelerometer driver thread.
  */
 void
-h48c()
+h48c_runner()
 {
   static struct bbos_message message;
   struct h48c_pins *pins;
@@ -187,8 +187,6 @@ h48c()
 
   switch (message.id)
     {
-    case BBOS_DRIVER_INIT:
-      break;
     case BBOS_DRIVER_OPEN:
       pins = (struct h48c_pins *)message.data;
       h48c_open(pins->dio, pins->clk, pins->cs, pins->zerog);
@@ -198,7 +196,7 @@ h48c()
       break;
     case H48C_GFORCE_AOX:
       break;
-    case H48C_FREE_FALL:
+    case H48C_FREEFALL:
       *(int *)message.data = h48c_free_fall();
       break;
     default:

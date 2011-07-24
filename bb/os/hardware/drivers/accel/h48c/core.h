@@ -38,8 +38,8 @@ struct h48c_pins {
 
 /* Messages */
 
-#ifndef H48C_FREE_FALL
-#error "Please define H48C_FREE_FALL message"
+#ifndef H48C_FREEFALL
+#error "Please define H48C_FREEFALL message"
 #endif
 #ifndef H48C_GFORCE_AOX
 #error "Please define H48C_GFORCE_AOX message"
@@ -52,7 +52,7 @@ struct h48c_pins {
 #endif
 
 /* Prototypes */
-void h48c();
+void h48c_runner();
 
 #endif
 

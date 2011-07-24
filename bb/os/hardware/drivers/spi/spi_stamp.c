@@ -2,9 +2,9 @@
  * Copyright (c) 2011 Slade Maurer, Alexander Sviridenko
  */
 
-#include <bbos/kernel/system.h>
-#include <bbos/math/bitops.h>
-#include <bbos/hardware/drivers/spi/spi_stamp.h>
+#include <bb/os/kernel/system.h>
+#include <bb/apps/math/bitops.h>
+#include <bb/os/hardware/drivers/spi/spi_stamp.h>
 #include <catalina_cog.h>
 #include <catalina_hmi.h>
 

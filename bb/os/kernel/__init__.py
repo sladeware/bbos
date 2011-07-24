@@ -428,6 +428,7 @@ class Kernel(Object):
         """Load and register module by using importer"""
         mod_inst = importer(mod_path)
         self.__modules[mod_path] = mod_inst
+        self.add_commands(mod_inst.get_commands())
         # If module is recognised as a driver
         if isinstance(mod_inst, Driver):
             self.get_hardware().add_driver(mod_inst)

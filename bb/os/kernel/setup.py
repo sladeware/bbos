@@ -82,9 +82,11 @@ def _build(kernel, project):
 def _add_source(kernel, project):
     if isinstance(project.get_compiler(), CCompiler):
         project.get_compiler().add_include_dir(os.path.join(module.get_dir(), "../../.."))
-        for filename in ("system.c", "thread.c", "idle.c"):
+        for filename in ("system.c", "thread.c", "idle.c", "port.c"):
             project.add_source(module.get_file(__name__, filename))
     project.add_source(kernel.get_scheduler())
+    for mod in kernel.get_modules():
+        project.add_source(mod)
 
 @Wrapper.bind("on_add", Hardware)
 def _add_hardware(hardware, project):
