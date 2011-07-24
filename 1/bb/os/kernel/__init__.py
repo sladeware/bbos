@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""BBOS kernel."""
+"""The BBOS kernel API""" 
 
 __version__ = "$Rev$"
 __copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
@@ -8,7 +8,8 @@ __copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
 import sys
 import traceback
 import threading
-from types import *
+import types
+import os.path
 
 from bb.apps.utils.type_verification import verify_list
 from bb.os.object import Object
@@ -21,6 +22,35 @@ def get_running_kernel():
     if not tid in running_kernels:
         return None
     return running_kernels[tid]
+
+def importer(mod_path):
+    """Replacement for built-in __import__ primitive. importer allows to import modules 
+    as in the standard fashion importer('os.path'), and also as importer('os/path') 
+    or even os.importer('os/path.py')."""
+    # The module path is a directory or file. Provide dot-separator.
+    if os.path.isfile(mod_path) or os.path.isdir(mod_path):
+        head = mod_path
+        mod_path = ''
+        while head:
+            head, tail = os.path.split(head)
+            if not len(mod_path):
+                mod_path = tail
+            else:
+                mod_path = '.'.join([tail, mod_path])
+    try:
+        __import__(mod_path)
+    except ImportError:
+        traceback.print_exc(file=sys.stderr)
+        raise KernelModuleError("Cannot import module %s" % mod_path)
+    mod = sys.modules[mod_path]
+    mod_class_name = mod.__name__.split('.').pop()
+    try:
+        mod_class = getattr(mod, mod_class_name)
+    except AttributeError:
+        raise KernelModuleError("Module '%s' should have control class '%s'" % 
+                                mod_path, mod_class_name)
+    mod_inst = mod_class()
+    return mod_inst
 
 #______________________________________________________________________________
 # Kernel exceptions
@@ -45,10 +75,10 @@ class Command(object):
         return cls.__name__
 
     def __eq__(self, other):
-        if type(other) is StringType:
+        if type(other) is types.StringType:
             return self.get_name() == other
-        elif (type(other) is InstanceType and isinstance(other, Command)) \
-                or (type(other) is ClassType and issubclass(other, Command)): 
+        elif (type(other) is types.InstanceType and isinstance(other, Command)) \
+                or (type(other) is types.ClassType and issubclass(other, Command)): 
             return self.get_name() == other.get_name()
 
     @classmethod
@@ -177,50 +207,28 @@ class Scheduler:
     def dequeue(self, thread):
         raise NotImplemented
 
-#______________________________________________________________________________
-
 class Module(Thread):
-    commands=[]
+    """A loadable kernel module is an object that contains functionality to 
+    extend the BBOS kernel. Such functionality can be represented by an 
+    application or hardware device driver. Since we are not always able to 
+    provide an appropriate mechanism for the target operating system, the goal 
+    of the module is to create a complete view of the system in simulation mode, 
+    which will be used by BBB as a model is built."""
+    commands=()
 
     def __init__(self, *arg_list, **arg_dict):
         Thread.__init__(self, *arg_list, **arg_dict)
+
+    def find_command(self, command_name):
+        """Find an appropriate module class for a command command_name."""
         for command in self.commands:
-            setattr(self, command.get_name(), command)
+            if command.get_name() == command_name:
+                return command
 
     def get_commands(self):
+        """Return a tuple of commands that module supports for 
+        communication purposes."""
         return self.commands
-
-#______________________________________________________________________________
-
-import os.path
-
-def importer(mod_path):
-    """Replacement for built-in __import__ primitive. importer allows to import modules 
-    as in the standard fashion os.importer('os.path'), and also as os.importer('os/path') 
-    or os.importer('os/path.py')."""
-    if os.path.isfile(mod_path) or os.path.isdir(mod_path):
-        head = mod_path
-        mod_path = ''
-        while head:
-            head, tail = os.path.split(head)
-            if not len(mod_path):
-                mod_path = tail
-            else:
-                mod_path = '.'.join([tail, mod_path])
-    try:
-        __import__(mod_path)
-    except ImportError:
-        traceback.print_exc(file=sys.stderr)
-        raise KernelModuleError("Cannot import module %s" % mod_path)
-    mod = sys.modules[mod_path]
-    mod_class_name = mod.__name__.split('.').pop()
-    try:
-        mod_class = getattr(mod, mod_class_name)
-    except AttributeError:
-        raise KernelModuleError("Module '%s' should have class '%s'" % 
-                                mod_path, mod_class_name)
-    mod_inst = mod_class()
-    return mod_inst
 
 class Kernel(Object):
     def __init__(self, *arg_list, **arg_dict):
@@ -296,7 +304,7 @@ class Kernel(Object):
     def get_thread(self, thread):
         """Test for presence of thread and return thread's object. Return 
         None if kernel does have such thread."""
-        if type(thread) is StringType:
+        if type(thread) is types.StringType:
             if thread in self.__threads:
                 return self.__threads[thread]
         elif isinstance(thread, Thread):
@@ -322,7 +330,7 @@ class Kernel(Object):
         thread = self.get_thread(arg_list[0])
         if thread:
             raise KernelError("Thread '%s' has been already added" % thread.get_name())
-        if type(arg_list[0]) is StringType:
+        if type(arg_list[0]) is types.StringType:
             thread = Thread(*arg_list)
         else:
             thread = arg_list[0]
@@ -390,9 +398,9 @@ class Kernel(Object):
     def get_command(self, command):
         if not self.has_command(command):
             return None
-        if type(command) == StringType:
+        if type(command) is types.StringType:
             return self.__commands[command]
-        elif type(command) == InstanceType:
+        elif type(command) is types.InstanceType:
             return self.__commands[ command.get_name() ]
 
     def add_commands(self, commands):
@@ -400,9 +408,9 @@ class Kernel(Object):
             self.add_command(command)
 
     def has_command(self, command):
-        if type(command) == StringType:
+        if type(command) is types.StringType:
             return command in self.__commands
-        if type(command) != TypeType or not issubclass(command, Command):
+        if type(command) != types.TypeType or not issubclass(command, Command):
             raise KernelTypeError('Command "%s" must be bb.os.kernel.Command '
                                   'sub-class' % command)
         return command.get_name() in self.__commands

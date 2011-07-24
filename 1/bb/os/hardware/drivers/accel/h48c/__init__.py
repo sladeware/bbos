@@ -14,12 +14,12 @@ def h48c_freefall():
     return int(random.random() + 0.1)
 
 class H48C_FREEFALL(os.Command):
-    '''Free fall detection'''
+    """Free fall detection"""
 
 class h48c(Driver):
     name='H48C'
     description='H48C Accelerometer Driver'
-    commands=[os.BBOS_DRIVER_OPEN, os.BBOS_DRIVER_CLOSE, H48C_FREEFALL]
+    commands=(os.BBOS_DRIVER_OPEN, os.BBOS_DRIVER_CLOSE, H48C_FREEFALL)
 
     @Driver.runner
     def h48c_runner(self):
