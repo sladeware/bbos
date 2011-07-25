@@ -1,6 +1,13 @@
+Bionic Bunny Project version alpha 1
+====================================
 
-BBOS is a meta-operating system for embedded and real-time devices. It provides
-language-independent, hardware-independent and network-transparent communication 
-for a device control.
+Copyright (c) 2011 Slade Maurer, Alexander Sviridenko
 
+Installation
+------------
 
+Copy the latest version of BB platform to the place where it will live
+(e.g. /opt/bbproject/). Go to this directory and run install.sh script
+from the root as follows:
+
+$ sudo install.sh
