@@ -1,9 +1,0 @@
-
-Sphinx
-
-$ make html
-
-Doxygen
-
-$ doxygen bbos-doxygen.in
-
