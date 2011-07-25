@@ -1,0 +1,18 @@
+
+$ cd bbos/tools
+$ make -f mkimage.mk
+
+$ cd demos/boot
+$ make
+
+Should be created 'demo' file.
+
+$ gcc -I../../ emulate.c ../../bbos/boot/image.c -o emulate
+
+Now we have emulator for our demo.
+
+$ ../../bbos/tools/mkimage -v -n '0.0.1 bbos kernel' -A x86 -O bbos -T standalone -C none -d demo image
+
+Create image file.
+
+$ ./emulate
