@@ -1,4 +1,4 @@
-#!/usr/bin/evn python
+#!/usr/bin/env python
 
 __copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
 
@@ -27,9 +27,9 @@ def freefall_runner():
   if not freefall_runner.init_complete:
     print "Send open-message to accelerometer device driver"
     os.get_running_kernel().send_message(h48c.get_name(), 
-      os.Message("FREEFALL", h48c.find_command('BBOS_DRIVER_OPEN'), None))
+      os.Message('FREEFALL', h48c.find_command('BBOS_DRIVER_OPEN'), None))
   os.get_running_kernel().send_message(h48c.get_name(),
-    os.Message("FREEFALL", h48c.find_command('H48C_FREEFALL'), None))
+    os.Message('FREEFALL', h48c.find_command('H48C_FREEFALL'), None))
   time.sleep(2)
 
 kernel = os.Kernel()

@@ -16,16 +16,14 @@ freefall_runner()
   static bbos_message_t message; // message to communicate with accelerometer
 
   /* Freefall has a new message */
-  if (bbos_port_receive(FREEFALL, &message) == BBOS_SUCCESS)
-    {
-      // Try to figure out the command
-      switch (message.id)
-	{
+  if (bbos_port_receive(FREEFALL, &message) == BBOS_SUCCESS) {
+	/* Try to figure out the command */
+	switch (message.id) {
 	case BBOS_DRIVER_OPEN:
 	  printf("H48C device has been opened\n");
 	  init_complete = 1;
 	  break;
-	  // Response from the free fall detection
+	  /* Response from the free fall detection */
 	case H48C_FREEFALL:
 	  if (*(int *)message.data == 1)
 	    printf("Free fall detected!\n");
@@ -34,16 +32,15 @@ freefall_runner()
 	  bbos_panic("Unknown message");
 	  break;
 	}
-    }
+  }
 
-  if (!init_complete)
-    {
-      printf("Send open-message to H48C device driver\n");
-      message.id = BBOS_DRIVER_OPEN;
-      message.data = &freefall_pins;
-      bbos_port_send(H48C, &message, FREEFALL);
-      return;
-    }
+  if (!init_complete) {
+	printf("Send open-message to H48C device driver\n");
+	message.id = BBOS_DRIVER_OPEN;
+	message.data = &freefall_pins;
+	bbos_port_send(H48C, &message, FREEFALL);
+	return;
+  }
 
   message.id = H48C_FREEFALL;
   message.data = &is_freefall;
@@ -54,11 +51,9 @@ int
 main()
 {
   bbos_init();
-  printf("Accel test");
   bbos_add_thread(FREEFALL, freefall_runner);
   bbos_add_thread(H48C, h48c_runner);
   bbos_start();
-
-	return 0;
+  return 0;
 }
 
