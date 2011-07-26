@@ -4,7 +4,7 @@ __copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
 
 import time
 
-from bb import os
+import bb.os as bbos
 from bb import app
 from bb.os.hardware.boards import PropellerDemoBoard
 
@@ -12,7 +12,7 @@ def freefall_runner():
   # freefall is defined as an alternative to static variable in C
   freefall_runner.init_complete = getattr(freefall_runner, 'init_complete', False)
   # Waiting for a messages from h48c device driver
-  message = os.get_running_kernel().receive_message('FREEFALL')
+  message = bbos.get_running_kernel().receive_message('FREEFALL')
   if message and message.get_sender() is h48c.get_name():
     if message.get_command() is h48c.find_command('BBOS_DRIVER_OPEN'):
       print "H48C device has been opened"
@@ -26,14 +26,14 @@ def freefall_runner():
   # Initialization is not complete, send a message to open the driver
   if not freefall_runner.init_complete:
     print "Send open-message to accelerometer device driver"
-    os.get_running_kernel().send_message(h48c.get_name(), 
-      os.Message('FREEFALL', h48c.find_command('BBOS_DRIVER_OPEN'), None))
-  os.get_running_kernel().send_message(h48c.get_name(),
-    os.Message('FREEFALL', h48c.find_command('H48C_FREEFALL'), None))
+    bbos.get_running_kernel().send_message(h48c.get_name(), 
+      bbos.Message('FREEFALL', h48c.find_command('BBOS_DRIVER_OPEN'), None))
+  bbos.get_running_kernel().send_message(h48c.get_name(),
+    bbos.Message('FREEFALL', h48c.find_command('H48C_FREEFALL'), None))
   time.sleep(2)
 
-kernel = os.Kernel()
-kernel.set_scheduler(os.StaticScheduler())
+kernel = bbos.Kernel()
+kernel.set_scheduler(bbos.StaticScheduler())
 kernel.add_thread('FREEFALL', freefall_runner)
 h48c = kernel.add_module('bb.os.hardware.drivers.accel.h48c')
 

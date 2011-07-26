@@ -4,10 +4,12 @@ __copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
 from types import *
 
 from bb.builder.errors import *
-
-#_______________________________________________________________________________
+from bb.apps.utils.spawn import which, ExecutionError
 
 class Compiler(object):
+    """
+    Attributes:
+    executable: A dictinary of executables."""
     executables = {}
 
     def __init__(self, verbose=None, dry_run=False):
@@ -15,6 +17,13 @@ class Compiler(object):
         self.dry_run = dry_run
         # A common output directory for objects, libraries, etc.
         self.output_dir = ""
+
+    def check_executables(self):
+        if not self.executables:
+            return
+        for (name, cmd) in self.executables.items():
+            if not which(cmd[0]):
+                raise ExecutionError("compiler '%s' can not be found" % cmd[0])
 
     def get_language(self, *arg_list, **arg_dict):
         raise NotImplemented

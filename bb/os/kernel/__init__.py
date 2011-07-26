@@ -417,8 +417,9 @@ class Kernel(Object):
 
     def add_command(self, command):
         if self.has_command(command):
-            raise KernelError("Command '%s' has been already added" % 
-                              command.get_name())
+            return command
+            #raise KernelError("Command '%s' has been already added" % 
+            #                  command.get_name())
         self.__commands[ command.get_name() ] = command
         return command
 

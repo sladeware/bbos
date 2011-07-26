@@ -10,8 +10,6 @@ from bb.builder.errors import *
 from bb.apps.utils.dir import mkpath
 from bb.apps.utils.spawn import which, ExecutionError
 
-#_______________________________________________________________________________
-
 class CCompiler(Compiler):
     """Abstract base class to define the interface of the standard C compiler 
     that must be implemented by real compiler class.
@@ -58,13 +56,6 @@ class CCompiler(Compiler):
         self.library_dirs = []
 	# A list of object files
 	self.objects = []
-
-    def check_executables(self):
-        if not self.executables:
-            return
-        for (name, cmd) in self.executables.items():
-            if not which(cmd[0]):
-                raise ExecutionError("compiler '%s' can not be found" % cmd[0])
 
     def _find_macro(self, name):
         """Return position of the macro 'name' in the list of macros."""
@@ -160,6 +151,15 @@ class CCompiler(Compiler):
         defn = (name, value)
         self.macros.append(defn)
 
+    def undefine_macro(self, name):
+        # Delete from the list of macro definitions/undefinitions if
+        # already there
+        i = self._find_macro(name)
+        if i is not None:
+            del self.macros[i]
+        undefn = (name, )
+        self.macros.append(undefn)
+
     def detect_language(self, sources):
         """Detect the language of a given file, or list of files. Uses
         language_map, and language_order to do the job."""
@@ -228,28 +228,42 @@ class CCompiler(Compiler):
 
         return lib_options
 
-    def _gen_preprocess_options(self, macros, include_dirs):
-	pp_options = []
+    def _gen_preprocess_macro_options(self, macros):
+        """macros is the usual thing, a list of 1- or 2-tuples, where (name,) 
+        means undefine (-U) macro 'name', and (name, value) means define (-D) 
+        macro 'name' to 'value'."""
+        options = []
 	for macro in macros:
-	    if not (type(macro) is TupleType and 1 <= len (macro) <= 2):
-		raise TypeError, \
-		    ("bad macro definition '%s': " +
-		     "each element of 'macros' list must be a 1- or 2-tuple") %  \
-		     macro
+	    if not (type(macro) is TupleType and 1 <= len(macro) <= 2):
+		raise TypeError("bad macro definition " + repr(macro) + ": " + 
+                                "each element of 'macros' list must be a 1- or 2-tuple")
 	    if len (macro) == 1: # undefine this macro
-		pp_options.append ("-U%s" % macro[0])
+		options.append("-U%s" % macro[0])
 	    elif len (macro) == 2:
 		if macro[1] is None: # define with no explicit value
-		    pp_options.append ("-D%s" % macro[0])
+		    options.append("-D%s" % macro[0])
 		else:
 		    # XXX *don't* need to be clever about quoting the
 		    # macro value here, because we're going to avoid the
 		    # shell at all costs when we spawn the command!
-		    pp_options.append ("-D%s=%s" % macro)
+		    options.append("-D%s=%s" % macro)
+        return options
 
+    def _gen_preprocess_include_options(self, include_dirs):
+        """include_dirs is just a list of directory names to be added to the 
+        header file search path (-I)."""
+        options = []
 	for dir in include_dirs:
-	    pp_options.append ("-I%s" % dir)
+	    options.append ("-I%s" % dir)
+        return options
 
+    def _gen_preprocess_options(self, macros, include_dirs):
+        """Generate C pre-processor options(-D, -U, -I) as used by at least two
+        types of compilers: the typical Unix compiler and Visual C++. Return
+        a list of command-line options suitable for either Unix compilers and 
+        Visual C++."""
+	pp_options = self._gen_preprocess_macro_options(macros) \
+            + self._gen_preprocess_include_options(include_dirs)
 	return pp_options
 
     def _gen_cc_options(self, pp_options, debug, before):
@@ -288,7 +302,6 @@ class CCompiler(Compiler):
         macros, objects, extra_postopts, pp_options, build = \
 	    self._setup_compile(sources, output_dir, macros, include_dirs, extra_postopts, depends)
 	cc_options = self._gen_cc_options(pp_options, debug, extra_preopts)
-
         for obj in objects:
             try:
                 src, ext = build[obj]
@@ -296,7 +309,6 @@ class CCompiler(Compiler):
                 continue
             print "Compiling:", src
             self._compile(obj, src, ext, cc_options, extra_postopts, pp_options)
-	
 	return objects
 
     def _compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts):

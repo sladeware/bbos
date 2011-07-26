@@ -12,7 +12,7 @@ from accel import accel
 
 project = CatalinaProject("Accel", [accel])
 for source_file in ('accel.c',):
-	project.add_source(module.get_file(__name__, source_file))
+    project.add_source(module.get_file(__name__, source_file))
 
 # Setup compiler
 compiler = project.get_compiler()
@@ -26,7 +26,7 @@ from bb.builder.loaders import BSTLLoader
 project.set_loader(BSTLLoader())
 
 # Build application
-project.build(verbose=True, dry_run=False)
+project.build(verbose=True, dry_run=True)
 
 project.load()
 
