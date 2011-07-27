@@ -5,8 +5,8 @@ __copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
 import sys
 import module
 
-from bb import app
 from bb.builder.projects import CatalinaProject
+from bb.builder.loaders import BSTLLoader
 
 from accel import accel
 
@@ -22,11 +22,10 @@ compiler.define_macro('DEMO')
 compiler.define_macro('PC')
 
 # Loader
-from bb.builder.loaders import BSTLLoader
 project.set_loader(BSTLLoader())
 
 # Build application
-project.build(verbose=True, dry_run=True)
+project.build(verbose=False, dry_run=True)
 
 project.load()
 
