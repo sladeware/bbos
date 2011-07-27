@@ -4,8 +4,8 @@ __copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
 
 import time
 
-import bb.os as bbos
 from bb import app
+import bb.os as bbos
 from bb.os.hardware.boards import PropellerDemoBoard
 
 def freefall_runner():
@@ -40,6 +40,5 @@ h48c = kernel.add_module('bb.os.hardware.drivers.accel.h48c')
 accel = app.Process("Accel", kernel)
 board = PropellerDemoBoard(processes=[accel])
 
-if app.get_mode() is app.SIMULATION_MODE:
-    accel.run()
+accel.run()
 

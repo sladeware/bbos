@@ -238,7 +238,6 @@ class Kernel(Object):
         self.__commands = {}
         self.__scheduler = None
         self.__modules = {}
-        # Start initialization (simulation only)
         self.init(*arg_list, **arg_dict)
 
     @Object.sim_method
@@ -247,10 +246,9 @@ class Kernel(Object):
 
     # System Management
 
-    @Object.sim_method
     def init(self, threads=[], commands=[]):
-        print self.banner()
-        print "Initialize kernel"
+        self.printk(self.banner())
+        self.printk("Initialize kernel")
         self.add_commands(DEFAULT_COMMANDS)
         if len(threads):
             self.add_threads(threads)

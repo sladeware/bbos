@@ -11,8 +11,6 @@ from bb.builder.compiler import Compiler
 from bb.builder.loader import Loader
 from bb.builder.errors import *
 
-#______________________________________________________________________________
-
 class Extension(object):
     """Interface!"""
     def on_add(self, project):
@@ -153,7 +151,8 @@ class Project(DistributionMetadata):
     def has_extensions(self):
         return len(self.extensions)
 
-    def build(self, sources=[], output_dir=None, verbose=None, dry_run=None, 
+    def build(self, sources=[], output_dir=None, verbose=None, 
+              dry_run=None, 
               *arg_list, **arg_dict):
         if verbose is not None:
             self.verbose = verbose

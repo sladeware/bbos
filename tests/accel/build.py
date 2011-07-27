@@ -2,11 +2,12 @@
 
 __copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
 
-import sys
-import module
-
+from bb.builder import script
 from bb.builder.projects import CatalinaProject
 from bb.builder.loaders import BSTLLoader
+
+import sys
+import module
 
 from accel import accel
 
@@ -21,11 +22,12 @@ compiler.add_library('ci')
 compiler.define_macro('DEMO')
 compiler.define_macro('PC')
 
-# Loader
-project.set_loader(BSTLLoader())
-
 # Build application
-project.build(verbose=False, dry_run=True)
+project.build(verbose=False, dry_run=script.config.options.dry_run)
 
-project.load()
+# The autoload option allows user to automatically
+# load binary code to the specified device
+if script.config.options.autoload:
+    project.set_loader(BSTLLoader())
+    project.load()
 

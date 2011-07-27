@@ -45,7 +45,6 @@ class CatalinaCompiler(UnixCCompiler):
 	    if not (type(macro) is types.TupleType and 1<= len(macro) <= 2):
 		raise TypeError("bad macro definition " + repr(macro) + ": " + 
                                 "each element of 'macros' list must be a 1- or 2-tuple")
-
             before = ''
             if c_symbol:
                 before = '-W' # add -W option to define C symbol
@@ -58,7 +57,7 @@ class CatalinaCompiler(UnixCCompiler):
 		    # XXX *don't* need to be clever about quoting the
 		    # macro value here, because we're going to avoid the
 		    # shell at all costs when we spawn the command!
-		    options.append("%s-D%s=%s" % (before, ) + macro)
+		    options.append("%s-D%s=%s" % ((before, ) + macro))
             elif len(macro) == 3:
 		if macro[1] is None: # define with no explicit value
 		    options.append("%s-D%s" % (before, macro[0]))
@@ -66,7 +65,7 @@ class CatalinaCompiler(UnixCCompiler):
 		    # XXX *don't* need to be clever about quoting the
 		    # macro value here, because we're going to avoid the
 		    # shell at all costs when we spawn the command!
-		    options.append("%s-D%s=%s" % (before,) + macro)
+		    options.append("%s-D%s=%s" % ((before,) + macro))
         return options
 
     def _gen_cc_options(self, pp_opts, debug, before):

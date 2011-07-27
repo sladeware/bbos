@@ -1,15 +1,21 @@
 
 This test provides environment for testing H48C accelerometer sensor and 
-Propeller Demo Board. Run test in simulation mode:
+Propeller Demo Board.
 
- $ bb --simulation accel.py
+Run test in simulation mode:
 
-Build:
+ $ python accel.py --simulation 
 
- $ bb build.py
+Build test in dry-run mode:
+
+ $ python build.py --dry-run
+
+Build and load test:
+
+ $ python build.py --autoload
 
 Hardware specifications
------------------------
+=======================
 
 Propeller Demo Board --
   http://www.parallax.com/StoreSearchResults/tabid/768/List/0/SortField/4/ProductID/340/Default.aspx

@@ -3,29 +3,30 @@
 __copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
 
 import sys
-import module
 
-from bb import app
+from bb.builder import script
 from bb.builder.projects import CatalinaProject
+from bb.builder.loaders import BSTLLoader
+
+import module
 
 from blinker import blinker
 
 project = CatalinaProject("Blinker", [blinker])
 for source_file in ('blinker.c',):
-	project.add_source(module.get_file(__name__, source_file))
+    project.add_source(module.get_file(__name__, source_file))
 
 # Setup compiler
 compiler = project.get_compiler()
 compiler.add_include_dir(module.get_dir())
 compiler.add_library('ci')
-compiler.define_macro("LED", 18)
-
-# Loader
-from bb.builder.loaders import BSTLLoader
-project.set_loader(BSTLLoader())
+compiler.define_macro("LED", 18, c_symbol=True)
 
 # Build application
-project.build(verbose=False, dry_run=False)
+project.build(verbose=False, dry_run=script.config.options.dry_run)
 
-project.load()
+# Loader
+if script.config.options.autoload:
+    project.set_loader(BSTLLoader())
+    project.load()
 

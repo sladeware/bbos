@@ -9,8 +9,6 @@ from bb.builder.errors import *
 from bb.apps.utils.spawn import spawn, which, ExecutionError
 from bb.apps.utils.dir import mkpath
 
-#_______________________________________________________________________________
-
 class UnixCCompiler(CCompiler):
     source_extensions = [".c", ".C", ".cc", ".cxx", ".cpp", ".m"]
     object_extension = ".o"
@@ -35,10 +33,11 @@ class UnixCCompiler(CCompiler):
         except ExecutionError, msg:
             raise CompileError(msg)
 
-    def _link(self, objects, output_filename, output_dir=None, 
-             libraries=None, library_dirs=None,
-             debug=False, 
-	     extra_preargs=None, extra_postargs=None, target_lang=None):
+    def _link(self, objects, 
+              output_filename, output_dir=None, 
+              libraries=None, library_dirs=None,
+              debug=False, 
+              extra_preargs=None, extra_postargs=None, target_lang=None):
         """Linking."""
         objects, output_dir, libraries, library_dirs = \
             self._setup_link(objects, output_dir, libraries, library_dirs)
