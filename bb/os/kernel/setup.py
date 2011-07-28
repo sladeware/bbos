@@ -25,7 +25,6 @@ def _gen_bbos_h(self, proj):
             " * %s\n"
             " */\n"
             % (time.asctime(), __copyright__))
-
     # Threads
     print "Number of threads: %d" % self.get_number_of_threads()
     f.write("/* Threads */\n")
@@ -82,7 +81,7 @@ def _build(kernel, project):
 def _add_source(kernel, project):
     if isinstance(project.get_compiler(), CCompiler):
         project.get_compiler().add_include_dir(os.path.join(module.get_dir(), "../../.."))
-        for filename in ("system.c", "thread.c", "idle.c", "port.c"):
+        for filename in ("system.c",):
             project.add_source(module.get_file(__name__, filename))
     project.add_source(kernel.get_scheduler())
     for mod in kernel.get_modules():
