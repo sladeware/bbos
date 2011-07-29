@@ -23,9 +23,10 @@ if not os.environ.has_key('BB_HOME'):
     os.environ['BB_HOME'] = os.path.join(SCRIPT_DIR, '..')
 
 # Add libraries
-_extra_paths.append(
+_extra_paths = [
     os.path.join(os.environ['BB_HOME'], 'lib', 'python', 'module'),
-)
+    os.path.join(os.environ['BB_HOME'], 'lib', 'python', 'pyserial-2.5'),
+]
 
 # Fix the sys.path to include our extra paths
 sys.path = _extra_paths + sys.path
