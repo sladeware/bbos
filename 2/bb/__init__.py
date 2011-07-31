@@ -35,6 +35,14 @@ class Formatter(optparse.IndentedHelpFormatter):
     def format_description(self, description):
         return description, '\n'
 
+instantiated=[]
+
+def singleton(object):
+    if object.__class__.__name__ not in instantiated:
+        instantiated.append(object.__class__.__name__)
+        return True
+    return False
+
 class Config(object):
     """Class to wrap functionality.
 
@@ -56,7 +64,10 @@ class Config(object):
         self.out_fh = out_fh
         self.error_fh = error_fh
         self.parser = self._get_option_parser()
-        self.options, self.args = self.parser.parse_args(argv[1:])
+        if not singleton(self):
+            self.options, self.args = self.parser.parse_args([])
+        else:
+            self.options, self.args = self.parser.parse_args(argv[1:])
         if self.options.help:
             self._print_help_and_exit()
 
@@ -70,7 +81,5 @@ class Config(object):
                                    conflict_handler='resolve')
         parser.add_option('-h', '--help', action='store_true',
                           dest='help', help='Show the help message and exit.')
-        parser.add_option('--autoload', action='store_true',
-                          dest='autoload', help='Allow to use loaders for binary autoloading')
         return parser
 
