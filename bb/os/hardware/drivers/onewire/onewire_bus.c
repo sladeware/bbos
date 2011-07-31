@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 Slade Maurer, Alexander Sviridenko
+ * Copyright (c) 2011 Sladeware LLC
  */
 
 #include <bbos.h>

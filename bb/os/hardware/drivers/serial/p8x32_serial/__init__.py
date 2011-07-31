@@ -12,5 +12,5 @@ def p8x32_serial(kernel):
 bbos_module_name("P8X32_SERIAL")
 bbos_module_thread(p8x32_serial)
 #bbos_module_commands([])
-bbos_module_copyright("Copyright (c) 2011 Slade Maurer, Alexander Sviridenko")
-bbos_module_author("Slade Maurer, Alexander Sviridenko")
+bbos_module_copyright("Copyright (c) 2011 Sladeware LLC")
+bbos_module_author("Sladeware LLC")
