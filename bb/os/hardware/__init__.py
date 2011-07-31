@@ -8,16 +8,12 @@ import types
 
 from bb.apps.utils.type_verification import verify_list
 from bb.apps.utils.distribution import DistributionMetadata
-from bb.os.kernel import Kernel, Module
+from bb.os.kernel import Kernel, Thread
 from bb import app
 
-#______________________________________________________________________________
-
-class Driver(Module):
+class Driver(Thread):
     def __init__(self):
-        Module.__init__(self)
-
-#______________________________________________________________________________
+        Thread.__init__(self)
 
 class Core(DistributionMetadata):
     """Base class used to represent a core within a processor.

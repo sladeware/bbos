@@ -11,9 +11,11 @@ import threading
 import types
 import os.path
 
-from bb.apps.utils.type_verification import verify_list
+import bb
+from bb.apps.utils.type_verification import verify_list, verify_string
 from bb.os.object import Object
 from bb import app
+from module import caller
 
 running_kernels = {}
 
@@ -23,38 +25,6 @@ def get_running_kernel():
         return None
     return running_kernels[tid]
 
-def importer(mod_path):
-    """Replacement for built-in __import__ primitive. importer allows to import modules 
-    as in the standard fashion importer('os.path'), and also as importer('os/path') 
-    or even os.importer('os/path.py')."""
-    # The module path is a directory or file. Provide dot-separator.
-    if os.path.isfile(mod_path) or os.path.isdir(mod_path):
-        head = mod_path
-        mod_path = ''
-        while head:
-            head, tail = os.path.split(head)
-            if not len(mod_path):
-                mod_path = tail
-            else:
-                mod_path = '.'.join([tail, mod_path])
-    try:
-        __import__(mod_path)
-    except ImportError:
-        traceback.print_exc(file=sys.stderr)
-        raise KernelModuleError("Cannot import module %s" % mod_path)
-    mod = sys.modules[mod_path]
-    mod_class_name = mod.__name__.split('.').pop()
-    try:
-        mod_class = getattr(mod, mod_class_name)
-    except AttributeError:
-        raise KernelModuleError("Module '%s' should have control class '%s'" % 
-                                mod_path, mod_class_name)
-    mod_inst = mod_class()
-    return mod_inst
-
-#______________________________________________________________________________
-# Kernel exceptions
-
 class KernelError(Exception):
     """The root error."""
 
@@ -63,8 +33,6 @@ class KernelTypeError(Exception):
 
 class KernelModuleError(KernelError):
     """Unable to load an expected module."""
-
-#______________________________________________________________________________
 
 class Command(object):
     def __repr__(self):
@@ -93,11 +61,9 @@ class BBOS_DRIVER_CLOSE(Command):
 
 DEFAULT_COMMANDS = [BBOS_DRIVER_OPEN, BBOS_DRIVER_CLOSE]
 
-#______________________________________________________________________________
-
 class Message:
     """A message passed between threads."""
-    def __init__(self, sender, command, data):
+    def __init__(self, sender, command, data=None):
         self.set_command(command)
         self.set_sender(sender)
         self.set_data(data)
@@ -123,18 +89,31 @@ class Message:
     def set_data(self, data):
         self.__data = data
 
-#______________________________________________________________________________
-
 class Thread:
+    """The thread is an atomic unit if action within the BBOS operating system,
+    which describes application specific actions wrapped into a single context
+    of execution."""
+
     name = None
     target = None
 
     def __init__(self, name=None, target=None):
         self.messages = []
-        if name:
-            self.name = name
+        if name or self.name:
+            self.set_name(name or self.name)
         if target:
             self.target = target
+
+    def find_command(self, command_name):
+        """Find an appropriate module class for a command command_name."""
+        for command in self.commands:
+            if command.get_name() == command_name:
+                return command
+
+    def get_commands(self):
+        """Return a tuple of commands that module supports for 
+        communication purposes."""
+        return self.commands
 
     def get_name(self):
         return self.name
@@ -146,6 +125,7 @@ class Thread:
             return self.run.__name__
 
     def set_name(self, name):
+        verify_string(name)
         self.name = name
 
     def start(self):
@@ -157,10 +137,11 @@ class Thread:
 
     @classmethod
     def runner(cls, target):
+        """Mark target method as thread's entry point."""
         cls.target = target
         return target
 
-		# Inter-Thread Communication
+    # Inter-Thread Communication
 
     def put_message(self, message):
         if not isinstance(message, Message):
@@ -176,16 +157,12 @@ class Thread:
     def has_messages(self):
         return not not len(self.messages)
 
-#______________________________________________________________________________
-
 def bbos_idle_runner():
     return
 
 class Idle(Thread):
     def __init__(self):
         Thread.__init__(self, "BBOS_IDLE", bbos_idle_runner)
-
-#______________________________________________________________________________
 
 class Scheduler:
     """Provides the algorithms to select the threads for execution. 
@@ -207,28 +184,16 @@ class Scheduler:
     def dequeue(self, thread):
         raise NotImplemented
 
-class Module(Thread):
+class Module:
     """A loadable kernel module is an object that contains functionality to 
     extend the BBOS kernel. Such functionality can be represented by an 
     application or hardware device driver. Since we are not always able to 
     provide an appropriate mechanism for the target operating system, the goal 
     of the module is to create a complete view of the system in simulation mode, 
     which will be used by BBB as a model is built."""
-    commands=()
 
     def __init__(self, *arg_list, **arg_dict):
-        Thread.__init__(self, *arg_list, **arg_dict)
-
-    def find_command(self, command_name):
-        """Find an appropriate module class for a command command_name."""
-        for command in self.commands:
-            if command.get_name() == command_name:
-                return command
-
-    def get_commands(self):
-        """Return a tuple of commands that module supports for 
-        communication purposes."""
-        return self.commands
+        pass
 
 class Kernel(Object):
     def __init__(self, *arg_list, **arg_dict):
@@ -370,11 +335,13 @@ class Kernel(Object):
 
     # Inter-Thread Communication (ITC)
 
-    def send_message(self, receiver, message):
+    def send_message(self, receiver_name, message):
         if not isinstance(message, Message):
             raise KernelTypeError('Message "%s" must be bb.os.kernel.Message '
                                   'sub-class' % message)
-        receiver = self.get_thread(receiver)
+        receiver = self.get_thread(receiver_name)
+        if not receiver:
+            raise KernelError("Receiver '%s' can not be found" % receiver_name)
         receiver.put_message(message)
 
     def receive_message(self, receiver=None):
@@ -425,20 +392,32 @@ class Kernel(Object):
 
     def add_module(self, mod_path):
         """Load and register module by using importer"""
-        mod_inst = importer(mod_path)
-        self.__modules[mod_path] = mod_inst
+        mod = bb.importer(mod_path)
+        mod_class_name = mod.__name__.split('.').pop()
+        try:
+            mod_class = getattr(mod, mod_class_name)
+        except AttributeError:
+            raise KernelModuleError("Module '%s' should have control class '%s'" % 
+                                    mod_path, mod_class_name)
+        mod_inst = mod_class()
+        self.__modules[mod.__name__] = mod_inst
         self.add_commands(mod_inst.get_commands())
         # If module is recognised as a driver
         if isinstance(mod_inst, Driver):
             self.get_hardware().add_driver(mod_inst)
         self.add_thread(mod_inst)
+        if len(mod_inst.dependencies):
+            for dmod in mod_inst.dependencies:
+                self.add_module(dmod)
         return mod_inst
 
     def get_modules(self):
         return self.__modules.values()
 
-    def get_module(self, mod_path):
-        raise NotImplemented
+    def find_module(self, target_mod):
+        for name, mod in self.__modules.items():
+            if target_mod == name:
+                return mod
 
     def remove_module(self, mod_path):
         raise NotImplemented

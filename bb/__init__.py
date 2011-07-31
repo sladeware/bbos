@@ -12,6 +12,8 @@ import os
 import os.path
 import sys
 import optparse
+import imp
+import types
 
 SCRIPT_DIR = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 
@@ -31,46 +33,26 @@ _extra_paths = [
 # Fix the sys.path to include our extra paths
 sys.path = _extra_paths + sys.path
 
-class Formatter(optparse.IndentedHelpFormatter):
-    def format_description(self, description):
-        return description, '\n'
-
-class Config(object):
-    """Class to wrap functionality.
-
-    Attributes:
-    parser: An instnace of optparse.OptionParser
-    argv: The original command line as a list.
-    args: The positional command lie args left over after parsing the options.
-    raw_input_fn: Function used for getting raw user input.
-    error_fh: Unexpected errors are printer to this file handle.
-    """
-
-    def __init__(self, argv, parser_class=optparse.OptionParser,
-                 raw_input_fn=raw_input,
-                 out_fh=sys.stdout,
-                 error_fh=sys.stderr):
-        self.argv = argv
-        self.parser_class = parser_class
-        self.raw_input_fn = raw_input_fn
-        self.out_fh = out_fh
-        self.error_fh = error_fh
-        self.parser = self._get_option_parser()
-        self.options, self.args = self.parser.parse_args(argv[1:])
-        if self.options.help:
-            self._print_help_and_exit()
-
-    def _print_help_and_exit(self, exit_code=2):
-        self.parser.print_help()
-        sys.exit(exit_code)
-
-    def _get_option_parser(self):
-        parser = self.parser_class(usage='%prog [Options] <file>',
-                                   formatter=Formatter(),
-                                   conflict_handler='resolve')
-        parser.add_option('-h', '--help', action='store_true',
-                          dest='help', help='Show the help message and exit.')
-        parser.add_option('--autoload', action='store_true',
-                          dest='autoload', help='Allow to use loaders for binary autoloading')
-        return parser
-
+def importer(name):
+    """Replacement for built-in __import__ primitive. importer allows to import modules 
+    as in the standard fashion importer('os.path'), and also as importer('os/path') 
+    or even os.importer('os/path.py')."""
+    if type(name) is types.ModuleType:
+        return name
+    # The module path is a directory or file. Provide dot-separator.
+    if os.path.isfile(name) or os.path.isdir(name):
+        head = name
+        name = ''
+        while head:
+            head, tail = os.path.split(head)
+            if not len(name):
+                name = tail
+            else:
+                name = '.'.join([tail, name])
+    try:
+        __import__(name)
+    except ImportError:
+        traceback.print_exc(file=sys.stderr)
+        raise ImportError("Cannot import module %s" % name)
+    inst = sys.modules[name]
+    return inst

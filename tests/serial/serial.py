@@ -1,14 +1,28 @@
 #!/usr/bin/env python
 
-#import bb.os as bbos
+__copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
 
-#kernel = bbos.Kernel()
-#kernel.add_module('bb.os.hardware.drivers.serial')
+import time
 
 import bb
-import serial
-import sys
+import bb.os as bbos
+from bb.os.kernel.schedulers import StaticScheduler
+import bb.os.hardware.drivers.serial as serial
 
+demo_serial_settings = serial.SerialSettings(2, 3, serial.SERIAL_MODE_IGNORE_TX_ECHO, 1152200)
+
+def demo():
+    serial.serial_open(demo_serial_settings)
+    time.sleep(2)
+
+kernel = bbos.Kernel()
+kernel.set_scheduler(StaticScheduler())
+kernel.add_module(serial)
+kernel.add_thread("DEMO", demo)
+
+kernel.start()
+
+"""
 s = serial.Serial()
 s.port = '/dev/ttySL0'
 s.baudrate = 115200
@@ -21,3 +35,4 @@ except serial.SerialException, e:
 
 s.write("hello how are you")
 
+"""

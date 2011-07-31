@@ -1,6 +1,6 @@
-Copyright (c) 2011 Sladeware LLC, Sladeware LLC
+Copyright (c) 2011 Sladeware LLC
 
-Bionic Bunny Project version alpha 1
+Bionic Bunny Project version XXX
 
 CONTENTS
 ========
@@ -16,4 +16,4 @@ Copy the latest version of BB platform to the place where it will live
 (e.g. /opt/bbproject/). Go to this directory and run install.sh script
 from the root as follows:
 
- $ sudo install.sh
+ $ sudo install.py
