@@ -3,7 +3,7 @@ Prime numbers library
 """
 
 __version__ = '0.0.3'
-__copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
+__copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
 from random import random, randint
 

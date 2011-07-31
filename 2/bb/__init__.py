@@ -6,7 +6,7 @@
 # See http://docs.python.org/whatsnew/2.5.html#pep-328 for more details.
 from __future__ import absolute_import
 
-__copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
+__copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
 import os
 import os.path

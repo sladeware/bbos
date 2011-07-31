@@ -9,7 +9,7 @@ syntax representations.
 """
 
 __version__ = '0.0.2'
-__copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
+__copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
 import math
 import bbos.security.crypto.asn1 as asn1

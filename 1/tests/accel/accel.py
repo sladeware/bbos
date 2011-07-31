@@ -1,6 +1,6 @@
 #!/usr/bin/evn python
 
-__copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
+__copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
 import time
 

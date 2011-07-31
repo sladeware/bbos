@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander"
+__copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
 from bb.os import Command, BBOS_DRIVER_OPEN
 from bb.os.hardware import Driver

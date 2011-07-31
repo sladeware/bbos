@@ -3,7 +3,7 @@
 """The BBOS kernel API""" 
 
 __version__ = "$Rev$"
-__copyright__ = "Copyright (c) 2011 Slade Maurer, Alexander Sviridenko"
+__copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
 import sys
 import traceback

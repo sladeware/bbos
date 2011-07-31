@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2011 Alexander Sviridenko
+# Copyright (c) 2011 Sladeware LLC
 #
 
 """Utilities for module control."""
@@ -158,7 +158,7 @@ class Module(object):
 """
 
 set_version('0.2.0')
-set_copyright('Copyright 2011 (c) Alexander Sviridenko')
+set_copyright('Copyright 2011 (c) Sladeware LLC')
 
 if __name__ == '__main__':
     print "Module version:", get_version()
