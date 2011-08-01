@@ -208,9 +208,9 @@ def get_config_vars(*args):
     else:
         return _config_vars
 
+BB_HOME = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 BB_PACKAGE_NAME = 'bb'
-BB_PACKAGE_DIR = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
-BB_PACKAGE_PATH = os.path.join(BB_PACKAGE_DIR, BB_PACKAGE_NAME)
+BB_PACKAGE_PATH = os.path.join(BB_HOME, BB_PACKAGE_NAME)
 
 # Test BB_PACKAGE_PATH
 if not os.path.exists(BB_PACKAGE_PATH):
