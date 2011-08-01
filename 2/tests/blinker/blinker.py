@@ -7,6 +7,7 @@ import time
 from bb import app
 import bb.os as bbos
 from bb.os.hardware.boards import PropellerDemoBoard
+import sys
 
 LED = 1
 TIMEOUT = 3

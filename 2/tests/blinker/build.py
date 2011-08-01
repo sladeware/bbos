@@ -2,8 +2,6 @@
 
 __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
-import sys
-
 from bb.builder import script
 from bb.builder.projects import CatalinaProject
 from bb.builder.loaders import BSTLLoader
@@ -23,7 +21,7 @@ compiler.add_library('ci')
 compiler.define_macro("LED", 18, c_symbol=True)
 
 # Build application
-project.build(verbose=False, dry_run=script.config.options.dry_run)
+project.build(verbose=True, dry_run=script.config.options.dry_run)
 
 # Loader
 if script.config.options.autoload:
