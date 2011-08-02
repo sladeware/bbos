@@ -6,8 +6,8 @@ __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
 import types
 
-from bb.apps.utils.type_verification import verify_list
-from bb.apps.utils.distribution import DistributionMetadata
+from bb.utils.type_check import verify_list
+from bb.utils.distribution import DistributionMetadata
 from bb.os.kernel import Kernel, Thread
 from bb import app
 

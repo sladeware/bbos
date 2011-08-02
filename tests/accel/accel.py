@@ -6,37 +6,30 @@ import time
 
 from bb import app
 import bb.os as bbos
+from bb.os import get_running_kernel
 from bb.os.hardware.boards import PropellerDemoBoard
-
-def freefall_runner():
-  # freefall is defined as an alternative to static variable in C
-  freefall_runner.init_complete = getattr(freefall_runner, 'init_complete', False)
-  # Waiting for a messages from h48c device driver
-  message = bbos.get_running_kernel().receive_message('FREEFALL')
-  if message and message.get_sender() is h48c.get_name():
-    if message.get_command() is h48c.find_command('BBOS_DRIVER_OPEN'):
-      print "H48C device has been opened"
-      freefall_runner.init_complete = True
-      return
-    elif message.get_command() is h48c.find_command('H48C_FREEFALL'):
-        if message.get_data() == 1:
-            print "Free fall detected!"
-        elif message.get_data() == 0:
-            print "No free fall"
-  # Initialization is not complete, send a message to open the driver
-  if not freefall_runner.init_complete:
-    print "Send open-message to accelerometer device driver"
-    bbos.get_running_kernel().send_message(h48c.get_name(), 
-      bbos.Message('FREEFALL', h48c.find_command('BBOS_DRIVER_OPEN'), None))
-  bbos.get_running_kernel().send_message(h48c.get_name(),
-    bbos.Message('FREEFALL', h48c.find_command('H48C_FREEFALL'), None))
-  time.sleep(2)
 
 kernel = bbos.Kernel()
 kernel.set_scheduler(bbos.StaticScheduler())
-kernel.add_thread('FREEFALL', freefall_runner)
-h48c = kernel.add_module('bb.os.hardware.drivers.accel.h48c')
+h48c = kernel.load_module('bb.os.hardware.drivers.accel.h48c')
 
+device_settings = h48c.H48CDeviceSettings(7, 6, 0, 1)
+device = h48c.AccelDevice(settings=device_settings)
+
+def freefall_runner():
+    time.sleep(1) # So we humans can see output
+    freefall_runner.init_complete = getattr(freefall_runner, 'init_complete', False)
+    if not freefall_runner.init_complete:
+        if h48c.accel_open(device):
+            get_running_kernel().printer("Accelerometer device has been opened")
+            freefall_runner.init_complete = True
+        return
+    if h48c.accel_freefall():
+        get_running_kernel().printer("Free fall detected!")
+    else:
+        get_running_kernel().printer("No free fall")
+
+kernel.add_thread('FREEFALL', freefall_runner)
 accel = app.Process("Accel", kernel)
 board = PropellerDemoBoard(processes=[accel])
 

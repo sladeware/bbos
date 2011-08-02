@@ -1,7 +1,9 @@
 
-from bb.os.kernel import Scheduler
+__copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
-#_______________________________________________________________________________
+import collections
+
+from bb.os.kernel import Scheduler
 
 class StaticScheduler(Scheduler):
     """Static scheduling is widely used with dependable real-time systems 
@@ -17,25 +19,28 @@ class StaticScheduler(Scheduler):
     this. Once a schedule is made, it cannot be modified online. Static 
     scheduling is generally not recommended for dynamic systems (use dynamic 
     scheduler instead)."""
+
     def __init__(self):
         Scheduler.__init__(self)
-        self.__order = []
+        self.__order = collections.OrderedDict()
         self.__cursor = 0
 
-    def get_next_thread(self):
-        return self.__order[self.__cursor]
-
-    def enqueue(self, thread):
-        self.__order.append(thread)
+    def get_running_thread(self):
+        return self.__order.values()[self.__cursor]
 
     def move(self):
         if (self.__cursor + 1) >= len(self.__order):
             self.__cursor = 0
         else:
             self.__cursor += 1
-        return self.get_next_thread()
+        # Return new running thread
+        return self.get_running_thread()
 
-    def get_order(self):
-        return self.__order
+    def enqueue_thread(self, thread):
+        self.__order[id(thread)] = thread
+
+    def dequeue_thread(self, thread):
+        del self.__order[id(thread)]
+
 
 import bb.os.kernel.schedulers.staticscheduler.setup

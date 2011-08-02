@@ -7,7 +7,7 @@ import threading
 import optparse
 import sys
 
-from bb.apps.utils.type_verification import verify_list
+from bb.utils.type_check import verify_list
 
 SIMULATION_MODE = 0x1
 DEV_MODE = 0x3

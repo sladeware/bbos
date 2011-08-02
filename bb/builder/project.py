@@ -6,7 +6,7 @@ import os
 import platform
 from types import *
 
-from bb.apps.utils.distribution import DistributionMetadata
+from bb.utils.distribution import DistributionMetadata
 from bb.builder.compiler import Compiler
 from bb.builder.loader import Loader
 from bb.builder.errors import *

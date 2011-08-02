@@ -9,9 +9,9 @@ eight cogs (a.k.a BBOS cores). Its system clock runs up to 80MHz.
 The processor contains 32K RAM and 32K ROM globally that all cogs
 share using a multiplexed system bus. There are 32 IO pins."""
 
-from bb.apps.utils.type_verification import verify_list
 from bb.os.hardware import Processor
 from bb.os.hardware.cores import PropellerCog
+from bb.utils.type_check import verify_list
 
 class PropellerP8X32A(Processor):
     def __init__(self, processes=[]):

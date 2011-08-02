@@ -7,8 +7,8 @@ from types import *
 
 from bb.builder.compiler import Compiler
 from bb.builder.errors import *
-from bb.apps.utils.dir import mkpath
-from bb.apps.utils.spawn import which, ExecutionError
+from bb.utils.dir import mkpath
+from bb.utils.spawn import which, ExecutionError
 
 class CCompiler(Compiler):
     """Abstract base class to define the interface of the standard C compiler 

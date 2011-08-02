@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-
-"""The BBOS kernel API""" 
 
 __version__ = "$Rev$"
 __copyright__ = "Copyright (c) 2011 Sladeware LLC"
@@ -9,21 +6,56 @@ import sys
 import traceback
 import threading
 import types
-import os.path
+import imp
+import collections
+import re
+import inspect
 
 import bb
-from bb.apps.utils.type_verification import verify_list, verify_string
+from bb.utils.type_check import verify_list, verify_string
+from bb.utils.importer import Importer
 from bb.os.object import Object
 from bb import app
 from module import caller
 
-running_kernels = {}
+# Table of running kernels. Each running kernel is registred in this table
+# in order to be trade-safe.
+_running_kernels = {}
 
 def get_running_kernel():
+    """Return the currently running kernel object."""
     tid = threading.current_thread().ident
-    if not tid in running_kernels:
+    if not tid in _running_kernels:
         return None
-    return running_kernels[tid]
+    kernel, counter = _running_kernels[tid]
+    return kernel
+
+def get_running_thread():
+    kernel = get_running_kernel()
+    if kernel.has_scheduler():
+        return kernel.get_scheduler().get_running_thread()
+    else:
+        raise NotImplemented()
+
+def _register_running_kernel(kernel):
+    tid = threading.current_thread().ident
+    if not tid in _running_kernels:
+        _running_kernels[tid] = (kernel, 1)
+    else:
+        kernel, counter = _running_kernels[tid]
+        _running_kernels[tid] = kernel, counter + 1
+    
+def _unregister_running_kernel():
+    tid = threading.current_thread().ident
+    if tid in _running_kernels:
+        kernel, counter = _running_kernels[tid]
+        counter = counter - 1
+        if not counter:
+            del _running_kernels[tid]
+        else:
+            _running_kernels[tid] = kernel, counter
+    else:
+        raise KernelError("No running kernel: %d" % tid)
 
 class KernelError(Exception):
     """The root error."""
@@ -34,45 +66,17 @@ class KernelTypeError(Exception):
 class KernelModuleError(KernelError):
     """Unable to load an expected module."""
 
-class Command(object):
-    def __repr__(self):
-        return self.get_name()
-
-    @classmethod
-    def get_name(cls):
-        return cls.__name__
-
-    def __eq__(self, other):
-        if type(other) is types.StringType:
-            return self.get_name() == other
-        elif (type(other) is types.InstanceType and isinstance(other, Command)) \
-                or (type(other) is types.ClassType and issubclass(other, Command)): 
-            return self.get_name() == other.get_name()
-
-    @classmethod
-    def get_doc(cls):
-        return cls.__doc__
-
-class BBOS_DRIVER_OPEN(Command):
-    """Driver Command to open target device."""
-
-class BBOS_DRIVER_CLOSE(Command):
-    """Driver command to close target device."""
-
-DEFAULT_COMMANDS = [BBOS_DRIVER_OPEN, BBOS_DRIVER_CLOSE]
+DEFAULT_COMMANDS = ['BBOS_DRIVER_OPEN', 'BBOS_DRIVER_CLOSE']
 
 class Message:
     """A message passed between threads."""
-    def __init__(self, sender, command, data=None):
+    def __init__(self, command, data=None, sender=None):
         self.set_command(command)
-        self.set_sender(sender)
+        self.set_sender(sender or get_running_thread().get_name())
         self.set_data(data)
 
     def set_command(self, command):
-        if not issubclass(command, Command): # not isinstance
-            raise KernelTypeError('Command "%s" must be bb.os.kernel.Command '
-                                  'sub-class.' % command)
-        self.__command = command
+         self.__command = verify_string(command)
 
     def get_command(self):
         return self.__command
@@ -89,26 +93,39 @@ class Message:
     def set_data(self, data):
         self.__data = data
 
-class Thread:
+class Thread(object):
     """The thread is an atomic unit if action within the BBOS operating system,
     which describes application specific actions wrapped into a single context
     of execution."""
 
     name = None
     target = None
+    commands = []
+
+    __marked_runners = {}
 
     def __init__(self, name=None, target=None):
-        self.messages = []
-        if name or self.name:
-            self.set_name(name or self.name)
+        self.__messages = []
+        if name:
+            self.set_name(name)
+        elif hasattr(self, 'name'):
+            self.set_name(self.name)
         if target:
             self.target = target
+        else:
+            # Okay, let us search for the runner in methods marked with help
+            # of @runner decorator.
+            klass = self.__class__
+            if klass.__name__ in self.__marked_runners:
+                # Since the runner here is represented by a function it will be
+                # converted to a method for a given instance. Then this method
+                # will be stored as attribute target.
+                runner = self.__marked_runners[klass.__name__]
+                setattr(self, runner.__name__, types.MethodType(runner, self))
+                self.target = getattr(self, runner.__name__)
 
-    def find_command(self, command_name):
-        """Find an appropriate module class for a command command_name."""
-        for command in self.commands:
-            if command.get_name() == command_name:
-                return command
+    def is_supported_command(self, command):
+        return command in self.commands
 
     def get_commands(self):
         """Return a tuple of commands that module supports for 
@@ -121,24 +138,22 @@ class Thread:
     def get_runner_name(self):
         if self.target:
             return self.target.__name__
-        else:
-            return self.run.__name__
 
     def set_name(self, name):
-        verify_string(name)
-        self.name = name
+        self.name = verify_string(name)
 
     def start(self):
-        self.run()
-
-    def run(self):
         if self.target:
             return self.target()
 
     @classmethod
-    def runner(cls, target):
+    def runner(klass, target):
         """Mark target method as thread's entry point."""
-        cls.target = target
+        # Search for the target_klass to which target function belongs.
+        target_klass = inspect.getouterframes(inspect.currentframe())[1][3]
+        # Save the target for a nearest future when the __init__ method will
+        # we called for the target_klass class.
+        klass.__marked_runners[target_klass] = target
         return target
 
     # Inter-Thread Communication
@@ -147,22 +162,23 @@ class Thread:
         if not isinstance(message, Message):
             raise KernelTypeError('Message "%s" must be bb.os.kernel.Message '
                                   'sub-class' % message)
-        self.messages.append(message)
+        self.__messages.append(message)
 
     def get_message(self):
-        if self.has_messages():
-            return self.messages.pop(0)
+        if self.has_message():
+            return self.__messages.pop(0)
         return None
 
-    def has_messages(self):
-        return not not len(self.messages)
-
-def bbos_idle_runner():
-    return
+    def has_message(self):
+        return not not len(self.__messages)
 
 class Idle(Thread):
     def __init__(self):
-        Thread.__init__(self, "BBOS_IDLE", bbos_idle_runner)
+        Thread.__init__(self, "BBOS_IDLE")
+
+    @Thread.runner
+    def bbos_idle_runner(self):
+        pass
 
 class Scheduler:
     """Provides the algorithms to select the threads for execution. 
@@ -175,53 +191,44 @@ class Scheduler:
         """Decide who to run now."""
         raise NotImplemented
 
-    def myself(self):
+    def get_running_thread(self):
         raise NotImplemented
 
-    def enqueue(self, thread):
+    def enqueue_thread(self, thread):
         raise NotImplemented
 
-    def dequeue(self, thread):
+    def dequeue_thread(self, thread):
         raise NotImplemented
 
-class Module:
-    """A loadable kernel module is an object that contains functionality to 
-    extend the BBOS kernel. Such functionality can be represented by an 
-    application or hardware device driver. Since we are not always able to 
-    provide an appropriate mechanism for the target operating system, the goal 
-    of the module is to create a complete view of the system in simulation mode, 
-    which will be used by BBB as a model is built."""
-
-    def __init__(self, *arg_list, **arg_dict):
-        pass
+class Driver(Thread):
+    pass
 
 class Kernel(Object):
-    def __init__(self, *arg_list, **arg_dict):
+    def __init__(self, *args, **kargs):
         Object.__init__(self)
         self.__hardware = Hardware()
         self.__threads = {}
-        self.__commands = {}
+        self.__commands = []
         self.__scheduler = None
         self.__modules = {}
-        self.init(*arg_list, **arg_dict)
-
-    @Object.sim_method
-    def printk(self, message):
-        print message
+        self.init(*args, **kargs)
 
     # System Management
 
-    def init(self, threads=[], commands=[]):
-        self.printk(self.banner())
-        self.printk("Initialize kernel")
+    @Object.sim_method
+    def printer(self, data):
+        print data
+
+    def init(self, threads=[], commands=[], scheduler=None):
+        self.printer(self.banner())
+        self.printer("Initialize kernel")
+        if scheduler:
+            self.set_scheduler(scheduler)
         self.add_commands(DEFAULT_COMMANDS)
         if len(threads):
             self.add_threads(threads)
         if len(commands):
             self.add_commands(commands)
-
-    def get_status(self):
-        return self.__status
 
     @Object.sim_method
     def test(self):
@@ -230,10 +237,9 @@ class Kernel(Object):
 
     @Object.sim_method
     def start(self):
-        tid = threading.current_thread().ident
-        running_kernels[tid] = self
+        _register_running_kernel(self)
         self.test()
-        print "Start kernel"
+        self.printer("Start kernel")
         try:
             if self.has_scheduler():
                 while True:
@@ -245,7 +251,7 @@ class Kernel(Object):
     @Object.sim_method
     def stop(self):
         """Shutdown everything and perform a clean system stop."""
-        print "Kernel stoped."
+        self.printer("Kernel stoped")
 
     @Object.sim_method
     def panic(self, text):
@@ -255,7 +261,8 @@ class Kernel(Object):
 
     @Object.sim_method
     def banner(self):
-        return "BBOS Kernel vALPHA"
+        return "BBOS Kernel v0.2.0." + \
+            re.search('(\d+)', re.escape(__version__)).group(1)
 
     # Hardware Management
 
@@ -264,9 +271,7 @@ class Kernel(Object):
 
     # Thread Management
 
-    def get_thread(self, thread):
-        """Test for presence of thread and return thread's object. Return 
-        None if kernel does have such thread."""
+    def find_thread(self, thread):
         if type(thread) is types.StringType:
             if thread in self.__threads:
                 return self.__threads[thread]
@@ -280,27 +285,27 @@ class Kernel(Object):
 
     def has_thread(self, thread):
         """Test for presence of thread in the kernel's list of threads."""
-        return not self.get_thread(thread) is None
+        return not self.find_thread(thread) is None
 
     def remove_thread(self, thread):
         raise NotImplemented()
 
-    def add_thread(self, *arg_list):
+    def add_thread(self, *args, **kargs):
         """Add a new thread to the kernel. This method is available in all modes, so be
         carefull to make changes."""
-        if not len(arg_list):
+        if not len(args) and not len(kargs):
             raise NotImplemented()
-        thread = self.get_thread(arg_list[0])
+        thread = self.find_thread(args[0])
         if thread:
-            raise KernelError("Thread '%s' has been already added" % thread.get_name())
-        if type(arg_list[0]) is types.StringType:
-            thread = Thread(*arg_list)
+            raise Exception("Thread '%s' has been already added" % thread.get_name())
+        if type(args[0]) is types.StringType:
+            thread = Thread(*args)
         else:
-            thread = arg_list[0]
-        self.printk("Add thread '%s'" % thread.get_name())
+            thread = args[0]
+        self.printer("Add thread '%s'" % thread.get_name())
         self.__threads[ thread.get_name() ] = thread
-        if self.get_scheduler():
-            self.__scheduler.enqueue(thread)
+        if self.has_scheduler():
+            self.__scheduler.enqueue_thread(thread)
         return thread
 
     def add_threads(self, *threads):
@@ -320,8 +325,8 @@ class Kernel(Object):
         if not isinstance(scheduler, Scheduler):
             raise KernelTypeError('Scheduler "%s" must be bb.os.kernel.Scheduler '
                                   'sub-class' % scheduler)
+        self.printer("Select scheduler '%s'" % scheduler.__class__.__name__)
         self.__scheduler = scheduler
-        self.add_thread(Idle())
 
     def get_scheduler(self):
         return self.__scheduler
@@ -330,27 +335,30 @@ class Kernel(Object):
         return not self.get_scheduler() is None
 
     def switch_thread(self):
-        thread = self.get_thread(self.get_scheduler().get_next_thread())
+        thread = self.find_thread(self.get_scheduler().get_running_thread())
         thread.start()
 
     # Inter-Thread Communication (ITC)
 
-    def send_message(self, receiver_name, message):
+    def send_message(self, receiver, message):
         if not isinstance(message, Message):
             raise KernelTypeError('Message "%s" must be bb.os.kernel.Message '
                                   'sub-class' % message)
-        receiver = self.get_thread(receiver_name)
-        if not receiver:
-            raise KernelError("Receiver '%s' can not be found" % receiver_name)
-        receiver.put_message(message)
+        thread = self.find_thread(receiver)
+        if not thread:
+            raise Exception("Receiver '%s' can not be found" % receiver)
+        if not message.get_sender():
+            message.set_sender(get_running_thread().get_name())
+        thread.put_message(message)
 
     def receive_message(self, receiver=None):
         if not receiver:
-            if not self.has_scheduler():
-                raise KernelError("No scheduler")
-            receiver = self.scheduler.get_next_thread()
-        receiver = self.get_thread(receiver)
-        return receiver.get_message()
+            thread = self.get_scheduler().get_running_thread()
+        else:
+            thread = self.find_thread(receiver)
+        if not thread:
+            raise KernelError("Receiver '%s' can not be found" % receiver)
+        return thread.get_message()
 
     # Commands
 
@@ -383,48 +391,72 @@ class Kernel(Object):
     def add_command(self, command):
         if self.has_command(command):
             return command
-            #raise KernelError("Command '%s' has been already added" % 
-            #                  command.get_name())
-        self.__commands[ command.get_name() ] = command
+        self.__commands.append(command)
         return command
 
     # Module Management
+    # This set of methods a meta-operating system specific. Such routines
+    # are not supported in target embedded systems.
 
-    def add_module(self, mod_path):
-        """Load and register module by using importer"""
-        mod = bb.importer(mod_path)
-        mod_class_name = mod.__name__.split('.').pop()
+    def load_module(self, name, alias=None):
+        """Load module to the running kernel. This method allows to avoid
+        built-in __import__ function and connect module's environment and 
+        kernel's environment. If alias is defined the module will be registred
+        by this name. This helps to sort out the problem with long module 
+        names."""
+        if name in self.__modules:
+            if alias:
+                self.__modules[alias] = self.__modules[name]
+                del self.__modules[name]
+            return self.__modules[name]
+        elif alias in self.__modules:
+            return self.__modules[alias]
+        # The module wasn't loaded before. Do the importing.
+        if alias:
+            self.printer("Load module '%s' as '%s'" % (name, alias))
+        else:
+            self.printer("Load module '%s'" % name)
+        fake_name = name + str(id(self))
+        if fake_name in sys.modules:
+            raise Exception("Fixed name is not unique")
+        _register_running_kernel(self)
+        module = Importer.load(name, globals(), locals(),
+                               [name.rsplit('.', 1).pop()])
+        _unregister_running_kernel()
+        self.__modules[alias or name] = module
+        return module
+
+    def find_module(self, name):
+        """Find module's object by its name. Return None if module was 
+        not identified."""
+        name = verify_string(name)
         try:
-            mod_class = getattr(mod, mod_class_name)
-        except AttributeError:
-            raise KernelModuleError("Module '%s' should have control class '%s'" % 
-                                    mod_path, mod_class_name)
-        mod_inst = mod_class()
-        self.__modules[mod.__name__] = mod_inst
-        self.add_commands(mod_inst.get_commands())
-        # If module is recognised as a driver
-        if isinstance(mod_inst, Driver):
-            self.get_hardware().add_driver(mod_inst)
-        self.add_thread(mod_inst)
-        if len(mod_inst.dependencies):
-            for dmod in mod_inst.dependencies:
-                self.add_module(dmod)
-        return mod_inst
+            return self.__modules[name]
+        except KeyError:
+            return None
 
     def get_modules(self):
+        """Return complete list of loaded modules."""
         return self.__modules.values()
 
-    def find_module(self, target_mod):
-        for name, mod in self.__modules.items():
-            if target_mod == name:
-                return mod
-
-    def remove_module(self, mod_path):
+    def unload_module(self, name):
         raise NotImplemented
 
-#______________________________________________________________________________
+    # Driver Management
 
-from bb.os.hardware import Core, Driver
+    def register_driver(self, driver):
+        if not isinstance(driver, Driver):
+            raise KernelTypeError("Not a Driver: %s" % driver)
+        self.printer("Register driver '%s'" % driver.get_name())
+        self.add_thread(driver)
+
+    def find_driver(self, name):
+        raise NotImplemented
+
+    def unregister_driver(self, driver):
+        raise NotImplemented
+
+from bb.os.hardware import Core
 
 class Hardware:
     """This class represents interface between kernel and hardware abstraction.

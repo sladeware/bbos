@@ -2,37 +2,28 @@
 
 __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
+from bb.os.kernel import Kernel
+from bb.os.kernel.schedulers import StaticScheduler
 import time
 
-import bb
-import bb.os as bbos
-from bb.os.kernel.schedulers import StaticScheduler
-import bb.os.hardware.drivers.serial as serial
+kernel = Kernel()
+kernel.set_scheduler(StaticScheduler())
+#uart = kernel.load_module('bb.os.hardware.drivers.serial.p8x32_uart')
+#print uart
+uart1 = kernel.load_module('bb.os.hardware.drivers.gpio.p8x32_gpio')
+uart2 = kernel.load_module('bb.os.hardware.drivers.gpio.p8x32_gpio')
 
-demo_serial_settings = serial.SerialSettings(2, 3, serial.SERIAL_MODE_IGNORE_TX_ECHO, 1152200)
+uart1.NUMBER_GPIOS = 2
+print uart1.NUMBER_GPIOS
+print uart2.NUMBER_GPIOS
+
+exit()
 
 def demo():
-    serial.serial_open(demo_serial_settings)
+    #settings = uart.Settings(rx=0, tx=1, simulation_port='/dev/ttySL0')
+    #uart.uart_open(settings)
     time.sleep(2)
 
-kernel = bbos.Kernel()
-kernel.set_scheduler(StaticScheduler())
-kernel.add_module(serial)
 kernel.add_thread("DEMO", demo)
 
 kernel.start()
-
-"""
-s = serial.Serial()
-s.port = '/dev/ttySL0'
-s.baudrate = 115200
-
-try:
-    s.open()
-except serial.SerialException, e:
-    sys.stderr.write("Could not open serial port %s: %s\n" % (s.portstr, e))
-    sys.exit(1)
-
-s.write("hello how are you")
-
-"""

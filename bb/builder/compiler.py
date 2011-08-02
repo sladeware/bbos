@@ -4,7 +4,7 @@ __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 from types import *
 
 from bb.builder.errors import *
-from bb.apps.utils.spawn import which, ExecutionError
+from bb.utils.spawn import which, ExecutionError
 
 class Compiler(object):
     """

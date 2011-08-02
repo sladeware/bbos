@@ -6,8 +6,8 @@ from types import *
 
 from bb.builder.compilers.c import CCompiler
 from bb.builder.errors import *
-from bb.apps.utils.spawn import spawn, which, ExecutionError
-from bb.apps.utils.dir import mkpath
+from bb.utils.spawn import spawn, which, ExecutionError
+from bb.utils.dir import mkpath
 
 class UnixCCompiler(CCompiler):
     source_extensions = [".c", ".C", ".cc", ".cxx", ".cpp", ".m"]
