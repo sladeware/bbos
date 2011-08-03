@@ -5,8 +5,6 @@ from types import *
 
 from bb.builder.errors import *
 
-#_______________________________________________________________________________
-
 class Loader(object):
     """Abstract base class to define the interface that must be implemented by
     real loader classes."""

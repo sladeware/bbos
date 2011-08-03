@@ -83,3 +83,5 @@ class P8X32GPIODriver(Driver):
 
 # Register P8X32-GPIO driver
 get_running_kernel().register_driver(P8X32GPIODriver())
+
+import bb.os.hardware.drivers.gpio.p8x32_gpio_setup

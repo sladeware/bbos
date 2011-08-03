@@ -42,5 +42,7 @@ class StaticScheduler(Scheduler):
     def dequeue_thread(self, thread):
         del self.__order[id(thread)]
 
+    def get_order(self):
+        return self.__order.values()
 
 import bb.os.kernel.schedulers.staticscheduler.setup

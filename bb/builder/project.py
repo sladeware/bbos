@@ -33,8 +33,6 @@ class Extension(object):
         """Called each time before the project os going to be load."""
         raise NotImplementedError
 
-#______________________________________________________________________________
-
 _wrappers = {}
 
 def get_wrapper(klass):
@@ -102,17 +100,17 @@ class Project(DistributionMetadata):
         """In the case when source is a path, it will be normalized by
         using os.path.abspath()."""
         if source:
-            if type(source) is InstanceType:
+            if type(source) is StringType:
+                source = os.path.abspath(source)
+                self.sources.append(source)
+            elif type(source) is InstanceType or isinstance(source, object):
                 if isinstance(source, Extension):
                     return self.add_extension(source)
                 wrapper = wrap(source)
                 if not wrapper:
-                    raise TypeError("Don't know how to work with %s object, "
-                                    "the wrapper wasn't provided" % source)
+                    raise TypeError("Don't know how to work with '%s' object. "
+                                    "The wrapper wasn't provided." % source)
                 return self.add_extension(wrapper)
-            elif type(source) is StringType:
-                source = os.path.abspath(source)
-                self.sources.append(source)
             else:
                 raise TypeError("unknown source type: %s" % type(source))
 

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 
 __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
@@ -49,8 +48,8 @@ def _gen_bbos_h(self, proj):
     f.write("#define BBOS_NUMBER_OF_COMMANDS (%d)\n" % self.get_number_of_commands())
     next_id = 0
     for command in self.get_commands():
-        print "%20s : %4d" % (command.get_name(), next_id)
-        f.write("#define %s (%s)\n" % (command.get_name(), next_id))
+        print "%20s : %4d" % (command, next_id)
+        f.write("#define %s (%s)\n" % (command, next_id))
         next_id += 1   
 
     f.close()
@@ -84,8 +83,8 @@ def _add_source(kernel, project):
         for filename in ("system.c",):
             project.add_source(module.get_file(__name__, filename))
     project.add_source(kernel.get_scheduler())
-    for mod in kernel.get_modules():
-        project.add_source(mod)
+    for driver in kernel.get_drivers():
+        project.add_source(driver)
 
 @Wrapper.bind("on_add", Hardware)
 def _add_hardware(hardware, project):

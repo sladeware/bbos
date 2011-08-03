@@ -186,6 +186,7 @@ class Kernel(Object, Traceable):
         Object.__init__(self)
         self.__hardware = Hardware()
         self.__threads = {}
+        self.__drivers = {}
         self.__commands = []
         self.__scheduler = None
         self.__modules = {}
@@ -268,8 +269,9 @@ class Kernel(Object, Traceable):
         raise NotImplemented()
 
     def add_thread(self, *args, **kargs):
-        """Add a new thread to the kernel. This method is available in all modes, so be
-        carefull to make changes."""
+        """Add a new thread to the kernel. Return thread's object. 
+        Note: this method is available in all modes, so be carefull to 
+        make changes."""
         if not len(args) and not len(kargs):
             raise NotImplemented()
         thread = self.find_thread(args[0])
@@ -281,8 +283,11 @@ class Kernel(Object, Traceable):
             thread = args[0]
         self.printer("Add thread '%s'" % thread.get_name())
         self.__threads[ thread.get_name() ] = thread
+        # Introduce thread to scheduler
         if self.has_scheduler():
             self.__scheduler.enqueue_thread(thread)
+        # Register available commands
+        self.add_commands(thread.get_commands())
         return thread
 
     def add_threads(self, *threads):
@@ -353,7 +358,8 @@ class Kernel(Object, Traceable):
         return len(self.get_commands())
 
     def get_commands(self):
-        return self.__commands.values()
+        """Return complete list of commands that was presented to the system."""
+        return self.__commands
 
     def get_command(self, command):
         if not self.has_command(command):
@@ -433,7 +439,12 @@ class Kernel(Object, Traceable):
         if not isinstance(driver, Driver):
             raise KernelTypeError("Not a Driver: %s" % driver)
         self.printer("Register driver '%s'" % driver.get_name())
+        self.__drivers[driver.get_name()] = driver
         self.add_thread(driver)
+
+    def get_drivers(self):
+        """Return complete list of registered drivers."""
+        return self.__drivers.values()
 
     def find_driver(self, name):
         raise NotImplemented

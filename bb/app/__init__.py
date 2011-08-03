@@ -24,6 +24,30 @@ def get_mode():
     global MODE
     return MODE
 
+class Object(object):
+    """This class handle application object activity in order to provide 
+    management of simulation and building modes.
+
+    Just for internal use for each object the global mode value will 
+    be copied and saved as the special attribute. Thus the object will be 
+    able to recognise environment's mode it which it was initially started."""
+
+    def __init__(self):
+        self.mode = None
+
+    @classmethod
+    def sim_method(cls, target):
+        def simulation(self, *args, **kargs):
+            if not self.mode:
+                self.mode = get_mode()
+                if self.mode is SIMULATION_MODE:
+                    return target(self, *args, **kargs)
+                self.mode = None
+            else:
+                if self.mode is SIMULATION_MODE:
+                    return target(self, *args, **kargs)
+        return simulation
+
 class Traceable(object):
     __table = {}
 
@@ -79,30 +103,6 @@ class Traceable(object):
             return ret
         return dummy
 
-class Object(object):
-    """This class handle application object activity in order to provide 
-    management of simulation and building modes.
-
-    Just for internal use for each object the global mode value will 
-    be copied and saved as the special attribute. Thus the object will be 
-    able to recognise environment's mode it which it was initially started."""
-
-    def __init__(self):
-        self.mode = None
-
-    @classmethod
-    def sim_method(cls, target):
-        def simulation(self, *args, **kargs):
-            if not self.mode:
-                self.mode = get_mode()
-                if self.mode is SIMULATION_MODE:
-                    return target(self, *args, **kargs)
-                self.mode = None
-            else:
-                if self.mode is SIMULATION_MODE:
-                    return target(self, *args, **kargs)
-        return simulation
-
 class Config(object):
     """Class to wrap application-script functionality.
 
@@ -157,7 +157,7 @@ def new_application(*args, **kargs):
 def new_process(*args, **kargs):
     return Process(*args, **kargs)
 
-class Process:
+class Process(object):
     def __init__(self, name, kernel=None):
         from bb import os
         self.__name = name

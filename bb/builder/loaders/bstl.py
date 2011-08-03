@@ -1,9 +1,9 @@
 
+__copyright__ = "Copyright (c) 2011 Sladeware LLC"
+
+from bb.utils.spawn import spawn
 from bb.builder.errors import *
 from bb.builder.loader import Loader
-from bb.apps.utils.spawn import spawn
-
-#_______________________________________________________________________________
 
 class BSTLLoader(Loader):
     """BSTL is the command line loader which can be found here
