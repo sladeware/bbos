@@ -13,7 +13,7 @@ INSTALLING ON LINUX AND OTHER PLATFORMS
 Download and install Python 2.5 from http://www.python.org/download/
 
 Copy the latest version of BB platform to the place where it will live
-(e.g. /opt/bbproject/). Go to this directory and run install.sh script
+(e.g. /opt/bbproject/). Go to this directory and run install.py script
 from the root as follows:
 
  $ sudo install.py

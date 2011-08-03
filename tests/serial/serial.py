@@ -2,28 +2,31 @@
 
 __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
-from bb.os.kernel import Kernel
-from bb.os.kernel.schedulers import StaticScheduler
 import time
+import re
+
+from bb.os.kernel import get_running_kernel, Kernel
+from bb.os.kernel.schedulers import StaticScheduler
 
 kernel = Kernel()
 kernel.set_scheduler(StaticScheduler())
-#uart = kernel.load_module('bb.os.hardware.drivers.serial.p8x32_uart')
-#print uart
-uart1 = kernel.load_module('bb.os.hardware.drivers.gpio.p8x32_gpio')
-uart2 = kernel.load_module('bb.os.hardware.drivers.gpio.p8x32_gpio')
+uart = kernel.load_module('bb.os.hardware.drivers.serial.p8x32_uart')
 
-uart1.NUMBER_GPIOS = 2
-print uart1.NUMBER_GPIOS
-print uart2.NUMBER_GPIOS
+message = "Hello world!\n"
 
-exit()
+settings = uart.Settings(rx=0, tx=1, baudrate=115200, simulation_port='/dev/ttySL0')
+device = uart.SerialDevice(settings)
 
 def demo():
-    #settings = uart.Settings(rx=0, tx=1, simulation_port='/dev/ttySL0')
-    #uart.uart_open(settings)
-    time.sleep(2)
+    time.sleep(1)
+    demo.init_complete = getattr(demo, 'init_complete', False)
+    if not demo.init_complete:
+        if uart.uart_open(device):
+            get_running_kernel().printer("Serial connection was established: %s" % settings.simulation_port)
+            demo.init_complete = True
+        return
+    get_running_kernel().printer("Write to serial: '%s'" % message)
+    uart.uart_write(device, message)
 
 kernel.add_thread("DEMO", demo)
-
 kernel.start()

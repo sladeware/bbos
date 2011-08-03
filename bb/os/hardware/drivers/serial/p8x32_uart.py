@@ -10,6 +10,11 @@ Available modes:
   SERIAL_MODE_IGNORE_TX_ECHO -- ignore tx echo on rx
 """
 
+import sys
+
+# Import PySerial for simulation purposes
+import serial
+
 from bb.os.kernel import get_running_kernel, get_running_thread, Driver, Message
 
 # P8X32 serial gpio driver requires P8X32 GPIO driver for internal GPIO
@@ -24,17 +29,35 @@ SERIAL_MODE_IGNORE_TX_ECHO = 8
 table = {}
 
 class Settings(object):
-    def __init__(self, rx=None, tx=None, 
+    def __init__(self, rx=None, tx=None, baudrate=115200,
                  simulation_port=None):
         self.rx = rx
         self.tx = tx
+        self.baudrate = baudrate
         self.simulation_port = simulation_port
+
+class SerialDevice(object):
+    def __init__(self, settings=None):
+        self.is_opened = False
+        self.settings = settings
 
 class P8X32Uart(Driver):
     name="P8X32_UART"
+    commands=('BBOS_DRIVER_OPEN', 'BBOS_DRIVER_CLOSE')
 
     def p8x32_uart_open(self, message):
-        table[message.get_sender()] = None
+        device = message.get_data()
+        settings = device.settings
+        mask = sum([1 << getattr(settings, attr) for attr in 'rx', 'tx'])
+        if gpio.gpio_open(mask):
+            device.is_opened = True
+            try:
+                table[message.get_sender()] = serial.Serial(
+                    port=settings.simulation_port,
+                    baudrate=settings.baudrate)
+            except serial.SerialException, e:
+                sys.stderr.write("Could not open serial port: %s\n" % e)
+                sys.exit(1)
 
     @Driver.runner
     def p8x32_uart(self):
@@ -44,16 +67,18 @@ class P8X32Uart(Driver):
         if message.get_command() is 'BBOS_DRIVER_OPEN':
             self.p8x32_uart_open(message)
 
-def uart_open(settings):
-    if not get_running_thread().get_name() in table:
-        message = Message("BBOS_DRIVER_OPEN", settings)
-        get_running_kernel().send_message("P8X32_UART", message)
+def uart_open(device):
+    if get_running_thread().get_name() in table:
+        return True
+    message = Message("BBOS_DRIVER_OPEN", device)
+    get_running_kernel().send_message("P8X32_UART", message)
+    return False
 
 def uart_read():
     pass
 
-def uart_write():
-    pass
+def uart_write(device, data):
+    sim_serial = table[get_running_thread().get_name()]
+    sim_serial.write(data)
 
-# Register driver 
-get_running_kernel().add_driver(P8X32Uart())
+get_running_kernel().register_driver(P8X32Uart())
