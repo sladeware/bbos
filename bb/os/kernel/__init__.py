@@ -324,8 +324,18 @@ class Kernel(Object, Traceable):
         thread = self.find_thread(receiver)
         if not thread:
             raise Exception("Receiver '%s' can not be found" % receiver)
+        # Define the sender
         if not message.get_sender():
             message.set_sender(get_running_thread().get_name())
+        # In order to privent an errors with unknown commands, if the thread 
+        # has predefined list of commands that have to be
+        # used in order to communicate with it, we will try to find the command
+        # from message in this list
+        if thread.get_commands() and \
+                not message.get_command() in thread.get_commands():
+            print thread.get_commands()
+            raise KernelError("Thread '%s' does not support the command '%s'" %
+                              (receiver, message.get_command()))
         thread.put_message(message)
 
     def receive_message(self, receiver=None):
