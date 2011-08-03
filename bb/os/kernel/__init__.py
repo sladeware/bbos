@@ -228,7 +228,7 @@ class Kernel(Object, Traceable):
     @Object.sim_method
     def stop(self):
         """Shutdown everything and perform a clean system stop."""
-        self.printer("Kernel stoped")
+        self.printer("Kernel stopped")
 
     @Object.sim_method
     def panic(self, text):
