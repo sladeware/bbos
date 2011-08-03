@@ -5,12 +5,11 @@ __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 import time
 
 from bb import app
-import bb.os as bbos
-from bb.os import get_running_kernel
+from bb.os import get_running_kernel, Kernel, StaticScheduler
 from bb.os.hardware.boards import PropellerDemoBoard
 
-kernel = bbos.Kernel()
-kernel.set_scheduler(bbos.StaticScheduler())
+kernel = Kernel()
+kernel.set_scheduler(StaticScheduler())
 h48c = kernel.load_module('bb.os.hardware.drivers.accel.h48c')
 
 device_settings = h48c.H48CDeviceSettings(7, 6, 0, 1)

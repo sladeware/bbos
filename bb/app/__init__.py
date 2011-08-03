@@ -4,6 +4,8 @@ __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
 import types
 import threading
+import inspect
+import re
 import optparse
 import sys
 
@@ -21,6 +23,85 @@ def select_mode(new_mode):
 def get_mode():
     global MODE
     return MODE
+
+class Traceable(object):
+    __table = {}
+
+    def __new__(klass):
+        for _, method in inspect.getmembers(klass, inspect.ismethod):
+            # Avoid recursion. Do not wrap special methods such as: __new__,
+            # __init__, __str__, __repr__, etc.            
+            if re.match('^__(.+?)__$', method.__name__):
+                continue
+            # On this moment we will also avoid classmethod's.
+            if method.im_self is not None:
+                continue
+            setattr(klass, method.__name__, Traceable.__wrap(method))
+        return super(Traceable, klass).__new__(klass)
+
+    @classmethod
+    def find_running_instance(klass, the_klass):
+        tid = threading.current_thread().ident
+        if not tid in klass.__table:
+            return None
+        if not the_klass.__name__ in klass.__table[tid]:
+            return None
+        self, counter = klass.__table[tid][the_klass.__name__][-1]
+        return self
+
+    @classmethod
+    def __wrap(klass, method):
+        def dummy(self, *args, **kargs):
+            tid = threading.current_thread().ident
+            the_klass = self.__class__
+            # Whether the current thread was registered
+            if not tid in klass.__table:
+                klass.__table[tid] = {}
+            if not the_klass.__name__ in klass.__table[tid]:
+                klass.__table[tid][the_klass.__name__] = []
+            if not len(klass.__table[tid][the_klass.__name__]):
+                klass.__table[tid][the_klass.__name__] = [(self, 1)]
+            else:
+                last_self, counter = klass.__table[tid][the_klass.__name__].pop()
+                if last_self is self:
+                    counter += 1
+                else:
+                    klass.__table[tid][the_klass.__name__].append((last_self, counter))
+                    last_self = self
+                klass.__table[tid][the_klass.__name__].append((last_self, counter))
+            # Pass an arguments to the target method and 
+            # catch return value
+            ret = method(self, *args, **kargs)
+            self, counter = klass.__table[tid][the_klass.__name__].pop()
+            counter -= 1
+            if counter:
+                klass.__table[tid][the_klass.__name__].append((self, counter))
+            return ret
+        return dummy
+
+class Object(object):
+    """This class handle application object activity in order to provide 
+    management of simulation and building modes.
+
+    Just for internal use for each object the global mode value will 
+    be copied and saved as the special attribute. Thus the object will be 
+    able to recognise environment's mode it which it was initially started."""
+
+    def __init__(self):
+        self.mode = None
+
+    @classmethod
+    def sim_method(cls, target):
+        def simulation(self, *args, **kargs):
+            if not self.mode:
+                self.mode = get_mode()
+                if self.mode is SIMULATION_MODE:
+                    return target(self, *args, **kargs)
+                self.mode = None
+            else:
+                if self.mode is SIMULATION_MODE:
+                    return target(self, *args, **kargs)
+        return simulation
 
 class Config(object):
     """Class to wrap application-script functionality.

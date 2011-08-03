@@ -14,48 +14,23 @@ import inspect
 import bb
 from bb.utils.type_check import verify_list, verify_string
 from bb.utils.importer import Importer
-from bb.os.object import Object
-from bb import app
+from bb.app import Object, Traceable
 from module import caller
 
-# Table of running kernels. Each running kernel is registred in this table
-# in order to be trade-safe.
-_running_kernels = {}
-
 def get_running_kernel():
-    """Return the currently running kernel object."""
-    tid = threading.current_thread().ident
-    if not tid in _running_kernels:
-        return None
-    kernel, counter = _running_kernels[tid]
-    return kernel
+    """Just another useful wrapper. Return the currently running kernel 
+    object."""
+    # XXX On this moment if no kernels are running, the None value will
+    # be returned. Maybe we need to make an exception?
+    return Traceable.find_running_instance(Kernel)
 
 def get_running_thread():
+    """Return currently running thread object."""
     kernel = get_running_kernel()
     if kernel.has_scheduler():
         return kernel.get_scheduler().get_running_thread()
     else:
         raise NotImplemented()
-
-def _register_running_kernel(kernel):
-    tid = threading.current_thread().ident
-    if not tid in _running_kernels:
-        _running_kernels[tid] = (kernel, 1)
-    else:
-        kernel, counter = _running_kernels[tid]
-        _running_kernels[tid] = kernel, counter + 1
-    
-def _unregister_running_kernel():
-    tid = threading.current_thread().ident
-    if tid in _running_kernels:
-        kernel, counter = _running_kernels[tid]
-        counter = counter - 1
-        if not counter:
-            del _running_kernels[tid]
-        else:
-            _running_kernels[tid] = kernel, counter
-    else:
-        raise KernelError("No running kernel: %d" % tid)
 
 class KernelError(Exception):
     """The root error."""
@@ -173,6 +148,7 @@ class Thread(object):
         return not not len(self.__messages)
 
 class Idle(Thread):
+    """The special thread that runs when the system is idle."""
     def __init__(self):
         Thread.__init__(self, "BBOS_IDLE")
 
@@ -203,7 +179,9 @@ class Scheduler:
 class Driver(Thread):
     pass
 
-class Kernel(Object):
+class Kernel(Object, Traceable):
+    """The heart of BB operating system. In order to connect with application
+    inherits Object class."""
     def __init__(self, *args, **kargs):
         Object.__init__(self)
         self.__hardware = Hardware()
@@ -237,7 +215,6 @@ class Kernel(Object):
 
     @Object.sim_method
     def start(self):
-        _register_running_kernel(self)
         self.test()
         self.printer("Start kernel")
         try:
@@ -419,10 +396,8 @@ class Kernel(Object):
         fake_name = name + str(id(self))
         if fake_name in sys.modules:
             raise Exception("Fixed name is not unique")
-        _register_running_kernel(self)
         module = Importer.load(name, globals(), locals(),
                                [name.rsplit('.', 1).pop()])
-        _unregister_running_kernel()
         self.__modules[alias or name] = module
         return module
 
