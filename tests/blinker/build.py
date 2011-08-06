@@ -19,7 +19,8 @@ for source_file in ('blinker.c',):
 # Setup compiler
 compiler = project.get_compiler()
 compiler.add_include_dir(module.get_dir())
-compiler.add_library('ci')
+compiler.add_library('c')
+compiler.define_macro("SMALL")
 compiler.define_macro("LED", 18, c_symbol=True)
 
 # Build application

@@ -23,7 +23,7 @@ compiler.define_macro('DEMO')
 compiler.define_macro('PC')
 
 # Build application
-project.build(verbose=False, dry_run=script.config.options.dry_run)
+project.build(verbose=True, dry_run=script.config.options.dry_run)
 
 # The autoload option allows user to automatically
 # load binary code to the specified device
