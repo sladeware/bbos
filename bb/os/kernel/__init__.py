@@ -1,4 +1,3 @@
-
 __version__ = "$Rev$"
 __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
@@ -216,7 +215,6 @@ class Kernel(Object, Traceable):
 
     @Object.sim_method
     def start(self):
-        print self.get_commands()
         self.test()
         self.printer("Start kernel")
         try:

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 
 __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
@@ -50,10 +51,8 @@ def _gen_bbos_h(self, proj):
     for command in self.get_commands():
         print "%20s : %4d" % (command, next_id)
         f.write("#define %s (%s)\n" % (command, next_id))
-        next_id += 1   
-
+        next_id += 1
     f.close()
-
     if not self.has_scheduler():
         exit(1)
 

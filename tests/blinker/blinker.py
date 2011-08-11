@@ -4,25 +4,26 @@ __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
 import time
 
-from bb import app
-import bb.os as bbos
+from bb.app import Mapping, config
+from bb.os import get_running_kernel, Kernel, StaticScheduler
 from bb.os.hardware.boards import PropellerDemoBoard
 
 LED = 1
-TIMEOUT = 3
+TIMEOUT = 3 # in seconds
 
 def blink_runner():
-    print "Blink LED#%d!" % LED
-    time.sleep(TIMEOUT) # in seconds
+    get_running_kernel().printer("Blink LED#%d!" % LED)
+    time.sleep(TIMEOUT)
 
-kernel = bbos.Kernel()
-kernel.set_scheduler(bbos.StaticScheduler())
-kernel.add_thread("BLINK", blink_runner)
-
-# Start to describe application and process it includes
-
-blinker = app.Process('blinker', kernel)
-board = PropellerDemoBoard(processes=[blinker])
+def create_blinker():
+    kernel = Kernel()
+    kernel.set_scheduler(StaticScheduler())
+    kernel.add_thread("BLINK", blink_runner)
+    blinker = Mapping('blinker', kernel)
+    board = PropellerDemoBoard(processes=[blinker])
+    return blinker
 
 if __name__=='__main__':
+    config.parse_command_line()
+    blinker = create_blinker()
     blinker.run()

@@ -30,9 +30,9 @@ class Core(DistributionMetadata):
             self.set_process(process)
 
     def set_process(self, process):
-        if not isinstance(process, app.Process):
+        if not isinstance(process, app.Mapping):
             raise TypeError('process must be %s sub-class' 
-                            % app.Process.__class__.__name__)
+                            % app.Mapping.__class__.__name__)
         self.__process = process
         process.get_hardware().set_core(self)
 
@@ -45,15 +45,13 @@ class Core(DistributionMetadata):
     def set_owner(self, processor):
         self.__owner = processor
 
-#______________________________________________________________________________
-
 class Processor(DistributionMetadata):
     """Base class used for creating a BBOS processor.
 
     A processor contains one or more cores. It is a discrete semiconductor
-    based device used for computation. For example, the PIC32MX5 
+    based device used for computation. For example, the PIC32MX5
     microcontroller is a processor."""
-    
+
     __cores = []
     __number_of_cores = 0
     __owner = None
@@ -100,8 +98,9 @@ class Processor(DistributionMetadata):
     def validate_core_id(self, i):
         if self.get_number_of_cores() <= i:
             raise NotImplemented('The %s supports up to %d processes. '
-                                 'You have too many: %d' % 
-                                 (self.__class__.__name__, self.get_number_of_cores(), i))
+                                 'You have too many: %d' %
+                                 (self.__class__.__name__,
+                                  self.get_number_of_cores(), i))
 
     def get_cores(self):
         return self.__cores
@@ -116,8 +115,6 @@ class Processor(DistributionMetadata):
         for core in self.get_cores():
             processes.append(core.get_process())
         return processes
-
-#______________________________________________________________________________
 
 class Board(DistributionMetadata):
     """Base class representing a board -- i.e. computing hardware.
