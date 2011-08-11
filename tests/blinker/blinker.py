@@ -24,5 +24,5 @@ kernel.add_thread("BLINK", blink_runner)
 blinker = app.Process('blinker', kernel)
 board = PropellerDemoBoard(processes=[blinker])
 
-blinker.run()
-
+if __name__=='__main__':
+    blinker.run()

@@ -54,7 +54,7 @@ class Traceable(object):
     def __new__(klass):
         for _, method in inspect.getmembers(klass, inspect.ismethod):
             # Avoid recursion. Do not wrap special methods such as: __new__,
-            # __init__, __str__, __repr__, etc.            
+            # __init__, __str__, __repr__, etc.
             if re.match('^__(.+?)__$', method.__name__):
                 continue
             # On this moment we will also avoid classmethod's.
@@ -102,9 +102,9 @@ class Traceable(object):
                 klass.__table[tid][the_klass.__name__].append((self, counter))
             return ret
         return dummy
-
+"""
 class Config(object):
-    """Class to wrap application-script functionality.
+    "Class to wrap application-script functionality.
 
     Attributes:
     parser: An instnace of optparse.OptionParser
@@ -112,7 +112,7 @@ class Config(object):
     args: The positional command lie args left over after parsing the options.
     raw_input_fn: Function used for getting raw user input.
     error_fh: Unexpected errors are printer to this file handle.
-    """
+    "
 
     def __init__(self, argv, parser_class=optparse.OptionParser,
                  raw_input_fn=raw_input,
@@ -147,10 +147,9 @@ class Config(object):
         return parser
 
 config = Config(sys.argv)
-
 if config.options.simulation:
     select_mode(SIMULATION_MODE)
-
+"""
 def new_application(*args, **kargs):
     return Application(*args, **kargs)
 

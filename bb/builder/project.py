@@ -6,6 +6,7 @@ import os
 import platform
 from types import *
 
+import bb.builder
 from bb.utils.distribution import DistributionMetadata
 from bb.builder.compiler import Compiler
 from bb.builder.loader import Loader
@@ -14,14 +15,14 @@ from bb.builder.errors import *
 class Extension(object):
     """Interface!"""
     def on_add(self, project):
-        """This event will be called each time the extension will be added to 
+        """This event will be called each time the extension will be added to
         the project. Initially it's called from project.add_source() or
         project.add_extension()."""
         raise NotImplementedError
 
     def on_remove(self, project):
-        """This event will be called each time the extension will be removed 
-        from the project. Initially it's called from project.remove_source() 
+        """This event will be called each time the extension will be removed
+        from the project. Initially it's called from project.remove_source()
         or project.remove_extension()."""
         raise NotImplementedError
 
@@ -69,10 +70,9 @@ class Wrapper(Extension):
             return action
         return decorate
 
-#______________________________________________________________________________
-
 class Project(DistributionMetadata):
-    def __init__(self, name, sources=[], version=None, verbose=False, 
+    def __init__(self, name, sources=[], version=None,
+                 verbose=False,
                  compiler=None, loader=None):
         DistributionMetadata.__init__(self, name, version)
         self.verbose = verbose
@@ -149,19 +149,25 @@ class Project(DistributionMetadata):
     def has_extensions(self):
         return len(self.extensions)
 
-    def build(self, sources=[], output_dir=None, verbose=None, 
-              dry_run=None, 
+    def build(self, sources=[], output_dir=None,
+              verbose=None,
+              dry_run=None,
               *arg_list, **arg_dict):
+        # Control verbose
+        if not verbose:
+            verbose = getattr(bb.builder.config.options, 'verbose', verbose)
         if verbose is not None:
             self.verbose = verbose
         if sources:
             self.add_sources(sources)
+        print "Building project '%s' version '%s'" % (self.get_name(), self.get_version())
         if self.verbose:
-            print "Building project '%s' version '%s'" % (self.get_name(), self.get_version())
             self.compiler.verbose = self.verbose
         if output_dir:
             self.compiler.set_output_dir(output_dir)
-        # Dry run
+        # Control dry run mode
+        if not dry_run:
+            dry_run = getattr(bb.builder.config.options, 'dry_run', dry_run)
         if dry_run is not None:
             self.compiler.dry_run = dry_run
         self.compiler.check_executables()
