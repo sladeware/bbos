@@ -1,4 +1,3 @@
-
 __copyright__ = "Copyrigth (c) 2011 Sladeware LLC"
 
 """
@@ -12,14 +11,13 @@ Available modes:
 
 import sys
 
-# Import PySerial for simulation purposes
-import serial
-
-from bb.os.kernel import get_running_kernel, get_running_thread, Driver, Message
+from bb.os import get_running_kernel, get_running_thread, Message
+from bb.os.hardware.drivers.serial.core import Uart
 
 # P8X32 serial gpio driver requires P8X32 GPIO driver for internal GPIO
 # manipulations. Similar to: `import p8x32_gpio as gpio'.
-gpio = get_running_kernel().load_module('bb.os.hardware.drivers.gpio.p8x32_gpio')
+gpio = \
+    get_running_kernel().load_module('bb.os.hardware.drivers.gpio.p8x32_gpio')
 
 SERIAL_MODE_INVERT_RX      = 1
 SERIAL_MODE_INVERT_TX      = 2
@@ -41,7 +39,8 @@ class SerialDevice(object):
         self.is_opened = False
         self.settings = settings
 
-class P8X32Uart(Driver):
+class P8X32Uart(Uart):
+    """Class describes P8X32 Uart driver."""
     name="P8X32_UART"
     commands=('BBOS_DRIVER_OPEN', 'BBOS_DRIVER_CLOSE')
 
@@ -59,7 +58,7 @@ class P8X32Uart(Driver):
                 sys.stderr.write("Could not open serial port: %s\n" % e)
                 sys.exit(1)
 
-    @Driver.runner
+    @Uart.runner
     def p8x32_uart(self):
         message = get_running_kernel().receive_message()
         if not message:
