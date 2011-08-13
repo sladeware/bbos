@@ -30,4 +30,3 @@ project.build(verbose=True, dry_run=script.config.options.dry_run)
 if script.config.options.autoload:
     project.set_loader(BSTLLoader())
     project.load()
-

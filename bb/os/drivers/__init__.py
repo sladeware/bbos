@@ -3,5 +3,4 @@
 __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
 # Import accelerometer drivers
-from bb.os.hardware.drivers.accel import *
-
+from bb.os.drivers.accel import *

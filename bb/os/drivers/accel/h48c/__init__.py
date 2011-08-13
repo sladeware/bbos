@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 
 __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
@@ -5,7 +6,7 @@ import random
 
 from bb.os import get_running_kernel, Driver, Message
 
-gpio = get_running_kernel().load_module('bb.os.hardware.drivers.gpio.p8x32_gpio')
+gpio = get_running_kernel().load_module('bb.os.drivers.gpio.p8x32_gpio')
 
 class H48CDeviceSettings(object):
     def __init__(self, dio_pin=None, clk_pin=None, cs_pin=None, zerog_pin=None):
@@ -37,7 +38,8 @@ class H48CDriver(Driver):
     commands=('BBOS_DRIVER_OPEN', 'BBOS_DRIVER_CLOSE')
 
     def h48c_open(self, device):
-        mask = sum([1 << getattr(device.settings, attr) for attr in 'dio_pin', 'clk_pin', 'cs_pin', 'zerog_pin'])
+        mask = sum([1 << getattr(device.settings, attr) for attr in 'dio_pin',
+                    'clk_pin', 'cs_pin', 'zerog_pin'])
         if gpio.gpio_open(mask):
             device.is_opened = True
 
@@ -51,5 +53,4 @@ class H48CDriver(Driver):
 
 get_running_kernel().register_driver(H48CDriver())
 
-import bb.os.hardware.drivers.accel.h48c.setup
-
+import bb.os.drivers.accel.h48c.setup

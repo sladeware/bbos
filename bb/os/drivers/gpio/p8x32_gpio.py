@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 
 __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
@@ -13,8 +14,8 @@ GPIO_INIT_HIGH = 1
 
 class GPIO(object):
     """This class describes a single GPIO pin."""
-    def __init__(self, owner=None, 
-                 direction=GPIO_DIRECTION_INPUT, 
+    def __init__(self, owner=None,
+                 direction=GPIO_DIRECTION_INPUT,
                  value=GPIO_INIT_LOW):
         self.owner = owner
         self.direction = direction
@@ -84,4 +85,4 @@ class P8X32GPIODriver(Driver):
 # Register P8X32-GPIO driver
 get_running_kernel().register_driver(P8X32GPIODriver())
 
-import bb.os.hardware.drivers.gpio.p8x32_gpio_setup
+import bb.os.drivers.gpio.p8x32_gpio_setup

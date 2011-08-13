@@ -196,7 +196,7 @@ class Kernel(Object, Traceable):
     @Object.sim_method
     def printer(self, data):
         prefix = ''
-        if multiprocessing.current_process().pid:
+        if multiprocessing.current_process().pid: # see application number of processes
             prefix = "[%d] " % multiprocessing.current_process().pid
         print prefix + data
 
@@ -422,8 +422,11 @@ class Kernel(Object, Traceable):
         #fake_name = name + str(id(self))
         #if fake_name in sys.modules:
         #    raise Exception("Fixed name is not unique")
-        module = Importer.load(name, globals(), locals(),
-                               [name.rsplit('.', 1).pop()])
+        try:
+            module = Importer.load(name, globals(), locals(),
+                                   [name.rsplit('.', 1).pop()])
+        except ImportError, e:
+            self.panic(e)
         self.__modules[alias or name] = module
         # Once the module was importer to the system it has to be removed
         # so all other kernels will be able to import this module. The

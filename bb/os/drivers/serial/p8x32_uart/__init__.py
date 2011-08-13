@@ -14,13 +14,13 @@ Available modes:
 import sys
 
 from bb.os import get_running_kernel, get_running_thread, Message
-from bb.os.hardware.drivers.serial.core import Uart
+from bb.os.drivers.serial.core import Uart
 import serial
 
 # P8X32 serial gpio driver requires P8X32 GPIO driver for internal GPIO
 # manipulations. Similar to: `import p8x32_gpio as gpio'.
 gpio = \
-    get_running_kernel().load_module('bb.os.hardware.drivers.gpio.p8x32_gpio')
+    get_running_kernel().load_module('bb.os.drivers.gpio.p8x32_gpio')
 
 SERIAL_MODE_INVERT_RX      = 1
 SERIAL_MODE_INVERT_TX      = 2
@@ -85,4 +85,4 @@ def uart_write(device, data):
 
 get_running_kernel().register_driver(P8X32Uart())
 
-import bb.os.hardware.drivers.serial.p8x32_uart.setup
+import bb.os.drivers.serial.p8x32_uart.setup
