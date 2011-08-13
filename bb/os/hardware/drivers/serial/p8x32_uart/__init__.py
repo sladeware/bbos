@@ -15,6 +15,7 @@ import sys
 
 from bb.os import get_running_kernel, get_running_thread, Message
 from bb.os.hardware.drivers.serial.core import Uart
+import serial
 
 # P8X32 serial gpio driver requires P8X32 GPIO driver for internal GPIO
 # manipulations. Similar to: `import p8x32_gpio as gpio'.
@@ -83,3 +84,5 @@ def uart_write(device, data):
     sim_serial.write(data)
 
 get_running_kernel().register_driver(P8X32Uart())
+
+import bb.os.hardware.drivers.serial.p8x32_uart.setup

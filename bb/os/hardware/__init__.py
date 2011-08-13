@@ -188,3 +188,44 @@ class Board(DistributionMetadata):
             processes.extend(processor.get_processes())
         return processes
 
+class Hardware:
+    """This class represents interface between kernel and hardware
+     abstraction.
+
+     The board and processor can not be defined directly by using hardware
+     class."""
+    def __init__(self):
+        self.__core = None
+
+    # Board Management
+
+    def get_board(self):
+        return self.get_processor().get_owner()
+
+    # Processor Management
+
+    def is_processor_defined(self):
+        """Where processor was defined. Return True value if the processor's
+        name can be obtained by using specified core. Otherwise return False."""
+        if not self.get_core():
+            return False
+        return not not self.get_core().get_owner()
+
+    def get_processor(self):
+        return self.__core.get_owner()
+
+    # Core Management
+
+    def is_core_defined(self):
+        """Where core was defined."""
+        return not not self.get_core()
+
+    def set_core(self, core):
+        if not isinstance(core, Core):
+            raise TypeError('Core must be bb.os.hardware.Core sub-class')
+        self.__core = core
+
+    def get_core(self):
+        return self.__core
+
+import bb.os.hardware.setup
