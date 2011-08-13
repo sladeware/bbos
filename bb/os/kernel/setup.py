@@ -8,7 +8,7 @@ import module
 
 from bb.builder.project import Wrapper
 from bb.builder.compilers import CCompiler
-from bb.os.kernel import Kernel, Hardware
+from bb.os.kernel import Kernel
 
 def _gen_bbos_h(self, proj):
     # Generate the top of bbos.h file
@@ -17,10 +17,12 @@ def _gen_bbos_h(self, proj):
     f.write("/*\n"
             " * %s\n"
             " *\n"
-            " * This is BBOS generated source code used for late binding application\n"
+            " * This is BBOS generated source code used for late binding "
+            "application\n"
             " * features just before compile time.\n"
             " *\n"
-            " * Please do not edit this by hand, as your changes will be lost.\n"
+            " * Please do not edit this by hand, as your changes will "
+            "be lost.\n"
             " *\n"
             " * %s\n"
             " */\n"
@@ -28,10 +30,10 @@ def _gen_bbos_h(self, proj):
     # Threads
     print "Number of threads: %d" % self.get_number_of_threads()
     f.write("/* Threads */\n")
-    f.write("#define BBOS_NUMBER_OF_THREADS (%d)\n" 
+    f.write("#define BBOS_NUMBER_OF_THREADS (%d)\n"
             % self.get_number_of_threads())
     next_id = 0
-        # Keep all thread entries. We will check all entry points and their 
+        # Keep all thread entries. We will check all entry points and their
         # aliases so they should not repeat
     entries = {}
     for thread in self.get_threads():
@@ -85,8 +87,3 @@ def _add_source(kernel, project):
     for driver in kernel.get_drivers():
         project.add_source(driver)
 
-@Wrapper.bind("on_add", Hardware)
-def _add_hardware(hardware, project):
-    processor = hardware.get_processor()
-    project.add_source(processor)
-    

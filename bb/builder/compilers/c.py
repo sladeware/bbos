@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 
 __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
@@ -11,13 +12,13 @@ from bb.utils.dir import mkpath
 from bb.utils.spawn import which, ExecutionError
 
 class CCompiler(Compiler):
-    """Abstract base class to define the interface of the standard C compiler 
+    """Abstract base class to define the interface of the standard C compiler
     that must be implemented by real compiler class.
 
-    The basic idea behind a compiler abstraction class is that each instance 
-    can be used for all the compiler/link steps in building a single project. 
+    The basic idea behind a compiler abstraction class is that each instance
+    can be used for all the compiler/link steps in building a single project.
     Thus, we have an attributes common to all of those compile and link steps --
-    include directories, macros to define, libraries to link against, etc. -- 
+    include directories, macros to define, libraries to link against, etc. --
     are attributes to the compiler instance."""
 
     executables = None
@@ -25,8 +26,8 @@ class CCompiler(Compiler):
     source_extensions = None # list of strings
     object_extension = None
 
-    # Default language settings. 
-    # language_map is used to detect a source file target language, checking 
+    # Default language settings.
+    # language_map is used to detect a source file target language, checking
     # source filenames.
     language_map = {".c"   : "c",
                     ".cc"  : "c++",
@@ -283,25 +284,25 @@ class CCompiler(Compiler):
         return ld_opts
 
     def get_object_filenames(self, src_filenames, output_dir=""):
-	if output_dir is None:
-	    output_dir = ""
-	obj_filenames = []
-	for src_filename in src_filenames:
-	    base, ext = os.path.splitext(src_filename)
-	    base = os.path.splitdrive(base)[1]
-	    base = base[os.path.isabs(base):]
-	    if ext not in self.source_extensions:
-		raise UnknownFileError, "unknonw file type '%s' (from '%s')" \
-		    % (ext, src_filename)
-	    obj_filenames.append(os.path.join(output_dir, \
-						  base + self.object_extension))
-	return obj_filenames
+        if output_dir is None:
+            output_dir = ""
+        obj_filenames = []
+        for src_filename in src_filenames:
+            base, ext = os.path.splitext(src_filename)
+            base = os.path.splitdrive(base)[1]
+            base = base[os.path.isabs(base):]
+            if ext not in self.source_extensions:
+                raise UnknownFileError("unknown file type '%s' (from '%s')" \
+                    % (ext, src_filename))
+            obj_filenames.append(os.path.join(output_dir, \
+                                                  base + self.object_extension))
+        return obj_filenames
 
     def compile(self, sources, output_dir=None, macros=None, include_dirs=None,
                 debug=0, extra_preopts=None, extra_postopts=None, depends=None):
         macros, objects, extra_postopts, pp_options, build = \
-	    self._setup_compile(sources, output_dir, macros, include_dirs, extra_postopts, depends)
-	cc_options = self._gen_cc_options(pp_options, debug, extra_preopts)
+            self._setup_compile(sources, output_dir, macros, include_dirs, extra_postopts, depends)
+        cc_options = self._gen_cc_options(pp_options, debug, extra_preopts)
         for obj in objects:
             try:
                 src, ext = build[obj]

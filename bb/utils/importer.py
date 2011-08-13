@@ -1,4 +1,7 @@
-"""Provide an interface to the mechanisms used to implement the import statement.
+#!/usr/bin/env python
+
+"""Provide an interface to the mechanisms used to implement the import
+statement.
 
 See also:
 http://docs.python.org/library/functions.html#__import__
@@ -14,9 +17,10 @@ import imp
 
 class Importer:
     @classmethod
-    def load(class_, name, globals_=None, locals_=None, fromlist=None, level=-1):
-        """Allows to import modules as in the standard fashion 
-        Importer.load('os.path'), and also as Importer.load('os/path') or even 
+    def load(class_, name, globals_=None, locals_=None, fromlist=None,
+             level=-1):
+        """Allows to import modules as in the standard fashion
+        Importer.load('os.path'), and also as Importer.load('os/path') or even
         Importer.load('os/path.py')."""
         # The module path is a directory or file. Provide dot-separator.
         #import os.path # XXX: very important to keep it here
@@ -37,7 +41,7 @@ class Importer:
         if hasattr(module, "__path__"):
             class_._ensure_fromlist(module, fromlist)
         return module
-        
+
     @classmethod
     def _determine_parent(class_, globals_, level=-1):
         if not globals_ or  not globals_.has_key("__name__"):
@@ -75,7 +79,7 @@ class Importer:
         else:
             qname = head
         q = class_._import_module(head, qname, parent)
-        if q: 
+        if q:
             return q, tail
         if parent:
             qname = head
@@ -114,7 +118,8 @@ class Importer:
                 subname = m.__name__
                 submod = class_._import_module(sub, subname, m)
                 if not submod:
-                    raise ImportError("Can not import_module(%s, %s, %s)" % (sub, subname, m))
+                    raise ImportError("Can not import_module(%s, %s, %s)" %
+                                      (sub, subname, m))
 
     @classmethod
     def _import_module(class_, partname, fqname, parent):
@@ -123,15 +128,15 @@ class Importer:
         except KeyError:
             pass
         try:
-            fp, pathname, stuff = imp.find_module(partname, 
+            fp, pathname, stuff = imp.find_module(partname,
                                                   parent and parent.__path__)
         except ImportError:
             return None
         try:
             m = imp.load_module(fqname, fp, pathname, stuff)
         finally:
-            if fp: fp.close()
+            if fp:
+                fp.close()
         if parent:
             setattr(parent, partname, m)
         return m
-

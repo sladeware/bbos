@@ -4,6 +4,7 @@ __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
 import types
 import threading
+import multiprocessing
 import inspect
 import re
 import optparse
@@ -12,17 +13,7 @@ import sys
 from bb.utils.type_check import verify_list
 
 SIMULATION_MODE = 0x1
-DEV_MODE = 0x3
-
-MODE = DEV_MODE
-
-def select_mode(new_mode):
-    global MODE
-    MODE = new_mode
-
-def get_mode():
-    global MODE
-    return MODE
+DEV_MODE = 0x2
 
 class Config(object):
     """Class to wrap build-script functionality.
@@ -120,7 +111,7 @@ class Traceable(object):
 
     @classmethod
     def find_running_instance(klass, the_klass):
-        tid = threading.current_thread().ident
+        tid = multiprocessing.current_process().ident #threading.current_thread().ident
         if not tid in klass.__table:
             return None
         if not the_klass.__name__ in klass.__table[tid]:
@@ -131,7 +122,7 @@ class Traceable(object):
     @classmethod
     def __wrap(klass, method):
         def dummy(self, *args, **kargs):
-            tid = threading.current_thread().ident
+            tid = multiprocessing.current_process().ident #threading.current_thread().ident
             the_klass = self.__class__
             # Whether the current thread was registered
             if not tid in klass.__table:
@@ -148,8 +139,7 @@ class Traceable(object):
                     klass.__table[tid][the_klass.__name__].append((last_self, counter))
                     last_self = self
                 klass.__table[tid][the_klass.__name__].append((last_self, counter))
-            # Pass an arguments to the target method and 
-            # catch return value
+            # Pass an arguments to the target method and catch return value
             ret = method(self, *args, **kargs)
             self, counter = klass.__table[tid][the_klass.__name__].pop()
             counter -= 1
@@ -159,36 +149,77 @@ class Traceable(object):
         return dummy
 
 class Mapping(object):
-    def __init__(self, name, kernel=None):
-        from bb import os
-        self.__name = name
-        self.__hardware = os.Hardware()
-        self.__kernel = kernel
+    def __init__(self, kernel=None):
+        from bb.os.hardware import Hardware
+        self.__hardware = Hardware()
+        self.__kernel = None
+        if kernel:
+            self.set_kernel(kernel)
 
     def get_hardware(self):
         return self.__hardware
 
-    def select_kernel(self, kernel):
+    def set_kernel(self, kernel):
+        from bb.os import Kernel
+        if not isinstance(kernel, Kernel):
+            raise TypeError("Kernel '%s' should based on "
+                            "bb.os.kernel.Kernel class." % kernel)
         self.__kernel = kernel
         return kernel
 
     def get_kernel(self):
         return self.__kernel
 
-    def run(self):
-        self.__kernel.start()
+    def start(self):
+        """Start the kernel."""
+        if self.get_kernel():
+            self.get_kernel().start()
+        else:
+            raise Exception("Kernel was not defined.")
 
-class Application:
-    def __init__(self):
+    def stop(self):
+        pass
+
+class Application(object):
+    def __init__(self, processes=[]):
         self.__processes = {}
+        if len(processes):
+            self.add_processes(processes)
 
-    def add_process(self, name):
-        process = Process(name)
-        self.__processes[name] = process
+    # Process management
+
+    def add_processes(self, processes):
+        for process in processes:
+            self.add_process(process)
+
+    def add_process(self, process):
+        if not isinstance(process, Mapping):
+            raise TypeError("Unknown process '%s'. "
+                            "Not based on bb.app.Mapping class" % (process))
+        self.__processes[id(process)] = process
         return process
 
-    def run(self):
-        for (name, process) in self.__processes.items():
-            __import__(name)
+    def get_num_processes(self):
+        """Return number of processes defined within current application."""
+        return len(self.__processes)
+
+    def get_processes(self):
+        return self.__processes
+
+    # Control management
+
+    def start(self):
+        if not self.get_num_processes():
+            raise Exception("Nothing to run. Please, add at least one process.")
+        workers = []
+        for (name, process) in self.get_processes().items():
+            worker = multiprocessing.Process(target=process.start)
+            worker.start()
+            workers.append(worker)
+        try:
+            for worker in workers:
+                worker.join()
+        except KeyboardInterrupt, SystemExit:
+            pass
 
 import bb.app.setup
