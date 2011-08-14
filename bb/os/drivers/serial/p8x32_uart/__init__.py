@@ -12,6 +12,8 @@ Available modes:
 """
 
 import sys
+import time
+import types
 
 from bb.os import get_running_kernel, get_running_thread, Message
 from bb.os.drivers.serial.core import Uart
@@ -54,9 +56,11 @@ class P8X32Uart(Uart):
         if gpio.gpio_open(mask):
             device.is_opened = True
             try:
-                table[message.get_sender()] = serial.Serial(
-                    port=settings.simulation_port,
-                    baudrate=settings.baudrate)
+                ser = serial.Serial(port=settings.simulation_port,
+                                    baudrate=settings.baudrate)
+                ser.flushInput()
+                ser.flushOutput()
+                table[message.get_sender()] = ser
             except serial.SerialException, e:
                 sys.stderr.write("Could not open serial port: %s\n" % e)
                 sys.exit(1)
@@ -76,12 +80,19 @@ def uart_open(device):
     get_running_kernel().send_message("P8X32_UART", message)
     return False
 
-def uart_read():
-    pass
+def uart_read(device, bytes=1):
+    sim_serial = table[get_running_thread().get_name()]
+    buf = sim_serial.read(bytes)
+    return buf
 
 def uart_write(device, data):
     sim_serial = table[get_running_thread().get_name()]
+    if not isinstance(data, types.StringType):
+        data = str(data)
     sim_serial.write(data)
+    # there might be a small delay until the character is ready
+    # (especially on win32)
+    time.sleep(0.05)
 
 get_running_kernel().register_driver(P8X32Uart())
 

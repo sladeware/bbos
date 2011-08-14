@@ -195,6 +195,8 @@ class Kernel(Object, Traceable):
 
     @Object.sim_method
     def printer(self, data):
+        if not isinstance(data, types.StringType):
+            data = str(data)
         prefix = ''
         if multiprocessing.current_process().pid: # see application number of processes
             prefix = "[%d] " % multiprocessing.current_process().pid
