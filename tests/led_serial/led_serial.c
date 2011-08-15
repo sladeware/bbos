@@ -5,7 +5,7 @@
 #include <bb/os/config.h>
 #include <bb/os/system.h>
 
-#include <bb/os/hardware/drivers/serial/p8x32_uart/core.h>
+#include <bb/os/drivers/serial/p8x32_uart/core.h>
 
 int
 main()

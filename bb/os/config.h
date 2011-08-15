@@ -7,13 +7,21 @@
 
 /**
  * @file config.h
- * @brief BB Operating System config
+ * @brief BBOS config
  */
 
-// Always goes first
+/* Always goes first */
 #include <bbos.h>
 
-// Hardware
+#ifndef BBOS_DEBUG
+/**
+ * The BBOS debug macro equals to the ANSI standard NDEBUG macro.
+ * Learn more http://www.embedded.com/story/OEG20010311S0021
+ */
+#define BBOS_DEBUG NDEBUG
+#endif
+
+/* Hardware */
 #ifndef BBOS_PROCESSOR
 #error "BBOS_PROCESSOR was not defined"
 #endif

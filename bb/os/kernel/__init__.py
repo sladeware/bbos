@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 __version__ = "$Rev$"
 __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
