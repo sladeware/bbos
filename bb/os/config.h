@@ -42,6 +42,6 @@
 #define BBOS_FIND_PROCESSOR_FILE(filename) <bb/os/hardware/processors/BBOS_PROCESSOR/filename>
 
 /* Banner */
-const char bbos_banner[] = "BBOS version " BBOS_VERSION_STR "\n";
+const static char bbos_banner[] = "BBOS version " BBOS_VERSION_STR " (" BB_COMPILER_STR ")" "\n";
 
-#endif
+#endif /* __BBOS_CONFIG_H */
