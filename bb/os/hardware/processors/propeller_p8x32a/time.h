@@ -1,10 +1,18 @@
+/*
+ * Copyright (c) 2011 Sladeware LLC
+ */
 
-#ifndef __BBOS_DELAY_H
-#define __BBOS_DELAY_H
+/**
+ * @file time.h
+ */
+
+#ifndef __P8X32A_TIME_H
+#define __P8X32A_TIME_H
+
+#include <bb/os/kernel.h>
 
 /* 1 millisecond (1 ms) is a cycle time for frequency 1 kHz; */
-void bbos_delay_ms(int milliseconds);
-void bbos_delay_sec(int seconds);
+PROTOTYPE(void bbos_sleep_ms, (int milliseconds));
+PROTOTYPE(void bbos_sleep_sec, (int seconds));
 
-#endif
-
+#endif /* __P8X32A_TIME_H */

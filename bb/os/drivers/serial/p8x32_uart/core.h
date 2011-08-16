@@ -1,6 +1,10 @@
-
+/*
+ * Copyright (c) 2011 Sladeware LLC
+ */
 #ifndef __P8X32_UART_H
 #define __P8X32_UART_H
+
+#include <bb/os/kernel.h>
 
 #define SERIAL_BUFF_MASK 0xf
 
@@ -18,13 +22,12 @@
 
 /* Prototypes */
 
-void serial_open(unsigned long rx_pin, unsigned long tx_pin, unsigned long mode, 
-				 unsigned long baudrate);
-int serial_wait();
-int serial_send_byte(int byte);
-int serial_receive_byte();
-void serial_flush();
-int serial_timeout(unsigned long ms);
+PROTOTYPE(void serial_open, (unsigned long rx_pin, unsigned long tx_pin,
+                             unsigned long mode, unsigned long baudrate));
+PROTOTYPE(int serial_wait, (void));
+PROTOTYPE(int serial_send_byte, (int byte));
+PROTOTYPE(int serial_receive_byte, ());
+PROTOTYPE(void serial_flush, ());
+PROTOTYPE(int serial_timeout, (unsigned long ms));
 
-#endif
-
+#endif /* __P8X32_UART_H */

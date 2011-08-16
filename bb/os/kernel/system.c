@@ -4,10 +4,10 @@
 
 #include <stdio.h>
 
-#include <bb/os/kernel/system.h>
+#include <bb/os/kernel.h>
 
-static bbos_thread_t bbos_thread_table[BBOS_NUMBER_OF_THREADS];
-static bbos_port_t bbos_port_table[BBOS_NUMBER_OF_THREADS];
+static bbos_thread_t bbos_thread_table[BBOS_NUM_THREADS];
+static bbos_port_t bbos_port_table[BBOS_NUM_THREADS];
 
 /**
  * Defines whether the port is empty. If the port is not empty, returns number
@@ -37,7 +37,7 @@ bbos_port_is_empty(bbos_thread_id_t tid)
  * Kernel error code.
  */
 bbos_error_t
-bbos_port_send(bbos_thread_id_t receiver, bbos_message_t *message, 
+bbos_port_send(bbos_thread_id_t receiver, bbos_message_t *message,
                bbos_thread_id_t owner)
 {
   if (bbos_port_table[receiver].tail == NULL)
@@ -50,9 +50,9 @@ bbos_port_send(bbos_thread_id_t receiver, bbos_message_t *message,
 
   message->next = bbos_port_table[receiver].tail->next;
   bbos_port_table[receiver].tail->next = message;
-  
+
   message->owner = owner;
-  
+
   return BBOS_SUCCESS;
 }
 
@@ -144,13 +144,13 @@ bbos_panic(const char *fmt, ...)
 void
 bbos_switch_thread()
 {
-  assert(bbos_sched_myself() < BBOS_NUMBER_OF_THREADS);
+  assert(bbos_sched_myself() < BBOS_NUMTHREADS);
   bbos_thread_run( bbos_sched_myself() );
 }
 #endif
 
 /**
- * Start the thread and schedule it. Wrapper for bbos_thread_init() and 
+ * Start the thread and schedule it. Wrapper for bbos_thread_init() and
  * bbos_sched_enqueue().
  *
  * @param tid Thread identifier.
@@ -160,10 +160,10 @@ bbos_switch_thread()
  *
  * Kernel error code.
  */
-bbos_error_t 
-bbos_add_thread(bbos_thread_id_t tid, void (*thread)(void)) 
+bbos_error_t
+bbos_add_thread(bbos_thread_id_t tid, void (*thread)(void))
 {
-  assert(tid < BBOS_NUMBER_OF_THREADS);
+  assert(tid < BBOS_NUM_THREADS);
   bbos_thread_init(tid, thread);
 #ifdef BBOS_SCHED_ENABLED
   bbos_sched_enqueue(tid);
@@ -184,7 +184,7 @@ bbos_add_thread(bbos_thread_id_t tid, void (*thread)(void))
 bbos_error_t
 bbos_remove_thread(bbos_thread_id_t tid)
 {
-  assert(tid < BBOS_NUMBER_OF_THREADS);
+  assert(tid < BBOS_NUM_THREADS);
   bbos_thread_init(tid, NULL);
 #ifdef BBOS_SCHED_ENABLED
   bbos_sched_dequeue(tid);
@@ -197,7 +197,7 @@ bbos_remove_thread(bbos_thread_id_t tid)
  *
  * @note
  *
- * A requirement of BBOS is that you call bbos_init() before you invoke 
+ * A requirement of BBOS is that you call bbos_init() before you invoke
  * any of its other services.
  */
 void
@@ -205,11 +205,13 @@ bbos_init()
 {
   bbos_thread_id_t tid;
 
+  printf(bbos_banner);
+
 #ifdef BBOS_DEBUG
   printf("Initialize BBOS kernel\n");
 #endif
 
-  for (tid=0; tid<BBOS_NUMBER_OF_THREADS; tid++)
+  for (tid=0; tid<BBOS_NUM_THREADS; tid++)
     bbos_thread_init(tid, NULL);
 
 #ifdef BBOS_SCHED_ENABLED
@@ -221,8 +223,12 @@ bbos_init()
 
 /**
  * Start the kernel.
+ *
+ * @return
+ *
+ * Kernel error code.
  */
-void
+bbos_error_t
 bbos_start()
 {
 #ifdef BBOS_DEBUG
@@ -233,12 +239,14 @@ bbos_start()
   bbos_add_thread(BBOS_IDLE, bbos_idle_runner);
 
   while (1) {
-	bbos_sched_move();
-	bbos_switch_thread();
+    bbos_sched_move();
+    bbos_switch_thread();
   }
 #else
   bbos_switch_thread();
 #endif
+
+  return BBOS_SUCCESS;
 }
 
 /**

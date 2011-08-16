@@ -1,7 +1,6 @@
 /*
  * Copyright (c) 2011 Sladeware LLC
  */
-
 /**
  * @file system.h
  * @brief System control
@@ -22,22 +21,25 @@
 
 /* Prototypes */
 
-void bbos_init();
-void bbos_start();
-void bbos_idle_runner();
-void bbos_panic(const char *fmt, ...);
+PROTOTYPE(void bbos_init, (void));
+PROTOTYPE(bbos_error_t bbos_start, (void));
+PROTOTYPE(void bbos_idle_runner, (void));
+PROTOTYPE(void bbos_panic, (const char *fmt, ...));
 
 /* Thread management */
-bbos_error_t bbos_add_thread(bbos_thread_id_t tid, void (*thread)(void));
-bbos_error_t bbos_remove_thread(bbos_thread_id_t tid);
-void bbos_thread_init(bbos_thread_id_t tid, bbos_thread_t thread);
-void bbos_thread_run(bbos_thread_id_t tid);
+PROTOTYPE(bbos_error_t bbos_add_thread, (bbos_thread_id_t tid,
+                                         void (*thread)(void)));
+PROTOTYPE(bbos_error_t bbos_remove_thread, (bbos_thread_id_t tid));
+PROTOTYPE(void bbos_thread_init, (bbos_thread_id_t tid, bbos_thread_t thread));
+PROTOTYPE(void bbos_thread_run, (bbos_thread_id_t tid));
 
 /* Ports */
-bbos_error_t bbos_port_send(bbos_thread_id_t receiver, bbos_message_t *message,
-                            bbos_thread_id_t owner);
-bbos_error_t bbos_port_receive(bbos_thread_id_t tid, bbos_message_t *message);
-void bbos_port_flush(bbos_thread_id_t tid);
-bbos_message_number_t bbos_port_is_empty(bbos_thread_id_t tid);
+PROTOTYPE(bbos_error_t bbos_port_send, (bbos_thread_id_t receiver,
+                                        bbos_message_t *message,
+                                        bbos_thread_id_t owner));
+PROTOTYPE(bbos_error_t bbos_port_receive, (bbos_thread_id_t tid,
+                                           bbos_message_t *message));
+PROTOTYPE(void bbos_port_flush, (bbos_thread_id_t tid));
+PROTOTYPE(bbos_message_number_t bbos_port_is_empty, (bbos_thread_id_t tid));
 
 #endif /* __BBOS_SYSTEM_H */
