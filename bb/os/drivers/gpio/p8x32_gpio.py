@@ -3,31 +3,7 @@
 __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
 from bb.os.kernel import get_running_kernel, get_running_thread, Driver, Message
-
-# This values will be taken from the processor's description
-NUMBER_GPIOS = 256
-
-GPIO_DIRECTION_INPUT = 0
-GPIO_DIRECTION_OUPUT = 1
-GPIO_INIT_LOW = 0
-GPIO_INIT_HIGH = 1
-
-class GPIO(object):
-    """This class describes a single GPIO pin."""
-    def __init__(self, owner=None,
-                 direction=GPIO_DIRECTION_INPUT,
-                 value=GPIO_INIT_LOW):
-        self.owner = owner
-        self.direction = direction
-        self.value = value
-
-# Initialize map of GPIOs. Each GPIO pin is represented by GPIO class. The
-# size of map equals to number of GPIOs.
-gpios_map = [None] * NUMBER_GPIOS
-for gpio in range(NUMBER_GPIOS):
-    gpios_map[gpio] = GPIO()
-# Bitmap
-gpios_bitmap = 0
+from bb.os.drivers.gpio.core import gpios_map, gpios_bitmap
 
 def gpio_open(mask):
     global gpios_bitmap
@@ -38,13 +14,20 @@ def gpio_open(mask):
     get_running_kernel().send_message('P8X32_GPIO', Message('BBOS_DRIVER_OPEN', mask))
     return False
 
-def gpio_set_direction(pin, direction):
+def gpio_direction_output(pin, value):
+    """Configure direction as OUTPUT."""
+    # Simulation
     gpio = gpios_map[pin]
-    gpio.direction = direction
-    get_running_kernel().printer("Pin %d direction is %d" % (pin, direction))
+    gpio.direction = 'OUTPUT'
+    gpio.value = value
+    get_running_kernel().printer("GPIO#%d direction is %s, value is %s" %\
+                                     (pin, gpio.direction, gpio.value))
 
-def gpio_get_direction(pin):
-    pass
+def gpio_direction_input(pin):
+    """Configure direction as INPUT."""
+    gpio = gpios_map[pin]
+    gpio.direction = 'INPUT'
+    get_running_kernel().printer("GPIO#%d direction is %s" % (pin, gpio.direction))
 
 def gpio_set_value(pin, value):
     pass

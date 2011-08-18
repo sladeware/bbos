@@ -7,16 +7,18 @@
  * http://en.wikipedia.org/wiki/Asynchronous_serial_communication
  */
 
+/**
+ * This implementation is only support Catalina compiler.
+ * See the following link to learn more about initial implementation:
+ * http://forums.parallax.com/showthread.php?128947-Catalina-2.9/page21
+ */
 #ifndef __CATALINA__
 #error "This implementation required Catalina Compiler"
 #endif
 
-/*
- * http://forums.parallax.com/showthread.php?128947-Catalina-2.9/page21
- */
-
 #include <catalina_cog.h>
 #include <bb/os/drivers/serial/p8x32_uart/core.h>
+#include <bb/os/drivers/gpio/p8x32_gpio.h>
 #include BBOS_FIND_PROCESSOR_FILE(time.h)
 
 /* Created with spin.binary PASM to C Array Converter. */
@@ -61,12 +63,14 @@ typedef struct serial_descriptor
   unsigned long buffer_ptr; /**< pointer to rx buffer */
 } serial_descriptor_t;
 
-/** Serial descriptor */
+/**
+ * Serial descriptor.
+ */
 static struct serial_descriptor serial_descr;
 
 /**
  * These buffers must be contiguous. Their size must match the asm expectation.
- * Asm also expects the address of txbuff to be after rxbuff.
+ * Asm also expects the address of @c txbuff to be after @c rxbuff.
  * Apparently the C compiler "allocates" this memory in reverse order.
  * Using a struct would correct it, but for now let's just reverse the entry.
  */
