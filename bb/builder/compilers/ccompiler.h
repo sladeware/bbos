@@ -4,12 +4,11 @@
 
 /**
  * @file ccompiler.h
- * @brief BB compiler configuration selection header file
+ * @brief C compiler configuration selection header file
  */
 
 /* Detect which compiler we are using
    and define BB_COMPILER_CONFIG_H as needed: */
-
 #if defined(__GNUC__) /* GNU C++ */
 #define BB_COMPILER_CONFIG_H "bb/builder/compilers/gcc.h"
 #elif defined(__CATALINA__) /* Catalina compiler */
