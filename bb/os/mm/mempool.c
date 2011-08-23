@@ -12,9 +12,7 @@
  * @param part_sz Partition size in bytes.
  * @param block_sz Block size in bytes.
  *
- * @return
- *
- * Pointer to the first free memory block.
+ * @return Pointer to the first free memory block.
  *
  * @note
  *
@@ -26,7 +24,7 @@
  * previously allocated from it.
  */
 void *
-bbos_mempool_init(const void *part, uint16 part_sz, uint16 block_sz)
+bbos_mempool_init(const void* part, uint16 part_sz, uint16 block_sz)
 {
   assert(part);
   bbos_mempool_resize(part, part_sz, block_sz);
@@ -58,23 +56,16 @@ bbos_mempool_resize(const void *part, uint16 part_sz, uint16 block_sz)
  *
  * @param pool Pointer to the target memory pool.
  *
- * @return
+ * @return Pointer to the memory block or @c NULL if there are no free blocks.
  *
- * Pointer to the memory block or NULL if there are no free blocks.
- *
- * @note
- *
- * O(1)
+ * @note O(1)
  */
 void *
 bbos_mempool_alloc(void **pool)
 {
-  void **block;
-
-  assert(pool); // Check for NULL pointer
-
+  void** block;
+  assert(pool); /* Check for NULL pointer */
   BBOS_MEMPOOL_ALLOC(pool, block);
-
   return (void *)block;
 }
 
@@ -84,18 +75,14 @@ bbos_mempool_alloc(void **pool)
  * @param pool Pointer to the used memory pool.
  * @param block Pointer to the memory block.
  *
- * @note
- *
- * O(1)
+ * @note O(1)
  */
 void
-bbos_mempool_free(void **pool, void *block)
+bbos_mempool_free(void** pool, void* block)
 {
-  assert(pool);		// Check for NULL pointer
-  assert(block);	// Check for NULL pointer
+  assert(pool); /* Check for NULL pointer */
+  assert(block); /* Check for NULL pointer */
   BBOS_MEMPOOL_FREE(pool, block);
 }
 
 // http://rt-thread.googlecode.com/svn/branches/rtt_0_3_2/src/mempool.c
-
-

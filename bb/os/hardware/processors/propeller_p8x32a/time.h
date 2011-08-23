@@ -4,6 +4,7 @@
 
 /**
  * @file time.h
+ * @brief Propeller P8X32 time handling
  */
 
 #ifndef __P8X32A_TIME_H

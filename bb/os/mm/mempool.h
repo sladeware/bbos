@@ -2,11 +2,11 @@
  * Copyright (c) 2011 Sladeware LLC
  */
 
-#ifndef __MEMPOOL_H
-#define __MEMPOOL_H
+#ifndef __MM_MEMPOOL_H
+#define __MM_MEMPOOL_H
 
 /**
- * @file mempool.h
+ * @file bb/os/mm/mempool.h
  * @brief Memory pool allocator
  *
  * Memory pool is a memory allocator with constant time access to dynamic
@@ -17,47 +17,39 @@
 
 #include <bbos/kernel/types.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /**
- * Allocate a block of memory from the pool.
- *
+ * @def BBOS_MEMPOOL_ALLOC(pool, block)
+ * @brief Allocate a block of memory from the pool.
  * @param pool Pointer to the used memory pool
  * @param block Pointer to the memory block
  */
-#define BBOS_MEMPOOL_ALLOC(pool, block)			\
-  do {							\
-    if ((block = (void **)*pool) != NULL) {		\
-      *pool = *block;					\
-    }							\
+#define BBOS_MEMPOOL_ALLOC(pool, block)         \
+  do {                                          \
+    if ((block = (void**)*pool) != NULL) {      \
+      *pool = *block;                           \
+    }                                           \
   } while (0)
 
 /**
- * Free a memory block.
- * 
+
+ * @def BBOS_MEMPOOL_FREE(pool, block)
+ * @brief Free a memory block.
  * @param pool Pointer to the used memory pool
  * @param block Pointer to the memory block
  */
-#define BBOS_MEMPOOL_FREE(pool, block)			\
-  do {							\
-    if (block != NULL) {				\
-      *((void **)block) = *pool;			\
-      *pool = (void *)block;				\
-    }							\
+#define BBOS_MEMPOOL_FREE(pool, block)          \
+  do {                                          \
+    if (block != NULL) {                        \
+      *((void**)block) = *pool;                 \
+      *pool = (void*)block;                     \
+    }                                           \
   } while (0)
 
 /* Prototypes */
 
-void *bbos_mempool_init(const void *part, uint16 n, uint16 sz);
-void bbos_mempool_resize(const void *part, uint16 n, uint16 sz);
-void *bbos_mempool_alloc(void **pool);
-void bbos_mempool_free(void **pool, void *block);
+PROTOTYPE(void* bbos_mempool_init, (const void* part, uint16 n, uint16 sz));
+PROTOTYPE(void bbos_mempool_resize, (const void* part, uint16 n, uint16 sz));
+PROTOTYPE(void* bbos_mempool_alloc, (void** pool));
+PROTOTYPE(void bbos_mempool_free, (void** pool, void* block));
 
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* __MEMPOOL_H */
-
+#endif /* __MM_MEMPOOL_H */

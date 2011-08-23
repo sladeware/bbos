@@ -6,21 +6,42 @@
 #define __BBOS_SCHED_H
 
 /**
- * @file sched.h
+ * @file bb/os/kernel/sched.h
  * @brief Scheduler interface for thread scheduling control
+ * @ingroup bbos_kernel
  */
 
 #ifdef BBOS_SCHED_ENABLED
 
-#include <bbos/kernel/types.h>
+/**
+ * Initialize scheduler.
+ */
+PROTOTYPE(void bbos_sched_init, ());
+PROTOTYPE(void bbos_sched_move, ());
+PROTOTYPE(bbos_thread_id_t bbos_sched_myself, ());
 
-extern void bbos_sched_init();
-extern void bbos_sched_move();
-extern bbos_thread_id_t bbos_sched_myself();
-extern bbos_error_t bbos_sched_enqueue(bbos_thread_id_t tid);
-extern bbos_error_t bbos_sched_dequeue(bbos_thread_id_t tid);
+/**
+ * Enqueue thread, so it will be scheduled.
+ *
+ * @param tid Thread identifier.
+ *
+ * @return
+ *
+ * Kernel error code.
+ */
+PROTOTYPE(bbos_error_t bbos_sched_enqueue_thread, (bbos_thread_id_t tid));
+
+/**
+ * Dequeue thread, so it won't be scheduled.
+ *
+ * @param tid Thread identifier.
+ *
+ * @return
+ *
+ * Kernel error code.
+ */
+PROTOTYPE(bbos_error_t bbos_sched_dequeue_thread, (bbos_thread_id_t tid));
 
 #endif /* BBOS_SCHED_ENABLED */
 
 #endif /* __BBOS_SCHED_H */
-
