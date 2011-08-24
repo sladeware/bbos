@@ -132,7 +132,7 @@
  */
 #ifndef BBOS_PROCESSOR_FILE
 #define BBOS_PROCESSOR_FILE(filename)                   \
-  <bb/os/hardware/processors/BBOS_PROCESSOR/filename>
+  <bb/os/hardware/processors/BBOS_PROCESSOR_NAME/filename>
 #endif
 
 /** @} */

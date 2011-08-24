@@ -13,7 +13,7 @@
  * @param milliseconds Number of milliseconds to wait.
  */
 void
-bbos_sleep_ms(int milliseconds)
+bbos_delay_ms(int milliseconds)
 {
   _waitcnt(_cnt() + (milliseconds * (_clockfreq() / 1000)) - 4296);
 }
@@ -22,7 +22,7 @@ bbos_sleep_ms(int milliseconds)
  * Wait for shift period of time in seconds.
  */
 void
-bbos_sleep_sec(int seconds)
+bbos_delay_sec(int seconds)
 {
-  bbos_sleep_ms(seconds * 1000);
+  bbos_delay_ms(seconds * 1000);
 }
