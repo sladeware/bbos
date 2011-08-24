@@ -3,8 +3,8 @@
  */
 
 /**
- * @file delay.h
- * @brief Propeller P8X32 time handling
+ * @file bb/os/hardware/processors/propeller_p8x32a/delay.h
+ * @brief Propeller P8X32 delay handling
  */
 
 #ifndef __P8X32A_DELAY_H
