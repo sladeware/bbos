@@ -15,11 +15,14 @@
  */
 
 #include <bb/os/config.h> /* MUST be first */
+
 #include <bb/os/kernel/errors.h>
 
-#ifdef BBOS_SCHED_ENABLED
-#include <bb/os/kernel/sched.h>
+/* Scheduler selection logic. */
+#ifndef BBOS_SCHED_CONFIG_H
+#define BBOS_SCHED_CONFIG_H "bb/os/kernel/schedulers/staticscheduler.h"
 #endif
+#include BBOS_SCHED_CONFIG_H
 
 #include <bb/os/kernel/system.h>
 

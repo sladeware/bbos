@@ -76,7 +76,7 @@
 #define DATA_MASK 0x1FFF
 
 /**
- * @strcut h48c_pins
+ * @struct h48c_pins
  * @brief Pin definitions
  */
 struct h48c_pins {

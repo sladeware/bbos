@@ -14,6 +14,10 @@
 #define BB_COMPILER_ANSIC_COMPLIANT
 #include <bb/builder/compilers/ansic.h>
 
+#define BB_HAS_STDINT_H
+
+#define BB_HAS_LONG_LONG
+
 #ifndef BB_COMPILER_STR
 #define BB_COMPILER_STR "Catalina"
 #endif

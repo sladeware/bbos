@@ -6,7 +6,7 @@
 #define __SIMPLE_SEGREGATED_STORATE_H
 
 /**
- * @file simple_segregated_storage.h
+ * @file bb/mm/simple_segregated_storage.h
  * @brief Simple segregated storage dynamic memory allocator
  *
  * With simple segregated storage, the free list for each size class contains
@@ -68,4 +68,3 @@ void *bbos_malloc(size_t sz);
 void bbos_free(void* id);
 
 #endif /* __SIMPLE_SEGREGATED_STORATE_H */
-
