@@ -1,6 +1,8 @@
 
-#define BBOS_PROCESSOR_NAME x86
-#define BBOS_NR_THREADS 2
+#define BBOS_ME "d2rk"
+
+#define BBOS_CONFIG_PROCESSOR_NAME x86
+#define BBOS_CONFIG_NR_THREADS 2
 #define T0 0
 #define T1 1
 

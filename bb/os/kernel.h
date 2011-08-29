@@ -15,14 +15,18 @@
  */
 
 #include <bb/os/config.h> /* MUST be first */
-
 #include <bb/os/kernel/errors.h>
 
-/* Scheduler selection logic. */
-#ifndef BBOS_SCHED_CONFIG_H
-#define BBOS_SCHED_CONFIG_H "bb/os/kernel/schedulers/staticscheduler.h"
+#ifndef BBOS_CONFIG_NR_THREADS
+# error Please define BBOS_CONFIG_NR_THREADS in BB_CONFIG_OS_H
 #endif
-#include BBOS_SCHED_CONFIG_H
+#define BBOS_NR_THREADS BBOS_CONFIG_NR_THREADS
+
+/* Scheduler selection logic */
+#ifndef BBOS_CONFIG_SCHED_H
+# define BBOS_CONFIG_SCHED_H "bb/os/kernel/schedulers/staticscheduler.h"
+#endif
+#include BBOS_CONFIG_SCHED_H
 
 #include <bb/os/kernel/system.h>
 

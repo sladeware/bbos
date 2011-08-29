@@ -17,6 +17,7 @@ t0()
     bbos_panic("Can not allocate memory for a message\n");
   }
 
+  printf("PING thread#%d\n", T1);
   msg->command = PING;
   msg->data = NULL;
   bbos_send_message(T1, msg);
@@ -33,7 +34,7 @@ t1()
   
   switch (msg->command) {
   case PING:
-    printf("Ping from %d\n", msg->sender);
+    printf("Receive message from thread#%d\n", msg->sender);
     break;
   }
   
