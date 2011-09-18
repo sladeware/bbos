@@ -16,8 +16,8 @@ import inspect
 import bb
 from bb.utils.type_check import verify_list, verify_string
 from bb.utils.importer import Importer
-from bb.app import Object, Traceable
-from module import caller
+from bb.os.kernel.schedulers import *
+from bb.app import Object, Traceable, Context
 
 def get_running_kernel():
     """Just another useful wrapper. Return the currently running kernel
@@ -25,6 +25,15 @@ def get_running_kernel():
     # XXX On this moment if no kernels are running, the None value will
     # be returned. Maybe we need to make an exception?
     return Traceable.find_running_instance(Kernel)
+
+def printk(data):
+    if not isinstance(data, types.StringType):
+        data = str(data)
+    prefix = ''
+    # see number of processes within an application
+    if multiprocessing.current_process().pid:
+        prefix = "[%d] " % multiprocessing.current_process().pid
+    print prefix + data
 
 def get_running_thread():
     """Return currently running thread object."""
@@ -45,12 +54,20 @@ class KernelModuleError(KernelError):
 
 DEFAULT_COMMANDS = ['BBOS_DRIVER_OPEN', 'BBOS_DRIVER_CLOSE']
 
-class Message:
+class Message(object):
     """A message passed between threads."""
-    def __init__(self, command, data=None, sender=None):
-        self.set_command(command)
+    def __init__(self, command=None, data=None, sender=None):
+        self.__command = None
+        self.__sender = None
+        self.__data = None
+        if command:
+            self.set_command(command)
         self.set_sender(sender or get_running_thread().get_name())
         self.set_data(data)
+        self.__owner = self.get_sender()
+
+    def get_owner(self):
+        return self.__owner
 
     def set_command(self, command):
          self.__command = verify_string(command)
@@ -70,58 +87,142 @@ class Message:
     def set_data(self, data):
         self.__data = data
 
-class Thread(object):
+def _patch(self):
+  key = object.__getattribute__(self, '_ThreadLocal__key')
+  d = threading.current_thread().__dict__.get(key)
+  if d is None:
+    d = {}
+    threading.current_thread().__dict__[key] = d
+    object.__setattr__(self, '__dict__', d)
+    class_ = type(self)
+    if class_.__init__ is not object.__init__:
+      args, kargs = object.__getattribute__(self, '_ThreadLocal__args')
+      class_.__init__(self, *args, **kargs)
+  else:
+    object.__setattr__(self, '__dict__', d)
+
+class _ThreadLocalBase(object):
+  def __new__(class_, *args, **kargs):
+    self = object.__new__(class_)
+    key = '_LocalThread__key', 'thread.local.' + str(id(self))
+    object.__setattr__(self, '_ThreadLocal__key', key)
+    object.__setattr__(self, '_ThreadLocal__args', (args, kargs))
+    object.__setattr__(self, '_ThreadLocal__lock', threading.RLock())
+    if (args or kargs) and (class_.__init__ is object.__init__):
+      raise TypeError()
+    dict = object.__getattribute__(self, '__dict__')
+    threading.current_thread().__dict__[key] = dict
+    return self
+
+class ThreadLocal(_ThreadLocalBase):
+  __slots__ = '_ThreadLocal__key', '_ThreadLocal__args', '_ThreadLocal__lock'
+
+  def __getattribute__(self, name):
+    lock = object.__getattribute__(self, '_ThreadLocal__lock')
+    lock.acquire()
+    try:
+      _patch(self)
+      return object.__getattribute__(self, name)
+    finally:
+      lock.release()
+
+  def __setattr__(self, name, value):
+    if name == '__dict__':
+      raise AttributeError("%r object attribute '__dict__' is read-only"
+        % self.__class__.__name__)
+    lock = object.__getattribute__(self, '_ThreadLocal__lock')
+    lock.acquire()
+    try:
+      _patch(self)
+      return object.__setattr__(self, name, value)
+    finally:
+      lock.release()
+
+  def setdefault(self, key, value):
+      self.__dict__.setdefault(key, value)
+
+class Thread(Object):
     """The thread is an atomic unit if action within the BBOS operating system,
     which describes application specific actions wrapped into a single context
     of execution."""
 
     name = None
     target = None
-    commands = []
+    commands = ()
+    local_class = ThreadLocal
 
-    __marked_runners = {}
+    marked_runners = {}
 
     def __init__(self, name=None, target=None):
-        self.__messages = []
+        """This constructor should always be called with keyword arguments.
+        Arguments are:
+
+        name is the thread name. This name should be unique within system
+        threads. By default is None.
+
+        target is callable object to be invoked by the start() method.
+        Default is None, meaning nothing is called."""
+        Object.__init__(self)
+        # Select thread name
         if name:
             self.set_name(name)
         elif hasattr(self, 'name'):
             self.set_name(self.name)
+        # Start working with runner initialization
+        self.__runner_method_name = None
         if target:
-            self.target = target
+            self.set_runner(target)
         else:
-            # Okay, let us search for the runner in methods marked with help
-            # of @runner decorator.
-            klass = self.__class__
-            if klass.__name__ in self.__marked_runners:
-                # Since the runner here is represented by a function it will be
-                # converted to a method for a given instance. Then this method
-                # will be stored as attribute target.
-                runner = self.__marked_runners[klass.__name__]
-                setattr(self, runner.__name__, types.MethodType(runner, self))
-                self.target = getattr(self, runner.__name__)
+            self.__detect_runner_method()
+        # Create instance to keep local data
+        if not self.local_class:
+          raise NotImplemented
+        self.__local = self.local_class()
+
+    def get_local(self):
+      return self.__local
+
+    def __detect_runner_method(self):
+        """Okay, let us search for the runner in methods marked with help
+        of @runner decorator."""
+        klass = self.__class__
+        if klass.__name__ in self.marked_runners:
+            # Since the runner here is represented by a function it will be
+            # converted to a method for a given instance. Then this method
+            # will be stored as attribute 'target'.
+            if not self.__runner_method_name:
+                self.__runner_method_name = self.marked_runners[klass.__name__]
+            target = getattr(self, self.__runner_method_name)
+            self.set_runner(target)
 
     def is_supported_command(self, command):
         return command in self.commands
 
     def get_commands(self):
-        """Return a tuple of commands that module supports for 
-        communication purposes."""
+        """Return a tuple of commands that module supports for communication
+        purposes."""
         return self.commands
-
-    def get_name(self):
-        return self.name
-
-    def get_runner_name(self):
-        if self.target:
-            return self.target.__name__
 
     def set_name(self, name):
         self.name = verify_string(name)
 
+    def get_name(self):
+        return self.name
+
+    def set_runner(self, target):
+        self.target = target
+
+    def get_runner(self):
+        return self.target
+
+    def get_runner_name(self):
+        if self.get_runner():
+            return self.get_runner().__name__
+
     def start(self):
-        if self.target:
-            return self.target()
+        target = self.get_runner()
+        if target:
+            target()
 
     @classmethod
     def runner(klass, target):
@@ -130,10 +231,62 @@ class Thread(object):
         target_klass = inspect.getouterframes(inspect.currentframe())[1][3]
         # Save the target for a nearest future when the __init__ method will
         # we called for the target_klass class.
-        klass.__marked_runners[target_klass] = target
+        klass.marked_runners[target_klass] = target.__name__
         return target
 
-    # Inter-Thread Communication
+    # The following methods provide support for pickle. This will allow user to
+    # pickle Thread instance. Priously I was trying to use this to be able copy
+    # thread instance to the file and then load it. On this moment we do not use
+    # this feature. I'm still keeping it here while it's not disturb me.
+
+    def __getstate__(self):
+      corrected_dict = self.__dict__.copy() # copy the dict since we change it
+      if type(corrected_dict['target']) is types.MethodType:
+        del corrected_dict['target']
+      return corrected_dict
+
+    def __setstate__(self, dict_):
+      self.__dict__.update(dict_)
+      self.__detect_runner_method()
+
+class Port(object):
+    """Protected messaging pool for communication between threads."""
+
+    def __init__(self, name, capacity):
+        assert capacity > 0, "Port capacity must be greater than zero"
+        self.__messages = []
+        # Initialize messaging pool
+        from bb.mm.mempool import MemPool
+        self.__mp = MemPool(capacity, 12)
+        # Initialize port name
+        self.__name = None
+        self.set_name(name)
+
+    def set_name(self, name):
+        """Set a new name to the port and return this name back. The name
+        has to be represented by a string."""
+        self.__name = verify_string(name)
+        return name
+
+    def get_name(self):
+        """Return port name (string)."""
+        return self.__name
+
+    def get_num_messages(self):
+        return len(self.__messages)
+
+    def alloc_message(self, command=None, data=None, sender=None):
+        if not sender:
+            sender = self.get_name()
+        from bb.mm.mempool import mwrite
+        message = self.__mp.malloc()
+        if not message:
+            return None
+        mwrite(message, Message(command, data, sender))
+        return message
+
+    def free_message(self, message):
+        self.__mp.free(message)
 
     def put_message(self, message):
         if not isinstance(message, Message):
@@ -142,12 +295,21 @@ class Thread(object):
         self.__messages.append(message)
 
     def get_message(self):
-        if self.has_message():
-            return self.__messages.pop(0)
+        """Shift and return top message from a queue if port has any message."""
+        return self.get_message_by_index(0)
+
+    def get_message_by_index(self, index):
+        if self.count_messages():
+            return self.__messages.pop(index)
         return None
 
-    def has_message(self):
-        return not not len(self.__messages)
+    def touch_message(self, index):
+        if self.count_messages():
+            return self.__messages[index]
+        return None
+
+    def count_messages(self):
+        return len(self.__messages)
 
 class Idle(Thread):
     """The special thread that runs when the system is idle."""
@@ -157,26 +319,6 @@ class Idle(Thread):
     @Thread.runner
     def bbos_idle_runner(self):
         pass
-
-class Scheduler:
-    """Provides the algorithms to select the threads for execution. 
-    Base scheduler class."""
-
-    def __init__(self, *arg_list, **arg_dict):
-        pass
-
-    def move(self):
-        """Decide who to run now."""
-        raise NotImplemented
-
-    def get_running_thread(self):
-        raise NotImplemented
-
-    def enqueue_thread(self, thread):
-        raise NotImplemented
-
-    def dequeue_thread(self, thread):
-        raise NotImplemented
 
 class Driver(Thread):
     pass
@@ -190,23 +332,17 @@ class Kernel(Object, Traceable):
         self.__drivers = {}
         self.__commands = []
         self.__scheduler = None
+        self.__ports = {}
         self.__modules = {}
         self.init(*args, **kargs)
 
     # System Management
 
-    @Object.sim_method
-    def printer(self, data):
-        if not isinstance(data, types.StringType):
-            data = str(data)
-        prefix = ''
-        if multiprocessing.current_process().pid: # see application number of processes
-            prefix = "[%d] " % multiprocessing.current_process().pid
-        print prefix + data
-
-    def init(self, threads=[], commands=[], scheduler=None):
-        self.printer(self.banner())
-        self.printer("Initialize kernel")
+    def init(self, threads=[], commands=[], scheduler=StaticScheduler()):
+        """By default, if scheduler was not defined will be used static
+        scheduling policy."""
+        printk(self.banner())
+        printk("Initialize kernel")
         # Select scheduler first if defined before any thread will be added
         if scheduler:
             self.set_scheduler(scheduler)
@@ -219,15 +355,15 @@ class Kernel(Object, Traceable):
         if len(commands):
             self.add_commands(commands)
 
-    @Object.sim_method
+    @Object.simulation_method
     def test(self):
         if not self.get_number_of_threads():
             raise KernelError("At least one thread has to be added")
 
-    @Object.sim_method
+    @Object.simulation_method
     def start(self):
         self.test()
-        self.printer("Start kernel")
+        printk("Start kernel")
         try:
             if self.has_scheduler():
                 while True:
@@ -236,34 +372,43 @@ class Kernel(Object, Traceable):
         except (KeyboardInterrupt, SystemExit):
             self.stop()
 
-    @Object.sim_method
+    @Object.simulation_method
     def stop(self):
         """Shutdown everything and perform a clean system stop."""
-        self.printer("Kernel stopped")
+        printk("Kernel stopped")
 
-    @Object.sim_method
+    @Object.simulation_method
     def panic(self, text):
         """Halt the system.
+
         Display a message, then perform cleanups with stop. Concerning the
         application this allows to stop a single process, while all other
         processes are running."""
-        self.printer("PANIC: %s" % text)
+        printk("PANIC: %s" % text)
         # XXX we do not call stop() method here to do no stop the system twice.
         # exit() function will raise SystemExit exception, which will actually
         # call kernel's stop. See start() method for more information.
         exit()
 
-    @Object.sim_method
+    @Object.simulation_method
     def banner(self):
+        """Return nice BB OS banner."""
         return "BBOS Kernel v0.2.0." + \
             re.search('(\d+)', re.escape(__version__)).group(1) + ""
 
     # Thread Management
 
-    def find_thread(self, thread):
+    def select_thread(self, thread):
+        """Select thread from the set of added thread. thread can be provided in
+        a few ways. If thread is represented by a string, then a thread with
+        such name will be searched and its object returned. If thread is
+        represented by Thread instance and such thread belongs to this kernel,
+        the same object will be returned. Otherwise return None."""
+        # String
         if type(thread) is types.StringType:
             if thread in self.__threads:
                 return self.__threads[thread]
+        # Thread instance
         elif isinstance(thread, Thread):
             if thread.get_name() in self.__threads:
                 return thread
@@ -273,35 +418,43 @@ class Kernel(Object, Traceable):
         return None
 
     def has_thread(self, thread):
-        """Test for presence of thread in the kernel's list of threads."""
-        return not self.find_thread(thread) is None
+        """Test for presence of thread in the kernel's list of threads. Return
+        True if the kernel owns this thread, or False otherwise.
+
+        Note: this method simply uses select_thread()."""
+        return not self.select_thread(thread) is None
 
     def remove_thread(self, thread):
         raise NotImplemented()
 
     def add_thread(self, *args, **kargs):
-        """Add a new thread to the kernel. Return thread's object.
+        """Add a new thread to the kernel. Return thread's object. Can be used
+        as a thread factory.
+
         Note: this method is available in all modes, so be carefull to
         make changes."""
         if not len(args) and not len(kargs):
-            raise NotImplemented()
-        thread = self.find_thread(args[0])
-        if thread:
-            raise Exception("Thread '%s' has been already added" % thread.get_name())
+            raise KernelError("Nothing to process")
+        if len(args) == 1:
+            thread = self.select_thread(args[0])
+            if thread:
+                raise Exception("Thread '%s' has been already added"
+                                % thread.get_name())
         if type(args[0]) is types.StringType:
+            # Create a new thread instance
             thread = Thread(*args)
         else:
             thread = args[0]
-        self.printer("Add thread '%s'" % thread.get_name())
+        printk("Add thread '%s'" % thread.get_name())
         self.__threads[ thread.get_name() ] = thread
         # Introduce thread to scheduler
-        if self.has_scheduler():
-            self.get_scheduler().enqueue_thread(thread)
+        self.get_scheduler().enqueue_thread(thread)
         # Register available commands
         self.add_commands(thread.get_commands())
         return thread
 
     def add_threads(self, *threads):
+        """Add a list of thread to the kernel."""
         verify_list(threads)
         for thread in threads:
             self.add_thread(thread)
@@ -319,7 +472,7 @@ class Kernel(Object, Traceable):
         if not isinstance(scheduler, Scheduler):
             raise KernelTypeError('Scheduler "%s" must be bb.os.kernel.Scheduler '
                                   'sub-class' % scheduler)
-        self.printer("Select scheduler '%s'" % scheduler.__class__.__name__)
+        printk("Select scheduler '%s'" % scheduler.__class__.__name__)
         self.__scheduler = scheduler
         for thread in self.get_threads():
             scheduler.enqueue_thread(thread)
@@ -331,40 +484,80 @@ class Kernel(Object, Traceable):
         return not self.get_scheduler() is None
 
     def switch_thread(self):
-        thread = self.find_thread(self.get_scheduler().get_running_thread())
+        thread = self.select_thread(self.get_scheduler().get_running_thread())
         thread.start()
 
     # Inter-Thread Communication (ITC)
 
-    def send_message(self, receiver, message):
+    def add_port(self, *args, **kargs):
+        if not len(args) and not len(kargs):
+            raise KernelError("Nothing to process")
+        if len(args) == 1 and isinstance(args[0], Port):
+            port = self.select_port(args[0])
+            if port:
+                raise Exception("Port '%s' has been already added"
+                                % port.get_name())
+        else:
+            port = Port(*args, **kargs)
+        printk("Add port '%s'" % port.get_name())
+        self.__ports[port.get_name()] = port
+        return port
+
+    def remove_port(self, port):
+        raise NotImplemented()
+
+    def select_port(self, port):
+        """Select port return its instance. The port value can be represented
+        by a string or Port object. If port can not be selected, return None."""
+        if type(port) is types.StringType:
+            if port in self.__ports:
+                return self.__ports[port]
+        return None
+
+    def alloc_message(self, port, command=None, data=None):
+        """Allocate a new message from a port and return Message instance."""
+        p = self.select_port(port)
+        if not p:
+            self.panic("Port %s doesn't exist" % port)
+        # Eventually allocate a new message from the port and return it back
+        message = p.alloc_message(command, data)
+        return message
+
+    def free_message(self, message):
+        p = self.select_port(message.get_owner())
+        if not p:
+            self.panic("Message %s can not be free. Field owner was broken."
+                       % message)
+        p.free_message(message)
+
+    def send_message(self, port, message):
+        """Send a message to receiver from sender."""
         if not isinstance(message, Message):
             raise KernelTypeError('Message "%s" must be bb.os.kernel.Message '
                                   'sub-class' % message)
-        thread = self.find_thread(receiver)
-        if not thread:
-            self.panic("Receiver '%s' can not be found" % receiver)
-        # Define the sender
-        if not message.get_sender():
-            message.set_sender(get_running_thread().get_name())
-        # In order to privent an errors with unknown commands, if the thread
-        # has predefined list of commands that have to be
-        # used in order to communicate with it, we will try to find the command
-        # from message in this list
-        if thread.get_commands() and \
-                not message.get_command() in thread.get_commands():
-            print thread.get_commands()
-            raise KernelError("Thread '%s' does not support the command '%s'" %
-                              (receiver, message.get_command()))
-        thread.put_message(message)
+        p = self.select_port(port)
+        if not p:
+            # Panic if port was not identified
+            self.panic("Receiver '%s' can not be found to send a message"
+                       % port)
+        p.put_message(message)
 
-    def receive_message(self, receiver=None):
-        if not receiver:
-            thread = self.get_scheduler().get_running_thread()
-        else:
-            thread = self.find_thread(receiver)
-        if not thread:
-            raise KernelError("Receiver '%s' can not be found" % receiver)
-        return thread.get_message()
+    def touch_last_message(self, receiver):
+        port = self.select_port(receiver)
+        if not port:
+            raise KernelError("Port-receiver '%s' can not be found to to"
+                              % receiver)
+        return port.touch_message(0)
+
+    def receive_message_by_index(self, receiver, index):
+        port = self.select_port(receiver)
+        if not port:
+            raise KernelError("Port-receiver '%s' can not be found to to"
+                              % receiver)
+        return port.get_message_by_index(index)
+
+    def receive_message(self, receiver):
+        return self.receive_message_by_index(receiver, 0)
 
     # Commands
 
@@ -405,7 +598,7 @@ class Kernel(Object, Traceable):
     # This set of methods a meta-operating system specific. Such routines
     # are not supported in target embedded systems.
 
-    def load_module(self, name, alias=None):
+    def load_module(self, name, args=None, alias=None):
         """Load module to the running kernel. This method allows to avoid
         built-in __import__ function and connect module's environment and
         kernel's environment. If alias is defined the module will be registred
@@ -420,18 +613,20 @@ class Kernel(Object, Traceable):
             return self.__modules[alias]
         # The module wasn't loaded before. Do the import.
         if alias:
-            self.printer("Load module '%s' as '%s'" % (name, alias))
+            printk("Load module '%s' as '%s'" % (name, alias))
         else:
-            self.printer("Load module '%s'" % name)
-        #fake_name = name + str(id(self))
-        #if fake_name in sys.modules:
-        #    raise Exception("Fixed name is not unique")
+            printk("Load module '%s'" % name)
         try:
             module = Importer.load(name, globals(), locals(),
                                    [name.rsplit('.', 1).pop()])
         except ImportError, e:
             self.panic(e)
         self.__modules[alias or name] = module
+        # Bootstrap
+        bootstrap = getattr(module, 'bootstrap', None)
+        if not bootstrap:
+            self.panic("%s doesn't have bootstrap" % name)
+        bootstrap(args)
         # Once the module was importer to the system it has to be removed
         # so all other kernels will be able to import this module. The
         # module instance will be saved in kernel's context.
@@ -459,7 +654,7 @@ class Kernel(Object, Traceable):
     def register_driver(self, driver):
         if not isinstance(driver, Driver):
             raise KernelTypeError("Not a Driver: %s" % driver)
-        self.printer("Register driver '%s'" % driver.get_name())
+        printk("Register driver '%s'" % driver.get_name())
         self.__drivers[driver.get_name()] = driver
         self.add_thread(driver)
 

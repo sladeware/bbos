@@ -1,15 +1,11 @@
 __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
-from bb.os.kernel import Scheduler
+from bb.os.kernel.scheduler import Scheduler
 
-class StaticScheduler(Scheduler):
+class StaticScheduler(object, Scheduler):
     """Static scheduling is widely used with dependable real-time systems
     in application areas such as aerospace and military systems, automotive
     applications, etc.
-
-    General moments:
-    * Threads execute in a fixed order determined offline
-    * Easy to debug but usually give a low processor usage
 
     In static scheduling, scheduling are made during compile time. This assumes
     parameters of all the tasks is known a priori and builds a schedule based on
@@ -18,7 +14,6 @@ class StaticScheduler(Scheduler):
     scheduler instead)."""
 
     def __init__(self):
-        Scheduler.__init__(self)
         self.__order = []
         self.__cursor = 0
 

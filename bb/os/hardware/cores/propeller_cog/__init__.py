@@ -14,5 +14,6 @@ and specialized monitoring capabilities to know what the other cogs are doing.""
 from bb.os.hardware import Core
 
 class PropellerCog(Core):
-    def __init__(self, process):
-        Core.__init__(self, "Propeller Cog", process)
+    def __init__(self, mapping=None):
+        Core.__init__(self, "Propeller Cog", mapping)
+

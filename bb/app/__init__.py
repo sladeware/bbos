@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+"""An BB application is defined using one BB's core application component. This
+application component is Mapping."""
+
 __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
 import types
@@ -12,92 +15,66 @@ import sys
 
 from bb.utils.type_check import verify_list
 
-SIMULATION_MODE = 0x1
-DEV_MODE = 0x2
+SIMULATION_MODE = 'SIMULATION'
+DEV_MODE = 'DEVELOPMENT'
 
-class Config(object):
-    """Class to wrap build-script functionality.
+def get_mode():
+    if is_simulation_mode():
+        return SIMULATION_MODE
+    return DEV_MODE
 
-    Attributes:
-    optparser: An instnace of optparse.OptionParser
-    argv: The original command line as a list.
-    args: The positional command line args left over after parsing the options.
-    raw_input_fn: Function used for getting raw user input.
-    error_fh: Unexpected errors are printer to this file handle.
-    """
+def is_simulation_mode():
+    return 'bb.simulator' in sys.modules
 
-    def __init__(self, optparser_class=optparse.OptionParser,
-                 raw_input_fn=raw_input,
-                 out_fh=sys.stdout,
-                 error_fh=sys.stderr):
-        self.argv = None
-        self.optparser_class = optparser_class
-        self.raw_input_fn = raw_input_fn
-        self.out_fh = out_fh
-        self.error_fh = error_fh
-        self.args = {}
-        self.options = optparse.Values()
-        self.optparser = self._get_optparser()
+class Application:
+    def __init__(self, processes=[]):
+        self.__processes = {}
+        if len(processes):
+            self.add_processes(processes)
 
-    def parse_command_line(self, argv=sys.argv):
-        self.options, self.args = self.optparser.parse_args(argv[1:])
-        if self.options.help:
-            self._print_help_and_exit()
+    # Process management
 
-    def get_option(self, name, default=None):
-        value = getattr(self.options, name, default)
-        return value
+    def add_processes(self, processes):
+        for process in processes:
+            self.add_process(process)
 
-    def _print_help_and_exit(self, exit_code=2):
-        self.optparser.print_help()
-        sys.exit(exit_code)
+    def add_process(self, process):
+        if not isinstance(process, Mapping):
+            raise TypeError("Unknown process '%s'. "
+                            "Not based on bb.app.Mapping class" % (process))
+        self.__processes[id(process)] = process
+        return process
 
-    def _get_optparser(self):
-        class Formatter(optparse.IndentedHelpFormatter):
-            def format_description(self, description):
-                return description, '\n'
-        parser = self.optparser_class(usage='%prog [Options]',
-                                      formatter=Formatter(),
-                                      conflict_handler='resolve')
-        parser.add_option('-h', '--help', action='store_true', dest='help',
-                          help='Show the help message and exit.')
-        def _select_simulation_mode(option, opt_str, value, parser):
-            setattr(parser.values, 'mode', SIMULATION_MODE)
-        parser.add_option('-s','--simulation', action='callback',
-                          callback=_select_simulation_mode,
-                          help='Run in simulation mode.')
-        return parser
+    def get_num_processes(self):
+        """Return number of processes defined within current application."""
+        return len(self.__processes)
 
-config = Config()
+    def get_processes(self):
+        return self.__processes
 
-class Object(object):
-    """This class handle application object activity in order to provide
-    management of simulation and development modes.
+    # Control management
 
-    Just for internal use for each object the global mode value will
-    be copied and saved as the special attribute. Thus the object will be
-    able to recognise environment's mode in which it was initially started."""
-
-    def __init__(self):
-        self.mode = None
-
-    @classmethod
-    def sim_method(cls, target):
-        def simulation(self, *args, **kargs):
-            if not self.mode:
-                self.mode = config.get_option('mode')
-                if self.mode is SIMULATION_MODE:
-                    return target(self, *args, **kargs)
-                self.mode = None
-            else:
-                if self.mode is SIMULATION_MODE:
-                    return target(self, *args, **kargs)
-        return simulation
+    def start(self):
+        if not self.get_num_processes():
+            raise Exception("Nothing to run. Please, add at least one process.")
+        workers = []
+        for (name, process) in self.get_processes().items():
+            print ">>>", worker.ident
+            worker = multiprocessing.Process(target=process.start)
+            worker.start()
+            workers.append(worker)
+        try:
+            for worker in workers:
+                worker.join()
+        except KeyboardInterrupt, SystemExit:
+            pass
 
 class Traceable(object):
+    """The Traceable interface allows you to track Object activity within an
+    application."""
     __table = {}
 
-    def __new__(klass):
+    def __new__(klass, *args, **kargs):
         for _, method in inspect.getmembers(klass, inspect.ismethod):
             # Avoid recursion. Do not wrap special methods such as: __new__,
             # __init__, __str__, __repr__, etc.
@@ -107,7 +84,7 @@ class Traceable(object):
             if method.im_self is not None:
                 continue
             setattr(klass, method.__name__, Traceable.__wrap(method))
-        return super(Traceable, klass).__new__(klass)
+        return super(Traceable, klass).__new__(klass, *args, **kargs)
 
     @classmethod
     def find_running_instance(klass, the_klass):
@@ -148,11 +125,52 @@ class Traceable(object):
             return ret
         return dummy
 
+class Context:
+    def __init__(self):
+        self.__context = {}
+
+    def add(self, name, obj):
+        self.__context[name] = obj
+        return obj
+
+    def find(self, name):
+        return self.__context[name]
+        
+    def remove(self, name):
+        obj = self.__context[name]
+        del self.__context[name]
+        return obj
+
+class Object(object):
+    """This class handles application object activity in order to provide
+    management of simulation and development modes.
+
+    Just for internal use for each object the global mode value will
+    be copied and saved as the special attribute. Thus the object will be
+    able to recognise environment's mode in which it was initially started."""
+
+    def __init__(self):
+        self.mode = None
+
+    @classmethod
+    def simulation_method(cls, target):
+        """Mark method as method only for simulation purposes."""
+        def simulate(self, *args, **kargs):
+            if not self.mode:
+                self.mode = get_mode()
+                if self.mode is SIMULATION_MODE:
+                    return target(self, *args, **kargs)
+                self.mode = None
+            else:
+                if self.mode == SIMULATION_MODE:
+                    return target(self, *args, **kargs)
+        return simulate
+
 class Mapping(object):
     def __init__(self, kernel=None):
         from bb.os.hardware import Hardware
-        self.__hardware = Hardware()
-        self.__kernel = None
+        self.hardware = Hardware()
+        self.kernel = None
         if kernel:
             self.set_kernel(kernel)
 
@@ -170,56 +188,5 @@ class Mapping(object):
     def get_kernel(self):
         return self.__kernel
 
-    def start(self):
-        """Start the kernel."""
-        if self.get_kernel():
-            self.get_kernel().start()
-        else:
-            raise Exception("Kernel was not defined.")
-
-    def stop(self):
-        pass
-
-class Application(object):
-    def __init__(self, processes=[]):
-        self.__processes = {}
-        if len(processes):
-            self.add_processes(processes)
-
-    # Process management
-
-    def add_processes(self, processes):
-        for process in processes:
-            self.add_process(process)
-
-    def add_process(self, process):
-        if not isinstance(process, Mapping):
-            raise TypeError("Unknown process '%s'. "
-                            "Not based on bb.app.Mapping class" % (process))
-        self.__processes[id(process)] = process
-        return process
-
-    def get_num_processes(self):
-        """Return number of processes defined within current application."""
-        return len(self.__processes)
-
-    def get_processes(self):
-        return self.__processes
-
-    # Control management
-
-    def start(self):
-        if not self.get_num_processes():
-            raise Exception("Nothing to run. Please, add at least one process.")
-        workers = []
-        for (name, process) in self.get_processes().items():
-            worker = multiprocessing.Process(target=process.start)
-            worker.start()
-            workers.append(worker)
-        try:
-            for worker in workers:
-                worker.join()
-        except KeyboardInterrupt, SystemExit:
-            pass
-
 import bb.app.setup
+

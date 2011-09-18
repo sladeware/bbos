@@ -17,7 +17,7 @@ from bb.os.hardware.processors import PropellerP8X32A
 
 class PropellerDemoBoard(Board):
     """Propeller Demo Board base class."""
-    def __init__(self, processes):
+    def __init__(self, processes=[]):
         processors = [PropellerP8X32A(processes)]
         Board.__init__(self, "Propeller Demo Board", 1, processors)
 
