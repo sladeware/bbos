@@ -13,12 +13,59 @@ from bb.hardware.boards import PropellerDemoBoard
 import time
 
 class MinimeterOS(OS):
-    """This class describes operating system that will control each minimeter
-    device."""
+
     def __init__(self):
         OS.__init__(self)
         self.init_complete = False
         self.pir_motion_sensor_init_complete = False
+        self.iteration_counter = 0
+        self.record = "UNIMPLEMENTED"
+
+        # How many samples we collect before sending to the database
+        self.SEND_RECORD_THRESHOLD = 60
+
+        # The amount of time we sleep collecting samples
+        self.INTER_COLLECTION_SLEEP_TIME = 1
+
+    def __send_record(self):
+        """Compute statistics on the data we've collected, create a record,
+        encapsulate it in a message and send the message to the receiving
+        thread on the remote database system"""
+        # Unimplemented
+        print "sending record: " + self.record
+        return
+
+    def __collect_sensor_data(self):
+        """Read sensor data and store it in arrays for post-processing"""
+        # Unimplemented
+        print "collecting sensor data"
+        return
+
+    def __post_processing(self):
+        """Compute statistics from sensor data and create a database record"""
+        # Unimplemented
+        print "post processing"
+        return
+
+    def sensor_processor(self):
+        """This is the main part of the appliction that processes sensor data."""
+        # Do nothing if we have not been initialized
+        if self.init_complete != True:
+            return
+
+        # Collect this iteration's sensor data
+        self.iteration_counter += 1
+        print "Sensor processor running: " + str(self.iteration_counter)
+        self.__collect_sensor_data()
+
+        # If we have enough data, send the record to the database for storage
+        if self.iteration_counter > self.SEND_RECORD_THRESHOLD:
+            self.__post_processing()
+            self.__send_record()
+            self.iteration_counter = 0
+
+        # Sleep until the next iteration should begin
+        time.sleep(self.INTER_COLLECTION_SLEEP_TIME)
 
     def initializer(self):
         """The purpose of this runner is to initialize the minimeter: open
@@ -40,12 +87,18 @@ class MinimeterOS(OS):
         if self.pir_motion_sensor_init_complete:
             self.kernel.echo("Initialization complete")
             self.init_complete = True
-        time.sleep(1)
+        else:
+            time.sleep(1)
 
     def main(self):
-        self.kernel.add_port(Port("INITIALIZER_PORT", 10))
+        # The sensor_processor thread won't do anything until the initializer
+        # thread is complete. The initializer thread does nothing after it is
+        # complete. For this reason, we can safely reuse this port.
+        self.kernel.add_port(Port("PRIMARY_PORT", 10))
         self.kernel.add_thread(Thread("INITIALIZER", self.initializer,
-            "INITIALIZER_PORT"))
+            "PRIMARY_PORT"))
+        self.kernel.add_thread(Thread("SENSOR_PROCESSOR", self.sensor_processor,
+            "PRIMARY_PORT"))
         self.kernel.load_module("bb.os.drivers.sensors.pir_sensor")
 
 class MinimeterBoard(PropellerDemoBoard):
