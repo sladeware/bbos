@@ -153,7 +153,7 @@ class Thread(Object):
 
     marked_runners = {}
 
-    def __init__(self, name=None, target=None):
+    def __init__(self, name=None, target=None, port_id=None):
         """This constructor should always be called with keyword arguments.
         Arguments are:
 
@@ -166,7 +166,7 @@ class Thread(Object):
         # Select thread name
         if name:
             self.set_name(name)
-        elif hasattr(self, 'name'):
+        elif hasattr(self, "name"):
             self.set_name(self.name)
         # Start working with runner initialization
         self.__runner_method_name = None
@@ -178,6 +178,14 @@ class Thread(Object):
         if not self.local_class:
           raise NotImplemented
         self.__local = self.local_class()
+        self.__port_id = None
+        self.set_port_id(port_id)
+
+    def set_port_id(self, port):
+        self.__port = port
+
+    def get_port_id(self):
+        return self.__port
 
     def get_local(self):
       return self.__local
@@ -272,9 +280,6 @@ class Port(object):
         """Return port name (string)."""
         return self.__name
 
-    def get_num_messages(self):
-        return len(self.__messages)
-
     def alloc_message(self, command=None, data=None, sender=None):
         if not sender:
             sender = self.get_name()
@@ -286,26 +291,19 @@ class Port(object):
         return message
 
     def free_message(self, message):
+        """Free memory related to message from the appropriate memory pool."""
         self.__mp.free(message)
 
-    def put_message(self, message):
+    def push_message(self, message):
         if not isinstance(message, Message):
-            raise KernelTypeError('Message "%s" must be bb.os.kernel.Message '
-                                  'sub-class' % message)
+            raise KernelTypeError('Message "%s" must be %s '
+                                  'sub-class' % (message, Message))
         self.__messages.append(message)
 
-    def get_message(self):
+    def fetch_message(self):
         """Shift and return top message from a queue if port has any message."""
-        return self.get_message_by_index(0)
-
-    def get_message_by_index(self, index):
         if self.count_messages():
             return self.__messages.pop(index)
-        return None
-
-    def touch_message(self, index):
-        if self.count_messages():
-            return self.__messages[index]
         return None
 
     def count_messages(self):
@@ -384,7 +382,9 @@ class Kernel(Object, Traceable):
         Display a message, then perform cleanups with stop. Concerning the
         application this allows to stop a single process, while all other
         processes are running."""
-        printk("PANIC: %s" % text)
+        lineno = inspect.getouterframes(inspect.currentframe())[2][2]
+        fname = inspect.getmodule(inspect.stack()[2][0]).__file__
+        printk("%s:%d:PANIC: %s" % (fname, lineno, text))
         # XXX we do not call stop() method here to do no stop the system twice.
         # exit() function will raise SystemExit exception, which will actually
         # call kernel's stop. See start() method for more information.
@@ -470,8 +470,8 @@ class Kernel(Object, Traceable):
     def set_scheduler(self, scheduler):
         """Select scheduler."""
         if not isinstance(scheduler, Scheduler):
-            raise KernelTypeError('Scheduler "%s" must be bb.os.kernel.Scheduler '
-                                  'sub-class' % scheduler)
+            raise KernelTypeError("Scheduler '%s' must be bb.os.kernel.Scheduler "
+                                  "sub-class" % scheduler)
         printk("Select scheduler '%s'" % scheduler.__class__.__name__)
         self.__scheduler = scheduler
         for thread in self.get_threads():
@@ -514,54 +514,68 @@ class Kernel(Object, Traceable):
                 return self.__ports[port]
         return None
 
-    def alloc_message(self, port, command=None, data=None):
+    def alloc_message(self, command=None, data=None):
         """Allocate a new message from a port and return Message instance."""
-        p = self.select_port(port)
-        if not p:
-            self.panic("Port %s doesn't exist" % port)
+        sender = get_running_thread()
+        if not sender.get_port_id():
+            self.panic("Cannot allocate a memory for a message to be sent. "
+                       "Sender '%s' doesn't have a port for communication." %
+                       sender.get_name())
+        port = self.select_port( sender.get_port_id() )
+        if not port:
+            self.panic("Kernel does not support port '%s'" % port)
         # Eventually allocate a new message from the port and return it back
-        message = p.alloc_message(command, data)
+        message = port.alloc_message(command, data)
         return message
 
     def free_message(self, message):
-        p = self.select_port(message.get_owner())
-        if not p:
-            self.panic("Message %s can not be free. Field owner was broken."
+        """Free memory used by the message."""
+        owner = message.get_owner()
+        if not owner:
+            owner = get_running_thread().get_port_id()
+        port = self.select_port(owner)
+        if not port:
+            self.panic("Message %s can not be free. "
+                       "It seems like field owner was broken."
                        % message)
-        p.free_message(message)
+        port.free_message(message)
 
-    def send_message(self, port, message):
+    def is_inactive_message(self, message):
+        return get_running_kernel().get_port_id() == message.get_owner()
+
+    def send_message(self, receiver, message):
         """Send a message to receiver from sender."""
         if not isinstance(message, Message):
-            raise KernelTypeError('Message "%s" must be bb.os.kernel.Message '
-                                  'sub-class' % message)
-        p = self.select_port(port)
-        if not p:
-            # Panic if port was not identified
-            self.panic("Receiver '%s' can not be found to send a message"
-                       % port)
-        p.put_message(message)
-
-    def touch_last_message(self, receiver):
-        port = self.select_port(receiver)
+            raise KernelTypeError("Message '%s' must be %s sub-class"
+                                  % (message, Message))
+        receiver = get_running_kernel().select_thread(receiver)
+        if not receiver.get_port_id():
+            self.panic("Cannot send a message."
+                       "Receiver '%s' doesn't have a port for communication." %
+                       receiver.get_name())
+        port = self.select_port(receiver.get_port_id())
         if not port:
-            raise KernelError("Port-receiver '%s' can not be found to to"
-                              % receiver)
-        return port.touch_message(0)
+            self.panic("Kernel does not support port '%s' that is used by "
+                       "receiver '%s'"
+                       % (port.get_name(), receiver.get_name()))
+        port.push_message(message)
 
-    def receive_message_by_index(self, receiver, index):
-        port = self.select_port(receiver)
+    def receive_message(self):
+        receiver = get_running_thread()
+        if not receiver.get_port_id():
+            self.panic("Cannot receive a message."
+                       "Receiver '%s' doesn't have a port for communication." %
+                       receiver.get_name())
+        port = self.select_port(receiver.get_port_id())
         if not port:
-            raise KernelError("Port-receiver '%s' can not be found to to"
-                              % receiver)
-        return port.get_message_by_index(index)
-
-    def receive_message(self, receiver):
-        return self.receive_message_by_index(receiver, 0)
+            self.panic("Kernel does not support port '%s' that is used by "
+                       "receiver '%s'"
+                       % (port.get_name(), receiver.get_name()))
+        return port.fetch_message()
 
     # Commands
 
-    def get_number_of_commands(self):
+    def get_num_commands(self):
         return len(self.get_commands())
 
     def get_commands(self):

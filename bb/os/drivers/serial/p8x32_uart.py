@@ -43,8 +43,7 @@ class P8X32Uart(Uart):
     """This class describes P8X32 uart driver."""
     name="P8X32_UART_DRIVER"
     # List of supported commands
-    commands=('SERIAL_OPEN', 'SERIAL_CLOSE', 'SERIAL_WRITE', 'SERIAL_READ',
-              'SERIAL_OPEN_FINALIZE')
+    commands=("SERIAL_OPEN", "SERIAL_CLOSE")
 
     # Device table
     devices = []
@@ -61,7 +60,7 @@ class P8X32Uart(Uart):
         gpio = get_running_kernel().find_module('bb.os.drivers.gpio.p8x32_gpio')
         if not gpio.open(mask):
             message.set_command('SERIAL_OPEN')
-            get_running_kernel().send_message("P8X32_UART_DRIVER_PORT", message)
+            get_running_kernel().send_message("P8X32_UART_DRIVER", message)
             return
         device.is_opened = True
         try:
@@ -76,25 +75,6 @@ class P8X32Uart(Uart):
         message.set_data(device)
         get_running_kernel().send_message(message.get_owner(), message)
 
-    def p8x32_uart_read(self, message):
-        device = message.get_data().device
-        sim = device.simulator
-        if not sim:
-            return
-        buf = sim.read(bytes)
-
-    def p8x32_uart_write(self, message):
-        device = message.get_data()[0]
-        sim = device.simulator
-        if not sim:
-            get_running_kernel().send_message(message.get_sender(), message)
-            return
-        sim.write(message.get_data()[1])
-        # there might be a small delay until the character is ready
-        # (especially on win32)
-        time.sleep(0.05)
-        get_running_kernel().send_message(message.get_sender(), message)
-
     @Uart.runner
     def p8x32_uart(self):
         """Runner for this driver."""
@@ -105,8 +85,6 @@ class P8X32Uart(Uart):
             return
         if message.get_command() == 'SERIAL_OPEN':
             self.p8x32_uart_open(message)
-        elif message.get_command() == 'SERIAL_WRITE':
-            self.p8x32_uart_write(message)
 
 devices = MemPool(3, 1)
 
@@ -142,7 +120,7 @@ def open(rx=None, tx=None, baudrate=115200, simulation_port=None):
     device = SerialDevice(settings)
     device.owner = get_running_thread().get_name()
     message.set_data(device)
-    get_running_kernel().send_message('P8X32_UART_DRIVER_PORT', message)
+    get_running_kernel().send_message("P8X32_UART_DRIVER", message)
     waiting ^= (1 << rx) + (1 << tx)
     return None
 
@@ -150,37 +128,21 @@ def close(device):
     pass
 
 def read(device, bytes=1):
-    sim_serial = table[get_running_thread().get_name()]
-    buf = sim_serial.read(bytes)
+    sim = device.simulator
+    if not sim:
+        return
+    buf = sim.read(bytes)
     return buf
 
 def write(device, buf, sz=None):
-    global write_mp
-    message = get_running_kernel().touch_last_message("P8X32_UART_INTERFACE_PORT")
-    if message and message.get_command() == "SERIAL_WRITE":
-        message = get_running_kernel().receive_message("P8X32_UART_INTERFACE_PORT")
-        write_mp.free(message.get_data())
-        get_running_kernel().free_message(message)
-    message = get_running_kernel().alloc_message("P8X32_UART_INTERFACE_PORT",
-                                                 "SERIAL_WRITE")
-    if not message:
-        printk("No free memory for a message")
+    sim = device.simulator
+    if not sim:
         return
-    # Get some memory for a message data
-    args = write_mp.malloc()
-    if not args:
-        get_running_kernel().free_message(message)
-        printk("No free memory for message data2")
-        return
-    if not isinstance(buf, types.StringType):
-        buf = str(buf)
-    if not sz:
-        # Data wasn't specify we will transfer all the data from buffer
-        sz = len(buf)
-    mwrite(args, [device, buf, sz])
-    message.set_data(args)
-    # Now try to send a message to driver
-    get_running_kernel().send_message("P8X32_UART_DRIVER_PORT", message)
+    sim.write(buf)
+    # there might be a small delay until the character is ready
+    # (especially on win32)
+    time.sleep(0.05)
+
 
 def bootstrap(args):
     # P8X32 serial gpio driver requires P8X32 GPIO driver for internal GPIO
@@ -199,4 +161,4 @@ def bootstrap(args):
     driver = P8X32Uart()
     get_running_kernel().register_driver(driver)
 
-import bb.os.drivers.serial.p8x32_uart.setup
+import bb.os.drivers.serial.p8x32_uart_setup
