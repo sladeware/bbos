@@ -19,6 +19,11 @@ class MinimeterOS(OS):
         self.init_complete = False
         self.pir_motion_sensor_init_complete = False
         self.iteration_counter = 0
+
+        # Unique ID that is a primary key in the database's minimeter table
+        self.unique_id = Application.get_running_instance().get_active_mapping().name
+
+        # The record containing statistics on the samples collected
         self.record = "UNIMPLEMENTED"
 
         # How many samples we collect before sending to the database
@@ -27,25 +32,26 @@ class MinimeterOS(OS):
         # The amount of time we sleep collecting samples
         self.INTER_COLLECTION_SLEEP_TIME = 1
 
+    def __print(self, data):
+        """Print out the data to the terminal with appropriate breadcrumbs."""
+        self.kernel.echo(self.unique_id + " : " + data)
+
     def __send_record(self):
         """Compute statistics on the data we've collected, create a record,
         encapsulate it in a message and send the message to the receiving
         thread on the remote database system"""
         # Unimplemented
-        print "sending record: " + self.record
-        return
+        self.__print("sending record: " + self.record)
 
     def __collect_sensor_data(self):
         """Read sensor data and store it in arrays for post-processing"""
         # Unimplemented
-        print "collecting sensor data"
-        return
+        self.__print("collecting sensor data")
 
     def __post_processing(self):
         """Compute statistics from sensor data and create a database record"""
         # Unimplemented
-        print "post processing"
-        return
+        self.__print("post processing")
 
     def sensor_processor(self):
         """This is the main part of the appliction that processes sensor data."""
@@ -55,7 +61,7 @@ class MinimeterOS(OS):
 
         # Collect this iteration's sensor data
         self.iteration_counter += 1
-        print "Sensor processor running: " + str(self.iteration_counter)
+        self.__print("Sensor processor running: " + str(self.iteration_counter))
         self.__collect_sensor_data()
 
         # If we have enough data, send the record to the database for storage
@@ -120,5 +126,7 @@ minimeter_board1 = MinimeterBoard([minimeter1])
 minimeter2 = Minimeter(2)
 minimeter_board2 = MinimeterBoard([minimeter2])
 
-house_sensing = Application([minimeter1])
+# Note that there is not a direct connection between minimeters. They can only
+# communicate with the database via wireless transmission.
+house_sensing = Application([minimeter1, minimeter2])
 house_sensing.start()
