@@ -6,7 +6,7 @@ import optparse
 import sys
 
 class Config(object):
-    """Class to wrap emulator functionality.
+    """Class to wrap simulator functionality.
 
     Attributes:
     optparser: An instnace of optparse.OptionParser
@@ -51,8 +51,10 @@ class Config(object):
                                       conflict_handler='resolve')
         parser.add_option('-h', '--help', action='store_true', dest='help',
                           help='Show the help message and exit.')
+        parser.add_option("--multiterminal", action="store_true",
+                          dest="multiterminal",
+                          help="Open each new running mapping a new terminal. "\
+                              "Supports Linux.")
         return parser
 
 config = Config()
-
-

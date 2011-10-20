@@ -4,12 +4,14 @@ __version__ = "$Rev: 401 $"
 __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
 import sys
+import signal
 import traceback
 import threading
 import multiprocessing
 import types
 import re
 import inspect
+import time
 
 import bb
 from bb.utils.type_check import verify_list, verify_string
@@ -373,13 +375,7 @@ class Kernel(Object, Traceable):
     def echo(self, data):
         if not isinstance(data, types.StringType):
             data = str(data)
-        prefix = ''
-        # See number of processes within an application. Do not show process 
-        # identifier if we have less than two processes.
-        if Application.get_running_instance().get_num_processes() > 1:
-            mapping = Application.get_running_instance().get_active_mapping()
-            prefix = "[%s] " % mapping.name
-        print prefix + data
+        print data
 
     @Object.simulation_method
     def test(self):
@@ -390,6 +386,11 @@ class Kernel(Object, Traceable):
     def start(self):
         self.test()
         self.echo("Start kernel")
+
+        #def sss(signal, frame):
+        #    self.stop()
+        #signal.signal(signal.SIGTERM, sss)
+
         try:
             if self.has_scheduler():
                 while True:
@@ -403,8 +404,14 @@ class Kernel(Object, Traceable):
     @Object.simulation_method
     def stop(self):
         """Shutdown everything and perform a clean system stop."""
-        self.echo("Kernel stopped")
-        sys.exit(1)
+        #sys.stdout.write("Shutdown in ")
+        #for count in range(5, 0, -1):
+        #    sys.stdout.write("%d " % count)
+        #    sys.stdout.flush()
+        #    time.sleep(1)
+        #sys.stdout.write("\n")
+        print "Kernel stopped"
+        sys.exit(0)
 
     @Object.simulation_method
     def panic(self, text):

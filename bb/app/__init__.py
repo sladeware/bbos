@@ -5,10 +5,15 @@ __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 import types
 import threading
 import multiprocessing
+import subprocess
 import inspect
 import re
 import optparse
 import sys
+import os
+import signal
+import tempfile
+import time
 
 from bb.utils.type_check import verify_list
 from bb.hardware import Hardware
@@ -26,18 +31,92 @@ def is_simulation_mode():
 
 _active_application = None
 
+class OutputStream:
+    def __init__(self, stream):
+        self.stream = stream
+
+    def write(self, data):
+        prefix = ''
+        from bb import simulator
+        if not simulator.config.get_option("multiterminal"):
+            # See number of processes within an application. Do not show process
+            # identifier if we have less than two processes.
+            if Application.get_running_instance().get_num_processes() > 1:
+                mapping = Application.get_running_instance().get_active_mapping()
+                prefix = "[%s] " % mapping.name
+            if data != "\n":
+                self.stream.write(prefix)
+        self.stream.write(data)
+
+    def __getattr__(self, attr):
+        return getattr(self.stream, attr)
+
+class UnbufferedOutputStream(OutputStream):
+    """This class handles unbuffered output stream. Just do flush() after each
+    write()."""
+    def __init__(self, stream):
+        self.stream = stream
+
+    def write(self, data):
+        OutputStream.write(self, data)
+        self.stream.flush()
+
+    def __getattr__(self, attr):
+        return getattr(self.stream, attr)
+
+class Process(multiprocessing.Process):
+    def __init__(self, target):
+        multiprocessing.Process.__init__(self, target=target)
+        from bb import simulator
+        if simulator.config.get_option("multiterminal"):
+            self.tmpdir = tempfile.mkdtemp()
+            self.fname = os.path.join(self.tmpdir, str(id(self)))
+            self.fh = open(self.fname, "w")
+
+    def get_pid(self):
+        return self.pid
+
+    def start(self):
+        from bb import simulator
+        # Save a reference to the current stdout
+        old_stdout = sys.stdout
+        if simulator.config.get_option("multiterminal"):
+            # hm, gnome-terminal -x ?
+            self.term = subprocess.Popen(["xterm", "-e", "tail", "-f", self.fname])
+            sys.stdout = UnbufferedOutputStream(self.fh)
+            # Need a small delay
+            time.sleep(1)
+        else:
+            sys.stdout = OutputStream(sys.stdout)
+        # Now the stdout has been redirected. Call initial start().
+        multiprocessing.Process.start(self)
+        # Normalize stdout stream
+        sys.stdout = old_stdout
+        if simulator.config.get_option("multiterminal"):
+            print "Redirect %d output to %d terminal" % (self.pid, self.term.pid)
+
+    def kill(self):
+        from bb import simulator
+        if simulator.config.get_option("multiterminal"):
+            self.term.terminate()
+            self.fh.close()
+            os.remove(self.fname)
+            os.rmdir(self.tmpdir)
+        os.kill(self.pid, signal.SIGTERM)
+
 class Application(object):
     def __init__(self, mappings=[]):
         self.__mappings = {}
         self.__manager = multiprocessing.Manager()
         self.__processes = self.__manager.dict()
+        self.__workers = dict()
         if len(mappings):
             self.add_mappings(mappings)
 
     @classmethod
     def get_running_instance(class_):
         global _active_application
-        return _active_application    
+        return _active_application
 
     def add_mappings(self, mappings):
         verify_list(mappings)
@@ -72,7 +151,6 @@ class Application(object):
         _active_application = self
         if not self.get_num_mappings():
             raise Exception("Nothing to run. Please, add at least one mapping.")
-        workers = []
         for mapping in self.get_mappings():
             if not mapping.os_class:
                 raise Exception("Cannot create OS instance.")
@@ -81,22 +159,28 @@ class Application(object):
                 os.main()
                 os.kernel.start()
                 return os
-            worker = multiprocessing.Process(target=bootstrapper)
-            worker.start()
-            self.__processes[worker.pid] = mapping
-            workers.append(worker)
+            process = Process(bootstrapper)
+            process.start()
+            self.__processes[process.get_pid()] = mapping
+            self.__workers[process.get_pid()] = process
         try:
-            for worker in workers:
-                worker.join()
+            for process in self.__workers.values():
+                process.join()
         except KeyboardInterrupt, e:
-            # Very important! We need to terminate all the children in order to
-            # close all open pipes. Otherwise we will get
-            # "IOError: [Errno 32]: Broken pipe". So look up for workers first 
-            # and terminate them.
-            for worker in multiprocessing.active_children():
-                worker.terminate()
+            self.stop()
         except SystemExit, e:
-            pass
+            self.stop()
+
+    def stop(self):
+        # Very important! We need to terminate all the children in order to
+        # close all open pipes. Otherwise we will get
+        # "IOError: [Errno 32]: Broken pipe". So look up for workers first
+        # and terminate them.
+        print "\nStopping application"
+        for process in self.__workers.values():
+            if process.is_alive():
+                print "Kill process %d" % process.pid
+                process.kill()
 
 class Traceable(object):
     """The Traceable interface allows you to track Object activity within an
@@ -184,5 +268,3 @@ class Mapping(object):
         self.name = name
         self.hardware = Hardware()
         self.os_class = os_class
-
-
