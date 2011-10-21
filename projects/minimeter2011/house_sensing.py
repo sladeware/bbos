@@ -9,7 +9,7 @@ from bb import simulator
 from bb.app import Application, Mapping
 from bb.os import OS, Kernel, Thread, Port
 from bb.hardware.boards import PropellerDemoBoard
-from bb.mm.mempool import MemPool
+from bb.mm.mempool import MemPool, mwrite
 
 import time
 
@@ -23,9 +23,6 @@ class MinimeterOS(OS):
 
         # When the next interval begins
         self.start_of_next_interval = 0
-
-        # The list of sensor data allocated from a memory pool
-        self.sensor_data_list = None
 
         # Unique ID that is a primary key in the database's minimeter table
         self.unique_id = Application.get_running_instance().get_active_mapping().name
@@ -44,12 +41,14 @@ class MinimeterOS(OS):
 
         # The size in bytes of each sensor data record, which includes:
         #   4 Bytes for Sensor Payload Data
-        #   1 Bytes for Sensor ID
+        #   4 Bytes for Sensor ID
         #   4 Bytes for linked list next pointer
-        #   9 Bytes Total
-        self.SENSOR_DATA_SIZE_IN_BYTES = 4 + 1 + 4
+        #   12 Bytes Total
+        # NB: These could be reduced in size if we wanted to
+        self.SENSOR_DATA_SIZE_IN_BYTES = 4 + 4 + 4
 
         # Mempool containing the sensor data that we to store each iteration
+        # 60 * 5 * 12B = 3,600 Bytes
         self.sensor_mempool = MemPool(self.SEND_RECORD_THRESHOLD *
                                       self.NUMBER_OF_SENSORS,
                                       self.SENSOR_DATA_SIZE_IN_BYTES)
@@ -61,6 +60,14 @@ class MinimeterOS(OS):
         # For now we have two, so that we allow two intervals for a message
         # to be sent and memory freed before running out of memory
         self.NUMBER_OF_RECORDS = 2
+
+        # The head of the list of sensor data allocated from a memory pool
+        # This is the first element allocated
+        self.sensor_data_head = None
+
+        # The tail of the list of sensor data allocated from a memory pool
+        # This is the most recently allocated element
+        self.sensor_data_tail = None
 
         # Mempool containing the records that we to send to the database
         self.sensor_mempool = MemPool(self.RECORD_SIZE_IN_BYTES,
@@ -80,6 +87,18 @@ class MinimeterOS(OS):
            values during the waiting interval."""
         # Collect a Hygrometer sample and store it (max humidity)
         print "collecting hygrometer data"
+        sensor_data = self.sensor_mempool.malloc()
+        if sensor_data:
+            mwrite(sensor_data, self.SensorData())
+            sensor_data.sensor_id = self.SensorInfo.HYGROMETER_ID
+            # TODO: Get data from the driver
+            sensor_data.data = 1234
+            if self.sensor_data_head == None:
+                self.sensor_data_head = sensor_data
+                self.sensor_data_tail = sensor_data
+            else:
+                self.sensor_data_tail.next_pointer = sensor_data
+                self.sensor_data_tail = sensor_data
 
         # Collect a Light to Frequency sample and store it (max frequency)
         print "collecting light data"
@@ -95,8 +114,15 @@ class MinimeterOS(OS):
 
     def __post_processing(self):
         """Compute statistics from sensor data and create a database record"""
-        # Unimplemented
         print "post processing"
+        # TODO: Something real! This is just a toy
+        sensor_data = self.sensor_data_head
+        while sensor_data:
+            print sensor_data
+            self.sensor_mempool.free(sensor_data)
+            sensor_data = sensor_data.next_pointer
+        self.sensor_data_head = None
+        self.sensor_data_tail = None
 
     def sensor_processor(self):
         """Main part of the appliction that processes sensor data."""
@@ -159,12 +185,18 @@ class MinimeterOS(OS):
 
     class SensorInfo():
         """DDO containing information about the sensors on this minimeter"""
-        HYGROMETER_ID  = 0
-        LIGHT_ID       = 1
-        MOTION_ID      = 2
-        SOUND_ID       = 3
-        TEMPERATURE_ID = 4
-        
+        UNASSIGNED_ID  = 0
+        HYGROMETER_ID  = 1
+        LIGHT_ID       = 2
+        MOTION_ID      = 3
+        SOUND_ID       = 4
+        TEMPERATURE_ID = 5
+
+    class SensorData():
+        data = 0
+        sensor_id = 0
+        next_pointer = None
+
 class MinimeterBoard(PropellerDemoBoard):
     """Let us use for the first time Propeller Demo Board as the board for
     minimeter. On the next step we can create a special board by using Board
