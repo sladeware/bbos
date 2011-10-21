@@ -304,4 +304,7 @@ class Mapping(object):
     def __init__(self, name, os_class=None):
         self.name = name
         self.hardware = Hardware()
-        self.os_class = os_class
+        if os_class:
+            self.os_class = os_class
+        elif hasattr(self, "os_class"):
+            self.os_class = getattr(self, "os_class")

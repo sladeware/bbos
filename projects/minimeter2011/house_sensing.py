@@ -8,6 +8,7 @@ sensing system."""
 from bb import simulator
 from bb.app import Application
 from minimeter import Minimeter, MinimeterBoard
+from workstation import Workstation, WorkstationBoard
 
 minimeter1 = Minimeter(1)
 minimeter_board1 = MinimeterBoard([minimeter1])
@@ -17,9 +18,15 @@ minimeter_board1 = MinimeterBoard([minimeter1])
 minimeter2 = Minimeter(2)
 minimeter_board2 = MinimeterBoard([minimeter2])
 
+# Workstation that will receive data from minimeter devices.
+workstation = Workstation("Workstation")
+workstation_board = WorkstationBoard(workstation)
+
 # Note that there is not a direct connection between minimeters. They can only
 # communicate with the database via wireless transmission.
-house_sensing = Application([minimeter1, minimeter2],
+# Note the order of mappings is not important. Simulator uses random execution
+# order. XXX: do we need to make it as an options?
+house_sensing = Application([workstation, minimeter1],
                             mappings_execution_interval=3)
 
 if __name__ == '__main__':

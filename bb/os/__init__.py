@@ -29,3 +29,6 @@ from bb.os.hardware import *
 class OS(object):
     def __init__(self):
         self.kernel = kernel.Kernel()
+
+    def main(self):
+        pass
