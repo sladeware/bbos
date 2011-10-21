@@ -66,16 +66,12 @@ class MinimeterOS(OS):
         self.sensor_mempool = MemPool(self.RECORD_SIZE_IN_BYTES,
                                       self.NUMBER_OF_RECORDS)
 
-    def __print(self, data):
-        """Print out the data to the terminal with appropriate breadcrumbs."""
-        self.kernel.echo(self.unique_id + " : " + data)
-
     def __send_record(self):
         """Compute statistics on the data we've collected, create a record,
         encapsulate it in a message and send the message to the receiving
         thread on the remote database system"""
         # Unimplemented
-        self.__print("sending record: " + self.record)
+        print "sending record: " + self.record
 
     def __collect_sensor_data(self):
         """Read sensor data and store it in linked list for post-processing.
@@ -83,24 +79,24 @@ class MinimeterOS(OS):
            their drivers. We simply poll the drivers to determine max
            values during the waiting interval."""
         # Collect a Hygrometer sample and store it (max humidity)
-        self.__print("collecting hygrometer data")
+        print "collecting hygrometer data"
 
         # Collect a Light to Frequency sample and store it (max frequency)
-        self.__print("collecting light data")
+        print "collecting light data"
 
         # Collect a PIR Motion sample and store it (number of times activated)
-        self.__print("collecting motion data")
+        print "collecting motion data"
 
         # Collect a Microphone Sound sample and store it (max amplitude)
-        self.__print("collecting sound data")
+        print "collecting sound data"
 
         # Collect a Temperature sample and store it (max temperature in Celsius)
-        self.__print("collecting temperature data")
+        print "collecting temperature data"
 
     def __post_processing(self):
         """Compute statistics from sensor data and create a database record"""
         # Unimplemented
-        self.__print("post processing")
+        print "post processing"
 
     def sensor_processor(self):
         """Main part of the appliction that processes sensor data."""
@@ -117,7 +113,7 @@ class MinimeterOS(OS):
 
         # Collect this iteration's sensor data
         self.iteration_counter += 1
-        self.__print("Sensor processor running: " + str(self.iteration_counter))
+        print "Sensor processor running: " + str(self.iteration_counter)
         self.__collect_sensor_data()
 
         # If we have enough data, send the record to the database for storage
