@@ -14,6 +14,7 @@ import os
 import signal
 import tempfile
 import time
+import random
 
 from bb.utils.type_check import verify_list
 from bb.hardware import Hardware
@@ -65,8 +66,20 @@ class UnbufferedOutputStream(OutputStream):
         return getattr(self.stream, attr)
 
 class Process(multiprocessing.Process):
-    def __init__(self, target):
-        multiprocessing.Process.__init__(self, target=target)
+    """The process describes execution of a particular mapping. It represents
+    the life of the OS kernel: from its initialization to the point that it
+    stops executing."""
+
+    def __init__(self, mapping):
+        self.__mapping = mapping
+
+        def bootstrapper():
+            os = mapping.os_class()
+            os.main()
+            os.kernel.start()
+            return os
+
+        multiprocessing.Process.__init__(self, target=bootstrapper)
         from bb import simulator
         if simulator.config.get_option("multiterminal"):
             self.tmpdir = tempfile.mkdtemp()
@@ -82,7 +95,11 @@ class Process(multiprocessing.Process):
         old_stdout = sys.stdout
         if simulator.config.get_option("multiterminal"):
             # hm, gnome-terminal -x ?
-            self.term = subprocess.Popen(["xterm", "-e", "tail", "-f", self.fname])
+            term_cmd = ["xterm",
+                        "-T", "Mapping '%s'" % self.__mapping.name,
+                        "-e", "tail",
+                        "-f", self.fname]
+            self.term = subprocess.Popen(term_cmd)
             sys.stdout = UnbufferedOutputStream(self.fh)
             # Need a small delay
             time.sleep(1)
@@ -151,15 +168,15 @@ class Application(object):
         _active_application = self
         if not self.get_num_mappings():
             raise Exception("Nothing to run. Please, add at least one mapping.")
-        for mapping in self.get_mappings():
+        # Build an execution order of mappings first
+        execution_order = range(self.get_num_mappings())
+        random.shuffle(execution_order)
+        for i in execution_order:
+            # Take a random mapping by using built execution order
+            mapping = self.get_mappings()[i]
             if not mapping.os_class:
                 raise Exception("Cannot create OS instance.")
-            def bootstrapper():
-                os = mapping.os_class()
-                os.main()
-                os.kernel.start()
-                return os
-            process = Process(bootstrapper)
+            process = Process(mapping)
             process.start()
             self.__processes[process.get_pid()] = mapping
             self.__workers[process.get_pid()] = process
