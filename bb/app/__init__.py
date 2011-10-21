@@ -186,19 +186,21 @@ class Application(object):
         # Build an execution order of mappings first
         execution_order = range(self.get_num_mappings())
         random.shuffle(execution_order)
-        for i in execution_order:
-            # Take a random mapping by using built execution order
-            mapping = self.get_mappings()[i]
-            if not mapping.os_class:
-                raise Exception("Cannot create OS instance.")
-            process = Process(mapping)
-            process.start()
-            self.__processes[process.get_pid()] = mapping
-            self.__workers[process.get_pid()] = process
-            # Do we need some delay? If so, sleep for some time before the next
-            # mapping will be executed
-            time.sleep(self.get_mappings_execution_interval())
+        # Execute mappings one by one by using execution order
         try:
+            for i in execution_order:
+                # Take a random mapping by using built execution order
+                mapping = self.get_mappings()[i]
+                if not mapping.os_class:
+                    raise Exception("Cannot create OS instance.")
+                process = Process(mapping)
+                process.start()
+                self.__processes[process.get_pid()] = mapping
+                self.__workers[process.get_pid()] = process
+                # Do we need some delay? If so, sleep for some time before the next
+                # mapping will be executed
+                time.sleep(self.get_mappings_execution_interval())
+            # Wait for each process
             for process in self.__workers.values():
                 process.join()
         except KeyboardInterrupt, e:

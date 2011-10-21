@@ -183,6 +183,7 @@ class MinimeterOS(OS):
         self.kernel.add_thread(Thread("SENSOR_PROCESSOR", self.sensor_processor,
             "PRIMARY_PORT"))
         self.kernel.load_module("bb.os.drivers.sensors.pir_sensor")
+        self.kernel.load_module("bb.os.drivers.net.wireless.xbee")
 
     class SensorInfo():
         """DDO containing information about the sensors on this minimeter"""
