@@ -16,7 +16,7 @@ import tempfile
 import time
 import random
 
-from bb.utils.type_check import verify_list
+from bb.utils.type_check import verify_list, verify_int
 from bb.hardware import Hardware
 
 SIMULATION_MODE = 'SIMULATION'
@@ -42,7 +42,10 @@ class OutputStream:
         if not simulator.config.get_option("multiterminal"):
             # See number of processes within an application. Do not show process
             # identifier if we have less than two processes.
-            if Application.get_running_instance().get_num_processes() > 1:
+            # NB: we do not use here get_num_processes() since we may have an
+            # execution delay between processes. Thus we will use max possible
+            # number of processes, which is number of mappings.
+            if Application.get_running_instance().get_num_mappings() > 1:
                 mapping = Application.get_running_instance().get_active_mapping()
                 prefix = "[%s] " % mapping.name
             if data != "\n":
@@ -122,13 +125,25 @@ class Process(multiprocessing.Process):
         os.kill(self.pid, signal.SIGTERM)
 
 class Application(object):
-    def __init__(self, mappings=[]):
+    def __init__(self, mappings=[], mappings_execution_interval=0):
+        self.__mappings_execution_interval = 0
+        self.set_mappings_execution_interval(mappings_execution_interval)
         self.__mappings = {}
         self.__manager = multiprocessing.Manager()
         self.__processes = self.__manager.dict()
         self.__workers = dict()
         if len(mappings):
             self.add_mappings(mappings)
+
+    def set_mappings_execution_interval(self, value):
+        verify_int(value)
+        if value < 0:
+            raise Exception("Mappings execution interval value can not be less "
+                            "than zero: %d" % value)
+        self.__mappings_execution_interval = value
+
+    def get_mappings_execution_interval(self):
+        return self.__mappings_execution_interval
 
     @classmethod
     def get_running_instance(class_):
@@ -180,6 +195,9 @@ class Application(object):
             process.start()
             self.__processes[process.get_pid()] = mapping
             self.__workers[process.get_pid()] = process
+            # Do we need some delay? If so, sleep for some time before the next
+            # mapping will be executed
+            time.sleep(self.get_mappings_execution_interval())
         try:
             for process in self.__workers.values():
                 process.join()

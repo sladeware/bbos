@@ -219,7 +219,8 @@ minimeter_board2 = MinimeterBoard([minimeter2])
 
 # Note that there is not a direct connection between minimeters. They can only
 # communicate with the database via wireless transmission.
-house_sensing = Application([minimeter1, minimeter2])
+house_sensing = Application([minimeter1, minimeter2],
+                            mappings_execution_interval=3)
 
 if __name__ == '__main__':
     simulator.config.parse_command_line()
