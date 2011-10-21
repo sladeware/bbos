@@ -119,8 +119,9 @@ class MinimeterOS(OS):
         sensor_data = self.sensor_data_head
         while sensor_data:
             print sensor_data
+            old_sensor_data = sensor_data
             sensor_data = sensor_data.next_pointer
-            self.sensor_mempool.free(sensor_data)
+            self.sensor_mempool.free(old_sensor_data)
         self.sensor_data_head = None
         self.sensor_data_tail = None
 
