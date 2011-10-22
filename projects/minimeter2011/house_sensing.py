@@ -26,8 +26,8 @@ workstation_board = WorkstationBoard(workstation)
 # communicate with the database via wireless transmission.
 # Note the order of mappings is not important. Simulator uses random execution
 # order. XXX: do we need to make it as an options?
-house_sensing = Application([workstation, minimeter1],
-                            mappings_execution_interval=3)
+house_sensing = Application([workstation, minimeter1, minimeter2],
+                            mappings_execution_interval=2)
 
 if __name__ == '__main__':
     simulator.config.parse_command_line()

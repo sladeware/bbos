@@ -76,6 +76,23 @@ class MinimeterOS(OS):
         # Unimplemented
         print "sending record: " + self.record
 
+    def __add_sensor_data(self, data, sensor_id):
+        """Add a new sensor data element"""
+        sensor_data = self.sensor_mempool.malloc()
+        if sensor_data:
+            mwrite(sensor_data, self.SensorData())
+            sensor_data.sensor_id = sensor_id
+            sensor_data.data = data
+            if self.sensor_data_head == None:
+                self.sensor_data_head = sensor_data
+                self.sensor_data_tail = sensor_data
+            else:
+                self.sensor_data_tail.next_pointer = sensor_data
+                self.sensor_data_tail = sensor_data
+            print "new sensor data: " + str(sensor_data)
+        else:
+            print "WARNING: problems allocating memory for sensor data"
+
     def __collect_sensor_data(self):
         """Read sensor data and store it in linked list for post-processing.
            Data is collected over the interval we waited by the sensors and
@@ -83,33 +100,28 @@ class MinimeterOS(OS):
            values during the waiting interval."""
         # Collect a Hygrometer sample and store it (max humidity)
         print "collecting hygrometer data"
-        sensor_data = self.sensor_mempool.malloc()
-        if sensor_data:
-            mwrite(sensor_data, self.SensorData())
-            sensor_data.sensor_id = self.SensorInfo.HYGROMETER_ID
-            # TODO: Get data from the driver
-            sensor_data.data = 1234
-            if self.sensor_data_head == None:
-                self.sensor_data_head = sensor_data
-                self.sensor_data_tail = sensor_data
-            else:
-                self.sensor_data_tail.next_pointer = sensor_data
-                self.sensor_data_tail = sensor_data
-
-        else:
-            print "Problems allocating memory for sensor data"
+        data = 1234 + self.SEND_RECORD_THRESHOLD # TODO: Get data from driver
+        self.__add_sensor_data(data, self.SensorInfo.HYGROMETER_ID)
 
         # Collect a Light to Frequency sample and store it (max frequency)
         print "collecting light data"
+        data = 1435 + self.SEND_RECORD_THRESHOLD # TODO: Get data from driver
+        self.__add_sensor_data(data, self.SensorInfo.LIGHT_ID)
 
         # Collect a PIR Motion sample and store it (number of times activated)
         print "collecting motion data"
+        data = 5324 + self.SEND_RECORD_THRESHOLD # TODO: Get data from driver
+        self.__add_sensor_data(data, self.SensorInfo.MOTION_ID)
 
         # Collect a Microphone Sound sample and store it (max amplitude)
         print "collecting sound data"
+        data = 5512 + self.SEND_RECORD_THRESHOLD # TODO: Get data from driver
+        self.__add_sensor_data(data, self.SensorInfo.SOUND_ID)
 
         # Collect a Temperature sample and store it (max temperature in Celsius)
         print "collecting temperature data"
+        data = 8767 + self.SEND_RECORD_THRESHOLD # TODO: Get data from driver
+        self.__add_sensor_data(data, self.SensorInfo.TEMPERATURE_ID)
 
     def __post_processing(self):
         """Compute statistics from sensor data and create a database record"""
