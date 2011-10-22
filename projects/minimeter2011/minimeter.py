@@ -27,7 +27,7 @@ class MinimeterOS(OS):
         self.record = "UNIMPLEMENTED"
 
         # How many samples we collect before sending to the database
-        self.SEND_RECORD_THRESHOLD = 60
+        self.SEND_RECORD_THRESHOLD = 30
 
         # The interval of time in seconds that we wait until next collection
         self.INTER_COLLECTION_WAIT_TIME = 1.0
@@ -37,14 +37,14 @@ class MinimeterOS(OS):
 
         # The size in bytes of each sensor data record, which includes:
         #   4 Bytes for Sensor Payload Data
-        #   4 Bytes for Sensor ID
+        #   1 Bytes for Sensor ID
         #   4 Bytes for linked list next pointer
-        #   12 Bytes Total
+        #   9 Bytes Total
         # NB: These could be reduced in size if we wanted to
-        self.SENSOR_DATA_SIZE_IN_BYTES = 4 + 4 + 4
+        self.SENSOR_DATA_SIZE_IN_BYTES = 4 + 1 + 4
 
         # Mempool containing the sensor data that we to store each iteration
-        # 60 * 5 * 12B = 3,600 Bytes
+        # 30 * 5 * 9B = 1350 Bytes
         self.sensor_mempool = MemPool(self.SEND_RECORD_THRESHOLD *
                                       self.NUMBER_OF_SENSORS,
                                       self.SENSOR_DATA_SIZE_IN_BYTES)
@@ -95,6 +95,9 @@ class MinimeterOS(OS):
             else:
                 self.sensor_data_tail.next_pointer = sensor_data
                 self.sensor_data_tail = sensor_data
+
+        else:
+            print "Problems allocating memory for sensor data"
 
         # Collect a Light to Frequency sample and store it (max frequency)
         print "collecting light data"
@@ -194,6 +197,10 @@ class MinimeterOS(OS):
         data = 0
         sensor_id = 0
         next_pointer = None
+
+        def __str__(self):
+            return "data:" + str(data) + " id" + str(sensor_id) + "next:"
+            + str(next_pointer)
 
 class MinimeterBoard(PropellerDemoBoard):
     """Let us use for the first time Propeller Demo Board as the board for
