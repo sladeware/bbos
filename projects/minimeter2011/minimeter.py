@@ -350,14 +350,15 @@ class MinimeterOS(OS):
             self.t_max = 0
             self.t_sum = 0
 
-    class SensorData():
+    class SensorData(object):
         data = 0
         sensor_id = 0
         next_pointer = None
 
         def __str__(self):
-            return "data:" + str(data) + " id" + str(sensor_id) + "next:"
-            + str(next_pointer)
+            return ' '.join(("data=" + str(self.data),
+                             "id=" + str(self.sensor_id),
+                             "next=" + str(self.next_pointer)))
 
 class MinimeterBoard(PropellerDemoBoard):
     """Let us use for the first time Propeller Demo Board as the board for
