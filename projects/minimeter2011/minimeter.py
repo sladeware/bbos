@@ -96,12 +96,6 @@ class MinimeterOS(OS):
             # Total 823 Bytes = 48B + (31 * 5 * (4B + 1B))
         self.record_mempool = MemPool(record_size, self.NUMBER_OF_RECORDS)
 
-    def set_verbose(self, verbose):
-        """Set the boolean verbose flag that controls whether all data pairs
-        of (data, sensor_id) collected during the previous interval are
-        appended to the database record."""
-        self.verbose = verbose
-
     def __send_record(self):
         """Compute statistics on the data we've collected, create a record,
         encapsulate it in a message and send the message to the receiving
