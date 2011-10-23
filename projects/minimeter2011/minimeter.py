@@ -22,10 +22,11 @@ class MinimeterOS(OS):
         self.start_of_next_interval = 0
 
         # Unique ID that is a primary key in the database's minimeter table
-        self.unique_id = Application.get_running_instance().get_active_mapping().name
+        self.unique_id = hash(
+            Application.get_running_instance().get_active_mapping().name)
 
         # The record containing statistics on the samples collected
-        self.record = "UNIMPLEMENTED"
+        self.record = None
 
         # How many samples we collect before sending to the database
         self.SEND_RECORD_THRESHOLD = 30
@@ -37,21 +38,34 @@ class MinimeterOS(OS):
         self.NUMBER_OF_SENSORS = 5
 
         # The size in bytes of each sensor data record, which includes:
-        #   4 Bytes for Sensor Payload Data
-        #   1 Bytes for Sensor ID
-        #   4 Bytes for linked list next pointer
-        #   9 Bytes Total
+        #    4 Bytes for Sensor Payload Data
+        #    1 Bytes for Sensor ID
+        #    4 Bytes for linked list next pointer
+        #    9 Bytes Total
         # NB: These could be reduced in size if we wanted to
         self.SENSOR_DATA_SIZE_IN_BYTES = 4 + 1 + 4
 
         # Mempool containing the sensor data that we to store each iteration
         # 30 * 5 * 9B = 1350 Bytes
-        self.sensor_mempool = MemPool(self.SEND_RECORD_THRESHOLD *
+        self.sensor_mempool = MemPool((self.SEND_RECORD_THRESHOLD + 1) *
                                       self.NUMBER_OF_SENSORS,
                                       self.SENSOR_DATA_SIZE_IN_BYTES)
 
         # The size in bytes of a database record that we are sending
-        self.RECORD_SIZE_IN_BYTES = 1 # ??? FILL IN WITH ACTUAL SIZE
+        #    4 Bytes minimeter unique id
+        #    4 Bytes database record generation ID
+        #    4 Bytes hygrometer max value
+        #    4 Bytes hygrometer mean value
+        #    4 Bytes light max value
+        #    4 Bytes light mean value
+        #    4 Bytes motion max value
+        #    4 Bytes motion mean value
+        #    4 Bytes sound max value
+        #    4 Bytes sound mean value
+        #    4 Bytes temperature max value
+        #    4 Bytes temperature mean value
+        #    48 Bytes Total
+        self.RECORD_SIZE_IN_BYTES = 4 * 12
 
         # The number of records we have in flight
         # For now we have two, so that we allow two intervals for a message
@@ -67,15 +81,21 @@ class MinimeterOS(OS):
         self.sensor_data_tail = None
 
         # Mempool containing the records that we to send to the database
-        self.sensor_mempool = MemPool(self.RECORD_SIZE_IN_BYTES,
+        self.record_mempool = MemPool(self.RECORD_SIZE_IN_BYTES,
                                       self.NUMBER_OF_RECORDS)
+
+        # Enable verbose records, which include all sensor data and stats
+        self.VERBOSE_RECORD = False # True is not currently implemented        
 
     def __send_record(self):
         """Compute statistics on the data we've collected, create a record,
         encapsulate it in a message and send the message to the receiving
         thread on the remote database system"""
         # Unimplemented
-        print "sending record: " + self.record
+        print "sending record: "
+        for field in self.record[:]:
+            print str(field)
+        self.record_mempool.free(self.record)
 
     def __add_sensor_data(self, data, sensor_id):
         """Add a new sensor data element"""
@@ -101,33 +121,56 @@ class MinimeterOS(OS):
            values during the waiting interval."""
         # Collect a Hygrometer sample and store it (max humidity)
         print "collecting hygrometer data"
-        data = 1234 + self.SEND_RECORD_THRESHOLD # TODO: Get data from driver
+        data = 1234 + self.iteration_counter # TODO: Get data from driver
         self.__add_sensor_data(data, self.SensorInfo.HYGROMETER_ID)
 
         # Collect a Light to Frequency sample and store it (max frequency)
         print "collecting light data"
-        data = 1435 + self.SEND_RECORD_THRESHOLD # TODO: Get data from driver
+        data = 1435 + self.iteration_counter # TODO: Get data from driver
         self.__add_sensor_data(data, self.SensorInfo.LIGHT_ID)
 
         # Collect a PIR Motion sample and store it (number of times activated)
         print "collecting motion data"
-        data = 5324 + self.SEND_RECORD_THRESHOLD # TODO: Get data from driver
+        data = 5324 + self.iteration_counter # TODO: Get data from driver
         self.__add_sensor_data(data, self.SensorInfo.MOTION_ID)
 
         # Collect a Microphone Sound sample and store it (max amplitude)
         print "collecting sound data"
-        data = 5512 + self.SEND_RECORD_THRESHOLD # TODO: Get data from driver
+        data = 5512 + self.iteration_counter # TODO: Get data from driver
         self.__add_sensor_data(data, self.SensorInfo.SOUND_ID)
 
         # Collect a Temperature sample and store it (max temperature in Celsius)
         print "collecting temperature data"
-        data = 8767 + self.SEND_RECORD_THRESHOLD # TODO: Get data from driver
+        data = 8767 + self.iteration_counter # TODO: Get data from driver
         self.__add_sensor_data(data, self.SensorInfo.TEMPERATURE_ID)
 
     def __create_record(self):
         """Create a record from the statistics generated on the sensor data"""
         print "creating the database record"
-        #UNIMPLEMENTED
+        self.record = self.record_mempool.malloc()
+        if self.record:
+            if self.VERBOSE_RECORD:
+                #UNIMPLEMENTED
+                print "Verbose records are not currently implemented"
+            else:
+                mwrite(self.record, [self.unique_id,
+                                     self.sensor_info.DATABASE_GENERATION_ID,
+                                     self.sensor_info.h_max,
+                                     int(float(self.sensor_info.h_sum) /
+                                         float(self.sensor_info.h_ctr)),
+                                     self.sensor_info.l_max,
+                                     int(float(self.sensor_info.l_sum) /
+                                         float(self.sensor_info.l_ctr)),
+                                     self.sensor_info.m_max,
+                                     int(float(self.sensor_info.m_sum) /
+                                         float(self.sensor_info.m_ctr)),
+                                     self.sensor_info.s_max,
+                                     int(float(self.sensor_info.s_sum) /
+                                         float(self.sensor_info.s_ctr)),
+                                     self.sensor_info.t_max,
+                                     int(float(self.sensor_info.t_sum) /
+                                         float(self.sensor_info.t_ctr))
+                                    ])
 
     def __post_processing(self):
         """Compute statistics from sensor data and create a database record"""
@@ -212,13 +255,17 @@ class MinimeterOS(OS):
         self.kernel.load_module("bb.os.drivers.net.wireless.xbee")
 
     class SensorInfo():
-        """DDO containing information about the sensors on this minimeter"""
+        """Container for information about the sensors on this minimeter. Also,
+        able to compute statistics about sensor data."""
         UNASSIGNED_ID  = 0
         HYGROMETER_ID  = 1
         LIGHT_ID       = 2
         MOTION_ID      = 3
         SOUND_ID       = 4
         TEMPERATURE_ID = 5
+
+        # All records of the same generation have identical columns
+        DATABASE_GENERATION_ID = 1
 
         h_ctr = 0
         l_ctr = 0
@@ -248,8 +295,8 @@ class MinimeterOS(OS):
                 self.h_sum += sensor_data.data
             if sensor_data.sensor_id == self.LIGHT_ID:
                 self.l_ctr += 1
-                if self.sensorl_info._max < sensor_data.data:
-                    self.sensorl_info._max = sensor_data.data
+                if self.l_max < sensor_data.data:
+                    self.l_max = sensor_data.data
                 self.l_sum += sensor_data.data
             if sensor_data.sensor_id == self.MOTION_ID:
                 self.m_ctr += 1
