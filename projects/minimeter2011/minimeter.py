@@ -11,7 +11,10 @@ import time
 
 class MinimeterOS(OS):
 
-    def __init__(self):
+    def __init__(self, verbose=True):
+        """Setting verbose to False produces database records that contain
+        the stats only and not all of the data collected during the recording
+        interval. Defaults to True."""
         OS.__init__(self)
         self.init_complete = False
         self.pir_motion_sensor_init_complete = False
@@ -68,9 +71,7 @@ class MinimeterOS(OS):
         self.RECORD_SIZE_IN_BYTES = 4 * 12
 
         # The number of records we have in flight
-        # For now we have two, so that we allow two intervals for a message
-        # to be sent and memory freed before running out of memory
-        self.NUMBER_OF_RECORDS = 2
+        self.NUMBER_OF_RECORDS = 1
 
         # The head of the list of sensor data allocated from a memory pool
         # This is the first element allocated
@@ -80,12 +81,26 @@ class MinimeterOS(OS):
         # This is the most recently allocated element
         self.sensor_data_tail = None
 
-        # Mempool containing the records that we to send to the database
-        self.record_mempool = MemPool(self.RECORD_SIZE_IN_BYTES,
-                                      self.NUMBER_OF_RECORDS)
-
         # Enable verbose records, which include all sensor data and stats
-        self.VERBOSE_RECORD = False # True is not currently implemented        
+        self.verbose = verbose
+
+        # Mempool containing the records that we to send to the database
+        # It is appended to the stats record and contains (data, sensor_id)
+        # pairs as they were recorded by the minimeter.
+        record_size = self.RECORD_SIZE_IN_BYTES
+        if self.verbose:
+            # The number of pairs in the verbose record
+            num_pairs = self.SEND_RECORD_THRESHOLD + 1
+            # A pair is the 4B data and 1B sensor_id
+            record_size += num_pairs * self.NUMBER_OF_SENSORS * (4 + 1)
+            # Total 823 Bytes = 48B + (31 * 5 * (4B + 1B))
+        self.record_mempool = MemPool(record_size, self.NUMBER_OF_RECORDS)
+
+    def set_verbose(self, verbose):
+        """Set the boolean verbose flag that controls whether all data pairs
+        of (data, sensor_id) collected during the previous interval are
+        appended to the database record."""
+        self.verbose = verbose
 
     def __send_record(self):
         """Compute statistics on the data we've collected, create a record,
@@ -149,28 +164,31 @@ class MinimeterOS(OS):
         print "creating the database record"
         self.record = self.record_mempool.malloc()
         if self.record:
-            if self.VERBOSE_RECORD:
-                #UNIMPLEMENTED
-                print "Verbose records are not currently implemented"
-            else:
-                mwrite(self.record, [self.unique_id,
-                                     self.sensor_info.DATABASE_GENERATION_ID,
-                                     self.sensor_info.h_max,
-                                     int(float(self.sensor_info.h_sum) /
-                                         float(self.sensor_info.h_ctr)),
-                                     self.sensor_info.l_max,
-                                     int(float(self.sensor_info.l_sum) /
-                                         float(self.sensor_info.l_ctr)),
-                                     self.sensor_info.m_max,
-                                     int(float(self.sensor_info.m_sum) /
-                                         float(self.sensor_info.m_ctr)),
-                                     self.sensor_info.s_max,
-                                     int(float(self.sensor_info.s_sum) /
-                                         float(self.sensor_info.s_ctr)),
-                                     self.sensor_info.t_max,
-                                     int(float(self.sensor_info.t_sum) /
-                                         float(self.sensor_info.t_ctr))
-                                    ])
+            array = [self.unique_id,
+                     self.sensor_info.DATABASE_GENERATION_ID,
+                     self.sensor_info.h_max,
+                     int(float(self.sensor_info.h_sum) /
+                         float(self.sensor_info.h_ctr)),
+                     self.sensor_info.l_max,
+                     int(float(self.sensor_info.l_sum) /
+                         float(self.sensor_info.l_ctr)),
+                     self.sensor_info.m_max,
+                     int(float(self.sensor_info.m_sum) /
+                         float(self.sensor_info.m_ctr)),
+                     self.sensor_info.s_max,
+                     int(float(self.sensor_info.s_sum) /
+                         float(self.sensor_info.s_ctr)),
+                     self.sensor_info.t_max,
+                     int(float(self.sensor_info.t_sum) /
+                         float(self.sensor_info.t_ctr))
+                     ]
+            if self.verbose:
+                sensor_data = self.sensor_data_head
+                while sensor_data:
+                    array.append(int(sensor_data.data))
+                    array.append(int(sensor_data.sensor_id))
+                    sensor_data = sensor_data.next_pointer
+            mwrite(self.record, array)
 
     def __post_processing(self):
         """Compute statistics from sensor data and create a database record"""
@@ -180,14 +198,17 @@ class MinimeterOS(OS):
         sensor_data = self.sensor_data_head
         while sensor_data:
             self.sensor_info.compute(sensor_data)
-            old_sensor_data = sensor_data
             sensor_data = sensor_data.next_pointer
-            self.sensor_mempool.free(old_sensor_data)
 
         # Create the record
         self.__create_record()
 
         # Cleanup sensor data linked list
+        sensor_data = self.sensor_data_head
+        while sensor_data:
+            old_sensor_data = sensor_data
+            sensor_data = sensor_data.next_pointer
+            self.sensor_mempool.free(old_sensor_data)
         self.sensor_data_head = None
         self.sensor_data_tail = None
 
