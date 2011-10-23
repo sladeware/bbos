@@ -77,7 +77,7 @@ class Process(multiprocessing.Process):
         self.__mapping = mapping
 
         def bootstrapper():
-            os = mapping.os_class()
+            os = mapping.os_class(**mapping.boot_params)
             os.main()
             os.kernel.start()
             return os
@@ -301,8 +301,9 @@ class Object(object):
         return simulate
 
 class Mapping(object):
-    def __init__(self, name, os_class=None):
+    def __init__(self, name, os_class=None, boot_params=None):
         self.name = name
+        self.boot_params = boot_params or dict()
         self.hardware = Hardware()
         if os_class:
             self.os_class = os_class

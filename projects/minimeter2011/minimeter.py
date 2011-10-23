@@ -10,6 +10,8 @@ from bb.mm.mempool import MemPool, mwrite
 import time
 
 class MinimeterOS(OS):
+    """This class describes operating system that controls a single minimeter
+    device."""
 
     def __init__(self, verbose=True):
         """Setting verbose to False produces database records that contain
@@ -365,5 +367,6 @@ class MinimeterBoard(PropellerDemoBoard):
 class Minimeter(Mapping):
     """This class aims to describe minimeter device. The name of each device has
     the following template: M<ID>."""
-    def __init__(self, id):
-        Mapping.__init__(self, name="M%d" % id, os_class=MinimeterOS)
+    def __init__(self, id, boot_params=None):
+        Mapping.__init__(self, name="M%d" % id, os_class=MinimeterOS,
+                         boot_params=boot_params)

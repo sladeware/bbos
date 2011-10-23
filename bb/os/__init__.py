@@ -27,7 +27,7 @@ from bb.os.kernel import *
 from bb.os.hardware import *
 
 class OS(object):
-    def __init__(self):
+    def __init__(self, **kargs):
         self.kernel = kernel.Kernel()
 
     def main(self):
