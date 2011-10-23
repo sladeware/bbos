@@ -82,13 +82,13 @@ class MinimeterOS(OS):
         self.sensor_data_tail = None
 
         # Enable verbose records, which include all sensor data and stats
-        self.verbose = verbose
+        self.VERBOSE = verbose
 
         # Mempool containing the records that we to send to the database
         # It is appended to the stats record and contains (data, sensor_id)
         # pairs as they were recorded by the minimeter.
         record_size = self.RECORD_SIZE_IN_BYTES
-        if self.verbose:
+        if self.VERBOSE:
             # The number of pairs in the verbose record
             num_pairs = self.SEND_RECORD_THRESHOLD + 1
             # A pair is the 4B data and 1B sensor_id
@@ -176,7 +176,7 @@ class MinimeterOS(OS):
                      int(float(self.sensor_info.t_sum) /
                          float(self.sensor_info.t_ctr))
                      ]
-            if self.verbose:
+            if self.VERBOSE:
                 sensor_data = self.sensor_data_head
                 while sensor_data:
                     array.append(int(sensor_data.data))
