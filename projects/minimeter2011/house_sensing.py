@@ -15,7 +15,7 @@ minimeter_board1 = MinimeterBoard([minimeter1])
 
 # Just another minimeter device. Put it to the application right beside
 # minimeter1 and you will have a network of minimeters :)
-minimeter2 = Minimeter(2, boot_params=dict(verbose=False))
+minimeter2 = Minimeter(2, build_params=dict(verbose=False))
 minimeter_board2 = MinimeterBoard([minimeter2])
 
 # Workstation that will receive data from minimeter devices.
