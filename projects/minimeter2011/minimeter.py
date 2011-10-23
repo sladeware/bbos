@@ -16,6 +16,7 @@ class MinimeterOS(OS):
         self.init_complete = False
         self.pir_motion_sensor_init_complete = False
         self.iteration_counter = 0
+        self.sensor_info = self.SensorInfo()
 
         # When the next interval begins
         self.start_of_next_interval = 0
@@ -123,18 +124,32 @@ class MinimeterOS(OS):
         data = 8767 + self.SEND_RECORD_THRESHOLD # TODO: Get data from driver
         self.__add_sensor_data(data, self.SensorInfo.TEMPERATURE_ID)
 
+    def __create_record(self):
+        """Create a record from the statistics generated on the sensor data"""
+        print "creating the database record"
+        #UNIMPLEMENTED
+
     def __post_processing(self):
         """Compute statistics from sensor data and create a database record"""
         print "post processing"
-        # TODO: Something real! This is just a toy
+
+        # Iterate over all data sampled during the last interval
         sensor_data = self.sensor_data_head
         while sensor_data:
-            print sensor_data
+            self.sensor_info.compute(sensor_data)
             old_sensor_data = sensor_data
             sensor_data = sensor_data.next_pointer
             self.sensor_mempool.free(old_sensor_data)
+
+        # Create the record
+        self.__create_record()
+
+        # Cleanup sensor data linked list
         self.sensor_data_head = None
         self.sensor_data_tail = None
+
+        # Cleanup intermediate working variables
+        self.sensor_info.cleanup()
 
     def sensor_processor(self):
         """Main part of the appliction that processes sensor data."""
@@ -204,6 +219,72 @@ class MinimeterOS(OS):
         MOTION_ID      = 3
         SOUND_ID       = 4
         TEMPERATURE_ID = 5
+
+        h_ctr = 0
+        l_ctr = 0
+        m_ctr = 0
+        s_ctr = 0
+        t_ctr = 0
+
+        h_max = 0
+        l_max = 0
+        m_max = 0
+        s_max = 0
+        t_max = 0
+
+        h_sum = 0
+        l_sum = 0
+        m_sum = 0
+        s_sum = 0
+        t_sum = 0
+
+        def compute(self, sensor_data):
+            """Compute statistics from the sensor data"""
+            print "computing stats from: " + str(sensor_data)
+            if sensor_data.sensor_id == self.HYGROMETER_ID:
+                self.h_ctr += 1
+                if self.h_max < sensor_data.data:
+                    self.h_max = sensor_data.data
+                self.h_sum += sensor_data.data
+            if sensor_data.sensor_id == self.LIGHT_ID:
+                self.l_ctr += 1
+                if self.sensorl_info._max < sensor_data.data:
+                    self.sensorl_info._max = sensor_data.data
+                self.l_sum += sensor_data.data
+            if sensor_data.sensor_id == self.MOTION_ID:
+                self.m_ctr += 1
+                if self.m_max < sensor_data.data:
+                    self.m_max = sensor_data.data
+                self.m_sum += sensor_data.data
+            if sensor_data.sensor_id == self.SOUND_ID:
+                self.s_ctr += 1
+                if self.s_max < sensor_data.data:
+                    self.s_max = sensor_data.data
+                self.s_sum += sensor_data.data
+            if sensor_data.sensor_id == self.TEMPERATURE_ID:
+                self.t_ctr += 1
+                if self.t_max < sensor_data.data:
+                    self.t_max = sensor_data.data
+                self.t_sum += sensor_data.data
+
+        def cleanup(self):
+            """Cleanup all the intermediate working variables used for stats"""
+            print "cleaning up stats"
+            self.h_ctr = 0
+            self.h_max = 0
+            self.h_sum = 0
+            self.l_ctr = 0
+            self.l_max = 0
+            self.l_sum = 0
+            self.m_ctr = 0
+            self.m_max = 0
+            self.m_sum = 0
+            self.s_ctr = 0
+            self.s_max = 0
+            self.s_sum = 0
+            self.t_ctr = 0
+            self.t_max = 0
+            self.t_sum = 0
 
     class SensorData():
         data = 0
