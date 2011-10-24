@@ -8,6 +8,7 @@ a network of minimeter devices."""
 from bb.app import Mapping
 from bb.hardware import Board, Processor, Core
 from bb.os import OS, Thread
+from bb.utils.module import get_file
 
 import sys
 try:
@@ -18,7 +19,7 @@ except ImportError, e:
     sys.exit(1)
 
 class WorkstationOS(OS):
-    def __init__(self, db_name='workstation.db'):
+    def __init__(self, db_name=get_file('workstation.db')):
         OS.__init__(self)
         self.connect = None
         self.cursor = None
