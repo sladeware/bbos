@@ -8,15 +8,39 @@ a network of minimeter devices."""
 from bb.app import Mapping
 from bb.hardware import Board, Processor, Core
 from bb.os import OS, Thread
+from sqlite3 import *
 
 class WorkstationOS(OS):
-    def __init__(self):
+    def __init__(self, db_name='workstation.db'):
         OS.__init__(self)
+        self.connect = None
+        self.cursor = None
+        self.init = False
+
+        # The file name of the database
+        self.db_name = db_name
 
     def initializer(self):
         """The purpose of this runner is to initialize the workstation: open
-        XBEE wireless module."""
-        pass
+        XBEE wireless module and open the database."""
+        if not self.init:
+            self.init = True
+
+            # Open the XBEE Wireless Module
+            print 'opening the xbee wireless module'
+            # UNIMPLEMENTED
+
+            # Open the database
+            print 'opening the database'
+            self.connect = connect(self.db_name)
+            if self.connect:
+                self.cursor = self.connect.cursor()
+                if self.cursor:
+                    print 'database opened successfully'
+                else:
+                    print 'WARNING: problems getting the database cursor'
+            else:
+                print 'WARNING: problems opening the database'
 
     def main(self):
         self.kernel.add_thread(Thread("INITIALIZER", self.initializer))
