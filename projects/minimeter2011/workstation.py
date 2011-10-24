@@ -13,7 +13,7 @@ import sys
 try:
     from sqlite3 import *
 except ImportError, e:
-    print >>sys.stderr, "To continue using workstation, please install sqlist3:"
+    print >>sys.stderr, "To continue using workstation, please install sqlite3:"
     print >>sys.stderr, e
     sys.exit(1)
 
