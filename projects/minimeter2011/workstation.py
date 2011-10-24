@@ -8,7 +8,14 @@ a network of minimeter devices."""
 from bb.app import Mapping
 from bb.hardware import Board, Processor, Core
 from bb.os import OS, Thread
-from sqlite3 import *
+
+import sys
+try:
+    from sqlite3 import *
+except ImportError, e:
+    print >>sys.stderr, "To continue using workstation, please install sqlist3:"
+    print >>sys.stderr, e
+    sys.exit(1)
 
 class WorkstationOS(OS):
     def __init__(self, db_name='workstation.db'):
