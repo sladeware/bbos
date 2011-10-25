@@ -10,6 +10,10 @@ from bb.app import Application
 from minimeter import Minimeter, MinimeterBoard
 from workstation import Workstation, WorkstationBoard
 
+# Workstation that will receive data from minimeter devices.
+workstation = Workstation("Workstation")
+workstation_board = WorkstationBoard(workstation)
+
 minimeter1 = Minimeter(1)
 minimeter_board1 = MinimeterBoard([minimeter1])
 
@@ -17,10 +21,6 @@ minimeter_board1 = MinimeterBoard([minimeter1])
 # minimeter1 and you will have a network of minimeters :)
 minimeter2 = Minimeter(2, build_params=dict(verbose=False))
 minimeter_board2 = MinimeterBoard([minimeter2])
-
-# Workstation that will receive data from minimeter devices.
-workstation = Workstation("Workstation")
-workstation_board = WorkstationBoard(workstation)
 
 # Note that there is not a direct connection between minimeters. They can only
 # communicate with the database via wireless transmission.
