@@ -21,6 +21,9 @@ class Device(DistributionMetadata):
     def power_off(self):
         raise NotImplemented()
 
+    def get_owner(self):
+        raise NotImplemented()
+
 class Core(Device):
     """Base class used to represent a core within a processor.
 
@@ -39,7 +42,7 @@ class Core(Device):
 
     def set_mapping(self, mapping):
         #if not isinstance(mapping, app.Mapping):
-        #    raise TypeError('mapping must be %s sub-class' 
+        #    raise TypeError('mapping must be %s sub-class'
         #                    % app.Mapping.__class__.__name__)
         self.__mapping = mapping
         mapping.hardware.set_core(self)
@@ -82,8 +85,8 @@ class Processor(Device):
         return self.__owner
 
     def set_cores(self, cores):
-        """Set a bunch of cores at once. The set of cores can be represented by 
-        a list (in this case processor's position in this list will be its ID) 
+        """Set a bunch of cores at once. The set of cores can be represented by
+        a list (in this case processor's position in this list will be its ID)
         and by a dict (the key represents processor's ID and value - processor's
         instance)."""
         if is_list(cores) and len(cores):
@@ -149,9 +152,26 @@ class Board(Device):
         Device.__init__(self, name)
         self.__num_processors = num_processors
         self.__processors = {}
+        self.__devices = []
         # Set and verify the list of processors on this board
         if processors:
             self.set_processors(processors)
+
+    def get_devices(self):
+        return self.__devices
+
+    def add_device(self, device):
+
+        self.__devices.append(device)
+
+    def remove_device(self, device):
+        pass
+
+    def find_device_by_name(self, name):
+        pass
+
+    def find_device_by_class(self, klass):
+        pass
 
     def power_on(self):
         """Power on this board."""
@@ -176,6 +196,7 @@ class Board(Device):
         self.validate_processor(processor)
         self.validate_processor_id(i)
         processor.set_owner(self)
+        self.add_device(processor)
         self.__processors[i] = processor
         processor.set_owner(self)
 
@@ -213,10 +234,7 @@ class Board(Device):
 
 class Hardware:
     """This class represents interface between a single mapping and hardware
-     abstraction.
-
-     The board and processor can not be defined directly by using hardware
-     class. Only a core."""
+    abstraction."""
     def __init__(self):
         self.__core = None
 
@@ -224,12 +242,12 @@ class Hardware:
         return self.get_processor().get_owner()
 
     def is_processor_defined(self):
-        """Whether or not a processor was defined. Return True value if the 
+        """Whether or not a processor was defined. Return True value if the
         processor's instance can be obtained by using specified core. Otherwise
         return False."""
         if not self.get_core():
             return False
-        return not not self.get_core().get_owner()
+        return not not self.get_processor()
 
     def get_processor(self):
         return self.__core.get_owner()
@@ -245,5 +263,3 @@ class Hardware:
 
     def get_core(self):
         return self.__core
-
-
