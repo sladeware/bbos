@@ -53,9 +53,9 @@ class WorkstationOS(OS):
     def main(self):
         self.kernel.add_thread(Thread("INITIALIZER", self.initializer))
 
-class WorkstationBoard(Board):
-    """This class describes a board that will be used by workstation. On this
-    moment we will use a random board."""
+class WorkstationDevice(Board):
+    """This class describes device that will run workstation. On this moment we
+    will use a random board."""
     def __init__(self, mapping):
         # I think, that workstation should include only one single mapping
         if not isinstance(mapping, Mapping):
@@ -66,3 +66,7 @@ class WorkstationBoard(Board):
 
 class Workstation(Mapping):
     os_class = WorkstationOS
+
+    def __init__(self, name):
+        Mapping.__init__(self, name)
+        WorkstationDevice(self)
