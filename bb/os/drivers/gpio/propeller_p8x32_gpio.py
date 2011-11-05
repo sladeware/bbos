@@ -2,21 +2,12 @@
 
 __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
-from bb.os import get_running_kernel, get_running_thread, Driver, Message, \
-    Port, Messenger
-from bb.os.drivers.gpio import GPIODriver, GPIODevice, GPIOManager
-
-class PropellerP8X32GPIODevice(GPIODevice):
-    name="PROPELLER_P8X32_GPIO_DEVICE"
+from bb.os import get_running_kernel, get_running_thread, Message
+from bb.os.drivers.gpio import GPIODriver
 
 class PropellerP8X32GPIODriver(GPIODriver):
-    name="PROPELLER_P8X32_GPIO_DRIVER"
-    version="0.0.0"
-    port_name="PROPELLER_P8X32_GPIO_DRIVER_PORT"
-
-    def init(self):
-        get_running_kernel().add_port(Port(self.port_name, 2))
-        manager = GPIOManager(self.name, port_name=self.port_name)
+    NAME = "PROPELLER_P8X32_GPIO_DRIVER"
+    VERSION = "0.0.0"
 
     def open(self, mask):
         """Send BBOS_DRIVER_OPEN message."""
@@ -61,10 +52,6 @@ class PropellerP8X32GPIODriver(GPIODriver):
 
 def on_load():
     driver = get_running_kernel().register_driver(PropellerP8X32GPIODriver)
-    propeller_p8x32_gpio = PropellerP8X32GPIODevice(driver=driver)
-    get_running_kernel().register_device(propeller_p8x32_gpio)
 
 def on_unload():
     get_running_kernel().unregister_driver(PropellerP8X32GPIODriver)
-
-

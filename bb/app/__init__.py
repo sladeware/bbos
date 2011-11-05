@@ -195,10 +195,11 @@ class Application(object):
                     raise Exception("Cannot create OS instance.")
                 process = Process(mapping)
                 process.start()
+                print "Start process %d" % process.pid
                 self.__processes[process.get_pid()] = mapping
                 self.__workers[process.get_pid()] = process
-                # Do we need some delay? If so, sleep for some time before the next
-                # mapping will be executed
+                # Do we need some delay? If so, sleep for some time before the
+                # next mapping will be executed
                 time.sleep(self.get_mappings_execution_interval())
             # Wait for each process
             for process in self.__workers.values():

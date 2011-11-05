@@ -7,6 +7,7 @@ from bb.os import OS, Kernel, Thread, Port
 from bb.mm.mempool import MemPool, mwrite
 from bb.hardware.boards import PropellerDemoBoard
 from bb.hardware.net.wireless.xbee import XBee
+from bb.hardware.leds import LED
 
 import time
 
@@ -370,6 +371,9 @@ class MinimeterDevice(PropellerDemoBoard):
     def __init__(self, minimeter):
         PropellerDemoBoard.__init__(self, [minimeter])
         self.add_device(XBee())
+        self.add_device(LED(color=LED.GREEN))
+        self.add_device(LED(color=LED.RED))
+        self.add_device(LED(color=LED.YELLOW))
 
 class Minimeter(Mapping):
     """This class aims to describe minimeter device. The name of each device has
@@ -378,3 +382,12 @@ class Minimeter(Mapping):
         Mapping.__init__(self, name="M%d" % id, os_class=MinimeterOS,
                          build_params=build_params)
         MinimeterDevice(self)
+
+if __name__ == "__main__":
+    print "Demonstration"
+    minimeter = Minimeter(1)
+    print "Demo minimeter device consists of the following parts:"
+    counter = 0
+    for device in minimeter.hardware.get_board().get_devices():
+        counter += 1
+        print "%d. %s" % (counter, str(device))

@@ -15,10 +15,10 @@ import time
 
 import bb
 from bb.utils.type_check import verify_list, verify_string
-from bb.os import OSObjectMetadata
-from bb.os.hardware import Driver, Device
+from bb.os import OSObject, OSObjectMetadata
 from bb.os.kernel.schedulers import *
 from bb.app import Object, Traceable, Application
+from bb.mm.mempool import MemPool, mwrite
 
 class KernelError(Exception):
     """The root error."""
@@ -53,7 +53,8 @@ class Message(object):
         if command:
             self.set_command(command)
         self.set_sender(sender or get_running_thread().get_name())
-        self.set_data(data)
+        if data:
+            self.set_data(data)
         self.__owner = self.get_sender()
 
     def get_owner(self):
@@ -77,16 +78,16 @@ class Message(object):
     def set_data(self, data):
         self.__data = data
 
+verify_message_command = verify_string
+
 class Thread(Object):
     """The thread is an atomic unit if action within the BBOS operating system,
     which describes application specific actions wrapped into a single context
     of execution."""
 
-    name = None
-    target = None
-    commands = ()
-
-    marked_runners = {}
+    # Constant that keeps marked runners sorted by owner class. The content of
+    # this variable will be formed by decorator @runner.
+    MARKED_RUNNERS = {}
 
     def __init__(self, name=None, target=None, port_name=None):
         """This constructor should always be called with keyword arguments.
@@ -98,19 +99,20 @@ class Thread(Object):
         target is callable object to be invoked by the start() method.
         Default is None, meaning nothing is called."""
         Object.__init__(self)
-        # Select thread name
+        self.__name = None
         if name:
             self.set_name(name)
-        elif hasattr(self, "name"):
-            self.set_name(self.name)
+        self.__commands = ()
         # Start working with runner initialization
         self.__runner_method_name = None
+        self.__target = None
         if target:
             self.set_runner(target)
         else:
             self.__detect_runner_method()
         self.__port_name = None
-        self.set_port_name(port_name)
+        if port_name:
+            self.set_port_name(port_name)
 
     def set_port_name(self, name):
         self.__port_name = name
@@ -119,41 +121,34 @@ class Thread(Object):
         return self.__port_name
 
     def __detect_runner_method(self):
-        """Okay, let us search for the runner in methods marked with help
-        of @runner decorator."""
-        klass = self.__class__
-        if klass.__name__ in self.marked_runners:
+        """Okay, let us search for the runner in methods marked with help of
+        @runner decorator."""
+        cls = self.__class__
+        if cls.__name__ in Thread.MARKED_RUNNERS:
             # Since the runner here is represented by a function it will be
             # converted to a method for a given instance. Then this method
             # will be stored as attribute 'target'.
             if not self.__runner_method_name:
-                self.__runner_method_name = self.marked_runners[klass.__name__]
-            target = getattr(self, self.__runner_method_name)
+                self.__runner_method_name = Thread.MARKED_RUNNERS[cls.__name__]
+                target = getattr(self, self.__runner_method_name)
             self.set_runner(target)
 
-    def is_supported_command(self, command):
-        return command in self.commands
-
-    def get_commands(self):
-        """Return a tuple of commands that module supports for communication
-        purposes."""
-        return self.commands
-
     def set_name(self, name):
-        self.name = verify_string(name)
+        self.__name = verify_string(name)
 
     def get_name(self):
-        return self.name
+        return self.__name
 
     def set_runner(self, target):
-        self.target = target
+        self.__target = target
 
     def get_runner(self):
-        return self.target
+        return self.__target
 
     def get_runner_name(self):
         if self.get_runner():
             return self.get_runner().__name__
+        return None
 
     def start(self):
         """Start the thread's activity. It arranges for the object's run()
@@ -163,20 +158,20 @@ class Thread(Object):
     def run(self):
         """This method represents thread's activity. You may override this
         method in a subclass. The standard run() method invokes the callable
-        object passed to the object's constructor as the target argument"""
+        object passed to the object's constructor as the target argument."""
         target = self.get_runner()
         if not target:
             raise KernelError("Runner wasn't defined")
         target()
 
     @classmethod
-    def runner(klass, target):
+    def runner(cls, target):
         """Mark target method as thread's entry point."""
-        # Search for the target_klass to which target function belongs.
-        target_klass = inspect.getouterframes(inspect.currentframe())[1][3]
+        # Search for the target class to which target function belongs
+        target_cls = inspect.getouterframes(inspect.currentframe())[1][3]
         # Save the target for a nearest future when the __init__ method will
-        # we called for the target_klass class.
-        klass.marked_runners[target_klass] = target.__name__
+        # we called for the target_cls class.
+        Thread.MARKED_RUNNERS[target_cls] = target.__name__
         return target
 
     # The following methods provide support for pickle. This will allow user to
@@ -196,33 +191,99 @@ class Thread(Object):
 
 class Messenger(Thread):
     """This class is a special form of thread, which allows to automatically
-    provide an action for received command by using specified table of
-    predefined command handlers."""
+    provide an action for received message by using specified map of predefined
+    handlers.
 
-    def __init__(self, name=None, port_name=None, command_handlers_table=None):
+    The following example shows the most simple case how to define a new message
+    handler by using message_handler() decorator:
+
+    class SerialMessenger(Messenger):
+        @Messenger.message_handler("SERIAL_OPEN")
+        def serial_open_handler(self, message):
+            print "Open serial connection"
+
+    Or the same example, but without decorator:
+
+    class SerialMessenger(Messenger):
+        def __init__(self):
+            Messenger.__init__(self)
+            self.add_message_handler("SERIAL_OPEN", self.serial_open_handler)
+
+        def serial_open_handler(self, message):
+            print "Open serial connection"
+
+    When a SerialMessenger object receives a SERIAL_OPEN message, the message is
+    directed to SerialMessenger.serial_open_handler handler for the actual
+    processing.
+
+    Note, in order to privent any conflicts with already defined methods the
+    message handler should be named by concatinating "_handler" postfix to the
+    the name of handler, e.g. serial_open_handler()."""
+
+    MESSAGE_HANDLERS_BY_CLASS = dict()
+    PORT_NAME_FORMAT = "MESSENGER_PORT_%d"
+    PORT_SIZE = 2
+    COUNTER_PER_PORT_NAME_FORMAT = dict()
+
+    def __init__(self, name=None, port_name=None, port_name_format=None,
+                 port_size=None):
         Thread.__init__(self, name, port_name=port_name)
-        self.__command_handlers_table = command_handlers_table
+        # Define port name format and set default one if required
+        if not port_name_format:
+            port_name_format = self.PORT_NAME_FORMAT
+        if not port_name_format in self.COUNTER_PER_PORT_NAME_FORMAT:
+            self.COUNTER_PER_PORT_NAME_FORMAT[port_name_format] = 0
+        # If port name was not provided it will be generated automatically by
+        # using appropriate name format
+        if not port_name:
+            self.COUNTER_PER_PORT_NAME_FORMAT[port_name_format] += 1
+            counter = self.COUNTER_PER_PORT_NAME_FORMAT[port_name_format]
+            port_name = port_name_format % counter
+            if not port_size:
+                port_size = self.PORT_SIZE
+            get_running_kernel().add_port(Port(port_name, port_size))
+        self.__message_handlers = {}
+        self.__default_message_handlers()
 
-    def get_commands(self):
-        return self.__command_handlers_table.keys()
+    def __default_message_handlers(self):
+        """Set default message handlers from MESSAGE_HANDLERS_BY_CLASS if such
+        were defined."""
+        cls_name = self.__class__.__name__
+        if not cls_name in Messenger.MESSAGE_HANDLERS_BY_CLASS:
+            return
+        for command, handler in Messenger.MESSAGE_HANDLERS_BY_CLASS[cls_name].items():
+            self.add_message_handler(command, handler)
 
-    def get_command_handlers(self):
-        return self.__command_handlers_table.values()
+    @classmethod
+    def message_handler(dec_cls, cmd):
+        verify_message_command(cmd)
+        target_cls_name = inspect.getouterframes(inspect.currentframe())[1][3]
+        table = Messenger.MESSAGE_HANDLERS_BY_CLASS
+        if not target_cls_name in table:
+            table[target_cls_name] = {}
+        def catch_message_handler(handler):
+            table[target_cls_name][cmd] = handler
+            return handler
+        return catch_message_handler
 
-    def get_command_handlers_table(self):
-        return self.__command_handlers_table
+    def add_message_handler(self, command, handler):
+        """Maps a command extracted from a message to the specified handler
+        function."""
+        if self.has_message_handler(command):
+            raise Exception("This message handler already defined.")
+        self.__message_handlers[command] = handler
 
-    def add_command_handler(self, command, handler):
-        self.__command_handlers_table[command] = handler
+    def has_message_handler(self, command):
+        return command in self.get_message_handlers()
 
-    def has_commmand_handler(self, command):
-        return not not self.find_command_handler(command)
+    def get_message_handlers(self):
+        return self.__message_handlers
 
-    def find_command_handler(self, command):
-        if not command in self.get_commands():
+    def find_message_handler(self, command):
+        if not command in self.get_message_handlers():
             raise Exception("A handler for '%s' command was not specified"
                 % command)
-        handler = self.__command_handlers_table[command]
+        handler = self.__message_handlers[command]
         if not handler:
             raise Exception("Messenger doesn't support '%s' command" % command)
         return handler
@@ -232,39 +293,10 @@ class Messenger(Thread):
         if not message:
             return
         command = message.get_command()
-        if not command in self.get_commands():
+        if not command in self.get_message_handlers():
             raise Exception("Unknown command '%s'" % command)
-        handler = self.find_command_handler(command)
+        handler = self.find_message_handler(command)
         handler(message)
-
-class Manager(object):
-    all_command_handlers = dict()
-
-    def __init__(self, name=None, port_name=None):
-        self.name = name
-        klass = self.__class__.__name__
-        if not klass in self.all_command_handlers:
-            raise KernelError("%s manager doesn't have any command or handler"
-                              % klass)
-        self.__command_handlers = dict()
-        for command, handler in self.all_command_handlers[klass].items():
-            handler = getattr(self, handler.__name__, None)
-            self.__command_handlers[command] = handler
-        self.__messenger = Messenger(self.name, port_name=port_name,
-                                     command_handlers_table=self.__command_handlers)
-        get_running_kernel().add_thread(self.__messenger)
-
-    @classmethod
-    def command_handler(klass, command):
-        verify_string(command)
-        # Search for the target_klass to which handler belongs
-        target_klass = inspect.getouterframes(inspect.currentframe())[1][3]
-        if not target_klass in Manager.all_command_handlers:
-            Manager.all_command_handlers[target_klass] = dict()
-        def handle(handler):
-            Manager.all_command_handlers[target_klass][command] = handler
-            return handler
-        return handle
 
 class Port(object):
     """Protected messaging pool for communication between threads."""
@@ -272,12 +304,12 @@ class Port(object):
     def __init__(self, name, capacity):
         assert capacity > 0, "Port capacity must be greater than zero"
         self.__messages = []
-        # Initialize messaging pool
-        from bb.mm.mempool import MemPool
         self.__mp = MemPool(capacity, 12)
-        # Initialize port name
         self.__name = None
         self.set_name(name)
+
+    def get_capacity(self):
+        return self.__mp.get_num_chunks()
 
     def set_name(self, name):
         """Set a new name to the port and return this name back. The name
@@ -292,7 +324,6 @@ class Port(object):
     def alloc_message(self, command=None, data=None, sender=None):
         if not sender:
             sender = self.get_name()
-        from bb.mm.mempool import mwrite
         message = self.__mp.malloc()
         if not message:
             return None
@@ -327,6 +358,62 @@ class Idle(Thread):
     def bbos_idle_runner(self):
         pass
 
+class Device(OSObject, OSObjectMetadata):
+    """Every device in BBOS system is represented by an instance of this class.
+
+    name is a string that uniquely identifies this device.
+
+    driver defines a driver instance that manages this device. Please see Driver
+    class."""
+    def __init__(self, name=None, driver=None):
+        OSObjectMetadata.__init__(self, name)
+        if driver:
+            self.set_driver(driver)
+
+    def set_driver(self, driver):
+        if not isinstance(driver, Driver):
+            raise KernelTypeError("Driver object must inherit Driver class")
+        self.__driver = driver
+
+    def get_driver(self):
+        """Get driver instance that manages this device."""
+        return self.__driver
+
+class Driver(OSObject, OSObjectMetadata):
+    """"""
+    NAME = None
+    VERSION = None
+    MESSENGER_CLASS = Messenger
+
+    def __init__(self, name=None, version=None):
+        OSObjectMetadata.__init__(self, name)
+        if self.NAME:
+            self.set_name(self.NAME)
+        self.__messenger = None
+        if self.MESSENGER_CLASS:
+            self.__messenger = self.MESSENGER_CLASS()
+        self.version = None
+        if version:
+            self.version = version
+        elif self.VERSION:
+            self.version = self.VERSION
+
+    def get_messenger(self):
+        """Return Messenger instance that controls driver activity."""
+        return self.__messenger
+
+    def get_version(self):
+        return self.version
+
+    def probe_device(self, device):
+        """Called by the system to query the existence of a specific device and
+        whether this driver can work with it."""
+        pass
+
+    def release_device(self, device):
+        """Called by the system when the device is removed."""
+        pass
+
 class Kernel(Object, Traceable):
     """The heart of BB operating system. In order to connect with application
     inherits Object class."""
@@ -346,8 +433,8 @@ class Kernel(Object, Traceable):
     def init(self, threads=[], commands=[], scheduler=StaticScheduler()):
         """By default, if scheduler was not defined will be used static
         scheduling policy."""
-        self.echo(self.banner())
-        self.echo("Initialize kernel")
+        print self.banner()
+        print "Initialize kernel"
         # Select scheduler first if defined before any thread will be added
         if scheduler:
             self.set_scheduler(scheduler)
@@ -358,19 +445,10 @@ class Kernel(Object, Traceable):
             self.add_threads(threads)
         if len(commands):
             self.add_commands(commands)
-        # Now we will with mapping to define outside devices or hardware that
-        # we need to revive
+        # Now use mapping to register outside devices via hardware interface
         mapping = Application.get_running_instance().get_active_mapping()
-        # Detect and initialize board
-        board = mapping.hardware.get_board()
-        self.echo("'%s' board detected" % board.get_name())
-        if board.driver:
-            pass
-        # Detect and initialize processor
-        processor = mapping.hardware.get_processor()
-        self.echo("'%s' processor detected" % processor.get_name())
-        if processor.driver:
-            self.load_module(mapping.hardware.get_processor().driver)
+        for device in mapping.hardware.get_board().get_devices():
+            self.register_device(device)
 
     def echo(self, data):
         if not isinstance(data, types.StringType):
@@ -379,18 +457,18 @@ class Kernel(Object, Traceable):
 
     @Object.simulation_method
     def test(self):
-        if not self.get_number_of_threads():
+        print "Test kernel"
+        if not self.get_num_threads():
             raise KernelError("At least one thread has to be added")
+        # Test the system for unknown devices
+        if self.get_unknown_devices():
+            self.panic("Unknown devices: %s" % ", ".join([str(device) for device
+                                                in self.get_unknown_devices()]))
 
     @Object.simulation_method
     def start(self):
         self.test()
-        self.echo("Start kernel")
-
-        #def sss(signal, frame):
-        #    self.stop()
-        #signal.signal(signal.SIGTERM, sss)
-
+        print "Start kernel"
         try:
             if self.has_scheduler():
                 while True:
@@ -404,12 +482,6 @@ class Kernel(Object, Traceable):
     @Object.simulation_method
     def stop(self):
         """Shutdown everything and perform a clean system stop."""
-        #sys.stdout.write("Shutdown in ")
-        #for count in range(5, 0, -1):
-        #    sys.stdout.write("%d " % count)
-        #    sys.stdout.flush()
-        #    time.sleep(1)
-        #sys.stdout.write("\n")
         print "Kernel stopped"
         sys.exit(0)
 
@@ -422,7 +494,7 @@ class Kernel(Object, Traceable):
         processes are running."""
         lineno = inspect.getouterframes(inspect.currentframe())[2][2]
         fname = inspect.getmodule(inspect.stack()[2][0]).__file__
-        self.echo("%s:%d:PANIC: %s" % (fname, lineno, text))
+        print "%s:%d:PANIC: %s" % (fname, lineno, text)
         # XXX we do not call stop() method here to do no stop the system twice.
         # exit() function will raise SystemExit exception, which will actually
         # call kernel's stop. See start() method for more information.
@@ -488,7 +560,7 @@ class Kernel(Object, Traceable):
         # Introduce thread to scheduler
         self.get_scheduler().enqueue_thread(thread)
         # Register available commands
-        self.add_commands(thread.get_commands())
+        #self.add_commands(thread.get_commands())
         return thread
 
     def add_threads(self, *threads):
@@ -500,7 +572,7 @@ class Kernel(Object, Traceable):
     def get_threads(self):
         return self.__threads.values()
 
-    def get_number_of_threads(self):
+    def get_num_threads(self):
         return len(self.get_threads())
 
     # Thread Scheduling
@@ -528,12 +600,13 @@ class Kernel(Object, Traceable):
     # Inter-Thread Communication (ITC)
 
     def add_port(self, port):
+        """Add a new port to the system."""
         if not isinstance(port, Port):
             raise KernelError("Port %s!")
         if self.select_port(port.get_name()):
-            raise Exception("Port '%s' has been already added"
-                            % port.get_name())
-        self.echo("Add port '%s'" % port.get_name())
+            raise KernelError("Port '%s' has been already added"
+                              % port.get_name())
+        print "Add port '%s' of %d messages" % (port.get_name(), port.get_capacity())
         self.__ports[port.get_name()] = port
         return port
 
@@ -648,7 +721,7 @@ class Kernel(Object, Traceable):
     # are not supported in target embedded systems.
 
     def load_module(self, name):
-        """Load module to the running kernel. This method connects module's 
+        """Load module to the running kernel. This method connects module's
         environment and kernel's environment."""
         if name in self.__modules:
             return self.__modules[name]
@@ -691,21 +764,41 @@ class Kernel(Object, Traceable):
     # Device Management
 
     def control_device(self, name, action, *args):
-        device = self.find_device_by_name(name)
+        """Device control is the most common function used for device control,
+        fulfilling such tasks as accessing devices, getting information, sending
+        orders, and exchanging data. This method calls an action for a specified
+        device driver, causing thecorresponding device to perform the
+        corresponding operation."""
+        device = self.find_device(name)
         if not device:
             self.panic("Cannot found device '%s'" % name)
-        driver = device.driver
+        driver = device.get_driver()
         f = getattr(driver, action)
-        return f(*args)
+        return f(device, *args)
 
     def register_device(self, device):
-        self.echo("Register device '%s'" % device.name)
+        """Register device."""
+        print "Register device '%s' as '%s'" % (str(device), device.get_name())
         self.__devices.append(device)
 
-    def find_device_by_name(self, name):
+    def get_unknown_devices(self):
+        unknown_devices = []
+        #for device in self.get_devices():
+        #    if not device.get_driver():
+        #        unknown_devices.append(device)
+        return unknown_devices
+
+    def unregister_device(self, device):
+        print "Unregister device '%s'" % device.get_name()
+        driver = device.get_driver()
+        driver.release_device(device)
+        # XXX: finish later
+
+    def find_device(self, name):
         for device in self.get_devices():
-            if device.name == name:
+            if device.get_name() == name:
                 return device
+        return None
 
     def get_devices(self):
         return self.__devices
@@ -714,22 +807,21 @@ class Kernel(Object, Traceable):
 
     def register_driver(self, driver_class):
         if not type(driver_class) is types.TypeType:
-            raise KernelTypeError("Not a class")
+            raise KernelTypeError("Not a class: %s" % driver_class)
         if not issubclass(driver_class, Driver):
-            raise KernelTypeError("Not a subclass of Driver: %s" % driver)
+            raise KernelTypeError("Not a subclass of Driver: %s" % driver_class)
         # Now we can create driver instance that will be in use
         driver = driver_class()
         self.echo("Register driver '%s' version '%s'"
             % (driver.get_name(), str(driver.get_version())) )
         self.__drivers.append(driver)
-        driver.init()
         return driver
 
     def get_drivers(self):
         """Return complete list of registered drivers."""
         return self.__drivers
 
-    def find_driver_by_name(self, name):
+    def find_driver(self, name):
         for driver in self.get_drivers():
             if driver.get_name() == name:
                 return driver
@@ -738,12 +830,6 @@ class Kernel(Object, Traceable):
     def get_num_drivers(self):
         return len(self.get_drivers())
 
-    def select_last_driver(self):
-        return self.find_driver_by_index(self.get_num_drivers() - 1)
-
-    def find_driver_by_index(self, index):
-        return self.get_drivers()[index]
-
     def unregister_driver(self, driver):
-        driver.exit()
-
+        pass
+        #driver.exit()

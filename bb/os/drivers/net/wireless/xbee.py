@@ -15,13 +15,27 @@ formats and AT commands:
     http://ftp1.digi.com/support/documentation/90000976_a.pdf
 """
 
-from bb.os import Driver
+from bb.os import Driver, get_running_kernel
 
 class XBeeDriver(Driver):
-    pass
+    NAME = "XBEE_DRIVER"
+
+    # Carriage Return character
+    CR = chr(13)
+
+    def open(self, dev, serial_dev):
+        pass
+
+    def close(self):
+        pass
+
+    def tx(self, dev, array, sz=None):
+        """Transmit an array of bytes array."""
+        if not isinstance(array, bytearray):
+            raise Exception("Not a bytearray type")
 
 def on_load():
-    pass
+    get_running_kernel().register_driver(XBeeDriver)
 
 def on_unload():
     pass

@@ -2,7 +2,8 @@
 
 __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
-from bb.os import get_running_kernel, get_running_thread, Driver, Device, Manager
+from bb.os import get_running_kernel, get_running_thread, Driver, Device, \
+    Messenger
 
 # This values will be taken from the processor's description
 PROCESSOR_NUM_GPIOS = 256
@@ -18,20 +19,19 @@ class GPIO(object):
     def __init__(self, owner=None):
         self.owner = owner
 
-class GPIODevice(Device):
-    pass
+class GPIOMessenger(Messenger):
+    PORT_NAME_FORMAT = "GPIO_MESSENGER_PORT_%d"
 
-class GPIOManager(Manager):
     def __init__(self, *args, **kargs):
-        Manager.__init__(self, *args, **kargs)
+        Messenger.__init__(self, *args, **kargs)
         # Initialize map of GPIOs. Each GPIO pin is represented by GPIO class.
         # The size of map equals to number of GPIOs.
         self.gpios_map = [None] * PROCESSOR_NUM_GPIOS
         for gpio in range(PROCESSOR_NUM_GPIOS):
             self.gpios_map[gpio] = GPIO()
 
-    @Manager.command_handler("GPIO_OPEN")
-    def open(self, message):
+    @Messenger.message_handler("GPIO_OPEN")
+    def gpio_open_handler(self, message):
         mask = message.get_data()
         # Look up for the pins that have to be opened
         for pin in range(32):
@@ -46,11 +46,13 @@ class GPIOManager(Manager):
         # Reuse received message to send respose
         get_running_kernel().send_message(message.get_sender(), message)
 
-    @Manager.command_handler("GPIO_CLOSE")
-    def close(self, mask):
+    @Messenger.message_handler("GPIO_CLOSE")
+    def gpio_close_handler(self, mask):
         pass
 
 class GPIODriver(Driver):
+    MESSENGER_CLASS = GPIOMessenger
+
     GPIO_DIRECTION_INPUT=0
     GPIO_DIRECTION_OUPUT=1
     GPIO_INIT_LOW=0

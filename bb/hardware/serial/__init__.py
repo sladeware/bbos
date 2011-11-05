@@ -4,8 +4,8 @@ __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
 from bb.hardware import Device
 
-class XBee(Device):
-    NAME_FORMAT = "XBEE_%d"
-
+class SerialDevice(Device):
+    NAME_FORMAT = "SERIAL_DEVICE_%d"
+    
     def __str__(self):
-        return "Xbee 802.15.4 radio module"
+        return "Serial device '%s'" % self.get_name()

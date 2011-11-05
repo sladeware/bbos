@@ -1,22 +1,25 @@
 #!/usr/bin/env python
 
-from bb.os.kernel import Messenger, Driver, IOInterface
+__copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
-class SerialDriver(Driver):
-    pass
-
-class IOSerialInterface(IOInterface):
-    pass
-
-class SerialManager(object):
-    def serial_register(self, message):
-        print "!"
-
-    def serial_unregister(self, message):
-        print "!"
+from bb.os import get_running_kernel, Port, Driver, Messenger
 
 class SerialMessenger(Messenger):
-    command_handlers_table=dict(
-        SERIAL_REGISTER   = SerialManager.serial_register,
-        SERIAL_UNREGISTER = SerialManager.serial_unregister
-        )
+    PORT_NAME_FORMAT = "SERIAL_PORT_%d"
+
+    @Messenger.message_handler("SERIAL_OPEN")
+    def serial_open_handler(self, message):
+        print "!"
+
+    @Messenger.message_handler("SERIAL_CLOSE")
+    def serial_close_handler(self, message):
+        print "!"
+
+class SerialDriver(Driver):
+    MESSENGER_CLASS = SerialMessenger
+
+    def init(self):
+        pass
+
+    def exit(self):
+        pass

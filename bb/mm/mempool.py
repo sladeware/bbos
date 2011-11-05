@@ -3,7 +3,6 @@
 __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
 from bb.app import Object
-from bb.os.kernel import get_running_kernel
 import sys, inspect
 
 __all__ = ["MemPool"]
@@ -39,7 +38,7 @@ class MemorySpace(object):
         del self.__pointers[id(pointer)]
         del self.__s[id(pointer)]
         self.__chunks.remove(id(chunk))
-        del chunk        
+        del chunk
 
 memspace = MemorySpace(2 * 1024)
 
@@ -86,57 +85,60 @@ def mwrite(pointer, value):
     setattr(pointer, name, method)
 
 class MemPool(Object):
-  def __init__(self, num_chunks=0, chunk_size=0):
-    """Note that if number of chunks num_chunks is 0, it means that memory pool
-    is unlimited. If chunk size chunk_size is 0, it means that chunk size is
-    not important so we will not track this value."""
-    Object.__init__(self)
-    assert (chunk_size >= 0), "Chunk size must be greater than zero"
-    assert (num_chunks >= 0), "Number of chunks can not be negative"
-    self.__chunk_size = chunk_size
-    self.__num_chunks = num_chunks
-    self.__pointers = {}
+    """Memory pool is fast memory allocator with constant time access to dynamic
+    allocation for fixed-size chunks of memory."""
 
-  def malloc(self):
-    if self.__num_chunks and self.count_chunks() >= self.__num_chunks:
-      return None
-    pointer = malloc(self.__chunk_size)
-    self.__pointers[id(pointer)] = None
-    return pointer
+    def __init__(self, num_chunks=0, chunk_size=0):
+        Object.__init__(self)
+        assert (chunk_size > 0), "Chunk size must be greater than zero"
+        assert (num_chunks > 0), "Number of chunks must be greater that zero"
+        self.__chunk_size = chunk_size
+        self.__num_chunks = num_chunks
+        self.__pointers = {}
 
-  def is_from(self, pointer):
-    """Returns True if chunk was allocated from this pool. Returns False if 
-    chunk was allocated from some other pool."""
-    if id(pointer) in self.__pointers:
-      return True
-    return False 
+    def get_num_chunks(self):
+        """Return number of chunks for this memory pool."""
+        return self.__num_chunks
 
-  def count_chunks(self):
-    return len(self.__pointers)
+    def malloc(self):
+        if self.count_free_chunks() >= self.get_num_chunks():
+            return None
+        pointer = malloc(self.get_chunk_size())
+        self.__pointers[id(pointer)] = None
+        return pointer
 
-  def get_chunk_size(self):
-    return self.__chunk_size
+    def is_from(self, pointer):
+        """Returns True if chunk was allocated from this pool. Returns False if
+        chunk was allocated from some other pool."""
+        if id(pointer) in self.__pointers:
+            return True
+        return False
 
-  def free(self, pointer):
-    if not self.is_from(pointer):
-      print "WARNING: %s can not be free by this pool" % pointer
-      return
-    del self.__pointers[id(pointer)]
-    free(pointer)
+    def count_free_chunks(self):
+        return self.get_num_chunks() - len(self.__pointers)
+
+    def get_chunk_size(self):
+        return self.__chunk_size
+
+    def free(self, pointer):
+        if not self.is_from(pointer):
+            print "WARNING: %s can not be free by this pool" % pointer
+            return
+        del self.__pointers[id(pointer)]
+        free(pointer)
 
 if __name__ == '__main__':
   #string = malloc()
   #mwrite(string, 'Hello') # equalet of *string = 'Hello'
   #mwrite(string, 'Ji')
   ##free(string)
-  pool = MemPool(2, 3)
-  string1 = pool.malloc()
-  string2 = pool.malloc()
-  string3 = pool.malloc()
-  mwrite(string1, 'Hi')
+    pool = MemPool(2, 3)
+    string1 = pool.malloc()
+    string2 = pool.malloc()
+    string3 = pool.malloc()
+    mwrite(string1, 'Hi')
   #string.set('Hello')
-  pool.free(string1)
-  pool.free(string2)
-  pool.free(string3)
-  exit()
-
+    pool.free(string1)
+    pool.free(string2)
+    pool.free(string3)
+    exit()
