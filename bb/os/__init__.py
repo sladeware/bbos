@@ -2,11 +2,15 @@
 
 __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
-# The following code has to located right before import's. I think this is
-# temporary solution (or maybe not).
-class OSObject(object):
+from bb.app import Context
+
+# XXX: The following code has to be located right before import's. I think this
+# is temporary solution (or maybe not), until we will move this to the separata
+# file.
+class OSObject(Context):
     """The root main class for BBOS kernel."""
-    pass
+    def __init__(self):
+        Context.__init__(self)
 
 class OSObjectMetadata(object):
     NAME = None
@@ -25,14 +29,13 @@ class OSObjectMetadata(object):
         return self.__name
 
 from bb.os.kernel import *
-from bb.os.hardware import *
 
 class OS(object):
     """This class describes BB operating system. The Mapping uses this class to
     create OS instance. Once system is created, the mapping will call main entry
-    point."""
+    point and then start() to run the system."""
     def __init__(self, **kargs):
-        self.kernel = kernel.Kernel()
+        self.kernel = Kernel()
 
     def main(self):
         pass

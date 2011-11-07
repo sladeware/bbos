@@ -17,7 +17,7 @@ import time
 import random
 
 from bb.utils.type_check import verify_list, verify_int
-from bb.hardware import Hardware
+from bb.mapping import Mapping
 
 SIMULATION_MODE = 'SIMULATION'
 DEV_MODE = 'DEVELOPMENT'
@@ -276,7 +276,7 @@ class Traceable(object):
             return ret
         return dummy
 
-class Object(object):
+class Context(object):
     """This class handles application object activity in order to provide
     management of simulation and development modes.
 
@@ -301,12 +301,3 @@ class Object(object):
                     return target(self, *args, **kargs)
         return simulate
 
-class Mapping(object):
-    def __init__(self, name, os_class=None, build_params=None):
-        self.name = name
-        self.build_params = build_params or dict()
-        self.hardware = Hardware()
-        if os_class:
-            self.os_class = os_class
-        elif hasattr(self, "os_class"):
-            self.os_class = getattr(self, "os_class")

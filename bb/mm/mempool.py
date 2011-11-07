@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
-from bb.app import Object
+from bb.app import Context
 import sys, inspect
 
 __all__ = ["MemPool"]
@@ -84,12 +84,12 @@ def mwrite(pointer, value):
       continue
     setattr(pointer, name, method)
 
-class MemPool(Object):
+class MemPool(Context):
     """Memory pool is fast memory allocator with constant time access to dynamic
     allocation for fixed-size chunks of memory."""
 
     def __init__(self, num_chunks=0, chunk_size=0):
-        Object.__init__(self)
+        Context.__init__(self)
         assert (chunk_size > 0), "Chunk size must be greater than zero"
         assert (num_chunks > 0), "Number of chunks must be greater that zero"
         self.__chunk_size = chunk_size
