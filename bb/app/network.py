@@ -18,9 +18,7 @@ class _Connection(object):
     """A sending device initiates the transmission of data, instructions, and
     information while a receiving device accepts the items transmitted."""
 
-    NAME_FORMAT = "CONNECTION_%d"
-
-    def __init__(self, sender, receiver, name):
+    def __init__(self, sender, receiver):
         verify_mapping(sender)
         verify_mapping(receiver)
 
@@ -32,9 +30,6 @@ class _Connection(object):
         self.__sending_device = None
         self.__receiver = receiver
         self.__receiving_device = None
-
-    def get_name(self):
-        return self.__name
 
     def get_sender(self):
         return self.__sender
@@ -65,6 +60,8 @@ def verify_connection(connection):
 class _Edge(tuple):
     """Since edges are not specified as NetworkX object, this class provides
     simple interface for manipulations with edge."""
+
+    KEY_FORMAT = "EDGE_%d"
 
     # Because tuples are immutable, we need to override __new__
     def __new__(cls, *args):
@@ -183,7 +180,7 @@ class Network(networkx.MultiDiGraph):
         # Define hashable identifier
         if not key:
             key_format = attr_dict.get("key_format", None) or \
-                _Connection.NAME_FORMAT
+                _Edge.KEY_FORMAT
             verify_string(key_format)
             key = key_format % len(self.connections((transmitter, receiver)))
         else:
