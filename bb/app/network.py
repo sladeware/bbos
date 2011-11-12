@@ -3,7 +3,7 @@
 __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
 from bb.utils.type_check import verify_list, verify_int, verify_string
-from bb.mapping import Mapping, verify_mapping
+from bb.app.mapping import Mapping, verify_mapping
 
 try:
     import networkx
@@ -91,6 +91,13 @@ class _Edge(tuple):
     def get_connection(self):
         return self.__data['object']
 
+    def get_label(self):
+        return self.__data['label']
+
+    def set_label(self, label):
+        # XXX: do we need to verify the label value?
+        self.__data['label'] = label
+
 class Network(networkx.MultiDiGraph):
     """The internal graph of static network topology representation used to
     generate routing decision trees at build time. The routing decisions will
@@ -139,14 +146,13 @@ class Network(networkx.MultiDiGraph):
         data = self.get_edge_data(sender, receiver, key=name)
         return data['object']
 
-    def connect(self, transmitter, receiver, name=None, attr_dict=None,
-                **attrs):
-        """Connect transmitter and receiver. See add_edge(). Return object
-        attribute (Connection instance) that handles connection between these
-        mappings."""
-        (transmitter, receiver, name, attrs) = \
-            self.add_edge(transmitter, receiver, name, attr_dict, **attrs)
-        return attrs['object']
+    def connect(self, sender, receiver, name=None, attr_dict=None, **attrs):
+        """Connect sender and receiver. Return object attribute (Connection
+        instance) that handles connection between these mappings.
+
+        See add_edge()."""
+        edge = self.add_edge(sender, receiver, name, attr_dict, **attrs)
+        return edge.get_connection()
 
     def get_edge(self, sender, receiver, key):
         if not self.has_edge(sender, receiver, key):
@@ -154,53 +160,55 @@ class Network(networkx.MultiDiGraph):
         data = self.get_edge_data(sender, receiver, key)
         return _Edge(sender, receiver, key, data)
 
-    def add_edge(self, transmitter, receiver, key=None, attr_dict=None,
-                 **attrs):
-        """Create an edge between transmitter and receiver. Return edge in
-        form (transmitter, receiver, key, attrs).
+    def add_edge(self, sender, receiver, key=None, attr_dict=None, **attrs):
+        """Create an edge between sender and receiver. Return an edge
+        represented by _Edge instance which is mainly replacing a tuple
+        (sender, receiver, key, attrs).
 
-        key is an optional hashable identifier. By default it equals to
-        connection's name. Note, this key has to be unique in order to
+        key is an optional hashable identifier. By default it has
+        _Edge.KEY_FORMAT format. Note, this key has to be unique in order to
         distinguish multiedges between a pair of nodes. At the same time
         edge's label equals to the key.
 
         By default label equals to the key value but can be changes by using
         associated data as follows:
-        add_edge(Mapping("M1"), Mapping("M2"), label="My serial connection").
+        >>> add_edge(Mapping("M1"), Mapping("M2"), label="My serial connection")
+        Or
+        >>> edge = add_edge(Mapping("M1"), Mapping("M2"))
+        >>> edge.set_label("My serial connection")
 
-        Note, the nodes for transmitter and receiver mappings will be
-        automatically added if they are not already in the graph."""
+        Note, the nodes for sender and receiver mappings will be automatically
+        added if they are not already in the graph."""
         # Setup dictionary of attributes
         if attr_dict is None:
             attr_dict = attrs
-        if not self.has_node(transmitter):
-            self.add_node(transmitter)
+        if not self.has_node(sender):
+            self.add_node(sender)
         if not self.has_node(receiver):
             self.add_node(receiver)
         # Define hashable identifier
         if not key:
-            key_format = attr_dict.get("key_format", None) or \
-                _Edge.KEY_FORMAT
+            key_format = attr_dict.get("key_format", None) or _Edge.KEY_FORMAT
             verify_string(key_format)
-            key = key_format % len(self.connections((transmitter, receiver)))
+            key = key_format % len(self.connections((sender, receiver)))
         else:
             verify_string(key)
-            if self.connection(transmitter, receiver, key):
+            if self.connection(sender, receiver, key):
                 raise Exception("Connection %s already exists between %s and %s"
-                                % (key, transmitter, receiver))
-        connection = _Connection(transmitter, receiver, name=key)
+                                % (key, sender, receiver))
+        connection = _Connection(sender, receiver)
         # Define edge label
         if not attr_dict.get("label", None):
             attr_dict["label"] = key
         else:
             verify_string(attr_dict.get("label"))
         # Use super method
-        networkx.MultiDiGraph.add_edge(self, connection.get_transmitter(),
+        networkx.MultiDiGraph.add_edge(self, connection.get_sender(),
                                        connection.get_receiver(),
                                        key=key, attr_dict=attr_dict,
                                        object=connection)
-        return _Edge(transmitter, receiver, key,
-                     self.get_edge_data(transmitter, receiver, key=key))
+        return _Edge(sender, receiver, key,
+                     self.get_edge_data(sender, receiver, key=key))
 
     # XXX: rename!
     def edges_between(self, node1, node2, data=False, keys=False):
