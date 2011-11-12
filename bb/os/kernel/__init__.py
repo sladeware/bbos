@@ -21,8 +21,27 @@ from bb.os.kernel.schedulers import *
 from bb.app import Traceable, Application
 from bb.mm.mempool import MemPool, mwrite
 
-class _Extension(object):
-    pass
+#_______________________________________________________________________________
+
+# Contains kernel extensions in form: extension name, extension class.
+KERNEL_EXTENSIONS = dict()
+
+# List of extension names that have to be used by default.
+DEFAULT_KERNEL_EXTENSIONS = list()
+
+class _KernelExtension(object):
+    """This class represents kernel extension."""
+
+def _kernel_extension(name, default=True):
+    def _catch_kernel_extension(cls):
+        if not issubclass(cls, _KernelExtension):
+            raise TypeError("Kernel extension %s must be subclass "
+                            "of _KernelExtension." % cls)
+        KERNEL_EXTENSIONS[name] = cls
+        if default:
+            DEFAULT_KERNEL_EXTENSIONS.append(name)
+        return cls
+    return _catch_kernel_extension
 
 #_______________________________________________________________________________
 
@@ -253,11 +272,13 @@ class Messenger(Thread):
         handler = self.find_message_handler(command)
         handler(message)
 
-class _ThreadManagement(_Extension):
+@_kernel_extension("thread_management", True)
+class _ThreadManagement(_KernelExtension):
     def __init__(self, threads=[], scheduler=StaticScheduler()):
+        _KernelExtension.__init__(self)
+        print "Initialize thread management"
         self.__threads = {}
         self.__scheduler = None
-
         # Select scheduler first if defined before any thread will be added
         # By default, if scheduler was not defined will be used static
         # cheduling policy.
@@ -455,10 +476,13 @@ class Port(object):
     def count_messages(self):
         return len(self.__messages)
 
-class _ITC(_Extension):
+@_kernel_extension("itc", True)
+class _ITC(_KernelExtension):
     """Inter-Thread Communication (ITC)."""
 
     def __init__(self):
+        _KernelExtension.__init__(self)
+        print "Initialize ITC"
         self.__commands = []
         self.__ports = {}
 
@@ -618,37 +642,56 @@ class Driver(OSObject, OSObjectMetadata):
         OSObjectMetadata.__init__(self, name)
         if self.NAME:
             self.set_name(self.NAME)
-        self.__messenger = None
-        if self.MESSENGER_CLASS:
-            self.__messenger = self.MESSENGER_CLASS()
         self.version = None
         if version:
             self.version = version
         elif self.VERSION:
             self.version = self.VERSION
 
+    def control(self, device):
+        """Called by the system to query the existence of a specific device and
+        whether this driver can control it."""
+        raise NotImplemented("Please, implement this!")
+
+    def decontrol(self, device):
+        """Called by the system when the device is removed in order to free it
+        from driver's (system) control."""
+        raise NotImplemented("Please, implement this!")
+
+class DriverManager(object):
+    def __init__(self, driver):
+        self.__driver = driver
+        self.__devices = []
+        self.__messenger = None
+        if driver.MESSENGER_CLASS:
+            self.__messenger = driver.MESSENGER_CLASS()
+
     def get_messenger(self):
         """Return Messenger instance that controls driver activity."""
         return self.__messenger
 
-    def get_version(self):
-        return self.version
+    def get_driver(self):
+        return self.__driver
 
-    def probe_device(self, device):
-        """Called by the system to query the existence of a specific device and
-        whether this driver can work with it."""
+    def add_device(self, device):
         pass
 
-    def release_device(self, device):
-        """Called by the system when the device is removed."""
+    def get_device(self):
         pass
 
-class _HardwareManagement(_Extension):
+    def get_devices(self):
+        """Return a list of all devices currently bound to the driver."""
+        return self.__devices
+
+@_kernel_extension("hardware_management", True)
+class _HardwareManagement(_KernelExtension):
     """This class provides kernel support for hardware management. More
     precisely it provides device and driver management."""
 
     def __init__(self):
-        _Extension.__init__(self)
+        _KernelExtension.__init__(self)
+
+        print "Initialize hardware management"
 
         self.__devices = {}
         self.__driver_managers = {}
@@ -748,16 +791,22 @@ class _HardwareManagement(_Extension):
 
 #_______________________________________________________________________________
 
+@_kernel_extension("imc", False)
+class _IMC(_KernelExtension):
+    def __init__(self):
+        _KernelExtension.__init__(self)
+        print "Initialize IMC"
+
+#_______________________________________________________________________________
+
 class _Kernel(OSObject, Traceable):
     """The heart of BB operating system. In order to connect with application
     inherits OSObject class."""
     def __init__(self, *args, **kargs):
         OSObject.__init__(self)
-        self.__modules = {}
-
         print self.banner()
         print "Initialize kernel"
-
+        self.__modules = {}
         # XXX: WTF?! It's very strange, but we need to do the following hack in
         # order to get __extensions attribute
         self.__extensions = getattr(self, "__extensions")
@@ -877,10 +926,22 @@ def get_running_kernel():
     # be returned. Maybe we need to make an exception?
     return Traceable.find_running_instance(Kernel)
 
-def Kernel(*args, **kargs):
-    """This kernel factory creates and returns Kernel class that includes all
-    required extensions. All the arguments pass to main _Kernel object."""
-    extensions = (_ThreadManagement, _HardwareManagement, _ITC)
-    Kernel = type("Kernel", (_Kernel, ) + extensions,
+def Kernel(**required_extensions):
+    """This kernel factory creates and returns Kernel class with all
+    required extensions. required_extensions contains extensions that have to
+    be included (if they have True value) or excluded (if they have False value)
+    from list of extensions that will extend kernel functionality."""
+    use_extensions = DEFAULT_KERNEL_EXTENSIONS
+    # Verify and update the list of extensions to be used
+    for extension, is_required in required_extensions.items():
+        if extension not in KERNEL_EXTENSIONS:
+            raise Exception("Unknown kernel extension: %s" % extension)
+        if not is_required and extension in use_extensions:
+            use_extensions.remove(extension)
+        elif is_required and extension not in use_extensions:
+            use_extensions.append(extension)
+    extensions = tuple([KERNEL_EXTENSIONS[extension] for extension in
+                        use_extensions])
+    kernel_cls = type("Kernel", (_Kernel, ) + extensions,
                   {'__extensions': extensions})
-    return Kernel(*args, **kargs)
+    return kernel_cls()

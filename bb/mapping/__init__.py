@@ -4,6 +4,8 @@ __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
 from bb.hardware import Part, Core, Processor, Board
 
+#_______________________________________________________________________________
+
 class _Hardware(object):
     """This class represents interface between a single mapping and hardware
     abstraction layer."""
@@ -44,6 +46,8 @@ class _Hardware(object):
         """Return Core instance."""
         return self.__core
 
+#______________________________________________________________________________
+
 class Mapping(object):
     def __init__(self, name, os_class=None, build_params=None):
         self.name = name
@@ -53,3 +57,15 @@ class Mapping(object):
             self.os_class = os_class
         elif hasattr(self, "os_class"):
             self.os_class = getattr(self, "os_class")
+
+    def __str__(self):
+        return "Mapping %s" % self.name
+
+    def __repr__(self):
+        return str(self)
+
+def verify_mapping(mapping):
+    if not isinstance(mapping, Mapping):
+        raise TypeError("Unknown mapping '%s'. "
+                        "Not a subclass of bb.mapping.Mapping class" %
+                        (mapping))

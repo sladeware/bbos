@@ -32,21 +32,24 @@ def is_dict(var):
 
 def verify_boolean(var):
     if var and not is_boolean(var):
-        raise TypeError("'%s' is not a boolean type: %s" % (var.__class__.__name__, var))
+        raise TypeError("'%s' is not a boolean type: %s" %
+                        (var.__class__.__name__, var))
     return var
 
 def verify_int(var):
     if var and not is_int(var):
-        raise TypeError("'%s' is not a int type: %s" % (var.__class__.__name__, var))
+        raise TypeError("'%s' is not a int type: %s" %
+                        (var.__class__.__name__, var))
     return var
 
 def verify_list(var):
     if var and not is_list(var):
-        raise TypeError("'%s' is not a list type: %s" % (var.__class__.__name__, var))
+        raise TypeError("'%s' is not a list type: %s" %
+                        (var.__class__.__name__, var))
     return var
 
 def verify_string(var):
-    if var and not is_string(var):
-        raise TypeError("'%s' is not a string type: %s" % (var.__class__.__name__, var))
+    if not var or not is_string(var):
+        raise TypeError("'%s' is not a string type: %s" %
+                        (var.__class__.__name__, var))
     return var
-

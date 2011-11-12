@@ -16,8 +16,8 @@ import tempfile
 import time
 import random
 
-from bb.utils.type_check import verify_list, verify_int
-from bb.mapping import Mapping
+from bb.utils.type_check import verify_list, verify_int, verify_string
+from bb.app.network import Network
 
 SIMULATION_MODE = 'SIMULATION'
 DEV_MODE = 'DEVELOPMENT'
@@ -30,34 +30,38 @@ def get_mode():
 def is_simulation_mode():
     return 'bb.simulator' in sys.modules
 
-_active_application = None
+#_______________________________________________________________________________
 
-class OutputStream:
+class _OutputStream:
+    PREFIX_FORMAT = "[%s] "
+
     def __init__(self, stream):
         self.stream = stream
 
     def write(self, data):
+        """See number of processes within an application. Do not show process
+        identifier if we have less than two processes."""
         prefix = ''
         from bb import simulator
         if not simulator.config.get_option("multiterminal"):
-            # See number of processes within an application. Do not show process
-            # identifier if we have less than two processes.
-            # NB: we do not use here get_num_processes() since we may have an
+            # We do not use here get_num_processes() since we may have an
             # execution delay between processes. Thus we will use max possible
             # number of processes, which is number of mappings.
-            if Application.get_running_instance().get_num_mappings() > 1:
-                mapping = Application.get_running_instance().get_active_mapping()
-                prefix = "[%s] " % mapping.name
+            if Application.get_active_instance().get_num_mappings() > 1:
+                mapping = Application.get_active_instance().get_active_mapping()
+                prefix = self.PREFIX_FORMAT % mapping.name
             if data != "\n":
+                # Print prefix only if we have some data
                 self.stream.write(prefix)
         self.stream.write(data)
 
     def __getattr__(self, attr):
         return getattr(self.stream, attr)
 
-class UnbufferedOutputStream(OutputStream):
-    """This class handles unbuffered output stream. Just do flush() after each
-    write()."""
+class _UnbufferedOutputStream(_OutputStream):
+    """This class is a subclass of _OutputStream and handles unbuffered output
+    stream. Just do flush() after each write()."""
+
     def __init__(self, stream):
         self.stream = stream
 
@@ -68,10 +72,12 @@ class UnbufferedOutputStream(OutputStream):
     def __getattr__(self, attr):
         return getattr(self.stream, attr)
 
+#_______________________________________________________________________________
+
 class Process(multiprocessing.Process):
-    """The process describes execution of a particular mapping. It represents
-    the life of the OS kernel: from its initialization to the point that it
-    stops executing."""
+    """The process is a subclass of multiprocessing.Process() class and
+    describes execution of a particular mapping. It represents the life of the
+    OS kernel: from its initialization to the point that it stops executing."""
 
     def __init__(self, mapping):
         self.__mapping = mapping
@@ -103,11 +109,11 @@ class Process(multiprocessing.Process):
                         "-e", "tail",
                         "-f", self.fname]
             self.term = subprocess.Popen(term_cmd)
-            sys.stdout = UnbufferedOutputStream(self.fh)
+            sys.stdout = _UnbufferedOutputStream(self.fh)
             # Need a small delay
             time.sleep(1)
         else:
-            sys.stdout = OutputStream(sys.stdout)
+            sys.stdout = _OutputStream(sys.stdout)
         # Now the stdout has been redirected. Call initial start().
         multiprocessing.Process.start(self)
         # Normalize stdout stream
@@ -124,18 +130,45 @@ class Process(multiprocessing.Process):
             os.rmdir(self.tmpdir)
         os.kill(self.pid, signal.SIGTERM)
 
+#_______________________________________________________________________________
+
 class Application(object):
+    """This class describes BB application. Note, the only one application can
+    be executed per session."""
+
+    active_instance = None
+
     def __init__(self, mappings=[], mappings_execution_interval=0):
+        self.network = Network(mappings)
         self.__mappings_execution_interval = 0
         self.set_mappings_execution_interval(mappings_execution_interval)
-        self.__mappings = {}
         self.__manager = multiprocessing.Manager()
         self.__processes = self.__manager.dict()
         self.__workers = dict()
-        if len(mappings):
-            self.add_mappings(mappings)
+
+    @classmethod
+    def get_active_instance(cls):
+        return Application.active_instance
+
+    def add_mapping(self, mapping):
+        self.network.add_node(mapping)
+        return mapping
+
+    def add_mappings(self, mappings):
+        self.network.add_nodes(mappings)
+
+    def remove_mapping(self, mapping):
+        self.network.remove_node(mapping)
+
+    def get_num_mappings(self):
+        """Analyse network and return number of mappings."""
+        return len(self.get_mappings())
+
+    def get_mappings(self):
+        return self.network.get_nodes()
 
     def set_mappings_execution_interval(self, value):
+        """Set a new value for mappings execution interval."""
         verify_int(value)
         if value < 0:
             raise Exception("Mappings execution interval value can not be less "
@@ -145,32 +178,8 @@ class Application(object):
     def get_mappings_execution_interval(self):
         return self.__mappings_execution_interval
 
-    @classmethod
-    def get_running_instance(class_):
-        global _active_application
-        return _active_application
-
-    def add_mappings(self, mappings):
-        verify_list(mappings)
-        for mapping in mappings:
-            self.add_mapping(mapping)
-
-    def add_mapping(self, mapping):
-        if not isinstance(mapping, Mapping):
-            raise TypeError("Unknown mapping '%s'. "
-                            "Not based on bb.app.Mapping class" % (mapping))
-        self.__mappings[id(mapping)] = mapping
-        return mapping
-
-    def get_num_mappings(self):
-        """Return number of mappings defined within current application."""
-        return len(self.get_mappings())
-
     def get_num_processes(self):
         return len(self.__processes.items())
-
-    def get_mappings(self):
-        return self.__mappings.values()
 
     def get_active_mapping(self):
         pid = multiprocessing.current_process().pid
@@ -179,17 +188,19 @@ class Application(object):
         return self.__processes[pid]
 
     def start(self):
-        global _active_application
-        _active_application = self
+        print "Start application"
+        Application.active_instance = self
         if not self.get_num_mappings():
-            raise Exception("Nothing to run. Please, add at least one mapping.")
-        # Build an execution order of mappings first
+            raise Exception("Nothing to run. Please, add at least one mapping "
+                            "to this application.")
+        # First of all, build an execution order of mappings
         execution_order = range(self.get_num_mappings())
         random.shuffle(execution_order)
-        # Execute mappings one by one by using execution order
+        # Execute mappings one by one by using execution order. Track keyboard
+        # interrupts and system exit.
         try:
             for i in execution_order:
-                # Take a random mapping by using built execution order
+                # Take a random mapping
                 mapping = self.get_mappings()[i]
                 if not mapping.os_class:
                     raise Exception("Cannot create OS instance.")
@@ -219,6 +230,7 @@ class Application(object):
             if process.is_alive():
                 print "Kill process %d" % process.pid
                 process.kill()
+        Application.active_instance = None
 
 class Traceable(object):
     """The Traceable interface allows you to track Object activity within an
@@ -300,4 +312,3 @@ class Context(object):
                 if self.mode == SIMULATION_MODE:
                     return target(self, *args, **kargs)
         return simulate
-
