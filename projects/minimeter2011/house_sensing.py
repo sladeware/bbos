@@ -27,6 +27,10 @@ minimeter2 = Minimeter(2, build_params=dict(verbose=False))
 house_sensing = Application([workstation, minimeter1, minimeter2],
                             mappings_execution_interval=2)
 
+# Setup the network
+house_sensing.network.add_star([workstation, minimeter1, minimeter2],
+                               key_format="WIRELESS_%d")
+
 if __name__ == '__main__':
     simulator.config.parse_command_line()
     house_sensing.start()

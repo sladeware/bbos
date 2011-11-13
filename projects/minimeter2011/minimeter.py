@@ -30,7 +30,7 @@ class MinimeterOS(OS):
 
         # Unique ID that is a primary key in the database's minimeter table
         self.unique_id = hash(
-            Application.get_running_instance().get_active_mapping().name)
+            Application.get_active_instance().get_active_mapping().name)
 
         # The record containing statistics on the samples collected
         self.record = None
@@ -271,7 +271,7 @@ class MinimeterOS(OS):
         self.kernel.add_thread(Thread("SENSOR_PROCESSOR", self.sensor_processor,
             "PRIMARY_PORT"))
         self.kernel.load_module("bb.os.drivers.sensors.pir_sensor")
-        self.kernel.load_module("bb.os.drivers.net.wireless.xbee")
+        #self.kernel.load_module("bb.os.drivers.net.wireless.xbee")
 
     class SensorInfo():
         """Container for information about the sensors on this minimeter. Also,

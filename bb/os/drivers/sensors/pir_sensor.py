@@ -8,8 +8,8 @@ class PIRMotionSensorDevice(Device):
     name="PIR_MOTION_SENSOR_DEVICE"
 
 class PIRMotionSensorDriver(Driver):
-    name="PIR_MOTION_SENSOR_DRIVER"
-    version="0.0.0"
+    NAME="PIR_MOTION_SENSOR_DRIVER"
+    VERSION="0.0.0"
 
     def init(self):
         pass

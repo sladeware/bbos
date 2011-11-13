@@ -2,9 +2,9 @@
 
 __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
-from bb.hardware import Device
+from bb.hardware import Part
 
-class XBee(Device):
+class XBee(Part):
     NAME_FORMAT = "XBEE_%d"
 
     def __str__(self):

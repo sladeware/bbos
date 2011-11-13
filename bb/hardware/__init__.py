@@ -61,7 +61,7 @@ class Core(Part):
             return
 
     def set_mapping(self, mapping):
-        from bb.mapping import Mapping
+        from bb.app import Mapping
         if not isinstance(mapping, Mapping):
             print isinstance(mapping, Mapping)
             raise TypeError('mapping %s must be %s sub-class'

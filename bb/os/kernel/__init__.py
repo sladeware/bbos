@@ -618,6 +618,7 @@ class Device(OSObject, OSObjectMetadata):
         if part:
             if not self.get_name():
                 self.set_name(part.get_label())
+        self.__driver = None
         if driver:
             self.set_driver(driver)
 
@@ -701,6 +702,9 @@ class _HardwareManagement(_KernelExtension):
             for device in mapping.hardware.get_board().get_devices():
                 self.register_device(device)
 
+    def find_device(self, name):
+        return self.__devices[name]
+
     def control_device(self, name, action, *args):
         """Device control is the most common function used for device control,
         fulfilling such tasks as accessing devices, getting information, sending
@@ -735,7 +739,7 @@ class _HardwareManagement(_KernelExtension):
         unknown_devices = []
         for device in self.get_devices():
             if not device.get_driver():
-                unknown_device.append(driver)
+                unknown_devices.append(device)
         return unknown_devices
 
     def unregister_device(self, device):
@@ -747,10 +751,10 @@ class _HardwareManagement(_KernelExtension):
         An appropriate driver manager can be obtained by using
         find_driver_manager() method."""
         manager = DriverManager(driver)
-        self.__driver_managers[driver.get_name()] = manager
+        self.__driver_managers[driver.NAME] = manager
 
     def find_driver_manager(self, driver):
-        return self.__driver_managers[driver.get_name()]
+        return self.__driver_managers[driver.NAME]
 
     def is_registered_driver(self, driver):
         """Define whether or not the driver was registered."""
