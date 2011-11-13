@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
-from bb.utils.type_check import verify_list, verify_int, verify_string
+from bb.utils.type_check import verify_list, verify_int, verify_string, is_tuple
 from bb.app.mapping import Mapping, verify_mapping
 
 try:
@@ -14,11 +14,20 @@ except ImportError:
 
 #_______________________________________________________________________________
 
-class _Connection(object):
-    """A sending device initiates the transmission of data, instructions, and
+class Edge(object):
+    """This class represents an edge between two nodes in a graph. Each edge
+    has a direction (from sender to receiver, or back and forth), plus a set of
+    attributes such as label (a text associated with it), etc.
+
+    The edge also describes sending device and receiving device. Sending device
+    is device used by sender to send the data trough this edge to receiver.
+
+    A sending device initiates the transmission of data, instructions, and
     information while a receiving device accepts the items transmitted."""
 
-    def __init__(self, sender, receiver):
+    KEY_FORMAT = "EDGE_%d"
+
+    def __init__(self, sender, receiver, attributes={}):
         verify_mapping(sender)
         verify_mapping(receiver)
 
@@ -27,76 +36,85 @@ class _Connection(object):
         #    raise Exception("Selfloop is not allowed.")
 
         self.__sender = sender
-        self.__sending_device = None
         self.__receiver = receiver
-        self.__receiving_device = None
+        self.__attributes = attributes
+
+    def get_nodes(self):
+        """"Return the sender and receiver nodes that this edge connects."""
+        return (self.get_sender(), self.get_receiver())
 
     def get_sender(self):
         return self.__sender
 
-    def set_sending_device(self, dev_name):
-        self.__sending_device = dev_name
+    def get_sending_device(self):
+        raise NotImplemented()
+
+    def set_sending_device(self, device):
+        raise NotImplemented()
+
+    def verify_sending_device(self, device):
+        if not self.get_sender().has_device(device):
+            raise Exception("Sender %s does not have %s device." % (sender,
+                                                                    device))
 
     def get_receiver(self):
         return self.__receiver
 
-    def set_receiving_device(self, dev_name):
-        pass
+    def get_receiving_device(self):
+        raise NotImplemented()
+
+    def set_receiving_device(self, device):
+        raise NotImplemented()
+
+    def verify_receiving_device(self, device):
+        if not self.get_receiver().has_device(device):
+            raise Exception("Receiver %s does not have %s device." % (receiver,
+                                                                      device))
+
+    def get_attributes(self):
+        """Return all effective attributes on this edge."""
+        return self.__attributes
+
+    def get_attribute(self, key, default=None):
+        """If attribute does not exist, return default value."""
+        return self.__attributes.get(key, default)
+
+    def set_attribute(self, key, value):
+        self.__attributes[key] = value
 
     def __str__(self):
         return "[%s --> %s]" % (self.get_sender().name, \
                                     self.get_receiver().name)
 
-def verify_connection(connection):
-    if not isinstance(connection, Connection):
-        raise TypeError("connection must be subclass of Connection: %s" %
-                        connection)
-
-#_______________________________________________________________________________
-
-# NOTE: I think it would be nice to provide own edge class in order to get an
-# opportunity for more flexible edge manipulations. networkx uses a simple tuple
-# for edge representation.
-class _Edge(tuple):
+class NetworkXEdge(Edge, tuple):
     """Since edges are not specified as NetworkX object, this class provides
-    simple interface for manipulations with edge."""
+    simple interface for manipulations with an edge within NetworkX library.
 
-    KEY_FORMAT = "EDGE_%d"
+    NetworkX uses a simple tuple for edge representation."""
 
     # Because tuples are immutable, we need to override __new__
     def __new__(cls, *args):
         return tuple.__new__(cls, args)
 
     def __init__(self, *args):
-        (self.__sender, self.__receiver) = args[:2]
+        (sender, receiver) = args[:2]
         self.__key = None
-        if len(args) > 2:
-            self.__key = args[2]
-        self.__data = None
-        if len(args) > 3:
-            self.__data = args[3]
-
-    def get_sender(self):
-        return self.__sender
-
-    def get_receiver(self):
-        return self.__receiver
+        if len(args) > 2: self.__key = args[2]
+        attributes = {}
+        if len(args) > 3: attributes = args[3]
+        Edge.__init__(self, sender, receiver, attributes)
 
     def get_key(self):
         return self.__key
 
-    def get_data(self):
-        return self.__data
+    def get_sending_device(self):
+        return self.get_attribute('sending_device')
 
-    def get_connection(self):
-        return self.__data['object']
+    def set_sending_device(self, device):
+        self.set_attribute('sending_device', device)
 
-    def get_label(self):
-        return self.__data['label']
-
-    def set_label(self, label):
-        # XXX: do we need to verify the label value?
-        self.__data['label'] = label
+    def get_receiving_device(self):
+        return self.get_attribute('receiving_device')
 
 class Network(networkx.MultiDiGraph):
     """The internal graph of static network topology representation used to
@@ -105,15 +123,7 @@ class Network(networkx.MultiDiGraph):
 
     def __init__(self, nodes=[]):
         networkx.MultiDiGraph.__init__(self)
-        # Provide compatibility with BB interface
-        self.add_nodes = self.add_nodes_from
-        self.remove_nodes = self.remove_nodes_from
-        self.get_neighbors = self.neighbors
-        self.get_nodes = self.nodes
-        self.get_nodes_iter = self.nodes_iter
-        self.get_edges = self.edges
-        self.get_edges_iter = self.edges_iter
-        # Add default nodes if such was defined
+        # Add default nodes if such were defined
         if len(nodes):
             self.add_nodes(nodes)
 
@@ -138,76 +148,63 @@ class Network(networkx.MultiDiGraph):
         verify_mapping(node)
         return networkx.MultiDiGraph.neighbors(node)
 
-    def connection(self, sender, receiver, name):
-        """Return Connection instance."""
-        verify_string(name)
-        if not self.has_edge(sender, receiver, name):
-            return None
-        data = self.get_edge_data(sender, receiver, key=name)
-        return data['object']
-
-    def connect(self, sender, receiver, name=None, attr_dict=None, **attrs):
-        """Connect sender and receiver. Return object attribute (Connection
-        instance) that handles connection between these mappings.
-
-        See add_edge()."""
-        edge = self.add_edge(sender, receiver, name, attr_dict, **attrs)
-        return edge.get_connection()
-
     def get_edge(self, sender, receiver, key):
         if not self.has_edge(sender, receiver, key):
             return None
         data = self.get_edge_data(sender, receiver, key)
-        return _Edge(sender, receiver, key, data)
+        return NetworkXEdge(sender, receiver, key, data)
 
     def add_edge(self, sender, receiver, key=None, attr_dict=None, **attrs):
         """Create an edge between sender and receiver. Return an edge
-        represented by _Edge instance which is mainly replacing a tuple
+        represented by NetworkXEdge instance which is mainly replacing a tuple
         (sender, receiver, key, attrs).
 
+        sender and receiver can be represented by a tuple of mapping and target
+        communication device.
+
         key is an optional hashable identifier. By default it has
-        _Edge.KEY_FORMAT format. Note, this key has to be unique in order to
+        NetworkXEdge.KEY_FORMAT format. Note, this key has to be unique in order to
         distinguish multiedges between a pair of nodes. At the same time
         edge's label equals to the key.
 
         By default label equals to the key value but can be changes by using
         associated data as follows:
         >>> add_edge(Mapping("M1"), Mapping("M2"), label="My serial connection")
-        Or
+        or
         >>> edge = add_edge(Mapping("M1"), Mapping("M2"))
         >>> edge.set_label("My serial connection")
 
         Note, the nodes for sender and receiver mappings will be automatically
         added if they are not already in the graph."""
+
+        # Analyse incomming arguments
+        if is_tuple(sender): (sender, sending_device) = sender
+        if is_tuple(receiver): (receiver, receiving_device) = receiver
         # Setup dictionary of attributes
         if attr_dict is None:
             attr_dict = attrs
-        if not self.has_node(sender):
-            self.add_node(sender)
-        if not self.has_node(receiver):
-            self.add_node(receiver)
+        if not self.has_node(sender): self.add_node(sender)
+        if not self.has_node(receiver): self.add_node(receiver)
         # Define hashable identifier
         if not key:
-            key_format = attr_dict.get("key_format", None) or _Edge.KEY_FORMAT
+            key_format = attr_dict.get("key_format", None) or \
+                NetworkXEdge.KEY_FORMAT
             verify_string(key_format)
-            key = key_format % len(self.connections((sender, receiver)))
+            key = key_format % self.number_of_edges(sender, receiver)
         else:
             verify_string(key)
-            if self.connection(sender, receiver, key):
-                raise Exception("Connection %s already exists between %s and %s"
+            if self.has_edge(sender, receiver, key):
+                raise Exception("Edge %s already exists between %s and %s"
                                 % (key, sender, receiver))
-        connection = _Connection(sender, receiver)
         # Define edge label
         if not attr_dict.get("label", None):
             attr_dict["label"] = key
         else:
             verify_string(attr_dict.get("label"))
         # Use super method
-        networkx.MultiDiGraph.add_edge(self, connection.get_sender(),
-                                       connection.get_receiver(),
-                                       key=key, attr_dict=attr_dict,
-                                       object=connection)
-        return _Edge(sender, receiver, key,
+        networkx.MultiDiGraph.add_edge(self, sender, receiver,
+                                       key=key, attr_dict=attr_dict)
+        return NetworkXEdge(sender, receiver, key,
                      self.get_edge_data(sender, receiver, key=key))
 
     # XXX: rename!
@@ -218,19 +215,14 @@ class Network(networkx.MultiDiGraph):
                 edges.append(edge)
         return edges
 
-    # XXX: rename!
-    def connections_between(self, node1, node2):
-        """Return a list of connections between node1 and node2."""
-        connections = []
-        for (_, _, data) in self.edges_between(node1, node2, data=True):
-            connections.append(data['object'])
-        return connections
-
-    def connections(self, nodes=None):
-        """Returns the list of connections that are adjacent to any node in
-        nodes, or a list of all connections if list of nodes was not
-        specified."""
-        connections = []
-        for _, _, data in self.edges_iter(nbunch=nodes, data=True):
-            connections.append(data["object"])
-        return connections
+# Create an aliases in order to provide compatibility for Network with
+# networkx.MultiDiGraph
+Network.add_nodes = networkx.MultiDiGraph.add_nodes_from
+Network.remove_nodes = networkx.MultiDiGraph.remove_nodes_from
+Network.get_neighbors = networkx.MultiDiGraph.neighbors
+Network.get_nodes = networkx.MultiDiGraph.nodes
+Network.get_nodes_iter = networkx.MultiDiGraph.nodes_iter
+Network.get_edges = networkx.MultiDiGraph.edges
+Network.get_edges_iter = networkx.MultiDiGraph.edges_iter
+# Aliases
+Network.connect = Network.add_edge

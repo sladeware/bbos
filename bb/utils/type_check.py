@@ -26,6 +26,9 @@ def is_list(var):
     """Return true if the specified variable is a list."""
     return type(var) is ListType
 
+def is_tuple(var):
+    return type(var) is TupleType
+
 def is_dict(var):
     """Return true if the specified variable is a dictionary."""
     return type(var) is DictType
