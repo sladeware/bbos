@@ -3,8 +3,8 @@
 __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
 from bb.utils.type_check import verify_list, verify_int, verify_string, is_tuple
-from bb.app.mapping import Mapping, verify_mappin
-g
+from bb.app.mapping import Mapping, verify_mapping
+
 try:
     import networkx
 except ImportError:

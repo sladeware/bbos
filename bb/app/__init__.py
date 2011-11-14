@@ -96,6 +96,9 @@ class Process(multiprocessing.Process):
             self.fname = os.path.join(self.tmpdir, str(id(self)))
             self.fh = open(self.fname, "w")
 
+    def get_mapping(self):
+        return self.__mapping
+
     def get_pid(self):
         return self.pid
 
@@ -137,15 +140,23 @@ class Application(object):
     """This class describes BB application. Note, the only one application can
     be executed per session."""
 
+    # Public variable that keeps an instance of currently active application.
     active_instance = None
 
     def __init__(self, mappings=[], mappings_execution_interval=0):
         self.network = Network(mappings)
         self.__mappings_execution_interval = 0
         self.set_mappings_execution_interval(mappings_execution_interval)
+        # The manager provides a way to share data between different processes
+        # (mappings). A manager is strictly internal object, which controls a
+        # server oricess which manages shared objects. Other processes can
+        # access the shared objects by using proxies.
+        import multiprocessing.managers
         self.__manager = multiprocessing.Manager()
-        self.__processes = self.__manager.dict()
-        self.__workers = dict()
+        # All the processes will be stored at shared dict object. Thus each
+        # process will be able to define the mapping by pid.
+        #self.__processes = self.__manager.dict()
+        self.__processes = list()
 
     @classmethod
     def get_active_instance(cls):
@@ -179,14 +190,16 @@ class Application(object):
     def get_mappings_execution_interval(self):
         return self.__mappings_execution_interval
 
-    def get_num_processes(self):
-        return len(self.__processes.items())
-
     def get_active_mapping(self):
-        pid = multiprocessing.current_process().pid
-        if not pid in self.__processes:
-            raise Exception("Cannot identify %d" % pid)
-        return self.__processes[pid]
+        """Return currently running mapping."""
+        process = multiprocessing.current_process()
+        #print >>sys.stderr, self.__processes
+        #if not process in self.__processes:
+        #    raise Exception("Cannot identify %d" % process.pid)
+        return process.get_mapping()
+
+    def get_num_processes(self):
+        return len(self.__processes)
 
     def start(self):
         print "Start application"
@@ -207,14 +220,13 @@ class Application(object):
                     raise Exception("Cannot create OS instance.")
                 process = Process(mapping)
                 process.start()
-                print "Start process %d" % process.pid
-                self.__processes[process.get_pid()] = mapping
-                self.__workers[process.get_pid()] = process
+                print "Start process %d" % process.get_pid()
+                self.__processes.append(process)
                 # Do we need some delay? If so, sleep for some time before the
                 # next mapping will be executed
                 time.sleep(self.get_mappings_execution_interval())
             # Wait for each process
-            for process in self.__workers.values():
+            for process in self.__processes:
                 process.join()
         except KeyboardInterrupt, e:
             self.stop()
@@ -227,7 +239,7 @@ class Application(object):
         # "IOError: [Errno 32]: Broken pipe". So look up for workers first
         # and terminate them.
         print "\nStopping application"
-        for process in self.__workers.values():
+        for process in self.__processes:
             if process.is_alive():
                 print "Kill process %d" % process.pid
                 process.kill()

@@ -33,6 +33,7 @@ class _KernelExtension(object):
     """This class represents kernel extension."""
 
 def _kernel_extension(name, default=True):
+    """This function is used as decorator."""
     def _catch_kernel_extension(cls):
         if not issubclass(cls, _KernelExtension):
             raise TypeError("Kernel extension %s must be subclass "
@@ -930,20 +931,29 @@ def get_running_kernel():
     # be returned. Maybe we need to make an exception?
     return Traceable.find_running_instance(Kernel)
 
-def Kernel(**required_extensions):
+def Kernel(**selected_extensions):
     """This kernel factory creates and returns Kernel class with all
-    required extensions. required_extensions contains extensions that have to
+    required extensions. selected_extensions contains extensions that have to
     be included (if they have True value) or excluded (if they have False value)
     from list of extensions that will extend kernel functionality."""
     use_extensions = DEFAULT_KERNEL_EXTENSIONS
     # Verify and update the list of extensions to be used
-    for extension, is_required in required_extensions.items():
+    for extension, is_required in selected_extensions.items():
         if extension not in KERNEL_EXTENSIONS:
             raise Exception("Unknown kernel extension: %s" % extension)
         if not is_required and extension in use_extensions:
             use_extensions.remove(extension)
         elif is_required and extension not in use_extensions:
             use_extensions.append(extension)
+    # If IMC extension wasn't selected but the mapping with this kernel
+    # interructs with other mappings (sends or receives any data) through an
+    # application network, this extension will be added by force.
+    app = Application.get_active_instance()
+    if 'imc' not in use_extensions and \
+            len(app.network.edges([app.get_active_mapping()])):
+        use_extensions.append('imc')
+    # Translate a list of required extensions to the list of classes that
+    # represent these extensions
     extensions = tuple([KERNEL_EXTENSIONS[extension] for extension in
                         use_extensions])
     kernel_cls = type("Kernel", (_Kernel, ) + extensions,
