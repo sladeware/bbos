@@ -8,6 +8,8 @@ import types
 
 from bb.utils.type_check import verify_list, is_list, is_dict
 
+#_______________________________________________________________________________
+
 class Part(object):
     LABEL_FORMAT = "PART_%d"
     COUNTER_PER_LABEL_FORMAT = dict()
@@ -43,6 +45,12 @@ class Part(object):
 
     def __str__(self):
         return "Part %s" % self.get_label()
+
+def verify_part(part):
+    if not isinstance(part, Part):
+        raise TypeError("Not a Part.")
+
+#_______________________________________________________________________________
 
 class Core(Part):
     """Base class used to represent a core within a processor.

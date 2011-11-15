@@ -14,19 +14,24 @@ import inspect
 import time
 
 import bb
+from bb.utils import caller
 from bb.utils.type_check import verify_list, verify_string
 from bb.os import OSObject, OSObjectMetadata
 from bb.os.kernel.errors import *
 from bb.os.kernel.schedulers import *
 from bb.app import Traceable, Application
 from bb.mm.mempool import MemPool, mwrite
+from bb.hardware import Part, verify_part
 
 #_______________________________________________________________________________
 
 # Contains kernel extensions in form: extension name, extension class.
+# See _kernel_extension() function to learn how to create a kernel extension.
 KERNEL_EXTENSIONS = dict()
 
 # List of extension names that have to be used by default.
+# See _kernel_extension() function to learn how to add an extension to kernel
+# by default.
 DEFAULT_KERNEL_EXTENSIONS = list()
 
 class _KernelExtension(object):
@@ -47,9 +52,9 @@ def _kernel_extension(name, default=True):
 #_______________________________________________________________________________
 
 class Thread(OSObject):
-    """The thread is an atomic unit if action within the BBOS operating system,
-    which describes application specific actions wrapped into a single context
-    of execution."""
+    """The thread is an atomic unit if action within the BBOS
+    operating system, which describes application specific actions
+    wrapped into a single context of execution."""
 
     # Constant that keeps marked runners sorted by owner class. The content of
     # this variable will be formed by decorator @runner.
@@ -155,6 +160,11 @@ class Thread(OSObject):
       self.__dict__.update(dict_)
       self.__detect_runner_method()
 
+    def __str__(self):
+        """Returns a string containing a concise, human-readable description of
+        this object."""
+        return "Thread %d" % self.get_name()
+
 class Idle(Thread):
     """The special thread that runs when the system is idle."""
     def __init__(self):
@@ -165,12 +175,12 @@ class Idle(Thread):
         pass
 
 class Messenger(Thread):
-    """This class is a special form of thread, which allows to automatically
-    provide an action for received message by using specified map of predefined
-    handlers.
+    """This class is a special form of thread, which allows to
+    automatically provide an action for received message by using
+    specified map of predefined handlers.
 
-    The following example shows the most simple case how to define a new message
-    handler by using message_handler() decorator:
+    The following example shows the most simple case how to define a
+    new message handler by using message_handler() decorator:
 
     class SerialMessenger(Messenger):
         @Messenger.message_handler("SERIAL_OPEN")
@@ -187,13 +197,14 @@ class Messenger(Thread):
         def serial_open_handler(self, message):
             print "Open serial connection"
 
-    When a SerialMessenger object receives a SERIAL_OPEN message, the message is
-    directed to SerialMessenger.serial_open_handler handler for the actual
-    processing.
+    When a SerialMessenger object receives a SERIAL_OPEN message, the
+    message is directed to SerialMessenger.serial_open_handler handler
+    for the actual processing.
 
-    Note, in order to privent any conflicts with already defined methods the
-    message handler should be named by concatinating "_handler" postfix to the
-    the name of handler, e.g. serial_open_handler()."""
+    Note, in order to privent any conflicts with already defined
+    methods the message handler should be named by concatinating
+    "_handler" postfix to the the name of handler,
+    e.g. serial_open_handler()."""
 
     MESSAGE_HANDLERS_BY_CLASS = dict()
     PORT_NAME_FORMAT = "MESSENGER_PORT_%d"
@@ -231,6 +242,9 @@ class Messenger(Thread):
 
     @classmethod
     def message_handler(dec_cls, cmd):
+        """A special decorator to reduce a few unnecessary steps to
+        add a new message handler. See add_message_handler() for more
+        details."""
         verify_message_command(cmd)
         target_cls_name = inspect.getouterframes(inspect.currentframe())[1][3]
         table = Messenger.MESSAGE_HANDLERS_BY_CLASS
@@ -606,39 +620,43 @@ class _ITC(_KernelExtension):
 
 #_______________________________________________________________________________
 
-class Device(OSObject, OSObjectMetadata):
-    """Every device in BBOS system is represented by an instance of this class.
-
-    name is a string that uniquely identifies this device.
-
-    driver defines a driver instance that manages this device. Please see Driver
-    class."""
-    def __init__(self, name=None, part=None, driver=None):
-        OSObjectMetadata.__init__(self, name)
-        self.__part = part
-        if part:
-            if not self.get_name():
-                self.set_name(part.get_label())
-        self.__driver = None
-        if driver:
-            self.set_driver(driver)
-
-    def set_driver(self, driver):
-        if not isinstance(driver, Driver):
-            raise KernelTypeException("Driver object must inherit Driver class")
-        self.__driver = driver
-
-    def get_driver(self):
-        """Get driver instance that manages this device."""
-        return self.__driver
-
-    def __str__(self):
-        return "Device %s" % self.get_name()
-
 class Driver(OSObject, OSObjectMetadata):
+    """A BB device driver controls a hardware component or
+    part. Interaction with drivers is done through DriverManager,
+    which can be obtained via
+
+    The following example shows the most simple case how to define a
+    new message handler by using message_handler() decorator:
+
+    class SerialDriver(Driver):
+        @Driver.action_handler("SERIAL_OPEN")
+        def open_handler(self, device):
+            print "Open serial connection"
+
+    Or the same example, but without decorator:
+
+    class SerialDriver(Driver):
+        def __init__(self):
+            Driver.__init__(self)
+            self.add_action_handler("SERIAL_OPEN", self.serial_open_handler)
+
+        def serial_open_handler(self, message):
+            print "Open serial connection"
+
+    When a SerialMessenger object receives a SERIAL_OPEN message, the
+    message is directed to SerialMessenger.serial_open_handler handler
+    for the actual processing.
+
+    Note, in order to privent any conflicts with already defined
+    methods the message handler should be named by concatinating
+    "_handler" postfix to the the name of handler,
+    e.g. serial_open_handler()."""
+
     NAME = None
     VERSION = None
     MESSENGER_CLASS = Messenger
+
+    ACTION_HANDLERS_BY_CLASS = dict()
 
     def __init__(self, name=None, version=None):
         OSObjectMetadata.__init__(self, name)
@@ -649,33 +667,109 @@ class Driver(OSObject, OSObjectMetadata):
             self.version = version
         elif self.VERSION:
             self.version = self.VERSION
+        # Internal dictionary of actions and their handlers.
+        self.__action_handlers = dict()
+
+    def __default_action_handlers(self):
+        """Set default action handlers from ACTION_HANDLERS_BY_CLASS
+        if such were defined."""
+        cls_name = self.__class__.__name__
+        # Whether we have predefined action handlers
+        if not cls_name in Driver.ACTION_HANDLERS_BY_CLASS:
+            return
+        for action, handler in Driver.ACTION_HANDLERS_BY_CLASS[cls_name].items():
+            self.add_message_handler(command, handler)
+
+    @classmethod
+    def action_handler(dec_cls, action):
+        """A special decorator to reduce a few unnecessary steps to
+        add a new action handler. See add_action_handler() for more
+        details."""
+        verify_string(action)
+        target_cls_name = caller()
+        table = Driver.ACTION_HANDLERS_BY_CLASS
+        if not target_cls_name in table:
+            table[target_cls_name] = dict()
+        # Define a sepcial action catcher
+        def catch_action_handler(handler):
+            table[target_cls_name][cmd] = handler
+            return handler
+        # Return our catcher
+        return catch_action_handler
+
+    def add_action_handler(self, action, handler):
+        """Maps an action to the associated handler function."""
+        if self.has_action_handler(action):
+            raise Exception("A handler '%s' is already associated with "\
+                                "action '%s'" % (handler, action))
+        self.__action_handlers[action] = handler
+
+    def has_action_handler(self, action):
+        """Whether appropriate handler was defined for a given
+        action."""
+        return action in self.get_action_handlers()
+
+    def get_action_handlers(self):
+        return self.__action_handlers
+
+    def find_action_handler(self, action):
+        if not action in self.get_action_handlers():
+            raise Exception("A handler for '%s' command was not specified"
+                % command)
+        handler = self.__action_handlers[action]
+        if not handler:
+            raise Exception("Driver doesn't support '%s' action" % action)
+        return handler
 
     def control(self, device):
-        """Called by the system to query the existence of a specific device and
-        whether this driver can control it."""
+        """Called by the system to query the existence of a specific
+        device and whether this driver can control it."""
         raise NotImplemented("Please, implement this!")
 
     def decontrol(self, device):
-        """Called by the system when the device is removed in order to free it
-        from driver's (system) control."""
+        """Called by the system when the device is removed in order to
+        free it from driver's (system) control."""
         raise NotImplemented("Please, implement this!")
 
+def verify_driver(driver):
+    if not isinstance(driver, Driver):
+        raise Exception("Expected Driver type; received %s (is %s)" %
+                        (driver, driver.__class__.__name__))
+
 class DriverManager(object):
+    """This class represents an interface to interract with Driver
+    objects inside of the system. It is system responsibility to
+    create and work with this manager."""
+
     def __init__(self, driver):
-        self.__driver = driver
-        self.__devices = []
+        self.__driver = None
+        self.__devices = list()
         self.__messenger = None
+        self.__set_driver(driver)
+
+    def get_messenger(self):
+        """Returns the Messenger instance that controls driver
+        activity. By default if messenger wasn't specified returns
+        None."""
+        return self.__messenger
+
+    def __set_driver(self, driver):
+        """This method selects a driver that has to be controled by
+        this manager. It also creates a messenger if such was provided
+        that the driver may use for communication."""
+        verify_driver(driver)
+        self.__driver = driver
         if driver.MESSENGER_CLASS:
             self.__messenger = driver.MESSENGER_CLASS()
 
-    def get_messenger(self):
-        """Return Messenger instance that controls driver activity."""
-        return self.__messenger
-
     def get_driver(self):
+        """Returns Driver instance."""
         return self.__driver
 
     def add_device(self, device):
+        pass
+
+    def has_device(self, device):
         pass
 
     def get_device(self):
@@ -685,17 +779,60 @@ class DriverManager(object):
         """Return a list of all devices currently bound to the driver."""
         return self.__devices
 
+class Device(OSObject, OSObjectMetadata):
+    """Every device in BBOS system is represented by an instance of
+    this class. Device represents a part from the mapping."""
+
+    def __init__(self, name=None, part=None, driver=None):
+        """name is a string that uniquely identifies this device.
+
+        driver defines a Driver instance that manages this device. Please see
+        Driver class."""
+        OSObjectMetadata.__init__(self, name)
+        self.__part = None
+        if part:
+            self.set_part(part)
+        self.__driver = None
+        if driver:
+            self.set_driver(driver)
+
+    def set_part(self, part):
+        verify_part(part)
+        self.__part = part
+        if not self.get_name():
+            self.set_name(part.get_label())
+
+    def set_driver(self, driver):
+        verify_driver(driver)
+        self.__driver = driver
+
+    def get_driver(self):
+        """Returns Driver instance that manages this device. By default return
+        None value if driver was not selected."""
+        return self.__driver
+
+    def __str__(self):
+        """Returns a string containing a concise, human-readable description of
+        this object."""
+        return "Device %s" % self.get_name()
+
+def verify_device(device):
+    if not isinstance(device, Device):
+        raise Exception("Expected Device type; received %s (is %s)" %
+                        (device, device.__class__.__name__))
+
 @_kernel_extension("hardware_management", True)
 class _HardwareManagement(_KernelExtension):
-    """This class provides kernel support for hardware management. More
-    precisely it provides device and driver management."""
+    """This class provides kernel support for hardware
+    management. More precisely it provides an interface for device and
+    driver management and their interruction."""
 
     def __init__(self):
         _KernelExtension.__init__(self)
 
         print "Initialize hardware management"
 
-        self.__devices = {}
+        self.__devices = dict()
         self.__driver_managers = {}
 
         # Now use mapping to register outside devices via hardware interface
@@ -707,19 +844,23 @@ class _HardwareManagement(_KernelExtension):
         return self.__devices[name]
 
     def control_device(self, name, action, *args):
-        """Device control is the most common function used for device control,
-        fulfilling such tasks as accessing devices, getting information, sending
-        orders, and exchanging data. This method calls an action for a specified
-        device driver, causing thecorresponding device to perform the
-        corresponding operation."""
+        """Device control is the most common function used for device
+        control, fulfilling such tasks as accessing devices, getting
+        information, sending orders, and exchanging data. This method
+        calls an action for a specified device driver, causing the
+        corresponding device to perform the corresponding operation."""
+        # Try to find target device
         device = self.find_device(name)
         if not device:
             self.panic("Cannot found device '%s'" % name)
         driver = device.get_driver()
+        if not driver:
+            self.panic("No drivers associated with %s device" % name)
         f = getattr(driver, action)
         return f(device, *args)
 
     def register_device(self, device):
+        """This method registers device."""
         if self.is_registered_device(device):
             raise KernelException("Device '%s' was already registered." %
                                   device.get_name())
@@ -727,6 +868,7 @@ class _HardwareManagement(_KernelExtension):
 
     def is_registered_device(self, device):
         """Define whether or not the device was registered."""
+        verify_device(device)
         return device in self.get_devices()
 
     def get_devices(self):
@@ -771,19 +913,24 @@ class _HardwareManagement(_KernelExtension):
         pass
 
     def bind_device_to_driver(self, device, driver):
-        """Driver binding is the process of associating a device with a device
-        driver that can control it. In case when system can not bind a device
-        to the proper device driver this can be done by hand with help of
-        this method."""
-        if not isinstance(device, Device):
-            raise KernelException("Expected Device type; received %s (is %s)" %
-                                  (device, device.__class__.__name__))
+        """Binds device to the proper driver. Driver binding is the
+        process of associating a device with a device driver that can
+        control it. In case when system can not bind a device to the
+        proper device driver this can be done by hand with help of
+        this method.
+
+        Example:
+        device = Device(part=PropellerP8X32Part())
+        kernel.register_device(device)
+        driver = PropellerP8X32Driver()
+        kernel.register_driver(driver)
+        kernel.bind_device_to_driver(device, driver)
+        """
+        verify_device(device)
         if not self.is_registered_device(device):
             KernelException("In order to bind device to driver, device has to" \
                                 " be registered by using register_device().")
-        if not isinstance(driver, Driver):
-            raise KernelException("Expected Driver type; received %s (is %s)" %
-                                  (driver, driver.__class__.__name__))
+        verify_driver(driver)
         if not self.is_registered_driver(driver):
             KernelException("In order to bind device to driver, driver has to" \
                                 " be registered by using register_driver().")
