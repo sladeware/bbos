@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 
+"""The BB kernel.
+
+Build-time and life-time errors.
+"""
+
 __version__ = "$Rev: 401 $"
 __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
@@ -10,59 +15,68 @@ import threading
 import multiprocessing
 import types
 import re
-import inspect
 import time
 
 import bb
 from bb.utils import caller
-from bb.utils.type_check import verify_list, verify_string
+from bb.utils.type_check import verify_list, verify_string, verify_bool
 from bb.os import OSObject, OSObjectMetadata
 from bb.os.kernel.errors import *
 from bb.os.kernel.schedulers import *
 from bb.app import Traceable, Application
 from bb.mm.mempool import MemPool, mwrite
-from bb.hardware import Part, verify_part
+from bb.hardware import verify_device
 
 #_______________________________________________________________________________
 
 # Contains kernel extensions in form: extension name, extension class.
-# See _kernel_extension() function to learn how to create a kernel extension.
-KERNEL_EXTENSIONS = dict()
+# See kernel_extension() function to learn how to create a kernel extension.
+KERNEL_EXTENSIONS_MAP = dict()
 
 # List of extension names that have to be used by default.
-# See _kernel_extension() function to learn how to add an extension to kernel
+# See kernel_extension() function to learn how to add an extension to kernel
 # by default.
 DEFAULT_KERNEL_EXTENSIONS = list()
 
-class _KernelExtension(object):
+class KernelExtension(object):
     """This class represents kernel extension."""
 
-def _kernel_extension(name, default=True):
-    """This function is used as decorator."""
-    def _catch_kernel_extension(cls):
-        if not issubclass(cls, _KernelExtension):
+def kernel_extension(name, default=True):
+    """This function is used as decorator and maps extension name to
+    extension class."""
+    verify_string(name)
+    verify_bool(default)
+    def catch_kernel_extension(cls):
+        if not issubclass(cls, KernelExtension):
             raise TypeError("Kernel extension %s must be subclass "
-                            "of _KernelExtension." % cls)
-        KERNEL_EXTENSIONS[name] = cls
+                            "of KernelExtension." % cls)
+        KERNEL_EXTENSIONS_MAP[name] = cls
         if default:
             DEFAULT_KERNEL_EXTENSIONS.append(name)
         return cls
-    return _catch_kernel_extension
+    return catch_kernel_extension
 
 #_______________________________________________________________________________
 
 class Thread(OSObject):
-    """The thread is an atomic unit if action within the BB
+    """The thread is an atomic unit action within the BB
     operating system, which describes application specific actions
     wrapped into a single context of execution.
 
+    The following example shows how to create a new thread and add it
+    to the kernel:
+
     class Demo(Thread):
+        def __init__(self):
+            Thread.__init__(self, name="DEMO")
+
         @Thread.runner
         def hello_world(self):
             print "Hello world!"
 
     thread = kernel.add_thread(Demo())
 
+    Which is equivalent to:
 
     def hello_world():
         print "Hello world!"
@@ -70,10 +84,10 @@ class Thread(OSObject):
     """
 
     # This constant keeps marked runners sorted by owner class. The content of
-    # this variable will be formed by decorator @runner.
-    RUNNERS_BY_CLASS = {}
+    # this variable is formed by decorator @runner.
+    RUNNER_PER_CLASS = dict()
 
-    def __init__(self, name=None, target=None, port_name=None):
+    def __init__(self, name=None, runner=None, port_name=None):
         """This constructor should always be called with keyword arguments.
         Arguments are:
 
@@ -88,48 +102,70 @@ class Thread(OSObject):
             self.set_name(name)
         self.__commands = ()
         # Start working with runner initialization
-        self.__runner_method_name = None
-        self.__target = None
-        if target:
-            self.set_runner(target)
+        self.__runner = None
+        if runner:
+            self.set_runner(runner)
         else:
             self.__detect_runner_method()
         self.__port_name = None
         if port_name:
             self.set_port_name(port_name)
 
-    def set_port_name(self, name):
-        self.__port_name = name
-
-    def get_port_name(self):
-        return self.__port_name
+    @classmethod
+    def runner(cls, runner):
+        """Mark target method as thread's entry point."""
+        # Search for the target class to which target function belongs
+        runner_cls = caller(2)
+        # Save the target for a nearest future when the __init__ method will
+        # we called for the target_cls class.
+        Thread.RUNNER_PER_CLASS[runner_cls] = runner.__name__
+        return runner
 
     def __detect_runner_method(self):
         """Okay, let us search for the runner in methods marked with
         help of @runner decorator."""
         cls = self.__class__
-        if cls.__name__ in Thread.RUNNERS_BY_CLASS:
+        if cls.__name__ in Thread.RUNNER_PER_CLASS:
             # Since the runner here is represented by a function it will be
             # converted to a method for a given instance. Then this method
             # will be stored as attribute 'target'.
-            if not self.__runner_method_name:
-                self.__runner_method_name = Thread.RUNNERS_BY_CLASS[cls.__name__]
-                target = getattr(self, self.__runner_method_name)
-            self.set_runner(target)
+            runner_method_name = Thread.RUNNER_PER_CLASS[cls.__name__]
+            runner = getattr(self, runner_method_name)
+            self.set_runner(runner)
+
+    def set_port_name(self, name):
+        # TODO: check port existance.
+        self.__port_name = name
+
+    def get_port_name(self):
+        return self.__port_name
 
     def set_name(self, name):
+        """Set the given name as thread's name."""
         self.__name = verify_string(name)
 
     def get_name(self):
         return self.__name
 
-    def set_runner(self, target):
-        self.__target = target
+    def set_runner(self, runner):
+        self.__runner = runner
 
     def get_runner(self):
-        return self.__target
+        """Returns runner. By default returns None value."""
+        return self.__runner
 
     def get_runner_name(self):
+        """Returns name of the runner which is the function name. By
+        default if runner was not defined, returns None.
+
+        def hello_world():
+            print "Hello world!"
+
+        thread = Thread("HELLO_WORLD", hello_world)
+        print thread.get_runner_name()
+
+        As result we will have string hello_world.
+        """
         if self.get_runner():
             return self.get_runner().__name__
         return None
@@ -143,22 +179,10 @@ class Thread(OSObject):
         """This method represents thread's activity. You may override this
         method in a subclass. The standard run() method invokes the callable
         object passed to the object's constructor as the target argument."""
-        target = self.get_runner()
-        if not target:
+        runner = self.get_runner()
+        if not runner:
             raise KernelException("Runner wasn't defined")
-        target()
-
-    @classmethod
-    def runner(cls, runner):
-        """Mark target method as thread's entry point."""
-        # Search for the target class to which target function belongs
-        runner_cls = caller()
-        if not issubclass(runner_cls, Thread):
-            raise Exception("Must be subclass of Thread.")
-        # Save the target for a nearest future when the __init__ method will
-        # we called for the target_cls class.
-        Thread.RUNNERS_BY_CLASS[runner_cls] = runner.__name__
-        return target
+        runner()
 
     # The following methods provide support for pickle. This will allow user to
     # pickle Thread instance. Priously I was trying to use this to be able copy
@@ -195,7 +219,7 @@ class Messenger(Thread):
     specified map of predefined handlers.
 
     The following example shows the most simple case how to define a
-    new message handler by using message_handler() decorator:
+    new message handler by using Messenger.message_handler() decorator:
 
     class SerialMessenger(Messenger):
         @Messenger.message_handler("SERIAL_OPEN")
@@ -221,7 +245,7 @@ class Messenger(Thread):
     "_handler" postfix to the the name of handler,
     e.g. serial_open_handler()."""
 
-    MESSAGE_HANDLERS_BY_CLASS = dict()
+    MESSAGE_HANDLERS_MAP_PER_CLASS = dict()
     PORT_NAME_FORMAT = "MESSENGER_PORT_%d"
     PORT_SIZE = 2
     COUNTER_PER_PORT_NAME_FORMAT = dict()
@@ -229,7 +253,7 @@ class Messenger(Thread):
     def __init__(self, name=None, port_name=None, port_name_format=None,
                  port_size=None):
         Thread.__init__(self, name, port_name=port_name)
-        # Define port name format and set default one if required
+        # Define the format of port name or set default if required
         if not port_name_format:
             port_name_format = self.PORT_NAME_FORMAT
         if not port_name_format in self.COUNTER_PER_PORT_NAME_FORMAT:
@@ -243,16 +267,19 @@ class Messenger(Thread):
             if not port_size:
                 port_size = self.PORT_SIZE
             get_running_kernel().add_port(Port(port_name, port_size))
-        self.__message_handlers = {}
+        self.set_port_name(port_name)
+        self.__message_handlers_map = dict()
         self.__default_message_handlers()
 
     def __default_message_handlers(self):
-        """Set default message handlers from MESSAGE_HANDLERS_BY_CLASS if such
-        were defined."""
+        """Set default message handlers from
+        Messenger.MESSAGE_HANDLERS_BY_CLASS if such were defined."""
         cls_name = self.__class__.__name__
-        if not cls_name in Messenger.MESSAGE_HANDLERS_BY_CLASS:
+        if not cls_name in Messenger.MESSAGE_HANDLERS_MAP_PER_CLASS:
             return
-        for command, handler in Messenger.MESSAGE_HANDLERS_BY_CLASS[cls_name].items():
+        message_handlers_map = \
+            Messenger.MESSAGE_HANDLERS_MAP_PER_CLASS[cls_name]
+        for command, handler in message_handlers_map.items():
             self.add_message_handler(command, handler)
 
     @classmethod
@@ -261,57 +288,64 @@ class Messenger(Thread):
         add a new message handler. See add_message_handler() for more
         details."""
         verify_message_command(cmd)
-        target_cls_name = inspect.getouterframes(inspect.currentframe())[1][3]
-        table = Messenger.MESSAGE_HANDLERS_BY_CLASS
+        target_cls_name = caller(2)
         if not target_cls_name in table:
-            table[target_cls_name] = {}
+            Messenger.MESSAGE_HANDLERS_MAP_PER_CLASS[target_cls_name] = dict()
         def catch_message_handler(handler):
-            table[target_cls_name][cmd] = handler
+            Messenger.MESSAGE_HANDLERS_MAP_PER_CLASS[target_cls_name][cmd] = handler
             return handler
         return catch_message_handler
 
     def add_message_handler(self, command, handler):
         """Maps a command extracted from a message to the specified handler
         function."""
+        if not callable(handler):
+            raise Exception("The handler %s has to be callable." % handler)
         if self.has_message_handler(command):
-            raise Exception("This message handler already defined.")
-        self.__message_handlers[command] = handler
+            print "WARNING: The handler %s of the message %s will be redefined"\
+                % (self.find_message_handler(command))
+        self.__message_handlers_map[command] = handler
+
+    def get_supported_messages(self):
+        """Returns a list of messages for which the messenger has
+        handlers."""
+        return self.__message_handlers_map.keys()
 
     def has_message_handler(self, command):
-        return command in self.get_message_handlers()
-
-    def get_message_handlers(self):
-        return self.__message_handlers
+        """This method is alias to Messenger.find_message_handler(),
+        but it returns True if handler was found or False otherwise."""
+        return not not self.find_message_handler(command)
 
     def find_message_handler(self, command):
-        if not command in self.get_message_handlers():
-            raise Exception("A handler for '%s' command was not specified"
-                % command)
+        """Returns message handler if there is a handler for command,
+        or None if there is no such handler."""
+        if not command in self.get_supported_messages():
+            return None
         handler = self.__message_handlers[command]
-        if not handler:
-            raise Exception("Messenger doesn't support '%s' command" % command)
         return handler
 
+    # TODO: create a unique runner.
     def run(self):
+        """The messenger's logic."""
         message = get_running_kernel().receive_message()
         if not message:
             return
         command = message.get_command()
-        if not command in self.get_message_handlers():
-            raise Exception("Unknown command '%s'" % command)
         handler = self.find_message_handler(command)
+        if not handler:
+            raise Exception("Unknown command '%s'" % command)
         handler(message)
 
-@_kernel_extension("thread_management", True)
-class _ThreadManagement(_KernelExtension):
-    def __init__(self, threads=[], scheduler=StaticScheduler()):
-        _KernelExtension.__init__(self)
+@kernel_extension("thread_management", True)
+class ThreadManagement(KernelExtension):
+    def __init__(self, threads=list(), scheduler=StaticScheduler()):
+        KernelExtension.__init__(self)
         print "Initialize thread management"
-        self.__threads = {}
+        self.__threads = dict()
         self.__scheduler = None
         # Select scheduler first if defined before any thread will be added
         # By default, if scheduler was not defined will be used static
-        # cheduling policy.
+        # scheduling policy.
         if scheduler:
             self.set_scheduler(scheduler)
         # Add default threads
@@ -394,7 +428,7 @@ class _ThreadManagement(_KernelExtension):
         if not isinstance(scheduler, Scheduler):
             raise KernelTypeException("Scheduler '%s' must be bb.os.kernel.Scheduler "
                                   "sub-class" % scheduler)
-        self.echo("Select scheduler '%s'" % scheduler.__class__.__name__)
+        print "Select scheduler '%s'" % scheduler.__class__.__name__
         self.__scheduler = scheduler
         for thread in self.get_threads():
             scheduler.enqueue_thread(thread)
@@ -506,12 +540,12 @@ class Port(object):
     def count_messages(self):
         return len(self.__messages)
 
-@_kernel_extension("itc", True)
-class _ITC(_KernelExtension):
+@kernel_extension("itc", True)
+class ITC(KernelExtension):
     """Inter-Thread Communication (ITC)."""
 
     def __init__(self):
-        _KernelExtension.__init__(self)
+        KernelExtension.__init__(self)
         print "Initialize ITC"
         self.__commands = []
         self.__ports = {}
@@ -636,14 +670,18 @@ class _ITC(_KernelExtension):
 #_______________________________________________________________________________
 
 class Driver(OSObject, OSObjectMetadata):
-    """A BB device driver controls a hardware component or
-    Part. Interaction with drivers is done through DriverManager,
-    which can be obtained via Driver.get_driver_manager().
+    """A BB device driver controls a hardware component or device
+    represented by Device. Interaction with drivers is done through
+    DriverManager, which can be obtained via
+    Kernel.find_driver_manager().
 
     The following example shows the most simple case how to define a
-    new message handler by using Driver.action_handler() decorator:
+    new action handler by using Driver.action_handler() decorator:
 
     class SerialDriver(Driver):
+        def __init__(self):
+            Driver.__init__(self, "SERIAL_DRIVER")
+
         @Driver.action_handler("SERIAL_OPEN")
         def open_handler(self, device):
             print "Open serial connection"
@@ -652,7 +690,7 @@ class Driver(OSObject, OSObjectMetadata):
 
     class SerialDriver(Driver):
         def __init__(self):
-            Driver.__init__(self)
+            Driver.__init__(self, "SERIAL_DRIVER")
             self.add_action_handler("SERIAL_OPEN", self.serial_open_handler)
 
         def serial_open_handler(self, message):
@@ -663,32 +701,37 @@ class Driver(OSObject, OSObjectMetadata):
     "_handler" postfix to the the name of handler,
     e.g. serial_open_handler()."""
 
-    NAME = None
-    VERSION = None
     MESSENGER_CLASS = Messenger
 
-    ACTION_HANDLERS_BY_CLASS = dict()
+    ACTION_HANDLERS_MAP_PER_CLASS = dict()
 
     def __init__(self, name=None, version=None):
-        OSObjectMetadata.__init__(self, name)
-        if self.NAME:
-            self.set_name(self.NAME)
-        self.version = None
+        self.__name = None
+        if name:
+            self.set_name(name)
+        self.__version = None
         if version:
-            self.version = version
-        elif self.VERSION:
-            self.version = self.VERSION
-        # Internal dictionary of actions and their handlers.
-        self.__action_handlers = dict()
+            self.set_version(version)
+        # Internal table of actions and their handlers.
+        self.__action_handlers_map = dict()
+        self.__default_action_handlers_map()
+        self.__messenger = None
+        if self.MESSENGER_CLASS:
+            self.__messenger = self.MESSENGER_CLASS()
 
-    def __default_action_handlers(self):
-        """Set default action handlers from ACTION_HANDLERS_BY_CLASS
-        if such were defined."""
+    def get_messenger(self):
+        """Returns the Messenger that controls driver activity. By
+        default returns None if messenger wasn't specified."""
+        return self.__messenger
+
+    def __default_action_handlers_map(self):
+        """Set default action handlers from
+        Driver.ACTION_HANDLERS_MAP_PER_CLASS if such were defined."""
         cls_name = self.__class__.__name__
         # Whether we have predefined action handlers
-        if not cls_name in Driver.ACTION_HANDLERS_BY_CLASS:
+        if not cls_name in Driver.ACTION_HANDLERS_MAP_PER_CLASS:
             return
-        for action, handler in Driver.ACTION_HANDLERS_BY_CLASS[cls_name].items():
+        for action, handler in Driver.ACTION_HANDLERS_MAP_PER_CLASS[cls_name].items():
             self.add_message_handler(command, handler)
 
     @classmethod
@@ -697,50 +740,49 @@ class Driver(OSObject, OSObjectMetadata):
         add a new action handler. See add_action_handler() for more
         details."""
         verify_string(action)
-        target_cls_name = caller()
-        table = Driver.ACTION_HANDLERS_BY_CLASS
+        target_cls_name = caller(2)
         if not target_cls_name in table:
-            table[target_cls_name] = dict()
+            Driver.ACTION_HANDLERS_MAP_PER_CLASS[target_cls_name] = dict()
         # Define a sepcial action catcher
         def catch_action_handler(handler):
-            table[target_cls_name][cmd] = handler
+            Driver.ACTION_HANDLERS_MAP_PER_CLASS[target_cls_name][cmd] = handler
             return handler
         # Return our catcher
         return catch_action_handler
 
     def add_action_handler(self, action, handler):
         """Maps an action to the associated handler function."""
+        if not callable(handler):
+            raise Exception("Handler must be callable.")
         if self.has_action_handler(action):
-            raise Exception("A handler '%s' is already associated with "\
-                                "action '%s'" % (handler, action))
+            print "WARNING: A handler '%s' is already associated with "\
+                                "action '%s'" % (handler, action)
         self.__action_handlers[action] = handler
 
-    def has_action_handler(self, action):
+    def is_supported_action(self, action):
         """Whether appropriate handler was defined for a given
         action."""
-        return action in self.get_action_handlers()
+        return action in self.get_supported_actions()
 
-    def get_action_handlers(self):
-        return self.__action_handlers
+    def get_supported_actions(self):
+        return self.__action_handlers_map.keys()
 
     def find_action_handler(self, action):
-        """Find."""
-        if not action in self.get_action_handlers():
-            raise Exception("A handler for '%s' command was not specified"
-                % command)
-        handler = self.__action_handlers[action]
-        if not handler:
-            raise Exception("Driver doesn't support '%s' action" % action)
+        """Returns action handler if there is a handler for action,
+        or None if there is no such handler."""
+        if not self.is_supported_action(action):
+            return None
+        handler = self.__action_handlers_map[action]
         return handler
 
     def attach_device(self, device):
-        """Called by the system to query the existence of a specific
-        device and whether this driver can control it."""
+        """Called by hardware manager to query the existence of a
+        specific device and whether this driver can control it."""
         raise NotImplementedError("Please, implement this!")
 
     def detach_device(self, device):
-        """Called by the system when the device is removed in order to
-        free it from driver's (system) control."""
+        """Called by hardware manager when the device is removed in
+        order to free it from driver's (system) control."""
         raise NotImplementedError("Please, implement this!")
 
 def verify_driver(driver):
@@ -750,69 +792,69 @@ def verify_driver(driver):
 
 class DriverManager(object):
     """This class represents an interface to interract with Driver
-    objects inside of the system. It is system responsibility to
-    create and work with this manager."""
+    objects inside of the system.
+
+    It is system responsibility to create and work with this
+    manager. However developer may use the manager in order to define
+    all device controled by particular driver."""
 
     def __init__(self, driver):
         self.__driver = None
         self.__devices = list()
-        self.__messenger = None
         self.__set_driver(driver)
 
-    def get_messenger(self):
-        """Returns the Messenger instance that controls driver
-        activity. By default if messenger wasn't specified returns
-        None."""
-        return self.__messenger
-
     def __set_driver(self, driver):
-        """This method selects a driver that has to be controled by
-        this manager. It also creates a messenger if such was provided
-        that the driver may use for communication."""
+        """Private method used to select a driver that has to be managed by
+        this manager."""
         verify_driver(driver)
         self.__driver = driver
-        if driver.MESSENGER_CLASS:
-            self.__messenger = driver.MESSENGER_CLASS()
 
     def get_driver(self):
         """Returns Driver instance."""
         return self.__driver
 
     def add_device(self, device):
-        pass
+        verify_device(device)
 
     def has_device(self, device):
-        pass
-
-    def get_device(self):
         pass
 
     def get_devices(self):
         """Return a list of all devices currently bound to the driver."""
         return self.__devices
 
-class Device(OSObject, OSObjectMetadata):
-    """Every device in BBOS system is represented by an instance of
-    this class. Device represents a part from the mapping."""
+class DeviceManager(OSObject):
+    """Every device in BBOS system is managed by an instance of
+    this class. Device manager represents a device from the mapping.
 
-    def __init__(self, name=None, part=None, driver=None):
-        """name is a string that uniquely identifies this device.
+    The following example shows how to register
+    PropellerP8X32Processor from bb.hardware.processors package for
+    kernel, which required from system to create DeviceManager
+    instance to manage this device:
 
-        driver defines a Driver instance that manages this device. Please see
-        Driver class."""
-        OSObjectMetadata.__init__(self, name)
-        self.__part = None
-        if part:
-            self.set_part(part)
+    device = PropellerP8X32Processor()
+    kernel.register_device(device)
+    """
+
+    def __init__(self, device, driver=None):
+        """device is a Device instance that has to be managed by this
+        manager.
+
+        driver defines a Driver instance that manages device. Please
+        see Driver class."""
+        OSObject.__init__(self)
+        self.__device = None
+        self.__set_device(device)
         self.__driver = None
         if driver:
             self.set_driver(driver)
 
-    def set_part(self, part):
-        verify_part(part)
-        self.__part = part
-        if not self.get_name():
-            self.set_name(part.get_label())
+    def __set_device(self, device):
+        verify_device(device)
+        self.__device = device
+
+    def get_device(self):
+        return self.__device
 
     def set_driver(self, driver):
         verify_driver(driver)
@@ -826,50 +868,36 @@ class Device(OSObject, OSObjectMetadata):
     def __str__(self):
         """Returns a string containing a concise, human-readable description of
         this object."""
-        return "Device %s" % self.get_name()
+        return "Device manager of %s" % self.get_device().get_name()
 
-def verify_device(device):
-    if not isinstance(device, Device):
-        raise Exception("Expected Device type; received %s (is %s)" %
-                        (device, device.__class__.__name__))
-
-@_kernel_extension("hardware_management", True)
-class _HardwareManagement(_KernelExtension):
+@kernel_extension("hardware_management", True)
+class HardwareManagement(KernelExtension):
     """This class provides kernel support for hardware
     management. More precisely it provides an interface for device and
-    driver management and their interruction."""
+    driver management and their interruction.
+
+    The following example shows how to  :
+
+    device = PropellerP8X32Device()
+    kernel.register_device(device)
+    driver = PropellerP8X32Driver()
+    kernel.register_driver(driver)
+    kernel.bind_device_to_driver(device, driver)
+    """
 
     def __init__(self):
-        _KernelExtension.__init__(self)
-
+        KernelExtension.__init__(self)
         print "Initialize hardware management"
-
-        self.__devices = dict()
-        self.__driver_managers = {}
-
+        self.__device_managers = dict()
+        self.__driver_managers = dict()
         # Now use mapping to register outside devices via hardware interface
         if self.get_mapping():
             for device in mapping.hardware.get_board().get_devices():
                 self.register_device(device)
 
-    def find_device(self, name):
-        return self.__devices[name]
-
-    def control_device(self, name, action, *args):
-        """Device control is the most common function used for device
-        control, fulfilling such tasks as accessing devices, getting
-        information, sending orders, and exchanging data. This method
-        calls an action for a specified device driver, causing the
-        corresponding device to perform the corresponding operation."""
-        # Try to find target device
-        device = self.find_device(name)
-        if not device:
-            self.panic("Cannot found device '%s'" % name)
-        driver = device.get_driver()
-        if not driver:
-            self.panic("No drivers associated with %s device" % name)
-        f = getattr(driver, action)
-        return f(device, *args)
+    #####################
+    # Device management #
+    #####################
 
     def register_device(self, device):
         """This method registers device."""
@@ -883,41 +911,104 @@ class _HardwareManagement(_KernelExtension):
         verify_device(device)
         return device in self.get_devices()
 
+    def unregister_device(self, device):
+        pass
+
+    def find_device(self, name):
+        """Returns the Device that is called name, or None if there is
+        no such device. More precisely system is looking for DriverManager and
+        then returns Driver instance, which it controls.
+
+        This example returns a device Device of kernel named "SERIAL_DEV_0":
+        device = kernel.find_device("SERIAL_DEV_0")"""
+        manager = self.find_device_manager(name)
+        if not manager:
+            return None
+        return manager.get_driver()
+
+    def find_device_manager(self, name):
+        return self.__device_managers[name]
+
+    def get_device_managers(self):
+        """Returns a list of device managers, one manager for each device."""
+        return self.__device_managers.values()
+
     def get_devices(self):
         """Return complete list of all devices that were successfully
-        registered."""
-        return self.__devices.values()
+        registered by Kernel.register_device()."""
+        devices = list()
+        for manager in self.get_device_managers():
+            devices.append(manager.get_device())
+        return devices
 
     def get_unknown_devices(self):
-        """Return list of unknown devices. The device is unknown when the system
-        does not know the driver that can control it."""
+        """Return list of unknown devices. The device is unknown when
+        the system does not know the driver that can control it."""
         unknown_devices = []
         for device in self.get_devices():
             if not device.get_driver():
                 unknown_devices.append(device)
         return unknown_devices
 
-    def unregister_device(self, device):
-        pass
+    def control_device(self, name, action, *args):
+        """Device control is the most common function used for device
+        control, fulfilling such tasks as accessing devices, getting
+        information, sending orders, and exchanging data. This method
+        calls an action for a specified device driver, causing the
+        corresponding device to perform the corresponding operation.
+
+        The device has to be register by using
+        Kernel.register_device() method and then it has to be
+        associated with a driver that will control this device, for
+        example, this can be done by using
+        Kernel.bind_device_to_driver() method.
+        """
+        # Try to find target device
+        device = self.find_device(name)
+        if not device:
+            self.panic("Cannot found device '%s'" % name)
+        driver = device.get_driver()
+        if not driver:
+            self.panic("No drivers associated with %s device" % name)
+        f = getattr(driver, action)
+        return f(device, *args)
+
+    #####################
+    # Driver management #
+    #####################
 
     def register_driver(self, driver):
-        """Once a driver has been registered, the DriverManager object will
-        be created in order to manage driver's activity within the system.
-        An appropriate driver manager can be obtained by using
-        find_driver_manager() method."""
+        """Once a driver has been registered, the DriverManager object
+        will be created in order to manage driver's activity within
+        the system. Thus the system does not keep Driver instance
+        directly but with help of DriverManager.
+
+        An appropriate driver manager can be obtained by passing
+        driver name to Kernel.find_driver_manager() method."""
         manager = DriverManager(driver)
         self.__driver_managers[driver.NAME] = manager
 
-    def find_driver_manager(self, driver):
-        return self.__driver_managers[driver.NAME]
+    def find_driver(self, name):
+        manager = self.find_driver_manager(name)
+        if not manager:
+            return None
+        return manager.get_driver()
 
-    def is_registered_driver(self, driver):
-        """Define whether or not the driver was registered."""
-        return driver in self.get_drivers()
+    def find_driver_manager(self, name):
+        verify_string(name)
+        return self.__driver_managers[name]
+
+    def is_registered_driver(self, name):
+        """Takes driver name and defines whether or not the driver was
+        registered."""
+        return not not self.find_driver_manager(name)
+
+    def get_driver_managers(self):
+        return self.__driver_managers.values()
 
     def get_drivers(self):
-        drivers = []
-        for manager in self.__driver_managers.values():
+        drivers = list()
+        for manager in self.get_driver_managers():
             drivers.append(manager.get_driver())
         return drivers
 
@@ -929,15 +1020,7 @@ class _HardwareManagement(_KernelExtension):
         process of associating a device with a device driver that can
         control it. In case when system can not bind a device to the
         proper device driver this can be done by hand with help of
-        this method.
-
-        Example:
-        device = Device(part=PropellerP8X32Part())
-        kernel.register_device(device)
-        driver = PropellerP8X32Driver()
-        kernel.register_driver(driver)
-        kernel.bind_device_to_driver(device, driver)
-        """
+        this method."""
         verify_device(device)
         if not self.is_registered_device(device):
             KernelException("In order to bind device to driver, device has to" \
@@ -955,15 +1038,15 @@ class _HardwareManagement(_KernelExtension):
 
 #_______________________________________________________________________________
 
-@_kernel_extension("imc", False)
-class _IMC(_KernelExtension):
+@kernel_extension("imc", False)
+class IMC(KernelExtension):
     def __init__(self):
-        _KernelExtension.__init__(self)
+        KernelExtension.__init__(self)
         print "Initialize IMC"
 
 #_______________________________________________________________________________
 
-class _Kernel(OSObject, Traceable):
+class System(OSObject, Traceable):
     """The heart of BB operating system. In order to connect with application
     inherits OSObject class."""
     def __init__(self, *args, **kargs):
@@ -1099,7 +1182,7 @@ def Kernel(**selected_extensions):
     use_extensions = DEFAULT_KERNEL_EXTENSIONS
     # Verify and update the list of extensions to be used
     for extension, is_required in selected_extensions.items():
-        if extension not in KERNEL_EXTENSIONS:
+        if extension not in KERNEL_EXTENSIONS_MAP:
             raise Exception("Unknown kernel extension: %s" % extension)
         if not is_required and extension in use_extensions:
             use_extensions.remove(extension)
@@ -1114,8 +1197,8 @@ def Kernel(**selected_extensions):
         use_extensions.append('imc')
     # Translate a list of required extensions to the list of classes that
     # represent these extensions
-    extensions = tuple([KERNEL_EXTENSIONS[extension] for extension in
+    extensions = tuple([KERNEL_EXTENSIONS_MAP[extension] for extension in
                         use_extensions])
-    kernel_cls = type("Kernel", (_Kernel, ) + extensions,
+    kernel_cls = type("Kernel", (System, ) + extensions,
                   {'__extensions': extensions})
     return kernel_cls()

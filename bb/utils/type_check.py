@@ -18,6 +18,8 @@ def is_boolean(var):
     """Return true if the specified object is a boolean."""
     return type(var) is BooleanType
 
+is_bool = is_boolean
+
 def is_string(var):
     """Return true if the specified object is a string."""
     return type(var) is StringType
@@ -33,11 +35,21 @@ def is_dict(var):
     """Return true if the specified variable is a dictionary."""
     return type(var) is DictType
 
+def is_number(x):
+    "Is x a number? We say it is if it has a __int__ method."
+    return hasattr(x, '__int__')
+
+def is_sequence(x):
+    "Is x a sequence? We say it is if it has a __getitem__ method."
+    return hasattr(x, '__getitem__')
+
 def verify_boolean(var):
     if var and not is_boolean(var):
         raise TypeError("'%s' is not a boolean type: %s" %
                         (var.__class__.__name__, var))
     return var
+
+verify_bool = verify_boolean
 
 def verify_int(var):
     if var and not is_int(var):

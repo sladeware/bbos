@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
-from bb.hardware import Part, Core, Processor, Board
+from bb.hardware import Device, Core, Processor, Board
 
 #_______________________________________________________________________________
 

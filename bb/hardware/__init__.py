@@ -6,30 +6,30 @@ __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
 import types
 
-from bb.utils.type_check import verify_list, is_list, is_dict
+from bb.utils.type_check import verify_list, verify_string, is_list, is_dict
 
 #_______________________________________________________________________________
 
-class Part(object):
-    LABEL_FORMAT = "PART_%d"
+class Device(object):
+    LABEL_FORMAT = "DEVICE_%d"
     COUNTER_PER_LABEL_FORMAT = dict()
 
     def __init__(self, label=None):
         self.__label = None
         if not label:
             label_format = self.LABEL_FORMAT
-            if not label_format in Part.COUNTER_PER_LABEL_FORMAT:
-                Part.COUNTER_PER_LABEL_FORMAT[label_format] = 1
-            counter = Part.COUNTER_PER_LABEL_FORMAT[label_format]
+            if not label_format in Device.COUNTER_PER_LABEL_FORMAT:
+                Device.COUNTER_PER_LABEL_FORMAT[label_format] = 1
+            counter = Device.COUNTER_PER_LABEL_FORMAT[label_format]
             label = label_format % counter
-            Part.COUNTER_PER_LABEL_FORMAT[label_format] += 1
+            Device.COUNTER_PER_LABEL_FORMAT[label_format] += 1
         self.set_label(label)
 
     def get_label(self):
         return self.__label
 
     def set_label(self, label):
-        self.__label = label
+        self.__label = verify_string(label)
 
     def power_on(self):
         raise NotImplemented("What the device should do when the power is on?")
@@ -44,21 +44,23 @@ class Part(object):
         self.__owner = owner
 
     def __str__(self):
-        return "Part %s" % self.get_label()
+        """Returns a string containing a concise, human-readable
+        description of this object."""
+        return "Device %s" % self.get_label()
 
-def verify_part(part):
+def verify_device(part):
     if not isinstance(part, Part):
         raise TypeError("Not a Part.")
 
 #_______________________________________________________________________________
 
-class Core(Part):
+class Core(Device):
     """Base class used to represent a core within a processor.
 
     A Core is the smallest computational unit supported by BB. There is one
     core per processes and one process per core."""
     def __init__(self, name, mapping=None):
-        Part.__init__(self, name)
+        Device.__init__(self, name)
         self.__mapping = None
         self.__owner = None
         if mapping:
@@ -80,7 +82,7 @@ class Core(Part):
     def get_mapping(self):
         return self.__mapping
 
-class Processor(Part):
+class Processor(Device):
     """Base class used for creating a BB processor.
 
     A processor contains one or more cores. It is a discrete semiconductor
@@ -88,7 +90,7 @@ class Processor(Part):
     microcontroller is a processor."""
 
     def __init__(self, name, num_cores=0, cores=None):
-        Part.__init__(self, name)
+        Device.__init__(self, name)
         if num_cores < 1:
             raise NotImplemented("Number of cores must be more than zero.")
         self.__num_cores = num_cores
@@ -158,7 +160,7 @@ class Processor(Part):
             mappings.append(core.get_mapping())
         return mappings
 
-class Board(Part):
+class Board(Device):
     """Base class representing a board -- i.e. computing hardware.
 
     A board contains one or more processors. Each processor may or may not be
@@ -167,7 +169,7 @@ class Board(Part):
     may be present on the board, but BB does not explicitly refer to them."""
 
     def __init__(self, name, num_processors, processors=[]):
-        Part.__init__(self, name)
+        Device.__init__(self, name)
         self.__num_processors = num_processors
         self.__processors = {}
         self.__devices = []
