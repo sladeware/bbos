@@ -52,13 +52,26 @@ def _kernel_extension(name, default=True):
 #_______________________________________________________________________________
 
 class Thread(OSObject):
-    """The thread is an atomic unit if action within the BBOS
+    """The thread is an atomic unit if action within the BB
     operating system, which describes application specific actions
-    wrapped into a single context of execution."""
+    wrapped into a single context of execution.
 
-    # Constant that keeps marked runners sorted by owner class. The content of
+    class Demo(Thread):
+        @Thread.runner
+        def hello_world(self):
+            print "Hello world!"
+
+    thread = kernel.add_thread(Demo())
+
+
+    def hello_world():
+        print "Hello world!"
+    thread = kernel.add_thread(Thread("DEMO", hello_world))
+    """
+
+    # This constant keeps marked runners sorted by owner class. The content of
     # this variable will be formed by decorator @runner.
-    MARKED_RUNNERS = {}
+    RUNNERS_BY_CLASS = {}
 
     def __init__(self, name=None, target=None, port_name=None):
         """This constructor should always be called with keyword arguments.
@@ -92,15 +105,15 @@ class Thread(OSObject):
         return self.__port_name
 
     def __detect_runner_method(self):
-        """Okay, let us search for the runner in methods marked with help of
-        @runner decorator."""
+        """Okay, let us search for the runner in methods marked with
+        help of @runner decorator."""
         cls = self.__class__
-        if cls.__name__ in Thread.MARKED_RUNNERS:
+        if cls.__name__ in Thread.RUNNERS_BY_CLASS:
             # Since the runner here is represented by a function it will be
             # converted to a method for a given instance. Then this method
             # will be stored as attribute 'target'.
             if not self.__runner_method_name:
-                self.__runner_method_name = Thread.MARKED_RUNNERS[cls.__name__]
+                self.__runner_method_name = Thread.RUNNERS_BY_CLASS[cls.__name__]
                 target = getattr(self, self.__runner_method_name)
             self.set_runner(target)
 
@@ -136,13 +149,15 @@ class Thread(OSObject):
         target()
 
     @classmethod
-    def runner(cls, target):
+    def runner(cls, runner):
         """Mark target method as thread's entry point."""
         # Search for the target class to which target function belongs
-        target_cls = inspect.getouterframes(inspect.currentframe())[1][3]
+        runner_cls = caller()
+        if not issubclass(runner_cls, Thread):
+            raise Exception("Must be subclass of Thread.")
         # Save the target for a nearest future when the __init__ method will
         # we called for the target_cls class.
-        Thread.MARKED_RUNNERS[target_cls] = target.__name__
+        Thread.RUNNERS_BY_CLASS[runner_cls] = runner.__name__
         return target
 
     # The following methods provide support for pickle. This will allow user to
@@ -161,8 +176,8 @@ class Thread(OSObject):
       self.__detect_runner_method()
 
     def __str__(self):
-        """Returns a string containing a concise, human-readable description of
-        this object."""
+        """Returns a string containing a concise, human-readable
+        description of this object."""
         return "Thread %d" % self.get_name()
 
 class Idle(Thread):
@@ -622,11 +637,11 @@ class _ITC(_KernelExtension):
 
 class Driver(OSObject, OSObjectMetadata):
     """A BB device driver controls a hardware component or
-    part. Interaction with drivers is done through DriverManager,
-    which can be obtained via
+    Part. Interaction with drivers is done through DriverManager,
+    which can be obtained via Driver.get_driver_manager().
 
     The following example shows the most simple case how to define a
-    new message handler by using message_handler() decorator:
+    new message handler by using Driver.action_handler() decorator:
 
     class SerialDriver(Driver):
         @Driver.action_handler("SERIAL_OPEN")
@@ -643,12 +658,8 @@ class Driver(OSObject, OSObjectMetadata):
         def serial_open_handler(self, message):
             print "Open serial connection"
 
-    When a SerialMessenger object receives a SERIAL_OPEN message, the
-    message is directed to SerialMessenger.serial_open_handler handler
-    for the actual processing.
-
     Note, in order to privent any conflicts with already defined
-    methods the message handler should be named by concatinating
+    methods the action handler should be named by concatinating
     "_handler" postfix to the the name of handler,
     e.g. serial_open_handler()."""
 
@@ -713,6 +724,7 @@ class Driver(OSObject, OSObjectMetadata):
         return self.__action_handlers
 
     def find_action_handler(self, action):
+        """Find."""
         if not action in self.get_action_handlers():
             raise Exception("A handler for '%s' command was not specified"
                 % command)
@@ -721,15 +733,15 @@ class Driver(OSObject, OSObjectMetadata):
             raise Exception("Driver doesn't support '%s' action" % action)
         return handler
 
-    def control(self, device):
+    def attach_device(self, device):
         """Called by the system to query the existence of a specific
         device and whether this driver can control it."""
-        raise NotImplemented("Please, implement this!")
+        raise NotImplementedError("Please, implement this!")
 
-    def decontrol(self, device):
+    def detach_device(self, device):
         """Called by the system when the device is removed in order to
         free it from driver's (system) control."""
-        raise NotImplemented("Please, implement this!")
+        raise NotImplementedError("Please, implement this!")
 
 def verify_driver(driver):
     if not isinstance(driver, Driver):
@@ -1009,9 +1021,9 @@ class _Kernel(OSObject, Traceable):
     def panic(self, text):
         """Halt the system.
 
-        Display a message, then perform cleanups with stop. Concerning the
-        application this allows to stop a single process, while all other
-        processes are running."""
+        Display a message, then perform cleanups with stop. Concerning
+        the application this allows to stop a single process, while
+        all other processes are running."""
         lineno = inspect.getouterframes(inspect.currentframe())[2][2]
         fname = inspect.getmodule(inspect.stack()[2][0]).__file__
         print "%s:%d:PANIC: %s" % (fname, lineno, text)
@@ -1080,9 +1092,10 @@ def get_running_kernel():
 
 def Kernel(**selected_extensions):
     """This kernel factory creates and returns Kernel class with all
-    required extensions. selected_extensions contains extensions that have to
-    be included (if they have True value) or excluded (if they have False value)
-    from list of extensions that will extend kernel functionality."""
+    required extensions. selected_extensions contains extensions that
+    have to be included (if they have True value) or excluded (if they
+    have False value) from list of extensions that will extend kernel
+    functionality."""
     use_extensions = DEFAULT_KERNEL_EXTENSIONS
     # Verify and update the list of extensions to be used
     for extension, is_required in selected_extensions.items():
