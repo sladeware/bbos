@@ -12,12 +12,12 @@ mouse, keyboard and provides a USB interface for programming. There are
 button, an on/off switch and a 24LC256-I/ST EEPROM for program storage.
 It has a 5.000MHz replacable crystal oscillator."""
 
-from bb.hardware import Board
+from bb.hardware import Board, Sketch
 from bb.hardware.processors import PropellerP8X32A
 
 class PropellerDemoBoard(Board):
     """Propeller Demo Board base class."""
-    def __init__(self, mappings=[]):
-        processors = [PropellerP8X32A(mappings)]
-        Board.__init__(self, "Propeller Demo Board", 1, processors)
-
+    def __init__(self):
+        Board.__init__(self, "Propeller Demo Board")
+        sketch = Sketch.get_active_instance()
+        sketch.connect(self, PropellerP8X32A())

@@ -3,6 +3,7 @@
 __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
 import os
+import os.path
 import xml.dom
 import xml.dom.minidom
 import zipfile
@@ -11,9 +12,10 @@ from bb.hardware import Part, Connector
 
 #_______________________________________________________________________________
 
+FRITZING_HOME = "/opt/fritzing"
 FRITZING_PART_FILE_EXT = "fzp"
 FRITZING_PART_ZFILE_EXT = "fzpz"
-FRITZING_APP_FILE_EXT = "fz"
+FRITZING_SKETCH_FILE_EXT = "fz"
 
 PART_ATTRIBUTES = ("version", "author", "title", "label", "date", "description")
 CONNECTOR_ATTRIBUTES = ("description",)
@@ -31,11 +33,35 @@ def merge_parts(fz_part, part):
     """Merge two parts: fritzing part and bb part. Returns updated bb part."""
     return part
 
-def merge_app(fz_fname):
-    pass
-
-def read_app(fz_fname):
-    pass
+def read_sketch(fz_fname):
+    if not os.path.exists(fz_fname):
+        raise IOError("No such file: '%s'" % fz_fname)
+    fz_string = None
+    if fz_fname.endswith(FRITZING_SKETCH_FILE_EXT):
+        fh = open(fz_fname, "r")
+        fz_string = fh.read()
+    fz_dom = xml.dom.minidom.parseString(fz_string)
+    # Read root element:
+    #   <module fritzingVersion="..." moduleId="...">
+    #   </module>
+    root = fz_dom.documentElement
+    if not root.tagName == "module":
+        raise Exception()
+    instances = root.getElementsByTagName("instance")
+    assert instances.length > 0, "'" + fz_fname + "' has no instances"
+    for instance in instances:
+        # The path attribute has the following view: :path
+        # Do we need to take only the last path?
+        part_fname = instance.getAttribute('path').split(":").pop()
+        # In some way this path is absolute, we need to make it as local for
+        # FRITZING_HOME directory
+        if part_fname.startswith(os.sep):
+            part_fname = part_fname[1:]
+        part_fname = os.path.abspath(os.path.join(FRITZING_HOME, part_fname))
+        if not os.path.exists(part_fname):
+            raise IOError("No such part: '%s'" % part_fname)
+        
+        exit(0)
 
 def read_part(part, fz_fname, update_parameters=True, update_connectors=True):
     """Read fritzing part file. It can be zipped .fzpz file or just .fzp file.
@@ -44,7 +70,7 @@ def read_part(part, fz_fname, update_parameters=True, update_connectors=True):
       part = Part()
       read_part(part, 'MCP3208.fzpz')"""
     if not os.path.exists(fz_fname):
-        assert False, "'" + fz_fname + "' not found"
+        raise IOError("No such file: '%s'" % fz_fname)
     fz_string = None
     # Whether our file is zip-file
     if fz_fname.endswith(FRITZING_PART_ZFILE_EXT):
@@ -112,7 +138,9 @@ def __read_properties(root, part):
 #_______________________________________________________________________________
 
 if __name__ == '__main__':
-    part = Part()
-    read_part(part, '/home/d2rk/Desktop/bbos/branches/robot2011/parts/MCP3208.fzpz')
-    print part.get_properties()
+    #part = Part()
+    #read_part(part, '/home/d2rk/Desktop/bbos/branches/robot2011/parts/MCP3208.fzpz')
+    #print part.get_properties()
     #print part.find_connector("CH5_pin6").get_property("description")
+
+    read_sketch("/home/d2rk/Desktop/bbos/branches/robot2011/common_board_base_do_not_edit.fz")
