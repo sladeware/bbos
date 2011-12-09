@@ -49,16 +49,67 @@ class Autonaming(object):
 
 #_______________________________________________________________________________
 
-class Connector(Object):
-    TYPE_MALE = "male"
-    TYPE_FEMALE = "female"
-    TYPE_WIRE = "wire"
-    TYPE_PAD = "pad"
-    TYPE_UNKNOWN = "unknown"
+class Connector(object):
+    """Connector is a plug or receptacle which can be easily joined to
+    or separated from its mate."""
 
-    def __init__(self, name, type):
-        Object.__init__(self, name)
-        self.type = type
+    class Metadata(object):
+        TYPE_MALE = "male"
+        TYPE_FEMALE = "female"
+        TYPE_WIRE = "wire"
+        TYPE_PAD = "pad"
+        TYPE_UNKNOWN = "unknown"
+
+        def __init__(self):
+            self.__name = None
+            self.__type = self.TYPE_UNKNOWN
+            self.__description = None
+            self.__number = None
+
+        @property
+        def name(self):
+            return self.__name
+
+        @name.setter
+        def name(self, name):
+            self.__name = name
+
+        @property
+        def number(self):
+            return self.__number
+
+        @number.setter
+        def number(self, number):
+            self.__number = number
+
+        @property
+        def description(self):
+            return self.__description
+
+        @description.setter
+        def description(self, text):
+            self.__description = text
+
+        @property
+        def type(self):
+            return self.__type
+
+        @type.setter
+        def type(self, type_):
+            self.__type = type_
+
+    def __init__(self):
+        self.metadata = self.Metadata()
+        self._connectors = dict()
+
+    def connect_to(self, connector):
+        """Connect source connector to destination connector."""
+        if not self.is_connected_to(connector):
+            self._connectors[connector.metadata.number] = connector
+            connector.connect_to(self)
+
+    def is_connected_to(self, connector):
+        return connector.metadata.number in self._connectors
 
 def is_connector(connector):
     return isinstance(connector, Connector)
@@ -75,6 +126,8 @@ class Sketch(object):
     # Public variable that keeps an instance of currently active sketch
     active_instance = None
 
+    # Complete list of all parts from all sketches. The part can not
+    # belong to more than one sketch.
     all_parts = dict()
 
     def __init__(self):
@@ -141,34 +194,129 @@ class Sketch(object):
 
 #_______________________________________________________________________________
 
-class Part(Object):
+class Part(object):
 
-    def __init__(self, name=None):
-        Object.__init__(self, name)
+    class Properties(object):
+        """"This class describes part's technical
+        characteristics. It includes all of the distinguishing features that
+        make your part unique."""
+
+    class Metadata(object):
+        """This class keeps metadata information for Part."""
+        def __init__(self):
+            self.__author = None
+            self.__name = None
+            self.__version = "0.0.0"
+            self.__description = None
+            self.__reference_format = "Part"
+            self.__keywords = list()
+
+        @property
+        def keywords(self):
+            """A list of additional keywords to be used to assist
+            searching for the package in a larger catalog. This makes
+            the part findable."""
+            return self.__keywords
+
+        @property
+        def name(self):
+            return self.__name
+
+        @name.setter
+        def name(self, name):
+            self.__name = name
+
+        @property
+        def reference_format(self):
+            """See Part.reference"""
+            return self.__reference_format
+
+        @reference_format.setter
+        def reference_format(self, frmt):
+            self.__reference_format = frmt
+
+        @property
+        def description(self):
+            """A longer description of the part that can run to
+            several paragraphs."""
+            return self.__description
+
+        @description.setter
+        def description(self, text):
+            self.__description = text
+
+        @property
+        def version(self):
+            return self.__version
+
+        @version.setter
+        def version(self, version):
+            self.__version = version
+
+        @property
+        def author(self):
+            """A string containing the author's name at a minimum; additional
+            contact information may be provided."""
+            return self.__author
+
+        @author.setter
+        def author(self, name):
+            self.__author = name
+
+    def __init__(self, *args):
+        self.__reference = None
+        self.__id = id(self)
         self.__connectors = dict()
+        self.__properties = self.Properties()
+        # Store the part meta-data (name, version, author, and so
+        # forth) in a separate object -- we're getting to have enough
+        # information here that it's worth it.
+        self.__metadata = self.Metadata()
+
+    @property
+    def metadata(self):
+        return self.__metadata
+
+    @property
+    def properties(self):
+        return self.__properties
 
     def add_connector(self, connector):
-        verify_connector(connector)
         if self.has_connector(connector):
-            raise Exception("This connector was already defined")
-        self.__connectors[connector.get_name()] = connector
+            raise Exception("'%s' already has connector '%s'" \
+                                % (self.metadata.name, connector.metadata.name))
+        self.__connectors[connector.metadata.number] = connector
 
     def has_connector(self, connector):
-        return connector.get_name() in self.__connectors
+        return connector.metadata.name in self.__connectors
 
-    def find_connector(self, name):
-        verify_string(name)
-        return self.__connectors[name]
+    def find_connector(self, number):
+        return self.__connectors.get(number, None)
+
+    def get_num_connectors(self):
+        return len(self.get_connectors())
 
     def get_connectors(self):
         return self.__connectors.values()
 
-    def get_num_connectors(self):
+    @property
+    def reference(self):
+        """Reference designator (abbrv. "ref des") -- The name of a
+        component on a printed circuit by convention beginning with
+        one or two letters followed by a numeric value. The letter
+        designates the class of component; eg. "Q" is commonly used as
+        a prefix for transistors."""
+        return self.__reference
 
-        return len(self.get_connectors())
+    @reference.setter
+    def reference(self, value):
+        self.__reference = value
 
-    def remove_connector(self, connector):
-        raise
+    def get_id(self):
+        return self.__id
+
+    def set_id(self, identifier):
+        self.__id = identifier
 
     def __str__(self):
         """Returns a string containing a concise, human-readable
@@ -194,7 +342,7 @@ class Device(Part):
     def __str__(self):
         """Returns a string containing a concise, human-readable
         description of this object."""
-        return "Device %s" % self.get_name()
+        return "Device %s" % self.name
 
 def is_device(instance):
     return isinstance(instance, Device)
@@ -202,181 +350,5 @@ def is_device(instance):
 def verify_device(instance):
     if not is_device(instance):
         raise TypeError("Not a device.")
-    return device
-
-#_______________________________________________________________________________
-
-class Core(Object):
-    """Base class used to represent a core within a processor. In
-    comparison to another hardware components, core is not a Device
-    since it can not be reused outside of processor. Thus it's a part
-    of processor.
-
-    A Core is the smallest computational unit supported by BB. There
-    is one core per process and one process per core. It connects
-    outside world with mapping, that allows operating system to all
-    ather devices."""
-
-    def __init__(self, name, mapping=None):
-        Object.__init__(self, name)
-        self.__processor = None
-        self.__mapping = None
-        if mapping:
-            self.set_mapping(mapping)
-
-    def get_processor(self):
-        return self.__processor
-
-    def set_processor(self, processor):
-        self.__processor = processor
-
-    def set_mapping(self, mapping):
-        """Connects core with mapping. Once they are connected, the
-        mapping can see the core and other devices through hardware
-        reflector if such were defined."""
-        from bb.app import Mapping, verify_mapping
-        self.__mapping = verify_mapping(mapping)
-        mapping.hardware.set_core(self)
-
-    def get_mapping(self):
-        """Returns Mapping associated with this core. By default
-        returns None."""
-        return self.__mapping
-
-def is_core(core):
-    """Returns True if specified variable is a Core."""
-    return isinstance(core, Core)
-
-def verify_core(core):
-    if not is_core(core):
-        raise TypeError('core "%s" must be bb.os.Core sub-class' % core)
-    return core
-
-#_______________________________________________________________________________
-
-class Processor(Device):
-    """Base class used for creating a processor. It is a discrete
-    semiconductor based device used for computation. For example, the
-    PIC32MX5 microcontroller is a processor.
-
-    A processor contains one or more cores, where each is represented by
-    a Core. All the cores a enumerated.
-
-    The following example shows how to define a processor with a
-    single core on it:
-
-    processor = Processor("MyProcessor", 1, (Core("MyCore")))
-    core = processor.get_core() # or processor.get_core(0)
-
-    The composition and balance of the cores in multi-core processor
-    show great variety. Some architectures use one core design
-    repeated consistently ("homogeneous"), while others use a mixture
-    of different cores, each optimized for a different,
-    "heterogeneous" role. Homogeneous multi-core systems include only
-    identical cores, heterogeneous multi-core systems have cores which
-    are not identical. The Processor.validate_core() and
-    Processor.is_valid_core() can be reused in order to provide core
-    validation."""
-
-    def __init__(self, name, num_cores=0, cores=None):
-        Device.__init__(self, name)
-        if num_cores < 1:
-            raise Exception("Number of cores must be greater than zero.")
-        self.__num_cores = num_cores
-        self.__cores = [None] * num_cores
-        if cores:
-            self.set_cores(cores)
-
-    def set_cores(self, cores):
-        """Set a bunch of cores at once. The set of cores can be
-        represented by any sequence (in this case processor's position in
-        this list will be its ID) and by a dict (the key represents
-        processor's ID and value - processor's instance)."""
-        if is_sequence(cores) and len(cores):
-            for i in range(len(cores)):
-                self.set_core(cores[i], i)
-        elif is_dict(cores) and len(cores):
-            for id, core in cores.items():
-                self.set_core(core, id)
-        else:
-            raise Exception("Cores is not a sequnce or dictionary.")
-
-    def set_core(self, core, id):
-        """Set a processor's core associated with specified
-        identifier. If the core with such ID is already presented, it
-        will be replaced."""
-        verify_core(core)
-        verify_int(id)
-        self.validate_core(core)
-        self.validate_core_id(id)
-        self.__cores[id] = core
-
-    def get_core(self):
-        """Returned the first core Core with ID 0."""
-        return self.find_core(0)
-
-    def find_core(self, by):
-        """Find processor's core by an index or name."""
-        self.validate_core_id(by)
-        return self.__cores[by]
-
-    def validate_core(self, core):
-        if not self.is_valid_core(core):
-            raise NotImplementedError()
-
-    def is_valid_core(self, core):
-        """This method has to be rewriten for a proper processor. For
-        example for PropellerP8X32 processor we are always waiting for
-        PropellerCog core. By default it simply reuses is_core()
-        function."""
-        return is_core(core)
-
-    def validate_core_id(self, i):
-        """Validates core ID, which has to be less than the total
-        number of cores and greater or equal to zero."""
-        if i >= 0 and self.get_num_cores() <= i:
-            raise Exception('The %s supports up to %d cores. '
-                            'You have too many: %d' %
-                            (self.__class__.__name__,
-                             self.get_num_cores(), i))
-
-    def get_cores(self):
-        """Returns all the cores."""
-        return self.__cores
-
-    def get_num_cores(self):
-        return self.__num_cores
-
-    def get_mappings(self):
-        """Returns a list of mappings managed by this processor. Each
-        mapping is taken from appropriate core."""
-        mappings = list()
-        for core in self.get_cores():
-            if not core:
-              continue
-            mappings.append(core.get_mapping())
-        return mappings
-
-def verify_processor(processor):
-    if not isinstance(processor, Processor):
-        raise TypeError('processor "%s" must be bb.os.hardware.Processor'
-                        'sub-class' % processor)
-    return processor
-
-#_______________________________________________________________________________
-
-class Breadboard(Device):
-    pass
-
-class Board(Device):
-    """Base class representing a board -- i.e. computing hardware.
-
-    A board contains one or more processors. Each processor may or may
-    not be the same, depending on the board. A board is a piece of
-    hardware that performs computation within its processors. Other
-    supporting hardware may be present on the board, but BB does not
-    explicitly refer to them."""
-
-    def __init__(self, name):
-        Device.__init__(self, name)
+    return instance
 

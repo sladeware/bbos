@@ -17,7 +17,7 @@ import time
 import random
 
 from bb.utils.type_check import verify_list, verify_int, verify_string
-from bb.app.mapping import Mapping
+from bb.app.mapping import Mapping, verify_mapping
 from bb.app.network import Network
 
 SIMULATION_MODE = 'SIMULATION'

@@ -12,8 +12,11 @@ mouse, keyboard and provides a USB interface for programming. There are
 button, an on/off switch and a 24LC256-I/ST EEPROM for program storage.
 It has a 5.000MHz replacable crystal oscillator."""
 
-from bb.hardware import Board, Sketch
-from bb.hardware.processors import PropellerP8X32A
+from bb.hardware import Sketch
+from bb.hardware.parts.boards import Board
+from bb.hardware.parts.processors import PropellerP8X32A
+
+#_______________________________________________________________________________
 
 class PropellerDemoBoard(Board):
     """Propeller Demo Board base class."""

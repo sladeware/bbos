@@ -15,17 +15,18 @@ import threading
 import multiprocessing
 import types
 import re
+import inspect
 import time
 
 import bb
-from bb.utils import caller
+from bb.utils.builtins import caller
 from bb.utils.type_check import verify_list, verify_string, verify_bool
 from bb.os import OSObject, OSObjectMetadata
 from bb.os.kernel.errors import *
 from bb.os.kernel.schedulers import *
 from bb.app import Traceable, Application
 from bb.mm.mempool import MemPool, mwrite
-from bb.hardware import verify_device
+from bb.hardware import verify_device, Device
 
 #_______________________________________________________________________________
 
@@ -806,7 +807,7 @@ class DriverManager(object):
     def __set_driver(self, driver):
         """Private method used to select a driver that has to be managed by
         this manager."""
-        verify_driver(driver)
+        #verify_driver(driver)
         self.__driver = driver
 
     def get_driver(self):
@@ -904,7 +905,8 @@ class HardwareManagement(KernelExtension):
         if self.is_registered_device(device):
             raise KernelException("Device '%s' was already registered." %
                                   device.get_name())
-        self.__devices[device.get_name()] = device
+        manager = DeviceManager(device)
+        self.__device_managers[device.name] = manager
 
     def is_registered_device(self, device):
         """Define whether or not the device was registered."""
@@ -945,9 +947,9 @@ class HardwareManagement(KernelExtension):
         """Return list of unknown devices. The device is unknown when
         the system does not know the driver that can control it."""
         unknown_devices = []
-        for device in self.get_devices():
-            if not device.get_driver():
-                unknown_devices.append(device)
+        for manager in self.get_device_managers():
+            if not manager.get_driver():
+                unknown_devices.append(manager.get_device())
         return unknown_devices
 
     def control_device(self, name, action, *args):
@@ -1077,7 +1079,7 @@ class System(OSObject, Traceable):
             raise KernelException("At least one thread has to be added")
         # Test the system for unknown devices
         if self.get_unknown_devices():
-            self.panic("Unknown devices: %s" % ", ".join([str(device) for device
+            self.warning("Unknown devices: %s" % ", ".join([str(device) for device
                                                 in self.get_unknown_devices()]))
 
     @OSObject.simulation_method
@@ -1099,6 +1101,11 @@ class System(OSObject, Traceable):
         """Shutdown everything and perform a clean system stop."""
         print "Kernel stopped"
         sys.exit(0)
+
+    def warning(self, text):
+        lineno = inspect.getouterframes(inspect.currentframe())[2][2]
+        fname = inspect.getmodule(inspect.stack()[2][0]).__file__
+        print "%s:%d:WARNING: %s" % (fname, lineno, text)        
 
     @OSObject.simulation_method
     def panic(self, text):

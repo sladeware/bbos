@@ -2,7 +2,9 @@
 
 __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
-from bb.hardware import Device, Core, Processor, Board
+from bb.hardware import Device
+from bb.hardware.parts.boards import Board
+from bb.hardware.parts.processors import Processor
 
 #_______________________________________________________________________________
 
@@ -37,9 +39,9 @@ class _Hardware(object):
         return not not self.get_core()
 
     def set_core(self, core):
-        if not isinstance(core, Core):
+        if not isinstance(core, Processor.Core):
             raise TypeError("Core must be %s sub-class" %
-                            Core.__class__.__name__)
+                            Processor.Core.__class__.__name__)
         self.__core = core
 
     def get_core(self):
@@ -69,3 +71,4 @@ def verify_mapping(mapping):
         raise TypeError("Unknown mapping '%s'. "
                         "Not a subclass of bb.mapping.Mapping class" %
                         (mapping))
+    return mapping
