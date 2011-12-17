@@ -5,9 +5,9 @@ __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 from bb.app import Application, Mapping
 from bb.os import OS, Kernel, Thread, Port
 from bb.mm.mempool import MemPool, mwrite
-from bb.hardware.boards import PropellerDemoBoard
-from bb.hardware.net.wireless.xbee import XBee
-from bb.hardware.leds import LED
+from bb.hardware.parts.boards import PropellerDemoBoard
+from bb.hardware.parts.net.wireless.xbee import XBee
+from bb.hardware.parts.leds import LED
 
 import time
 
@@ -369,11 +369,12 @@ class MinimeterDevice(PropellerDemoBoard):
     minimeter. On the next step we can create a special board by using Board
     class."""
     def __init__(self, minimeter):
-        PropellerDemoBoard.__init__(self, [minimeter])
-        self.add_device(XBee())
-        self.add_device(LED(color=LED.GREEN))
-        self.add_device(LED(color=LED.RED))
-        self.add_device(LED(color=LED.YELLOW))
+        #PropellerDemoBoard.__init__(self, [minimeter])
+        #self.add_device(XBee())
+        #self.add_device(LED(color=LED.GREEN))
+        #self.add_device(LED(color=LED.RED))
+        #self.add_device(LED(color=LED.YELLOW))
+        pass
 
 class Minimeter(Mapping):
     """This class aims to describe minimeter device. The name of each device has

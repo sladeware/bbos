@@ -51,6 +51,7 @@ class _Hardware(object):
 #______________________________________________________________________________
 
 class Mapping(object):
+    """"""
     def __init__(self, name, os_class=None, build_params=None):
         self.name = name
         self.build_params = build_params or dict()

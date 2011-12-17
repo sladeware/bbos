@@ -6,7 +6,7 @@ __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 a network of minimeter devices."""
 
 from bb.app import Mapping
-from bb.hardware import Board, Processor, Core
+from bb.hardware.parts import Board, Processor
 from bb.os import OS, Thread
 from bb.utils.module import get_file
 
@@ -61,8 +61,8 @@ class WorkstationDevice(Board):
         if not isinstance(mapping, Mapping):
             raise TypeError("mapping should be a Mapping() instance")
         # Build a random board for the first time
-        processor = Processor("A process", 1, [Core("A core", mapping)])
-        Board.__init__(self, "A board", 1, [processor])
+        processor = Processor("A process", 1, [Processor.Core("A core", mapping)])
+        #Board.__init__(self, "A board", 1, [processor])
 
 class Workstation(Mapping):
     os_class = WorkstationOS

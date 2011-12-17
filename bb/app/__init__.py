@@ -76,9 +76,11 @@ class _UnbufferedOutputStream(_OutputStream):
 #_______________________________________________________________________________
 
 class Process(multiprocessing.Process):
-    """The process is a subclass of multiprocessing.Process() class and
-    describes execution of a particular mapping. It represents the life of the
-    OS kernel: from its initialization to the point that it stops executing."""
+    """The process is a one to one mapping and describes a particular CPU core 
+    and the particular kernel on it. It represents the life of that kernel: 
+    from its initialization to the point that it stops executing.
+
+    The process is a subclass of multiprocessing.Process()."""
 
     def __init__(self, mapping):
         self.__mapping = mapping
