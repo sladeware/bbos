@@ -1,4 +1,6 @@
 
+import os.path
+
 class EDA(object):
     # User defined fritzing home directory that can be set with help of
     # X.set_home_dir() function.
@@ -15,7 +17,3 @@ class EDA(object):
             raise IOError("Directory '%s' does not exist" % path)
         cls.home_dir = path
 
-    def set_user_dir(cls, path):
-        if not os.path.exists(path):
-            raise IOError("Directory '%s' does not exist" % path)
-        cls.user_dir = path

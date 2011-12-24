@@ -6,17 +6,12 @@ import types
 import networkx
 
 from bb.eda.primitives import *
+from bb.eda.components import *
 
 #_______________________________________________________________________________
 
-class Wire(Primitive):
-    """A wire is an electrical design primitive. It is a polyline object that
-    forms an electrical connection between points on a schematic and is
-    analogous to a physical wire."""
-
-class Device(Symbol, Distributable):
-    """This class represents a physical device that is placed on the
-    board, e.g. the integrated circuit or resistor. Each device can
+class Device(Symbol):
+    """This class represents a physical device. Each device can
     contain one or more parts that are packaged together (e.g. a
     74HCT32)."""
 
@@ -26,9 +21,8 @@ class Device(Symbol, Distributable):
 
     def __init__(self):
         Symbol.__init__(self)
-        Distributable.__init__(self)
         self.__g = networkx.Graph()
- 
+
     def set_driver(self, driver):
         self._driver = driver
 
@@ -60,13 +54,13 @@ class Device(Symbol, Distributable):
         self.__g.add_node(part)
         return part
 
-    def replace_part(self, original, target):
-        """The original part is replacing by a target device, whose
+    def update_part(self, original, updated):
+        """The `original` part is replacing by a `updated` part, whose
         designator attribute is set to the designator of the original part."""
         original_designator = original.designator()
         self.remove_part(original)
         target.designator(original_designator)
-        self.add_part(target)
+        self.add_part(updated)
 
     def remove_part(self, part):
         self.__g.remove_node(part)

@@ -1,128 +1,44 @@
 #!/usr/bin/env python
 
+"""This module contains basic design primitives."""
+
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 
 #_______________________________________________________________________________
 
-class Primitive(object):
-    """This class is basic for any electrical primitive."""
-
-    def __init__(self):
-        self.__owner = None
+class Property(object):
+    """This class represents property of a primitive."""
+    def __init__(self, name, value=None, groups=()):
+        self.__name = name
+        self.__value = value
+        self.__groups = ()
 
     @property
-    def owner(self):
-        return self.__owner
-        
-    @owner.setter
-    def owner(self, primitive):
-        self.__owner = primitive
+    def name(self):
+        return self.__name
+
+    @property
+    def value(self):
+        return self.__value
+
+    @value.setter
+    def value(self, new_value):
+        self.__value = new_value
 
 #_______________________________________________________________________________
 
-class Distributable(object):
-    class Metadata(object):
-        """This class keeps metadata information."""
-        def __init__(self):
-            self.__author = None
-            self.__name = None
-            self.__version = "0.0.0"
-            self.__description = None
-            self.__reference_format = "Part"
-            self.__keywords = list()
+class Primitive(object):
+    """This class is basic for any primitive.
 
-        @property
-        def keywords(self):
-            """A list of additional keywords to be used to assist
-            searching for the package in a larger catalog. This makes
-            the part findable."""
-            return self.__keywords
-
-        @property
-        def name(self):
-            return self.__name
-
-        @name.setter
-        def name(self, name):
-            self.__name = name
-
-        @property
-        def reference_format(self):
-            """See Part.reference"""
-            return self.__reference_format
-
-        @reference_format.setter
-        def reference_format(self, frmt):
-            self.__reference_format = frmt
-
-        @property
-        def description(self):
-            """A longer description of the part that can run to
-            several paragraphs."""
-            return self.__description
-
-        @description.setter
-        def description(self, text):
-            self.__description = text
-
-        @property
-        def version(self):
-            return self.__version
-
-        @version.setter
-        def version(self, version):
-            self.__version = version
-
-        @property
-        def author(self):
-            """A string containing the author's name at a minimum; additional
-            contact information may be provided."""
-            return self.__author
-
-        @author.setter
-        def author(self, name):
-            self.__author = name
+    Each primitive has unique ID -- designator `Primitive.designator` for
+    identification. By default the system tries to generate it with help of
+    `Primitive.designator_format`. However it can be
+    changed manually by using `Primitive.designator` property."""
 
     def __init__(self):
-        # Store the meta-data (name, version, author, and so
-        # forth) in a separate object -- we're getting to have enough
-        # information here that it's worth it.
-        self.__metadata = self.Metadata()
-
-    @property
-    def metadata(self):
-        return self.__metadata
-
-class Configurable(object):
-    """Interface."""
-
-    class Config:
-        def __str__(self):
-            return str(self.__dict__)
-
-    def __init__(self):
-        self.__config = Configurable.Config()
-
-    def add_parameter(self, name, value=None):
-        setattr(self.__config, name, value)
-
-    def get_parameter(self, name):
-        return getattr(self.__config, name)
-
-    @property
-    def config(self):
-        return self.__config
-
-class Symbol(Primitive, Configurable):
-    """An electronic symbol is a pictogram used to represent various
-    electrical and electronic devices (such as wires, batteries,
-    resistors, and transistors) in a schematic diagram of an
-    electrical or electronic circuit. """
-
-    def __init__(self):
-        """By default designator is None."""
-        Primitive.__init__(self)
-        Configurable.__init__(self)
+        self.__properties = dict()
+        self.__owner = None
+        self.__id = id(self)
         self.__designator_format = "P%d"
         self.__designator = None
 
@@ -145,17 +61,115 @@ class Symbol(Primitive, Configurable):
         """Designator is the name of a part on a printed circuit by
         convention beginning with one or two letters followed by a
         numeric value. The letter designates the class of component;
-        eg. "Q" is commonly used as a prefix for transistors."""
+        eg. "Q" is commonly used as a prefix for transistors.
+
+        It is very important to clearly understand the importance of
+        the reference designator and the rules for assigning reference
+        designators. An alphanumeric reference designator is used to
+        uniquely identify each part. A given circuit might have ten
+        1.0k resistors used in different locations. Each of these
+        resistors is given a unique reference designator, for example,
+        Rl, R5, and R7. In addition to the schematic, the reference
+        designators also appear on the PCB legend silkscreen, assembly
+        drawing, and bill of materials. Manufacturing uses the
+        reference designators to determine where to stuff parts on the
+        board. Field service uses them to identify and replace failed
+        parts."""
         return self.__designator
 
     @designator.setter
     def designator(self, text):
-        """By default if name is not selected it equals to
-        designator."""
         self.__designator = text
-        if not self.metadata.name:
-            self.metadata.name = text
 
+    @property
+    def id(self):
+        return self.__id
 
+    @id.setter
+    def id(self, value):
+        self.__id = value
 
+    @property
+    def owner(self):
+        """Returns a reference to the owner object."""
+        return self.__owner
+
+    @owner.setter
+    def owner(self, primitive):
+        self.__owner = primitive
+
+    #def property(cls):
+    #    pass
+
+    def add_property(self, property):
+        """Add a new property for the primitive."""
+        if not isinstance(property, Property):
+            raise Exception("Not a Property")
+        if self.has_property(property):
+            raise Exception("This property is already defined")
+        self.__properties[property.name] = property
+
+    def has_property(self, property_):
+        property_name = property_
+        if isinstance(property_, Property):
+            property_name = property_.name
+        return property_name in self.properties
+
+    def set_property(self, name, value, group=None):
+        property_ = self.get_property(name)
+        if property_:
+            property_.value = value
+            return property_
+        property_ = Property(name, value, group)
+        self.add_property(property_)
+        return property_
+
+    def get_properties(self, group=None):
+        """Return all the properties. See also `Primitive.properties`."""
+        return self.properties
+
+    def get_property(self, name):
+        if not self.has_property(name):
+            return None
+        return self.properties[name]
+
+    def get_property_value(self, name, default=None):
+        property_ = self.get_property(name)
+        if not property_:
+            return default
+        return self.get_property(name).value
+
+    @property
+    def properties(self):
+        """Return all properties."""
+        return self.__properties
+
+#_______________________________________________________________________________
+
+class ElectricalPrimitive(Primitive):
+    """This class represents basic electrical design primitive."""
+
+#_______________________________________________________________________________
+
+class Note(Primitive):
+    """A note is a design primitive (non-electrical). It is used to
+    add informational or instructional text to a specific area within
+    a schematic, in a similar vain to that of commenting a program's
+    source code."""
+    def __init__(self):
+        Primitive.__init__(self)
+        self.__text = ""
+
+    @property
+    def text(self):
+        return self.__text
+
+    @text.setter
+    def text(self, text):
+        self.__text = text
+
+class Model(Primitive):
+    def __init__(self):
+        """By default designator is None."""
+        Primitive.__init__(self)
 
