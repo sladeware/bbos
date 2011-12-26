@@ -51,7 +51,9 @@ class _Hardware(object):
 #______________________________________________________________________________
 
 class Mapping(object):
-    """"""
+    """The mapping describes a particular CPU core and the particular
+    operating system kernel on it. It represents the life of that kernel: from
+    its initialization to the point that it stops executing."""
     def __init__(self, name, os_class=None, build_params=None):
         self.name = name
         self.build_params = build_params or dict()
@@ -59,7 +61,7 @@ class Mapping(object):
         if os_class:
             self.os_class = os_class
         elif hasattr(self, "os_class"):
-            self.os_class = getattr(self, "os_class")
+            self.os_class = getattr(self, "os_class")    
 
     def __str__(self):
         return "Mapping %s" % self.name
