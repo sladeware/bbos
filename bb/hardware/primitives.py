@@ -140,10 +140,10 @@ class Primitive(object):
         """Return all properties."""
         return self.__properties
 
-class ElectricalPrimitive(Primitive):
+class ElectronicPrimitive(Primitive):
     """This class represents basic electrical design primitive."""
 
-class Pin(ElectricalPrimitive):
+class Pin(ElectronicPrimitive):
     """A pin is an electrical design primitive. Pins give a part its
     electrical properties and define connection points on the part for
     directing signals in and out."""
@@ -155,7 +155,7 @@ class Pin(ElectricalPrimitive):
         Output = 2
 
     def __init__(self):
-        Symbol.__init__(self)
+        ElectronicPrimitive.__init__(self)
         self._connections = dict()
         self.__electrical_type = None
 
@@ -198,7 +198,7 @@ class Note(Primitive):
     def text(self, text):
         self.__text = text
 
-class Wire(ElectricalPrimitive):
+class Wire(ElectronicPrimitive):
     """A wire is an electrical design primitive. It is an object that
     forms an electrical connection between points on a schematic and is
     analogous to a physical wire."""
@@ -215,11 +215,10 @@ class Wire(ElectricalPrimitive):
 
     def get_first_pin(self):
         return self.first_pin
-        
+
     def get_second_pin(self):
         return self.second_pin
 
-class Bus(ElectricalPrimitive):
+class Bus(ElectronicPrimitive):
     """A bus is an electrical design primitive. It is an object that represents
     a multi-wire connection."""
-

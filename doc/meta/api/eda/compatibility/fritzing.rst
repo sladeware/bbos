@@ -1,16 +1,5 @@
-:mod:`bb.eda.compatibility.fritzing` --- Fritzing
-===================================
+:mod:`bb.hardware.compatibility.fritzing` --- Fritzing
+======================================================
 
-.. automodule:: bb.eda.compatibility.fritzing
-
-.. autoclass:: Fritzing
-   :members:
-
-.. autoclass:: PartHandler
-   :members:
-
-.. autoclass:: PinHandler
-   :members:
-
-.. autoclass:: SketchHandler
+.. automodule:: bb.hardware.compatibility.fritzing
    :members:

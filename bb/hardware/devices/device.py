@@ -3,9 +3,13 @@
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 
 import types
-import networkx
+try:
+    import networkx
+except ImportError:
+    print "Please install network"
+    exit(0)
 
-from bb.eda.primitives import *
+from bb.hardware.primitives import *
 
 class Device(ElectronicPrimitive):
     """This class represents a physical device. Device is any type of
@@ -31,7 +35,7 @@ class Device(ElectronicPrimitive):
         return None
 
     def add_element(self, element):
-        if self.has_part(element):
+        if self.has_element(element):
             return element
         if id(element) in self.element_register:
             raise Exception("The element '%s' already belongs to '%s'" \
@@ -71,7 +75,9 @@ class Device(ElectronicPrimitive):
         """If there is more than one child matching the search, the first
         one is returned. In that case, Device.find_elements() should be used."""
         elements = self.find_elements(by)
-        return elements.pop(0)
+        if len(elements):
+            return elements.pop(0)
+        return None
 
     def find_elements(self, by):
         """Returns elements of this device that is identified by `by`,
@@ -87,7 +93,7 @@ class Device(ElectronicPrimitive):
         return elements
 
     def has_element(self, element):
-        return element in self.__elements
+        return self.__g.has_node(element)
 
     def connect_elements(self, dest, src=None):
         if not src:

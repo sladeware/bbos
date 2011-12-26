@@ -2,8 +2,9 @@
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 
-from bb.eda.devices.device import *
+from bb.hardware.devices.device import *
 
+# XXX: The following code is temporary frozen.
 def find_pkg_files(pkg, root=None, skip_names=[], recursive=True):
     verify_list(skip_names)
     verify_string(pkg)
