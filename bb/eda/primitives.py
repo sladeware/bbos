@@ -4,8 +4,6 @@
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 
-#_______________________________________________________________________________
-
 class Property(object):
     """This class represents property of a primitive."""
     def __init__(self, name, value=None, groups=()):
@@ -24,8 +22,6 @@ class Property(object):
     @value.setter
     def value(self, new_value):
         self.__value = new_value
-
-#_______________________________________________________________________________
 
 class Primitive(object):
     """This class is basic for any primitive.
@@ -144,12 +140,46 @@ class Primitive(object):
         """Return all properties."""
         return self.__properties
 
-#_______________________________________________________________________________
-
 class ElectricalPrimitive(Primitive):
     """This class represents basic electrical design primitive."""
 
-#_______________________________________________________________________________
+class Pin(ElectricalPrimitive):
+    """A pin is an electrical design primitive. Pins give a part its
+    electrical properties and define connection points on the part for
+    directing signals in and out."""
+
+    class ElectricalTypes:
+        """Class of possible electrical types."""
+        Input = 0
+        IO = 1
+        Output = 2
+
+    def __init__(self):
+        Symbol.__init__(self)
+        self._connections = dict()
+        self.__electrical_type = None
+
+    @property
+    def electrical_type(self):
+        """Electrical type represents the type of electrical connection the pin
+        makes. This can be used to detect electrical wiring errors in your
+        schematic."""
+        return self.__electrical_type
+
+    @electrical_type.setter
+    def electrical_type(self, type_):
+        if not getattr(Pin.ElectricalTypes, type_):
+            raise
+        self.__electrical_type = type_
+
+    def connect_to(self, pin):
+        """Connect source pin to destination pin."""
+        if not self.is_connected_to(pin):
+            self._connections[id(pin)] = pin
+            pin.connect_to(self)
+
+    def is_connected_to(self, pin):
+        return id(pin) in self._connections
 
 class Note(Primitive):
     """A note is a design primitive (non-electrical). It is used to
@@ -168,8 +198,28 @@ class Note(Primitive):
     def text(self, text):
         self.__text = text
 
-class Model(Primitive):
+class Wire(ElectricalPrimitive):
+    """A wire is an electrical design primitive. It is an object that
+    forms an electrical connection between points on a schematic and is
+    analogous to a physical wire."""
+
     def __init__(self):
-        """By default designator is None."""
         Primitive.__init__(self)
+
+    def connect(self, first_pin, second_pin):
+        self.first_pin = first_pin
+        self.second_pin = second_pin
+
+    def disconnect(self):
+        self.first_pin = self.second_pin = None
+
+    def get_first_pin(self):
+        return self.first_pin
+        
+    def get_second_pin(self):
+        return self.second_pin
+
+class Bus(ElectricalPrimitive):
+    """A bus is an electrical design primitive. It is an object that represents
+    a multi-wire connection."""
 

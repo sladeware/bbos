@@ -35,43 +35,6 @@ class Part(Symbol):
 
 #_______________________________________________________________________________
 
-class Pin(Symbol):
-    """A pin is an electrical design primitive. Pins give a part its
-    electrical properties and define connection points on the part for
-    directing signals in and out."""
-
-    class ElectricalTypes:
-        """Class of possible electrical types."""
-        Input = 0
-        IO = 1
-        Output = 2
-
-    def __init__(self):
-        Symbol.__init__(self)
-        self._connections = dict()
-        self.__electrical_type = None
-
-    @property
-    def electrical_type(self):
-        """Electrical type represents the type of electrical connection the pin
-        makes. This can be used to detect electrical wiring errors in your
-        schematic."""
-        return self.__electrical_type
-
-    @electrical_type.setter
-    def electrical_type(self, type_):
-        if not getattr(Pin.ElectricalTypes, type_):
-            raise
-        self.__electrical_type = type_
-
-    def connect_to(self, pin):
-        """Connect source pin to destination pin."""
-        if not self.is_connected_to(pin):
-            self._connections[id(pin)] = pin
-            pin.connect_to(self)
-
-    def is_connected_to(self, pin):
-        return id(pin) in self._connections
 
 #_______________________________________________________________________________
 
