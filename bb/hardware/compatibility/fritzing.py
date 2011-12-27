@@ -81,14 +81,16 @@ class Fritzing(object):
         cls._search_pathes.append(path)
 
     @classmethod
+    def add_search_pathes(cls, pathes):
+        for path in pathes:
+            cls.add_search_path(path)
+
+    @classmethod
     def get_search_pathes(cls):
         """Return a list of strings that specifies the search path for
         Fritzing files. By default includes user directory and home
         directory."""
-        if not cls._search_pathes:
-            cls._search_pathes.extend([Fritzing.get_home_dir(), \
-                                           Fritzing.get_user_dir()])
-        return cls._search_pathes
+        return cls._search_pathes + [Fritzing.get_home_dir(), Fritzing.get_user_dir()]
 
     @classmethod
     def find_part_files(cls, pathes, recursive=False):
@@ -104,7 +106,8 @@ class Fritzing(object):
                     if name.startswith("."): # improve this
                         continue
                     pathes.append(os.path.join(path, name))
-            elif os.path.isfile(path) and path.endswith(PartHandler.FILE_EXT):
+            elif os.path.isfile(path) and (path.endswith(PartHandler.FILE_EXT) \
+                                               or path.endswith(PartHandler.ZFILE_EXT)):
                 files.append(os.path.abspath(path))
         return files
 
@@ -146,13 +149,23 @@ class Fritzing(object):
             cls._parts_index = json.loads(''.join(index_fh.readlines()))
             index_fh.close()
         all_part_files = list()
-        for search_path in cls.get_search_pathes():
+        # Remove home directory and user directory from search pathes.
+        # They has to be processed in a special way.
+        search_pathes.remove(cls.get_home_dir())
+        search_pathes.remove(cls.get_user_dir())
+        for search_path in (cls.get_home_dir(), cls.get_user_dir()):
             for parts_location in ("parts", "resources/parts"):
                 for group in ("core", "user", "obsolete", "contrib"):
                     path = os.path.join(search_path, parts_location, group)
                     if not os.path.exists(path):
                         continue
-                    all_part_files.extend(cls.find_part_files(path, recursive=True))
+                    search_pathes.append(path)
+        # Scan all search pathes one by one and extract part files
+        for search_path in search_pathes:
+            sys.stdout.write("Scaning %s... " % search_path)
+            new_part_files = cls.find_part_files(search_path, recursive=True)
+            print "%d" % len(new_part_files)
+            all_part_files.extend(new_part_files)
         # Look up for broken files and remove them
         broken_files = set(cls._parts_index.keys()) - set(all_part_files)
         for filename in broken_files:
@@ -163,7 +176,7 @@ class Fritzing(object):
         total = len(all_part_files)
         for pfile in all_part_files:
             frmt = "%"+ str(len(str(total))) +"d/%d\r"
-            sys.stdout.write(frmt % (counter, total))
+            sys.stdout.write("Indexing " + frmt % (counter, total))
             counter += 1
             # Make check sum for this file
             checksum = md5sum(pfile)
@@ -176,7 +189,7 @@ class Fritzing(object):
             ph = PartHandler(pfile)
             cls._parts_index[pfile] = (checksum, ph.module_id)
             cls._part_handlers_by_id[ph.module_id] = ph
-            cls._part_filenames_by_id[module_id] = pfile
+            cls._part_filenames_by_id[ph.module_id] = pfile
             has_updates = True
         # Rewrite index file only if it has some updates
         if has_updates:
@@ -187,9 +200,11 @@ class Fritzing(object):
     def load_part_handler_by_id(cls, id):
         """Try to load part by its id (see `moduleId` attribute) and
         return :class:`PartHandler` instance."""
-        part_handler = cls._part_handlers_by_id[id]
+        part_handler = cls._part_handlers_by_id.get(id, None)
         if not part_handler:
-            filename = cls._part_filenames_by_id[id]
+            filename = cls._part_filenames_by_id.get(id, None)
+            if not filename:
+                raise Exception("Can not found part with id '%s'" % id)
             part_handler = cls._part_handlers_by_id[id] = PartHandler(filename)
         return part_handler
 
@@ -297,7 +312,7 @@ class SketchHandler(Handler):
         handler of this sketch."""
         part = part_handler.get_object()
         self._part_handlers_table[part_handler.model_index] = part_handler
-        self.get_object().add_part(part)
+        self.get_object().add_element(part)
 
     def read(self, stream=None):
         if stream:
