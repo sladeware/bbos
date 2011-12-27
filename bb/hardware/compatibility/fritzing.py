@@ -358,7 +358,7 @@ class SketchHandler(Handler):
         connectors_element = connectors_elements.item(0)
         for connector_element in connectors_element.getElementsByTagName("connector"):
             id_ = connector_element.getAttribute("connectorId")
-            src_connector = part.find_pin(id_)
+            src_connector = part.find_elements(Pin).find_element(id_)
             connects_elements = connector_element.getElementsByTagName("connects")
             if not connects_elements:
                 continue
@@ -367,7 +367,7 @@ class SketchHandler(Handler):
                 dst_part_index = connection_element.getAttribute("modelIndex")
                 dst_handler = self.find_part_handler_by_index(dst_part_index)
                 dst_part = dst_handler.get_object()
-                dst_connector = dst_part.find_pin( \
+                dst_connector = dst_part.find_elements(Pin).find_element(\
                     connection_element.getAttribute("connectorId"))
                 src_connector.connect_to(dst_connector)
 
@@ -433,6 +433,9 @@ class PinHandler(Handler):
                 continue
             text = get_text(elements[0].childNodes)
             self._object.set_property(property_, text)
+
+class PartInstanceHandler(Handler):
+    pass
 
 class PartHandler(Handler):
     """A Fritzing part is made up of a number of files, one required

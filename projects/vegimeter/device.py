@@ -6,8 +6,12 @@ import getpass
 from bb.hardware.compatibility import Fritzing
 from bb.utils import module
 
+# Provide environment setup for each developer
 if getpass.getuser() == "d2rk":
     Fritzing.set_home_dir("/opt/fritzing")
-    Fritzing.add_search_path(os.path.join(module.get_dir(), "parts"))
+Fritzing.add_search_path(os.path.join(module.get_dir(), "parts"))
 
 vegimeter_device = Fritzing.parse("device.fz")
+print "Vegimeter elements:"
+for element in vegimeter_device.get_elements():
+    print element.get_property_value("name")

@@ -34,6 +34,9 @@ class Device(ElectronicPrimitive):
     def __get_default_driver(self):
         return None
 
+    def has_element(self, element):
+        return self.__g.has_node(element)
+
     def add_element(self, element):
         if self.has_element(element):
             return element
@@ -71,12 +74,42 @@ class Device(ElectronicPrimitive):
         """Return list of elements that belongs to this device."""
         return self.__g.nodes()
 
+    class Searcher(list):
+        def __init__(self, source):
+            self.__source = source
+            self.__elements = []
+            list.__init__(self, self.__source)
+
+        def find_elements(self, by):
+            """Returns elements of this device that is identified by `by`,
+            or None if there is no such object.
+
+            The by argument can be represented by a function, string, class or
+            number. Omitting the by argument causes all object to be matched."""
+            if type(by) == types.TypeType:
+                for element in self.__source:
+                    if isinstance(element, by):
+                        self.__elements.append(element)
+            elif type(by) in (types.StringType, types.UnicodeType):
+                for element in self.__source:
+                    if element.id == by:
+                        self.__elements.append(element)
+            return Device.Searcher(self.__elements)
+
+        def find_element(self, by):
+            """If there is more than one child matching the search, the first
+            one is returned. In that case, Device.find_elements() should be used."""
+            elements = self.find_elements(by)
+            if len(elements):
+                return elements[0]
+            return None
+
     def find_element(self, by):
         """If there is more than one child matching the search, the first
         one is returned. In that case, Device.find_elements() should be used."""
         elements = self.find_elements(by)
         if len(elements):
-            return elements.pop(0)
+            return elements[0]
         return None
 
     def find_elements(self, by):
@@ -85,15 +118,8 @@ class Device(ElectronicPrimitive):
 
         The by argument can be represented by a function, string, class or
         number. Omitting the by argument causes all object to be matched."""
-        elements = list()
-        if type(by) == types.TypeType:
-            for element in self.get_elements():
-                if isinstance(element, by):
-                    elements.append(element)
-        return elements
-
-    def has_element(self, element):
-        return self.__g.has_node(element)
+        searcher = Device.Searcher(self.get_elements())
+        return searcher.find_elements(by)
 
     def connect_elements(self, dest, src=None):
         if not src:
