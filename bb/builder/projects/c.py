@@ -4,7 +4,7 @@ __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
 import os
 
-from bb.builder.compilers import new_compiler
+from bb.builder.compilers import new_ccompiler
 from bb.builder.projects import Project
 
 class CProject(Project):
@@ -15,12 +15,12 @@ class CProject(Project):
                          loader)
         # Set the compiler if such was not defined
         if not self.compiler:
-            self.compiler = new_compiler()
+            self.compiler = new_ccompiler()
 
     def _build(self, sources, include_dirs=[], macros=[],
                libraries=[], library_dirs=[], dry_run=False):
-        self.output_filename = os.path.join(self.compiler.get_output_dir(), self.get_name())
-
+        self.output_filename = os.path.join(self.compiler.get_output_dir(), \
+                                                self.get_name())
         built_objects = self.compiler.compile(sources,
                                               include_dirs=include_dirs,
                                               macros=macros)

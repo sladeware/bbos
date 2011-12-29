@@ -10,7 +10,7 @@ class Loader(object):
     """Abstract base class to define the interface that must be implemented by
     real loader classes."""
 
-    executables = {}
+    DEFAULT_EXECUTABLES = dict()
 
     def __init__(self, verbose=False):
         self.verbose = verbose

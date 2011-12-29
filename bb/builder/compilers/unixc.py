@@ -30,32 +30,51 @@ class UnixCCompiler(CCompiler):
     ``.cpp``, ``.m``."""
 
     DEFAULT_OBJECT_EXTENSION = ".o"
-    DEFAULT_EXECUTABLES = {'preprocessor' : None,
-                   'compiler'     : ["cc"],
-                   'compiler_so'  : ["cc"],
-                   'compiler_cxx' : ["cc"],
-                   'linker_so'    : ["cc", "-shared"],
-                   'linker_exe'   : ["cc"],
-                   'archiver'     : ["ar", "-cr"],
-                   'ranlib'       : None,
-                  }
+    DEFAULT_EXECUTABLES = {
+        'preprocessor' : None,
+        'compiler'     : ["cc"],
+        'compiler_so'  : ["cc"],
+        'compiler_cxx' : ["cc"],
+        'linker_so'    : ["cc", "-shared"],
+        'linker_exe'   : ["cc"],
+        'archiver'     : ["ar", "-cr"],
+        'ranlib'       : None,
+        }
+    """Unix compiler specific executables:
+
+    ============  ================
+    Name          Command
+    ============  ================
+    preprocessor  None
+    compiler      **cc**
+    compiler_so   **cc**
+    compiler_cxx  **cc**
+    linker_so     **cc** `-shared`
+    linker_exe    **cc**
+    archiver      **ar** `-cr`
+    ranlib        None
+    ============  ================
+    """
 
     def __init__(self, verbose=None, dry_run=False):
         CCompiler.__init__(self, verbose, dry_run)
 
     def _compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts):
-        compiler = self.executables['compiler']
+        compiler = self.get_executable('compiler')
         try:
             spawn(compiler + cc_args + [src, '-o', obj] + extra_postargs,
                   verbose=self.verbose, dry_run=self.dry_run)
         except ExecutionError, msg:
             raise CompileError(msg)
 
-    def _link(self, objects,
-              output_filename, output_dir=None,
-              libraries=None, library_dirs=None,
+    def _link(self, objects, output_filename,
+              output_dir=None,
+              libraries=None,
+              library_dirs=None,
               debug=False,
-              extra_preargs=None, extra_postargs=None, target_lang=None):
+              extra_preargs=None,
+              extra_postargs=None,
+              target_lang=None):
         """Linking."""
         objects, output_dir, libraries, library_dirs = \
             self._setup_link(objects, output_dir, libraries, library_dirs)
@@ -68,8 +87,8 @@ class UnixCCompiler(CCompiler):
         ld_options += (objects + lib_options + ['-o', output_filename])
         mkpath(os.path.dirname(output_filename))
         try:
-            linker = self.executables['linker_exe']
-            if target_lang == "c++" and self.executables["compiler_cxx"]:
+            linker = self.get_executable("linker_exe")
+            if target_lang == "c++" and self.get_executable("compiler_cxx"):
                 # skip over environment variable settings if /usr/bin/env
                 # is used to set up the linker's environment.
                 # This is needed on OSX. Note: this assumes that the
@@ -81,7 +100,8 @@ class UnixCCompiler(CCompiler):
                     while '=' in linker[i]:
                         i = i + 1
                 linker[i] = self.compiler_cxx[i]
-            spawn(linker + ld_options, verbose=self.verbose, dry_run=self.dry_run)
+            spawn(linker + ld_options, verbose=self.verbose, \
+                      dry_run=self.dry_run)
         except BuilderExecutionError, msg:
             raise LinkError, msg
 

@@ -2,11 +2,9 @@
 
 __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
-import sys
 import os
-from types import *
-
-#_______________________________________________________________________________
+import sys
+import types
 
 def which(program):
     def is_exe(fpath):
@@ -42,8 +40,12 @@ def spawn(cmd, search_path=True, verbose=False, dry_run=False):
 
     Raise ExecutionError if running the program fails in any way; just
     return on success."""
-    if not type(cmd) is ListType:
-        raise TypeError("'cmd' must be a list")
+    if not type(cmd) is types.ListType:
+        raise types.TypeError("'cmd' must be a list")
+    # Fix cmd first
+    for i in range(len(cmd)):
+        if not type(cmd[i]) is types.StringType:
+            cmd[i] = str(cmd[i])
     if verbose:
         print ' '.join(cmd)
     if os.name == 'posix':

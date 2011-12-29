@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 
-from types import *
+import types
 
 from bb.builder.errors import *
 from bb.utils.spawn import which, ExecutionError
@@ -21,7 +21,7 @@ class Compiler(object):
         self.__executables = dict()
         self.set_executables(self.DEFAULT_EXECUTABLES)
 
-    def set_executables(self, **args):
+    def set_executables(self, *args, **kargs):
         """Define the executables (and options for them) that will be run
         to perform the various stages of compilation. The exact set of
         executables that may be specified here depends on the compiler
@@ -39,33 +39,40 @@ class Compiler(object):
         Unix shells operate: words are delimited by spaces, but quotes and
         backslashes can override this. See
         'distutils.util.split_quoted()'.)"""
-
+        if type(args[0]) is types.DictType:
+            kargs.update(args[0])
         # Note that some CCompiler implementation classes will define class
         # attributes 'cpp', 'cc', etc. with hard-coded executable names;
         # this is appropriate when a compiler class is for exactly one
-        # compiler/OS combination (eg. MSVCCompiler).  Other compiler
+        # compiler/OS combination (e.g. MSVCCompiler). Other compiler
         # classes (UnixCCompiler, in particular) are driven by information
         # discovered at run-time, since there are many different ways to do
         # basically the same things with Unix C compilers.
-        for key in args.keys():
-            if key not in self.executables:
-                raise ValueError, \
-                      "unknown executable '%s' for class %s" % \
-                      (key, self.__class__.__name__)
-            self.set_executable(key, args[key])
+        for key in kargs.keys():
+            self.set_executable(key, kargs[key])
 
     def set_executable(self, key, value):
         """Define the executable (and options for it) that will be run
         to perform some compilation stage."""
         if isinstance(value, str):
-            setattr(self, key, split_quoted(value))
+            self.__executables[key] = split_quoted(value)
         else:
-            setattr(self, key, value)
+            self.__executables[key] = value
+
+    def get_executable(self, name):
+        """Return executable by its `name`. If it does not exist
+        return ``None``."""
+        return self.__executables.get(name, None)
 
     def check_executables(self):
-        if not self.executables:
+        """Check compiler executables. All of them has to exist. Print
+        warning if some executable was specified but not defined."""
+        if not self.__executables:
             return
-        for (name, cmd) in self.executables.items():
+        for (name, cmd) in self.__executables.items():
+            if not cmd:
+                print "WARNING: undefined executable '%s'" % name
+                continue
             if not which(cmd[0]):
                 raise ExecutionError("compiler '%s' can not be found" % cmd[0])
 
@@ -79,16 +86,13 @@ class Compiler(object):
         return self.output_dir
 
     def set_output_dir(self, output_dir):
-        if not output_dir or type(output_dir) is not StringType:
-            raise TypeError("'output_dir' must be a string or None")
+        if not output_dir or type(output_dir) is not types.StringType:
+            raise types.TypeError("'output_dir' must be a string or None")
         else:
             self.output_dir = output_dir
 
     def _setup_compile(self, output_dir):
         if output_dir is None:
             outputdir = self.output_dir
-        elif type(output_dir) is not StringType:
-            raise TypeError("'output_dir' must be a string or None")
-
-def register_compiler(compiler):
-    pass
+        elif type(output_dir) is not types.StringType:
+            raise types.TypeError("'output_dir' must be a string or None")

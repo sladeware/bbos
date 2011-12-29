@@ -13,7 +13,7 @@ from bb.builder.loaders import Loader
 from bb.builder.errors import *
 
 class Project(DistributionMetadata):
-    """Project."""
+    """Class representing a project."""
     def __init__(self, name, sources=[], version=None,
                  verbose=False,
                  compiler=None, loader=None):
@@ -40,24 +40,28 @@ class Project(DistributionMetadata):
             pass
 
     def add_source(self, source):
-        """In the case when source is a path, it will be normalized by
-        using os.path.abspath()."""
-        if source:
-            if type(source) is StringType:
-                source = os.path.abspath(source)
-                self.sources.append(source)
-            elif type(source) is InstanceType or isinstance(source, object):
-                if isinstance(source, Extension):
-                    return self.add_extension(source)
-                wrapper = wrap(source)
-                if not wrapper:
-                    raise TypeError("Don't know how to work with '%s' object. "
-                                    "The wrapper wasn't provided." % source)
-                return self.add_extension(wrapper)
-            else:
-                raise TypeError("unknown source type: %s" % type(source))
+        """Add a source to the project. In the case when source is a
+        path, it will be normalized by using :func:`os.path.abspath`."""
+        if not source:
+            return
+        if type(source) is StringType:
+            source = os.path.abspath(source)
+            if not os.path.exists(source):
+                raise Exception("Source doesn't exist: %s" % source)
+            self.sources.append(source)
+        elif type(source) is InstanceType or isinstance(source, object):
+            if isinstance(source, Extension):
+                return self.add_extension(source)
+            wrapper = wrap(source)
+            if not wrapper:
+                raise TypeError("Don't know how to work with '%s' object. "
+                                "The wrapper wasn't provided." % source)
+            return self.add_extension(wrapper)
+        else:
+            raise TypeError("unknown source type: %s" % type(source))
 
     def add_sources(self, sources):
+        """Add and process a list sources at once."""
         if not type(sources) == ListType:
             raise TypeError
         for source in sources:
@@ -72,19 +76,23 @@ class Project(DistributionMetadata):
             sources.append(os.path.abspath(source))
         return sources
 
-    # --- Compiler methods ---
-
     def set_compiler(self, compiler):
+        """Set compiler instance that will be used in compilation
+        process. The `compiler` has to be a sub-class of
+        :class:`bb.builder.compilers.compiler.Compiler`."""
         if not isinstance(compiler, Compiler):
             raise UnknownCompiler
         self.compiler = compiler
 
     def get_compiler(self):
+        """Return the :class:`bb.builder.compilers.compiler.Compiler`
+        compiler instance."""
         return self.compiler
 
-    # --- Loader methods ---
-
     def set_loader(self, loader):
+        """Set loader instance that will help us to load the binary on
+        hardware. The `loader` has to be a sub-class of
+        :class:`bb.builder.loaders.loader.Loader`."""
         if not isinstance(loader, Loader):
             raise UnknownLoader
         self.loader = loader
@@ -96,6 +104,7 @@ class Project(DistributionMetadata):
               verbose=None,
               dry_run=None,
               *arg_list, **arg_dict):
+        """Start building process."""
         # Control verbose
         if not verbose:
             verbose = getattr(bb.builder.config.options, 'verbose', verbose)
@@ -129,4 +138,5 @@ class Project(DistributionMetadata):
         raise NotImplementedError
 
     def load(self, *arg_list, **arg_dict):
+        """Start loading the binary."""
         raise NotImplementedError
