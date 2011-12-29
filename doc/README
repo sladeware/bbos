@@ -1,0 +1,3 @@
+Please run the following command in order to generate docs in html format:
+
+       $ make html
