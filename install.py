@@ -1,9 +1,9 @@
 #!/usr/bib/env python
 
-__copyright__ = "Copyright (c) 2011 Sladeware LLC"
-
-"""Initially based on sysconfig.py from distutils package, with 
+"""Initially based on sysconfig.py from distutils package, with
 a few improvements."""
+
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
 
 import sys
 import os
@@ -207,6 +207,13 @@ def get_config_vars(*args):
         return vals
     else:
         return _config_vars
+
+print " ____  ____    ___           _        _ _"
+print "| __ )| __ )  |_ _|_ __  ___| |_ __ _| | |"
+print "|  _ \|  _ \   | || '_ \/ __| __/ _` | | |"
+print "| |_) | |_) |  | || | | \__ \ || (_| | | |"
+print "|____/|____/  |___|_| |_|___/\__\__,_|_|_|"
+print
 
 BB_HOME = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 BB_PACKAGE_NAME = 'bb'
