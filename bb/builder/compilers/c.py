@@ -1,62 +1,136 @@
 #!/usr/bin/env python
 
+"""This module provides support for C-like compilers."""
+
 __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
 import os, re, sys, string
 import os.path
 from types import *
 
-from bb.builder.compiler import Compiler
+from bb.builder.compilers.compiler import Compiler
 from bb.builder.errors import *
-from bb.utils.dir import mkpath
+from bb.utils.host_os.path import mkpath
 from bb.utils.spawn import which, ExecutionError
 
 class CCompiler(Compiler):
-    """Abstract base class to define the interface of the standard C compiler
-    that must be implemented by real compiler class.
+    """Abstract base class to define the interface of the standard C
+    compiler that must be implemented by real compiler class.
 
-    The basic idea behind a compiler abstraction class is that each instance
-    can be used for all the compiler/link steps in building a single project.
-    Thus, we have an attributes common to all of those compile and link steps --
-    include directories, macros to define, libraries to link against, etc. --
-    are attributes to the compiler instance."""
+    The basic idea behind a compiler abstraction class is that each
+    instance can be used for all the compiler/link steps in building a
+    single project. Thus, we have an attributes common to all of
+    those compile and link steps -- include directories, macros to
+    define, libraries to link against, etc. -- are attributes to the
+    compiler instance.
 
-    executables = None
+    Flags are `verbose` (show verbose output), `dry_run`
+    (don't actually execute the steps) and `force` (rebuild everything,
+    regardless of dependencies). All of these flags default to ``0``
+    (off).
 
-    source_extensions = None # list of strings
-    object_extension = None
+    C compiler uses language precedence order to identify the
+    language, when deciding what language to use when mixing source
+    types. For example, if some extension has two files with ``.c``
+    extension, and one with ``.cpp``, it is still linked as
+    ``c++``. The order can be changed by using
+    :func:`CCompiler.set_language_precedence_order`. By default it
+    equals to :const:`CCompiler.DEFAULT_LANGUAGE_PRECEDENCE_ORDER`."""
 
-    # Default language settings.
-    # language_map is used to detect a source file target language, checking
-    # source filenames.
-    language_map = {".c"   : "c",
-                    ".cc"  : "c++",
-                    ".cpp" : "c++",
-                    ".cxx" : "c++",
-                    ".m"   : "objc",
-                   }
-    # language_order is used to detect the language precedence, when deciding
-    # what language to use when mixing source types. For example, if some
-    # extension has two files with ".c" extension, and one with ".cpp", it
-    # is still linked as c++.
-    language_order = ["c++", "objc", "c"]
+    DEFAULT_LANGUAGE_PRECEDENCE_ORDER = ["c++", "objc", "c"]
+    """Default language precedence order: ``c++``, ``objc``, ``c``."""
+
+    DEFAULT_SOURCE_EXTENSIONS = None
+    """Default source extensions."""
+
+    DEFAULT_OBJECT_EXTENSION = None
+    """Default object file extension."""
+
+    DEFAULT_LANGUAGE_BY_EXT_MAPPING = {
+        ".c"   : "c",
+        ".cc"  : "c++",
+        ".cpp" : "c++",
+        ".cxx" : "c++",
+        ".m"   : "objc",
+        }
+    """This mapping is used to detect a source file target language, by checking
+    thier filenames.
+
+    =========  ========
+    Extension  Language
+    =========  ========
+    .c         c
+    .cc        c++
+    .cpp       c++
+    .cxx       c++
+    .m         objc
+    =========  ========"""
 
     def __init__(self, verbose=False, dry_run=False):
-	Compiler.__init__(self, verbose, dry_run)
-	# A list of macro definitions (we are using list since the order is 
-        # important). A macro definition is a 2-tuple (name, value), where 
-        # the value is either a string or None. A macro undefinition is a 
+        Compiler.__init__(self, verbose, dry_run)
+        # A list of macro definitions (we are using list since the order is
+        # important). A macro definition is a 2-tuple (name, value), where
+        # the value is either a string or None. A macro undefinition is a
         # 1-tuple (name, ).
-	self.macros = []
-	# A list of directories
-	self.include_dirs = []
-        # A list of library names (not filenames: eg. "foo" not "libfoo.a") 
+        self.macros = list()
+        # A list of directories
+        self.include_dirs = list()
+        # A list of library names (not filenames: eg. "foo" not "libfoo.a")
         # to include in any link
-	self.libraries = []
-	# A list of directories to seach for libraries
-        self.library_dirs = []
-	# A list of object files
-	self.objects = []
+        self.libraries = list()
+        # A list of directories to seach for libraries
+        self.library_dirs = list()
+        # A list of object files
+        self.objects = list()
+        self.__object_extension = None
+        self.set_object_extension(self.DEFAULT_OBJECT_EXTENSION)
+        self.__source_extensions = list()
+        self.set_source_extensions(self.DEFAULT_SOURCE_EXTENSIONS)
+        self.__language_by_ext_mapping = dict()
+        self.set_language_by_ext_mapping(self.DEFAULT_LANGUAGE_BY_EXT_MAPPING)
+        self.__language_precedence_order = list()
+        self.set_language_precedence_order(\
+            self.DEFAULT_LANGUAGE_PRECEDENCE_ORDER)
+
+    def set_object_extension(self, ext):
+        self.__object_extension = ext
+
+    def set_source_extensions(self, extensions):
+        """Set a list of possible source extensions."""
+        for ext in extensions:
+            self.add_source_extension(ext)
+
+    def add_source_extension(self, extension):
+        self.__source_extensions.append(extension)
+
+    def bind_ext_to_language(self, extension, language):
+        """Maps the given filename `extension` to the specified content
+        `language`."""
+        self.__language_by_ext_mapping[extension] = language
+
+    def set_ext_to_language_mapping(self, mapping):
+        """Set file extension to language mapping.
+        See also :const:`CCompiler.DEFAULT_LANGUAGE_BY_EXT_MAPPING`."""
+        for ext, language in mapping.items():
+            self.bind_ext_to_language(ext, language)
+
+    def get_object_extension(self):
+        """Return object file extension."""
+        return self.__object_extension
+
+    def set_object_extension(self, extension):
+        """The `extension` argument is case-insensitive and can be
+        specified with or without a leading dot."""
+        self.__object_extension = extension
+
+    def set_language_precedence_order(self, order):
+        """Set language precedence order. This order will be used by
+        :func:`CCompiler.identify_language` to identify language name."""
+        self.__language_precedence_order = order
+
+    def get_language_precedence_order(self):
+        """Return language precedence order."""
+        return self.__language_precedence_order
 
     def _find_macro(self, name):
         """Return position of the macro 'name' in the list of macros."""
@@ -69,7 +143,7 @@ class CCompiler(Compiler):
 
     def add_include_dirs(self, dirs):
         """Add a list of dirs 'dirs' to the list of directories that will be
-        searched for header files. See add_include_dir()."""
+        searched for header files. See :func:`CCompiler.add_include_dir`."""
         if type(dirs) is ListType:
             for dir in dirs:
                 self.add_include_dir(dir)
@@ -80,15 +154,15 @@ class CCompiler(Compiler):
         return self.include_dirs
 
     def add_include_dir(self, dir):
-        """Add 'dir' to the list of directories that will be searched for
+        """Add `dir` to the list of directories that will be searched for
         header files. The compiler is instructed to search directories in
         the order in which they are supplied by successive calls to
         'add_include_dir()'."""
         self.include_dirs.append(dir)
 
     def add_library(self, library_name):
-        """Add 'library_name' to the list of libraries that will be included in
-        all links driven by this compiler object. Note that 'library_name'
+        """Add `library_name` to the list of libraries that will be included in
+        all links driven by this compiler object. Note that `library_name`
         should *not* be the name of a file containing a library, but the
         name of the library itself: the actual filename will be inferred by
         the linker, the compiler, or the compiler class (depending on the
@@ -110,10 +184,12 @@ class CCompiler(Compiler):
             raise TypeError("'libraries' (if supplied) must be a list of strings")
 
     def add_library_dir(self, library_dir):
-        """Add 'library_dir' to the list of directories that will be searched 
-        for libraries specified to 'add_library()' and 'set_libraries()'. The
-        linker will be instructed to search for libraries in the order they
-        are supplied to 'add_library_dir()' and/or 'set_library_dirs()'."""
+        """Add `library_dir` to the list of directories that will be
+        searched for libraries specified to
+        :func:`CCompiler.add_library` and
+        :func:`CCompiler.set_libraries`. The linker will be instructed
+        to search for libraries in the order they are supplied to
+        'add_library_dir()' and/or 'set_library_dirs()'."""
         self.library_dirs.append(library_dir)
 
     def add_library_dirs(self, library_dirs):
@@ -125,14 +201,14 @@ class CCompiler(Compiler):
                             + "strings")
 
     def add_link_object(self, obj):
-        """Add 'object' to the list of object files (or analogues, such as
+        """Add `obj` to the list of object files (or analogues, such as
         explicitly named library files or the output of "resource
         compilers") to be included in every link driven by this compiler
         object."""
         self.objects.append(obj)
 
     def add_link_objects(self, objects):
-        """See add_link_object()."""
+        """See :func:`CCompiler.add_link_object`."""
         if type(objects) not in (ListType, TupleType):
             raise TypeError("'objects' must be a list or tuple of strings")
         for obj in list(objects):
@@ -140,7 +216,7 @@ class CCompiler(Compiler):
 
     def define_macro(self, name, value=None):
         """Define a preprocessor macro for all compilations driven by this
-        compiler object. The optional parameter 'value' should be a
+        compiler object. The optional parameter `value` should be a
         string; if it is not supplied, then the macro will be defined
         without an explicit value and the exact outcome depends on the
         compiler used (XXX true? does ANSI say anything about this?)"""
@@ -161,9 +237,10 @@ class CCompiler(Compiler):
         undefn = (name, )
         self.macros.append(undefn)
 
-    def detect_language(self, sources):
-        """Detect the language of a given file, or list of files. Uses
-        language_map, and language_order to do the job."""
+    def identify_language(self, sources):
+        """Identify the language of a given file, or list of files. Uses
+        language_map, and :func:`CCompiler.get_language_precedence_order`
+        to do the job."""
         if type(sources) is not ListType:
             sources = [sources]
         lang = None
@@ -192,9 +269,9 @@ class CCompiler(Compiler):
 
     def find_library_file (self, dirs, lib, debug=0):
         """Search the specified list of directories for a static or shared
-        library file 'lib' and return the full path to that file.  If
-        'debug' true, look for a debugging version (if that makes sense on
-        the current platform).  Return None if 'lib' wasn't found in any of
+        library file `lib` and return the full path to that file. If
+        `debug` true, look for a debugging version (if that makes sense on
+        the current platform). Return ``None`` if `lib` wasn't found in any of
         the specified directories."""
         raise NotImplementedError
 
@@ -230,42 +307,42 @@ class CCompiler(Compiler):
         return lib_options
 
     def _gen_preprocess_macro_options(self, macros):
-        """macros is the usual thing, a list of 1- or 2-tuples, where (name,) 
-        means undefine (-U) macro 'name', and (name, value) means define (-D) 
+        """macros is the usual thing, a list of 1- or 2-tuples, where (name,)
+        means undefine (-U) macro 'name', and (name, value) means define (-D)
         macro 'name' to 'value'."""
         options = []
-	for macro in macros:
-	    if not (type(macro) is TupleType and 1 <= len(macro) <= 2):
-		raise TypeError("bad macro definition " + repr(macro) + ": " + 
+        for macro in macros:
+            if not (type(macro) is TupleType and 1 <= len(macro) <= 2):
+                raise TypeError("bad macro definition " + repr(macro) + ": " +
                                 "each element of 'macros' list must be a 1- or 2-tuple")
-	    if len (macro) == 1: # undefine this macro
-		options.append("-U%s" % macro[0])
-	    elif len (macro) == 2:
-		if macro[1] is None: # define with no explicit value
-		    options.append("-D%s" % macro[0])
-		else:
-		    # XXX *don't* need to be clever about quoting the
-		    # macro value here, because we're going to avoid the
-		    # shell at all costs when we spawn the command!
-		    options.append("-D%s=%s" % macro)
+            if len (macro) == 1: # undefine this macro
+                options.append("-U%s" % macro[0])
+            elif len (macro) == 2:
+                if macro[1] is None: # define with no explicit value
+                    options.append("-D%s" % macro[0])
+                else:
+                    # XXX *don't* need to be clever about quoting the
+                    # macro value here, because we're going to avoid the
+                    # shell at all costs when we spawn the command!
+                    options.append("-D%s=%s" % macro)
         return options
 
     def _gen_preprocess_include_options(self, include_dirs):
-        """include_dirs is just a list of directory names to be added to the 
+        """include_dirs is just a list of directory names to be added to the
         header file search path (-I)."""
         options = []
-	for dir in include_dirs:
-	    options.append ("-I%s" % dir)
+        for dir in include_dirs:
+            options.append ("-I%s" % dir)
         return options
 
     def _gen_preprocess_options(self, macros, include_dirs):
         """Generate C pre-processor options(-D, -U, -I) as used by at least two
         types of compilers: the typical Unix compiler and Visual C++. Return
-        a list of command-line options suitable for either Unix compilers and 
+        a list of command-line options suitable for either Unix compilers and
         Visual C++."""
-	pp_options = self._gen_preprocess_macro_options(macros) \
+        pp_options = self._gen_preprocess_macro_options(macros) \
             + self._gen_preprocess_include_options(include_dirs)
-	return pp_options
+        return pp_options
 
     def _gen_cc_options(self, pp_options, debug, before):
         cc_opts = pp_options + ['-c']
@@ -310,19 +387,19 @@ class CCompiler(Compiler):
                 continue
             print "Compiling:", src
             self._compile(obj, src, ext, cc_options, extra_postopts, pp_options)
-	return objects
+        return objects
 
     def _compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts):
         """Compile source to product objects."""
-	raise NotImplemented
+        raise NotImplemented
 
-    def _setup_compile(self, sources, output_dir, macros, include_dirs, extra, 
-		       depends):
+    def _setup_compile(self, sources, output_dir, macros, include_dirs, extra,
+                       depends):
         """Process arguments and decide which source files to compile."""
-	if output_dir is None:
-	    outputdir = self.output_dir
-	elif type(output_dir) is not StringType:
-	    raise TypeError("'output_dir' must be a string or None")
+        if output_dir is None:
+            outputdir = self.output_dir
+        elif type(output_dir) is not StringType:
+            raise TypeError("'output_dir' must be a string or None")
 
         if macros is None:
             macros = self.macros
@@ -337,31 +414,32 @@ class CCompiler(Compiler):
         else:
             raise TypeError("'include_dirs' (if supplied) must be a list of strings")
 
-	if extra is None:
-	    extra = []
+        if extra is None:
+            extra = []
 
-	# List of expected output files
-	objects = self.get_object_filenames(sources, output_dir)
-	assert len(objects) == len(sources)
-	
-	pp_options = self._gen_preprocess_options(macros, include_dirs)
+        # List of expected output files
+        objects = self.get_object_filenames(sources, output_dir)
+        assert len(objects) == len(sources)
 
-	build = {}
-	for i in range(len(sources)):
-	    src = sources[i]
-	    obj = objects[i]
-	    ext = os.path.splitext(src)[1]
-	    mkpath(os.path.dirname(obj), 0777)
-	    build[obj] = (src, ext)
-	
-	return macros, objects, extra, pp_options, build
+        pp_options = self._gen_preprocess_options(macros, include_dirs)
+
+        build = {}
+        for i in range(len(sources)):
+            src = sources[i]
+            obj = objects[i]
+            ext = os.path.splitext(src)[1]
+            mkpath(os.path.dirname(obj), 0777)
+            build[obj] = (src, ext)
+
+        return macros, objects, extra, pp_options, build
 
     def link(self, objects, output_filename, *list_args, **dict_args):
-        print "Linking executable:", os.path.relpath(output_filename, self.output_dir)
+        print "Linking executable:", os.path.relpath(output_filename, \
+                                                         self.output_dir)
         self._link(objects, output_filename, *list_args, **dict_args)
 
-    def _link(self, objects, output_filename, output_dir=None, debug=False, 
-	     extra_preargs=None, extra_postargs=None, target_lang=None):
+    def _link(self, objects, output_filename, output_dir=None, debug=False,
+              extra_preargs=None, extra_postargs=None, target_lang=None):
         raise NotImplementedError
 
     def _setup_link(self, objects, output_dir, libraries, library_dirs):
@@ -395,3 +473,71 @@ class CCompiler(Compiler):
 
         return objects, output_dir, libraries, library_dirs
 
+DEFAULT_COMPILERS = (
+    # Platform string mappings
+
+    # on a cygwin built python we can use gcc like an ordinary UNIXish
+    # compiler
+    ('cygwin.*', 'unix'),
+    ('os2emx', 'emx'),
+
+    # OS name mappings
+    ('posix', 'unix'),
+    ('nt', 'msvc'),
+    ('mac', 'mwerks'),
+    )
+"""Map a sys.platform/os.name ('posix', 'nt') to the default compiler
+type for that platform. Keys are interpreted as re match
+patterns. Order is important; platform mappings are preferred over OS names."""
+
+def get_default_compiler(osname=None, platform=None):
+    """Determine the default compiler to use for the given platform.
+
+    `osname` should be one of the standard Python OS names (i.e. the
+    ones returned by os.name) and platform the common value
+    returned by sys.platform for the platform in question.
+
+    The default values are os.name and sys.platform in case the
+    parameters are not given."""
+    if osname is None:
+        osname = os.name
+    if platform is None:
+        platform = sys.platform
+    for pattern, compiler in _default_compilers:
+        if re.match(pattern, platform) is not None or \
+                re.match(pattern, osname) is not None:
+            return compiler
+    # Default to Unix compiler
+    return 'unix'
+
+def new_ccompiler(platform=None, compiler=None, verbose=None, dry_run=False,
+                  force=False):
+    """Factory function to generate an instance of some Compiler subclass for
+    the supplied platform/compiler combination. platform defaults to os.name
+    (eg. 'posix', 'nt'), and compiler defaults to the default compiler for that
+    platform."""
+    if platform is None:
+        platform = os.name
+    try:
+        if compiler is None:
+            compiler = get_default_compiler(platform)
+        (module_name, class_name, long_description) = _compiler_classes[compiler]
+    except KeyError:
+        msg = "don't know how to compile C/C++ code on platform '%s'" % platform
+        if compiler is not None:
+            msg = msg + " with '%s' compiler" % compiler
+        raise BuilderPlatformError(msg)
+    try:
+        module_name = "bb.builder.compilers." + module_name
+        __import__(module_name)
+        module = sys.modules[module_name]
+        klass = vars(module)[class_name]
+    except ImportError:
+        raise BuilderError("can't compile C/C++ code: unable to load module '%s'" 
+                           % module_name)
+    except KeyError:
+        raise BuilderError("can't compile C/C++ code: unable to find class '%s' " 
+                           + "in module '%s'") % (class_name, module_name)
+    # XXX The None is necessary to preserve backwards compatibility
+    # with classes that expect verbose to be the first positional argument.
+    return klass(verbose, dry_run)

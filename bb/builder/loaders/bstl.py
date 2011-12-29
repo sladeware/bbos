@@ -1,16 +1,17 @@
+#!/usr/bin/env python
 
 __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
 from bb.utils.spawn import spawn
 from bb.builder.errors import *
-from bb.builder.loader import Loader
+from bb.builder.loaders import Loader
 
 class BSTLLoader(Loader):
     """BSTL is the command line loader which can be found here
     http://www.fnarfbargle.com/bst.html
 
-    This little application simply allows to load pre-compiled .binary 
-    and .eeprom files into your propeller. It is a command line 
+    This little application simply allows to load pre-compiled .binary
+    and .eeprom files into your propeller. It is a command line
     application that takes optional parameters and a file name."""
 
     executables = {
@@ -21,7 +22,7 @@ class BSTLLoader(Loader):
         Loader.__init__(self, verbose)
         self.device = None
         self.mode = 1
-        
+
     def _load(self, filename, device=None, mode=1):
         loader = self.executables['loader']
         device_flag = []
@@ -32,5 +33,3 @@ class BSTLLoader(Loader):
                   verbose=self.verbose)
         except BuilderExecutionError, msg:
             raise LoaderError, msg
-
-

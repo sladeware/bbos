@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 
 __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
@@ -20,4 +21,3 @@ class Loader(object):
 
     def _load(self, *arg_list, **arg_dict):
         raise NotImplemented
-

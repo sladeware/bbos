@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.2"
+   width="1.83in"
+   height="1.23in"
+   viewBox="0 0 1830 1230"
+   id="svg3510"
+   inkscape:version="0.48.1 r9760"
+   sodipodi:docname="LH1500AT_schem.svg">
+  <metadata
+     id="metadata3550">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs3548" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     id="namedview3546"
+     showgrid="false"
+     inkscape:zoom="2.1318879"
+     inkscape:cx="82.349998"
+     inkscape:cy="55.350002"
+     inkscape:window-width="506"
+     inkscape:window-height="454"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="schematic" />
+  <g
+     id="schematic">
+    <rect
+       x="315"
+       y="15"
+       fill="none"
+       width="1200"
+       height="1200"
+       stroke="#000000"
+       stroke-linejoin="round"
+       stroke-linecap="round"
+       stroke-width="30"
+       id="rect3513" />
+    <text
+       id="label"
+       x="920.21185"
+       y="199.1949"
+       font-size="235"
+       style="font-size:235px;text-anchor:middle;fill:#000000;stroke:none;font-family:DroidSans">
+      <tspan
+         style="font-size:155.55555725px"
+         id="tspan3552">LH1500AT</tspan>
+    </text>
+    <line
+       fill="none"
+       stroke="#000000"
+       stroke-linejoin="round"
+       stroke-linecap="round"
+       stroke-width="30"
+       x1="15"
+       y1="315"
+       x2="300"
+       y2="315"
+       id="line3516" />
+    <rect
+       x="0"
+       y="300"
+       fill="none"
+       width="300"
+       height="30"
+       id="connector0pin"
+       stroke-width="0" />
+    <rect
+       x="0"
+       y="300"
+       fill="none"
+       width="30"
+       height="30"
+       id="connector0terminal"
+       stroke-width="0" />
+    <text
+       id="label0"
+       x="390"
+       y="350"
+       font-size="130"
+       style="font-size:130px;text-anchor:start;fill:#000000;stroke:none;font-family:DroidSans">1anode</text>
+    <line
+       fill="none"
+       stroke="#000000"
+       stroke-linejoin="round"
+       stroke-linecap="round"
+       stroke-width="30"
+       x1="1515"
+       y1="315"
+       x2="1815"
+       y2="315"
+       id="line3521" />
+    <rect
+       x="1530"
+       y="300"
+       fill="none"
+       width="300"
+       height="30"
+       id="connector5pin"
+       stroke-width="0" />
+    <rect
+       x="1830"
+       y="300"
+       fill="none"
+       width="30"
+       height="30"
+       id="connector5terminal"
+       stroke-width="0" />
+    <text
+       id="label5"
+       x="1440"
+       y="350"
+       font-size="130"
+       style="font-size:130px;text-anchor:end;fill:#000000;stroke:none;font-family:DroidSans">6s</text>
+    <line
+       fill="none"
+       stroke="#000000"
+       stroke-linejoin="round"
+       stroke-linecap="round"
+       stroke-width="30"
+       x1="15"
+       y1="615"
+       x2="300"
+       y2="615"
+       id="line3526" />
+    <rect
+       x="0"
+       y="600"
+       fill="none"
+       width="300"
+       height="30"
+       id="connector1pin"
+       stroke-width="0" />
+    <rect
+       x="0"
+       y="600"
+       fill="none"
+       width="30"
+       height="30"
+       id="connector1terminal"
+       stroke-width="0" />
+    <text
+       id="label1"
+       x="390"
+       y="650"
+       font-size="130"
+       style="font-size:130px;text-anchor:start;fill:#000000;stroke:none;font-family:DroidSans">2cathode</text>
+    <line
+       fill="none"
+       stroke="#000000"
+       stroke-linejoin="round"
+       stroke-linecap="round"
+       stroke-width="30"
+       x1="1515"
+       y1="615"
+       x2="1815"
+       y2="615"
+       id="line3531" />
+    <rect
+       x="1530"
+       y="600"
+       fill="none"
+       width="300"
+       height="30"
+       id="connector4pin"
+       stroke-width="0" />
+    <rect
+       x="1830"
+       y="600"
+       fill="none"
+       width="30"
+       height="30"
+       id="connector4terminal"
+       stroke-width="0" />
+    <text
+       id="label4"
+       x="1440"
+       y="650"
+       font-size="130"
+       style="font-size:130px;text-anchor:end;fill:#000000;stroke:none;font-family:DroidSans">5dc</text>
+    <line
+       fill="none"
+       stroke="#000000"
+       stroke-linejoin="round"
+       stroke-linecap="round"
+       stroke-width="30"
+       x1="15"
+       y1="915"
+       x2="300"
+       y2="915"
+       id="line3536" />
+    <rect
+       x="0"
+       y="900"
+       fill="none"
+       width="300"
+       height="30"
+       id="connector2pin"
+       stroke-width="0" />
+    <rect
+       x="0"
+       y="900"
+       fill="none"
+       width="30"
+       height="30"
+       id="connector2terminal"
+       stroke-width="0" />
+    <text
+       id="label2"
+       x="390"
+       y="950"
+       font-family="DroidSans"
+       stroke="none"
+       fill="#000000"
+       text-anchor="start"
+       font-size="130">3</text>
+    <line
+       fill="none"
+       stroke="#000000"
+       stroke-linejoin="round"
+       stroke-linecap="round"
+       stroke-width="30"
+       x1="1515"
+       y1="915"
+       x2="1815"
+       y2="915"
+       id="line3541" />
+    <rect
+       x="1530"
+       y="900"
+       fill="none"
+       width="300"
+       height="30"
+       id="connector3pin"
+       stroke-width="0" />
+    <rect
+       x="1830"
+       y="900"
+       fill="none"
+       width="30"
+       height="30"
+       id="connector3terminal"
+       stroke-width="0" />
+    <text
+       id="label3"
+       x="1440"
+       y="950"
+       font-size="130"
+       style="font-size:130px;text-anchor:end;fill:#000000;stroke:none;font-family:DroidSans">4s'</text>
+  </g>
+</svg>

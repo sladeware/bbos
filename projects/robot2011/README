@@ -1,0 +1,3 @@
+message router board = simple board providing a star interconnect fabric between all other robot 2011 boards via high speed serial.
+
+power motor controller board = controls the unregulated power of various boards and subsystems within the robot 2011. Controls the two motors of the robot by decoding the dual qudrature wheel encoders and communicating with the Sabertooth motor controller via its "simple" rs232 protocol.

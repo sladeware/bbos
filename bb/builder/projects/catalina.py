@@ -7,8 +7,6 @@ from bb.builder.compilers.catalina import CatalinaCompiler
 from bb.builder.projects.c import CProject
 from bb.builder.errors import *
 
-#_______________________________________________________________________________
-
 class CatalinaProject(CProject):
     """This type of project is working with Catalina compiler 
     (see builder.compilers.catalina.CatalinaCompiler)."""

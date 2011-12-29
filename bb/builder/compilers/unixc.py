@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 
 __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
@@ -7,12 +8,29 @@ from types import *
 from bb.builder.compilers.c import CCompiler
 from bb.builder.errors import *
 from bb.utils.spawn import spawn, which, ExecutionError
-from bb.utils.dir import mkpath
+from bb.utils.host_os.path import mkpath
 
 class UnixCCompiler(CCompiler):
-    source_extensions = [".c", ".C", ".cc", ".cxx", ".cpp", ".m"]
-    object_extension = ".o"
-    executables = {'preprocessor' : None,
+    """This class is subclass of
+    :class:`bb.builder.compilers.c.CCompiler` that handles the typical
+    Unix-style command-line C compiler.
+
+    * macros defined with `-Dname[=value]`
+    * macros undefined with `-Uname`
+    * include search directories specified with `-Idir`
+    * libraries specified with `-llib`
+    * library search directories specified with `-Ldir`
+    * compile handled by **cc** (or similar) executable with `-c` option:
+      compiles ``.c`` to ``.o``
+    * link static library handled by **ar** command (possibly with **ranlib**)
+    * link shared library handled by **cc** `-shared`"""
+
+    DEFAULT_SOURCE_EXTENSIONS = [".c", ".C", ".cc", ".cxx", ".cpp", ".m"]
+    """Default source extensions are ``.c``, ``.C``, ``.cc``, ``.cxx``,
+    ``.cpp``, ``.m``."""
+
+    DEFAULT_OBJECT_EXTENSION = ".o"
+    DEFAULT_EXECUTABLES = {'preprocessor' : None,
                    'compiler'     : ["cc"],
                    'compiler_so'  : ["cc"],
                    'compiler_cxx' : ["cc"],
@@ -28,15 +46,15 @@ class UnixCCompiler(CCompiler):
     def _compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts):
         compiler = self.executables['compiler']
         try:
-            spawn(compiler + cc_args + [src, '-o', obj] + extra_postargs, 
+            spawn(compiler + cc_args + [src, '-o', obj] + extra_postargs,
                   verbose=self.verbose, dry_run=self.dry_run)
         except ExecutionError, msg:
             raise CompileError(msg)
 
-    def _link(self, objects, 
-              output_filename, output_dir=None, 
+    def _link(self, objects,
+              output_filename, output_dir=None,
               libraries=None, library_dirs=None,
-              debug=False, 
+              debug=False,
               extra_preargs=None, extra_postargs=None, target_lang=None):
         """Linking."""
         objects, output_dir, libraries, library_dirs = \
@@ -69,5 +87,3 @@ class UnixCCompiler(CCompiler):
 
     def get_library_option(self, lib):
         return "-l" + lib
-
-

@@ -1,0 +1,21 @@
+Exp pin 1 - I/O_0
+Exp pin 2 - I/O_1
+Exp pin 3 - I/O_2
+Exp pin 4 - I/O_3
+Exp pin 5 - I/O_4
+Exp pin 6 - I/O_5
+Exp pin 7 - I/O_6
+Exp pin 8 - I/O_7
+Exp pin 9 - NET_TX_DATA
+Exp pin 10 - NET_RX_DATA
+
+Exp pin 11 - RESn
+Exp pin 12 - SCK_CART
+Exp pin 13 - SDA_CART
+Exp pin 14 - 33VCC
+Exp pin 15 - 3VCC_LOOP
+Exp pin 16 - 5VCC
+Exp pin 17 - 5VCC_LOOP
+Exp pin 18 - USB_TXD
+Exp pin 19 - USB_RXD
+Exp pin 20 - GND
