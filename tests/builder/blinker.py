@@ -12,7 +12,7 @@ from bb.builder.projects import CatalinaProject
 from bb.builder.loaders import BSTLLoader
 from bb.utils import module
 
-BE_VERBOSE = False
+BE_VERBOSE = True
 LED = 18
 DELAY = 1 # in seconds
 LOAD_BINARY_FLAG = True # Do we need to use loader to load the binary?

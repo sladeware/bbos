@@ -21,14 +21,14 @@ static int mask = 1 << LED;
 static int on_off = 1 << LED;
 
 #define MAKE_DELAY(msec) \
-  _waitcnt(_cnt() + (msec * (_clockfreq() / 1000)) - 4296)
+  _waitcnt(_cnt() + ((msec) * (_clockfreq() / 1000)) - 4296)
 
 void
 blink_an_led()
 {
   _dira(1 << LED, on_off);
   _outa(1 << LED, on_off);
-  DELAY(1 * 1000);
+  MAKE_DELAY(1 * 1000);
   on_off ^= mask;
 }
 
