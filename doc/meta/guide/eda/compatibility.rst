@@ -1,4 +1,4 @@
-.. _guide.eda:
+.. _guide.hardware:
 
 Compatibility
 =============
