@@ -23,7 +23,7 @@ project = CatalinaProject("blinker", verbose=BE_VERBOSE)
 compiler = project.get_compiler()
 compiler.add_include_dir(module.get_dir())
 compiler.add_library('ci')
-compiler.define_macro("LED", DELAY, c_symbol=True)
+compiler.define_macro("LED", LED, c_symbol=True)
 compiler.define_macro("DELAY", DELAY, c_symbol=True)
 
 # Take the sources from the same folder

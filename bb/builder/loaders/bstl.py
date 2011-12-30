@@ -46,10 +46,16 @@ class BSTLLoader(Loader):
 
     def __init__(self, verbose=False,
                  device_filename=None,
-                 mode=None):
+                 mode=None,
+                 high_speed=False):
         Loader.__init__(self, verbose)
         self.__mode = mode or self.DEFAULT_MODE
         self.__device_filename = device_filename
+        # Setup high speed
+        self.__high_speed = None
+        self.disable_high_speed()
+        if high_speed:
+            self.enable_high_speed()
 
     def set_mode(self, mode):
         """Set program mode. See :class:`BSTLLoader.Modes`."""
@@ -67,11 +73,26 @@ class BSTLLoader(Loader):
         """Return device filename to use."""
         return self.__device_filename
 
+    def enable_high_speed(self):
+        """Enable high speed."""
+        self.__high_speed = True
+
+    def disable_high_speed(self):
+        """Disable high speed."""
+        self.__high_speed = False
+
+    def is_high_speed_enabled(self):
+        """Whether high speed was enabled."""
+        return self.__high_speed
+
     def _load(self, filename, device_filename=None, program_mode=1):
         loader = self.executables['loader']
         flags = []
         if device_filename:
             self.set_device_filename(device_filename)
+        # Add high speed flag
+        if self.is_high_speed_enabled():
+            flags.append('-f')
         # Add device flag
         if self.get_device_filename():
             flags.extend(['-d', self.get_device_filename()])

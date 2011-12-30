@@ -11,6 +11,7 @@ The Fritzing EDA is represented by :class:`Fritzing` class.
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 
+import copy
 import re
 import os
 import os.path
@@ -288,12 +289,12 @@ class SketchHandler(Handler):
 
     FILE_EXT = "fz"
 
-    def __init__(self, fname=None):
+    def __init__(self, filename=None):
         Handler.__init__(self)
         self._object = Device()
-        self._part_handlers_table = dict()
-        if fname:
-            self.open(fname)
+        self._instance_handlers_table = dict()
+        if filename:
+            self.open(filename)
 
     def open(self, fname):
         self._fname = fname
@@ -304,26 +305,29 @@ class SketchHandler(Handler):
             self._stream = open(fname, "r")
         self.read()
 
-    def find_part_handler_by_index(self, id_):
-        return self._part_handlers_table.get(id_, None)
+    def find_instance_handler_by_index(self, id_):
+        """Find and return :class:`InstanceHandler` by index (modelIndex)."""
+        return self._instance_handlers_table.get(id_, None)
 
-    def register_part_handler(self, part_handler):
-        """Register Device that belongs to :class:`PartHandler` by the
-        handler of this sketch."""
-        part = part_handler.get_object()
-        self._part_handlers_table[part_handler.model_index] = part_handler
+    def register_instance_handler(self, instance_handler):
+        """Register :class:`bb.hardware.devices.device.Device` that
+        belongs to :class:`InstanceHandler` by the handler of this
+        sketch."""
+        part = instance_handler.get_object()
+        self._instance_handlers_table[instance_handler.model_index] = \
+            instance_handler
         self.get_object().add_element(part)
 
     def read(self, stream=None):
+        """Read sketch::
+
+        <module fritzingVersion="..." moduleId="...">
+        </module>"""
         if stream:
             self._stream = stream
         self._buf = self._stream.read()
         self._root = None
         # Read root element:
-        #
-        #   <module fritzingVersion="..." moduleId="...">
-        #     ...
-        #   </module>
         self._root = xml.dom.minidom.parseString(self._buf).documentElement
         if self._root.tagName != self.ROOT_TAG_NAME:
             raise Exception()
@@ -338,7 +342,8 @@ class SketchHandler(Handler):
             self.__process_instance(instance)
 
     def __process_instance(self, instance):
-        handler = self.find_part_handler_by_index(instance.getAttribute("modelIndex"))
+        handler = self.find_instance_handler_by_index( \
+            instance.getAttribute("modelIndex"))
         part = handler.get_object()
         views_elements = instance.getElementsByTagName("views")
         if not views_elements:
@@ -365,58 +370,32 @@ class SketchHandler(Handler):
             connects_element = connects_elements.item(0)
             for connection_element in connects_element.getElementsByTagName("connect"):
                 dst_part_index = connection_element.getAttribute("modelIndex")
-                dst_handler = self.find_part_handler_by_index(dst_part_index)
+                dst_handler = self.find_instance_handler_by_index(dst_part_index)
                 dst_part = dst_handler.get_object()
                 dst_connector = dst_part.find_elements(Pin).find_element(\
                     connection_element.getAttribute("connectorId"))
                 src_connector.connect_to(dst_connector)
 
     def __read_instance(self, instance):
-        """Read instance entry:
-
-          <instance>
-            ...
-          </instance>
-
-        And return PartHandler instance."""
-        id = instance.getAttribute("moduleIdRef")
-        part_handler = Fritzing.load_part_handler_by_id(id)
-        if not part_handler:
-            # The path attribute has the following view: :path
-            # Do we need to take only the last path?
-            part_fname = instance.getAttribute('path').split(":").pop()
-            if not os.path.exists(part_fname):
-                # In some way this path is absolute, we need to make it as local for
-                # FRITZING_HOME directory
-                if part_fname.startswith(os.sep):
-                    part_fname = part_fname[1:]
-                part_fname = os.path.abspath(os.path.join(Fritzing.get_search_pathes()[0], part_fname))
-            if not os.path.exists(part_fname):
-                raise IOError("No such part: '%s'" % part_fname)
-            part_handler = PartHandler(fname=part_fname)
-        part = part_handler.get_object()
-        if not instance.hasAttribute("modelIndex"):
-            raise Exception()
-        part_handler.model_index = instance.getAttribute("modelIndex")
-        # Part reference
-        elements = instance.getElementsByTagName("title")
-        if elements:
-            part.reference = get_text(elements[0].childNodes)
-        self.register_part_handler(part_handler)
-        return part_handler
+        """Read instance entry and return InstanceHandler instance."""
+        instance_handler = InstanceHandler()
+        instance_handler.read(instance)
+        self.register_instance_handler(instance_handler)
+        return instance_handler
 
 class PinHandler(Handler):
-    """Learn more about connectors from Fritzing part format.
-      http://fritzing.org/developer/fritzing-part-format/"""
+    """Learn more about connectors from `Fritzing part format
+    <http://fritzing.org/developer/fritzing-part-format/>`_."""
     METADATA_PROPERTIES = ("description",)
 
     def __init__(self):
         self._object = Pin()
 
     def read(self, connector_element):
-        #<connector id="..." name="..." type="...">
-        #  ...
-        #</connector>
+        """Read connector::
+
+        <connector id="..." name="..." type="...">
+        </connector>"""
         id_ = connector_element.getAttribute("id")
         if id_:
             self._object.id = id_
@@ -434,8 +413,55 @@ class PinHandler(Handler):
             text = get_text(elements[0].childNodes)
             self._object.set_property(property_, text)
 
-class PartInstanceHandler(Handler):
-    pass
+class InstanceHandler(Handler):
+    """This class handles part instance from sketch."""
+
+    def __init__(self):
+        Handler.__init__(self)
+        self.__model_index = None
+
+    def read(self, element):
+        """Read instance::
+
+        <instance moduleIdRef="..." modelIndex="..." path="...">
+        </instance>
+        """
+        if not element.getAttribute("moduleIdRef"):
+            raise Exception("Instance does not have 'moduleIdRef' attribute")
+        part_handler = Fritzing.load_part_handler_by_id( \
+            element.getAttribute("moduleIdRef"))
+        if not part_handler:
+            # The path attribute has the following view: :path
+            # Do we need to take only the last path?
+            part_fname = instance.getAttribute('path').split(":").pop()
+            if not os.path.exists(part_fname):
+                # In some way this path is absolute, we need to make it as local for
+                # FRITZING_HOME directory
+                if part_fname.startswith(os.sep):
+                    part_fname = part_fname[1:]
+                part_fname = os.path.abspath(os.path.join(Fritzing.get_search_pathes()[0], part_fname))
+            if not os.path.exists(part_fname):
+                raise IOError("No such part: '%s'" % part_fname)
+            part_handler = PartHandler(fname=part_fname)
+        self._object = part_handler.get_object().clone()
+        if not element.hasAttribute("modelIndex"):
+            raise Exception("Instance does not have modelIndex attribute.")
+        self.model_index = element.getAttribute("modelIndex")
+        # Part reference
+        #elements = element.getElementsByTagName("title")
+        #if elements:
+        #    part.reference = get_text(elements[0].childNodes)
+
+    @property
+    def model_index(self):
+        """This property allows you to set/get instance model
+        index. This index represents model index on particular
+        sketch."""
+        return self.__model_index
+
+    @model_index.setter
+    def model_index(self, new_index):
+        self.__model_index = new_index
 
 class PartHandler(Handler):
     """A Fritzing part is made up of a number of files, one required
@@ -492,7 +518,8 @@ class PartHandler(Handler):
 
     def open(self, fname):
         """Open and read fritzing part file, which can be zipped file
-        ``PartHandler.ZFILE_EXT`` or just ``PartHandler.FILE_EXT`` file."""
+        :const:`PartHandler.ZFILE_EXT` or just
+        :const:`PartHandler.FILE_EXT` file."""
         self._fname = fname
         self._doc = None
         self._buf = None
@@ -519,14 +546,14 @@ class PartHandler(Handler):
         self.read()
 
     def read(self):
+        """Read part::
+
+        <module fritzingVersion="..." moduleId="...">
+        </module>"""
         if not self._buf:
             raise Exception("The buffer is empty. Nothing to read.")
         self._doc = xml.dom.minidom.parseString(self._buf)
-        # Read root element:
-        #
-        #   <module fritzingVersion="..." moduleId="...">
-        #     ...
-        #   </module>
+        # Read root element
         self._root = self._doc.documentElement
         if self._root.tagName != self.ROOT_TAG_NAME:
             raise Exception("'%s' has no '%s' root element" % \

@@ -4,6 +4,8 @@
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 
+import copy
+
 class Property(object):
     """This class represents property of a primitive."""
     def __init__(self, name, value=None, groups=()):
@@ -37,6 +39,18 @@ class Primitive(object):
         self.__id = id(self)
         self.__designator_format = "P%d"
         self.__designator = None
+
+    def clone(self):
+        """Creates and returns a copy of this object. The default
+        implementation returns a so-called "shallow" copy: It creates
+        a new instance of the same class and then copies the field
+        values (including object references) from this instance to the
+        new instance. A "deep" copy, in contrast, would also
+        recursively clone nested objects."""
+        clone = self.__class__()
+        for k, v in self.__dict__.iteritems():
+            setattr(clone, k, v)
+        return clone
 
     @property
     def designator_format(self):
