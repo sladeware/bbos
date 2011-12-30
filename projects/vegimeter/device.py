@@ -4,6 +4,7 @@ import os.path
 import getpass
 
 from bb.hardware.compatibility import Fritzing
+from bb.hardware.primitives import Pin
 from bb.utils import module
 
 # Provide environment setup for each developer
@@ -15,7 +16,9 @@ vegimeter_device = Fritzing.parse("device.fz")
 #for element in vegimeter_device.get_elements():
 #    print element.get_property_value("name"), element.designator
 
-print vegimeter_device.find_element("R1")
+ts1 = vegimeter_device.find_element("DS18B20_1")
+for pin in ts1.find_elements(Pin):
+    print pin.get_property_value("name"), pin.designator
 exit(0)
 
 def bill_of_materials():
