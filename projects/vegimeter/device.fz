@@ -1765,7 +1765,7 @@
         </instance>
         <instance moduleIdRef="94cf257f946a876028557a08a5a8ce64" modelIndex="507" path="/Users/slademaurer/.config/Fritzing/parts/contrib/Maxim___Dallas_18B20_Temperature_Sensor__53200e5330547da8b0ad567a6d748735.fzp">
             <property name="part number" value="DS18B20&#13;"/>
-            <title>DS18B20_5</title>
+            <title>TS5</title>
             <views>
                 <breadboardView layer="breadboard">
                     <geometry z="2.50003" x="566.593" y="-47.3015"/>
@@ -1855,7 +1855,7 @@
         </instance>
         <instance moduleIdRef="94cf257f946a876028557a08a5a8ce64" modelIndex="510" path="/Users/slademaurer/.config/Fritzing/parts/contrib/Maxim___Dallas_18B20_Temperature_Sensor__53200e5330547da8b0ad567a6d748735.fzp">
             <property name="part number" value="DS18B20&#13;"/>
-            <title>DS18B20_4</title>
+            <title>TS4</title>
             <views>
                 <breadboardView layer="breadboard">
                     <geometry z="2.50004" x="476.593" y="-47.3015"/>
@@ -1944,7 +1944,7 @@
         </instance>
         <instance moduleIdRef="94cf257f946a876028557a08a5a8ce64" modelIndex="513" path="/Users/slademaurer/.config/Fritzing/parts/contrib/Maxim___Dallas_18B20_Temperature_Sensor__53200e5330547da8b0ad567a6d748735.fzp">
             <property name="part number" value="DS18B20&#13;"/>
-            <title>DS18B20_3</title>
+            <title>TS3</title>
             <views>
                 <breadboardView layer="breadboard">
                     <geometry z="2.50005" x="386.594" y="-47.3015"/>
@@ -2034,7 +2034,7 @@
         </instance>
         <instance moduleIdRef="94cf257f946a876028557a08a5a8ce64" modelIndex="516" path="/Users/slademaurer/.config/Fritzing/parts/contrib/Maxim___Dallas_18B20_Temperature_Sensor__53200e5330547da8b0ad567a6d748735.fzp">
             <property name="part number" value="DS18B20&#13;"/>
-            <title>DS18B20_2</title>
+            <title>TS2</title>
             <views>
                 <breadboardView layer="breadboard">
                     <geometry z="2.50006" x="296.594" y="-47.3015"/>
@@ -2122,7 +2122,7 @@
         </instance>
         <instance moduleIdRef="94cf257f946a876028557a08a5a8ce64" modelIndex="519" path="/Users/slademaurer/.config/Fritzing/parts/contrib/Maxim___Dallas_18B20_Temperature_Sensor__53200e5330547da8b0ad567a6d748735.fzp">
             <property name="part number" value="DS18B20&#13;"/>
-            <title>DS18B20_1</title>
+            <title>TS1</title>
             <views>
                 <breadboardView layer="breadboard">
                     <geometry z="2.50007" x="206.595" y="-47.3015"/>
@@ -3944,11 +3944,11 @@
             </views>
         </instance>
         <instance moduleIdRef="d8f570d723ea4d14f9b61b34575a9699" modelIndex="248008" path="/Volumes/fritzing.2011.12.16.cocoa/Fritzing/parts/core/Power plug.fzp">
-            <title>POWERPLUG1</title>
+            <title>PP1</title>
             <views>
                 <breadboardView layer="breadboard">
                     <geometry z="2.50012" x="78.3333" y="101.333"/>
-                    <titleGeometry visible="true" x="73.4333" y="87.333" z="4.50074" xOffset="-4.9" yOffset="-14" textColor="#000000" fontSize="9">
+                    <titleGeometry visible="true" x="93.4333" y="87.333" z="4.50074" xOffset="15.1" yOffset="-14" textColor="#000000" fontSize="9">
                         <displayKey key=""/>
                     </titleGeometry>
                     <connectors>
@@ -4155,7 +4155,7 @@
             </views>
         </instance>
         <instance moduleIdRef="1000FADF10011leg" modelIndex="248092" path="/Volumes/fritzing.2011.12.16.cocoa/Fritzing/parts/core/dc_motor.fzp">
-            <title>M1 Water Pump</title>
+            <title>WP1</title>
             <views>
                 <breadboardView layer="breadboard">
                     <geometry z="2.50017" x="737.667" y="-6.3333"/>
@@ -4978,11 +4978,11 @@
         </instance>
         <instance moduleIdRef="ccd4760dbb1b608cabcb52d383f30793" modelIndex="253336" path="/Users/slademaurer/.config/Fritzing/parts/contrib/P8X32A_QuickStart__12f4c8e836be6a17920b07881626f185.fzp">
             <property name="part number" value="40000"/>
-            <title>QUICKSTART_PROPELLER1</title>
+            <title>QSP1</title>
             <views>
                 <breadboardView layer="breadboard">
                     <geometry z="2.50071" x="294" y="149"/>
-                    <titleGeometry visible="true" x="478" y="163" z="4.50072" xOffset="184" yOffset="14" textColor="#000000" fontSize="9">
+                    <titleGeometry visible="true" x="515" y="167" z="4.50072" xOffset="221" yOffset="18" textColor="#000000" fontSize="9">
                         <displayKey key=""/>
                     </titleGeometry>
                     <connectors>
