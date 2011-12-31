@@ -1,0 +1,18 @@
+High temperature(100C) 1L/Min mini DC Water Pump. FDA approval. Ideal for coffee maker or other food process application
+
+This is a high temperature (up to 105'C) FDA approval mini <FONT color=blue>submersible</FONT> water pump. The shaft is coated with a layer of ZrO2 (zirconium oxide ) for higher temperature handling and better tolerance for acid and alkaline. It's built by a brushless motor providing smooth and quiet operation than a non-brushless water pump. Plus,it will not generate 'electric spark' like what a brush type does so it's more safe. It can be used to pump oil as well (no gasoline*)
+
+Specification:
+Input: DC 5~6V
+Output: 1.0L/min or 0.264 gallon/min 
+Range: 1M (3ft horizon) @6V
+Current: 300mA@6V
+Intake: 9mm Dia.
+Outlet: 7mm Dia. 
+Life span: > <FONT color=#ff9900>20,000hrs</FONT> @ 1600rpm~4200rpm
+Noise: << 20dB 
+Working Temp: 100'C (non-submersed) 
+Size(L*W*D): 32mmx22mmx36mm (1.26" X 0.87" X 1.42")
+Weight (net): 2.0oz
+
+Warning: Do not let it run dry without water flow!
