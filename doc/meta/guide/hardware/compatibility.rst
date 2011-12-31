@@ -10,14 +10,15 @@ Fritzing is an open source software initiative to support designers and artists
 ready to move from physical prototyping to actual product. It was developed at
 the University of Applied Sciences of Potsdam.
 
-The Fritzing EDA is represented by :mod:`bb.eda.compatibility.fritzing`. To
+The Fritzing EDA is represented by :mod:`bb.hardware.compatibility.fritzing`. To
 start working with Fritzing you need to setup home directory and user
 directory if required::
 
-    from bb.eda.compatibility import Fritzing
+    from bb.hardware.compatibility import Fritzing
     Fritzing.set_home_dir("/opt/fritzing")
 
-Need to read Propeller D40 :file:`parts/core/controller_propeller_D40.fzp` ::
+Suppose we would like to read Propeller D40 part located at
+:file:`parts/core/controller_propeller_D40.fzp`::
 
     propeller_d40 = Fritzing.parse("parts/core/controller_propeller_D40.fzp")
     print "Part:", propeller_d40.get_property_value("name")
@@ -27,8 +28,8 @@ Need to read Propeller D40 :file:`parts/core/controller_propeller_D40.fzp` ::
     num_pins = propeller_d40.count_pins()
     if not num_pins:
         print "Sorry, but %s does not have pins" % propeller_d40.designator
-        exit(0)
-    print "Number of pins:", num_pins
+    else:
+        print "Number of pins:", num_pins
 
 Let us find pin ``XO`` (Crystal Output). According to
 :file:`parts/core/controller_propeller_D40.fzp` metafile this pin has
@@ -37,4 +38,3 @@ unique ID ``connector30``::
     pin = propeller_d40.find_pin("connector30")
     print "Pin with ID 'connector30':", pin.designator # or pin.get_property_value("designator")
     print "Description:", pin.get_property_value("description")
-

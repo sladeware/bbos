@@ -6,12 +6,18 @@ __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 
 import copy
 
+try:
+    import networkx
+except ImportError:
+    print "Please install network"
+    exit(0)
+G = networkx.DiGraph()
+
 class Property(object):
     """This class represents property of a primitive."""
     def __init__(self, name, value=None, groups=()):
         self.__name = name
         self.__value = value
-        self.__groups = ()
 
     @property
     def name(self):
@@ -28,10 +34,10 @@ class Property(object):
 class Primitive(object):
     """This class is basic for any primitive.
 
-    Each primitive has unique ID -- designator `Primitive.designator` for
+    Each primitive has unique ID -- designator :attr:`Primitive.designator` for
     identification. By default the system tries to generate it with help of
-    `Primitive.designator_format`. However it can be
-    changed manually by using `Primitive.designator` property."""
+    :attr:`Primitive.designator_format`. However it can be
+    changed manually by using :attr:`Primitive.designator` property."""
 
     def __init__(self):
         self.__properties = dict()
@@ -39,6 +45,8 @@ class Primitive(object):
         self.__id = id(self)
         self.__designator_format = "P%d"
         self.__designator = None
+        global G
+        G.add_node(self)
 
     def clone(self):
         """Creates and returns a copy of this object. The default
@@ -135,7 +143,7 @@ class Primitive(object):
         return property_
 
     def get_properties(self, group=None):
-        """Return all the properties. See also `Primitive.properties`."""
+        """Return all the properties. See also :attr:`Primitive.properties`."""
         return self.properties
 
     def get_property(self, name):
@@ -188,6 +196,8 @@ class Pin(ElectronicPrimitive):
 
     def connect_to(self, pin):
         """Connect source pin to destination pin."""
+        G.add_edge(self, pin)
+        G.add_edge(pin, self)
         if not self.is_connected_to(pin):
             self._connections[id(pin)] = pin
             pin.connect_to(self)
@@ -218,11 +228,18 @@ class Wire(ElectronicPrimitive):
     analogous to a physical wire."""
 
     def __init__(self):
-        Primitive.__init__(self)
+        ElectronicPrimitive.__init__(self)
 
     def connect(self, first_pin, second_pin):
         self.first_pin = first_pin
         self.second_pin = second_pin
+        G.add_edge(first_pin, second_pin)
+        G.add_edge(second_pin, first_pin)
+
+    def find_pin(self, by):
+        for pin in (self.first_pin, self.second_pin):
+            if pin.designator == by:
+                return pin
 
     def disconnect(self):
         self.first_pin = self.second_pin = None
@@ -232,6 +249,11 @@ class Wire(ElectronicPrimitive):
 
     def get_second_pin(self):
         return self.second_pin
+
+    def clone(self):
+        clone = ElectronicPrimitive.clone(self)
+        clone.connect(self.get_first_pin().clone(), self.get_second_pin().clone())
+        return clone
 
 class Bus(ElectronicPrimitive):
     """A bus is an electrical design primitive. It is an object that represents

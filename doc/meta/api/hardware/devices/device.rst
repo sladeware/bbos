@@ -1,10 +1,8 @@
 
-:mod:`bb.eda.devices.device` --- Device
-============================
+:mod:`bb.hardware.devices.device` --- Device
+============================================
 
-.. automodule:: bb.eda.devices.device
-
-.. autoclass:: Device
+.. automodule:: bb.hardware.devices.device
    :members:
    
 

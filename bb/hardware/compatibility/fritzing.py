@@ -23,7 +23,7 @@ import string
 import types
 import json
 
-from bb.hardware.devices import Device, Pin
+from bb.hardware.devices import Device, Pin, Wire
 from bb.crypto.md5 import md5sum
 from bb.utils.type_check import verify_list, verify_string, is_string, \
     is_tuple, is_list
@@ -55,15 +55,15 @@ class Fritzing(object):
 
     @classmethod
     def set_home_dir(cls, path):
-        """Set Fritzing home directory."""
-        if not os.path.exists(path):
+        """Set fritzing home directory."""
+        if not path or not os.path.exists(path):
             raise IOError("Directory '%s' does not exist" % path)
         cls._home_dir = path
 
     @classmethod
     def get_default_user_dir(cls):
         """Return default path to the global fritzing user directory
-        depending on operating system."""
+        depending on operating system (``os.name``)."""
         default_dirs = {
             "posix": "%s/.config/Fritzing" % os.environ["HOME"],
             }
@@ -75,6 +75,13 @@ class Fritzing(object):
         directory differs depending on operating system, and might
         even be hidden by default (see Fritzing.get_default_user_dir())."""
         return cls._user_dir or cls.get_default_user_dir()
+
+    @classmethod
+    def set_user_dir(cls, path):
+        """Set fritzing user directory."""
+        if not path or not os.path.exists(path):
+            raise IOError("Path '%s' does not exist" % path)
+        cls._user_dir = path
 
     @classmethod
     def add_search_path(cls, path):
@@ -91,7 +98,11 @@ class Fritzing(object):
         """Return a list of strings that specifies the search path for
         Fritzing files. By default includes user directory and home
         directory."""
-        return cls._search_pathes + [Fritzing.get_home_dir(), Fritzing.get_user_dir()]
+        pathes = list()
+        pathes.extend(cls._search_pathes)
+        for path in (Fritzing.get_home_dir(), Fritzing.get_user_dir()):
+            if path: pathes.append(path)
+        return pathes
 
     @classmethod
     def find_part_files(cls, pathes, recursive=False):
@@ -142,25 +153,42 @@ class Fritzing(object):
         In order to reindex parts set `force` as ``True``."""
         if len(cls._parts_index):
             return
+        # Use environment search pathes if search_pathes list
+        # was not defined.
         if not search_pathes:
             search_pathes = cls.get_search_pathes()
-        # Read index file
+            # Check default environment pathes such as user
+            # specific directory and home directory. Print warning
+            # message if they does not exist.
+            # We also need to remove these directories from search
+            # pathes. They has to be processed in a special way.
+            magic_pathes = list()
+            if not cls.get_home_dir():
+                print "WARNING: home directory can not be defined.", \
+                    "Please set it manually by using Fritzing.set_home_dir()"
+            else:
+                search_pathes.remove(cls.get_home_dir())
+                magic_pathes.append(cls.get_home_dir())
+            if not cls.get_user_dir():
+                print "WARNING: user specific directory can not be defined.", \
+                    "Please set it manually by using Fritzing.set_user_dir()"
+            else:
+                search_pathes.remove(cls.get_user_dir())
+                magic_pathes.append(cls.get_home_dir())
+            # Scan magic pathes and extend existed search pathes.
+            for magic_path in magic_pathes:
+                for parts_location in ("parts", "resources/parts"):
+                    for group in ("core", "user", "obsolete", "contrib"):
+                        path = os.path.join(magic_path, parts_location, group)
+                        if not os.path.exists(path):
+                            continue
+                        search_pathes.append(path)
+        # Read old index file if such already exists
         if os.path.exists(cls.get_index_filename()):
             index_fh = open(cls.get_index_filename())
             cls._parts_index = json.loads(''.join(index_fh.readlines()))
             index_fh.close()
         all_part_files = list()
-        # Remove home directory and user directory from search pathes.
-        # They has to be processed in a special way.
-        search_pathes.remove(cls.get_home_dir())
-        search_pathes.remove(cls.get_user_dir())
-        for search_path in (cls.get_home_dir(), cls.get_user_dir()):
-            for parts_location in ("parts", "resources/parts"):
-                for group in ("core", "user", "obsolete", "contrib"):
-                    path = os.path.join(search_path, parts_location, group)
-                    if not os.path.exists(path):
-                        continue
-                    search_pathes.append(path)
         # Scan all search pathes one by one and extract part files
         for search_path in search_pathes:
             sys.stdout.write("Scaning %s... " % search_path)
@@ -338,7 +366,7 @@ class SketchHandler(Handler):
         # them. Otherwise we want be able to connect them.
         for instance in instances:
             self.__read_instance(instance)
-        for inctance in instances:
+        for instance in instances:
             self.__process_instance(instance)
 
     def __process_instance(self, instance):
@@ -363,7 +391,13 @@ class SketchHandler(Handler):
         connectors_element = connectors_elements.item(0)
         for connector_element in connectors_element.getElementsByTagName("connector"):
             id_ = connector_element.getAttribute("connectorId")
-            src_connector = part.find_elements(Pin).find_element(id_)
+            src_connector = None
+            if isinstance(part, Wire):
+                src_connector = part.find_pin(id_)
+            else:
+                src_connector = part.find_elements(Pin).find_element(id_)
+            if not src_connector:
+                raise Exception("Can not find pin '%s' of '%s'" % (id_, part.designator))
             connects_elements = connector_element.getElementsByTagName("connects")
             if not connects_elements:
                 continue
@@ -372,9 +406,15 @@ class SketchHandler(Handler):
                 dst_part_index = connection_element.getAttribute("modelIndex")
                 dst_handler = self.find_instance_handler_by_index(dst_part_index)
                 dst_part = dst_handler.get_object()
-                dst_connector = dst_part.find_elements(Pin).find_element(\
-                    connection_element.getAttribute("connectorId"))
-                src_connector.connect_to(dst_connector)
+                if isinstance(dst_part, Wire):
+                    pin = dst_part.find_pin(connection_element.getAttribute("connectorId"))
+                    if not pin:
+                        raise Exception("Cannot find pin")
+                    src_connector.connect_to(pin)
+                else:
+                    dst_connector = dst_part.find_elements(Pin).find_element(\
+                        connection_element.getAttribute("connectorId"))
+                    src_connector.connect_to(dst_connector)
 
     def __read_instance(self, instance):
         """Read instance entry and return InstanceHandler instance."""
@@ -398,10 +438,10 @@ class PinHandler(Handler):
         </connector>"""
         id_ = connector_element.getAttribute("id")
         if id_:
-            self._object.id = id_
+            self._object.designator = id_
         name = connector_element.getAttribute("name")
         if name:
-            self._object.designator = name
+            self._object.set_property("name", name)
         #type_ = connector_element.getAttribute("type")
         #if type_:
         #    self._object.metadata.type = type_
@@ -425,7 +465,9 @@ class InstanceHandler(Handler):
 
         <instance moduleIdRef="..." modelIndex="..." path="...">
         </instance>
-        """
+
+        It may include ``<title>...</title>`` which will be translated as
+        reference designator."""
         if not element.getAttribute("moduleIdRef"):
             raise Exception("Instance does not have 'moduleIdRef' attribute")
         part_handler = Fritzing.load_part_handler_by_id( \
@@ -435,11 +477,12 @@ class InstanceHandler(Handler):
             # Do we need to take only the last path?
             part_fname = instance.getAttribute('path').split(":").pop()
             if not os.path.exists(part_fname):
-                # In some way this path is absolute, we need to make it as local for
-                # FRITZING_HOME directory
+                # In some way this path is absolute, we need to make it as
+                # local for fritzing home directory
                 if part_fname.startswith(os.sep):
                     part_fname = part_fname[1:]
-                part_fname = os.path.abspath(os.path.join(Fritzing.get_search_pathes()[0], part_fname))
+                part_fname = os.path.abspath( \
+                    os.path.join(Fritzing.get_search_pathes()[0], part_fname))
             if not os.path.exists(part_fname):
                 raise IOError("No such part: '%s'" % part_fname)
             part_handler = PartHandler(fname=part_fname)
@@ -447,10 +490,10 @@ class InstanceHandler(Handler):
         if not element.hasAttribute("modelIndex"):
             raise Exception("Instance does not have modelIndex attribute.")
         self.model_index = element.getAttribute("modelIndex")
-        # Part reference
-        #elements = element.getElementsByTagName("title")
-        #if elements:
-        #    part.reference = get_text(elements[0].childNodes)
+        # Part reference designator
+        elements = element.getElementsByTagName("title")
+        if elements:
+            self._object.designator = get_text(elements[0].childNodes)
 
     @property
     def model_index(self):
@@ -562,6 +605,10 @@ class PartHandler(Handler):
             raise Exception("Root tag has no child nodes.")
         # Update part identifier
         self._object.id = self.module_id = self._root.getAttribute("moduleId")
+
+        if self.module_id == "WireModuleID":
+            self._object = Wire()
+
         # Put attributes such as author, description, date, label, etc. as
         # properties of the metadata instance for this part
         for src in self.METADATA_PROPERTIES:
@@ -596,11 +643,20 @@ class PartHandler(Handler):
         if not connectors_elements:
             # Some parts does not have connectors (e.g. note)
             return
+        # Extract list of pins from connectors
+        pins = list()
         connectors_element = connectors_elements.item(0)
         for connector_element in connectors_element.getElementsByTagName(self.CONNECTOR_TAG_NAME):
             connector_handler = PinHandler()
             connector_handler.read(connector_element)
-            self._object.add_element(connector_handler.get_object())
+            pins.append(connector_handler.get_object())
+        # Handle special cases
+        if isinstance(self._object, Wire):
+            self._object.connect(pins[0], pins[1])
+            return
+        # Simply add all the pins to the element
+        for pin in pins:
+            self._object.add_element(pin)
 
     def __read_properties(self):
         """Read part's properties:

@@ -3,19 +3,16 @@
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 
 import types
-try:
-    import networkx
-except ImportError:
-    print "Please install network"
-    exit(0)
 
 from bb.hardware.primitives import *
 
 class Device(ElectronicPrimitive):
-    """This class represents a physical device. Device is any type of
-    electrical component. It will have functions and properties unique
-    to its type. Each device can contain one or more parts that are
-    packaged together (e.g. a 74HCT32)."""
+    """This class is sub-class of
+    :class:`bb.hardware.primitives.ElectronicPrimitive` and represents a
+    physical device. Device is any type of electrical component. It
+    will have functions and properties unique to its type. Each device
+    can contain one or more parts that are packaged together (e.g. a
+    74HCT32)."""
 
     # Device register keeps complete list of all devices so the instance
     # of device can not be managed by different device managers.
@@ -23,7 +20,6 @@ class Device(ElectronicPrimitive):
 
     def __init__(self):
         ElectronicPrimitive.__init__(self)
-        self.__g = networkx.Graph()
 
     def register_driver(self, driver):
         pass
@@ -35,16 +31,22 @@ class Device(ElectronicPrimitive):
         return None
 
     def has_element(self, element):
-        return self.__g.has_node(element)
+        global G
+        return G.has_edge(self, element)
 
     def add_element(self, element):
-        if self.has_element(element):
-            return element
-        if id(element) in self.element_register:
-            raise Exception("The element '%s' already belongs to '%s'" \
-                                % (element, self.element_register[id(element)]))
+        """Add `element` to device.
+
+        Note, the element instance can only belong to one device instance.
+        Otherwise you will get an exception."""
+        #if self.has_element(element):
+        #    return element
+        #if id(element) in Device.element_register:
+        #    raise Exception("The element '%s' already belongs to '%s'" \
+        #                        % (element, Device.element_register[id(element)]))
+        #Device.element_register[id(element)] = self
         # Assume designator
-        if element.designator:
+        if element.get_property_value("name"):
             if self.find_element(element.designator):
                 pass
         else:
@@ -53,8 +55,7 @@ class Device(ElectronicPrimitive):
                                     % element)
             relatives = self.find_elements(self.__class__)
             element.designator = element.designator_format % len(relatives)
-        self.element_register[id(element)] = self
-        self.__g.add_node(element)
+        self.connect_to(element)
         return element
 
     def update_element(self, original, new):
@@ -67,12 +68,15 @@ class Device(ElectronicPrimitive):
         self.add_element(new)
 
     def remove_element(self, element):
-        self.__g.remove_node(element)
-        del Device.element_register[id(element)]
+        """Remove element from this device."""
+        #G.remove_node(element)
+        #del Device.element_register[id(element)]
+        pass
 
     def get_elements(self):
-        """Return list of elements that belongs to this device."""
-        return self.__g.nodes()
+        """Return list of elements that owns to this device."""
+        global G
+        return G.neighbors(self)
 
     class Searcher(list):
         def __init__(self, source):
@@ -82,7 +86,7 @@ class Device(ElectronicPrimitive):
 
         def find_elements(self, by):
             """Returns elements of this device that is identified by `by`,
-            or None if there is no such object.
+            or ``None`` if there is no such object.
 
             The by argument can be represented by a function, string, class or
             number. Omitting the by argument causes all object to be matched."""
@@ -92,13 +96,14 @@ class Device(ElectronicPrimitive):
                         self.__elements.append(element)
             elif type(by) in (types.StringType, types.UnicodeType):
                 for element in self.__source:
-                    if element.id == by:
+                    if element.designator == by:
                         self.__elements.append(element)
             return Device.Searcher(self.__elements)
 
         def find_element(self, by):
             """If there is more than one child matching the search, the first
-            one is returned. In that case, Device.find_elements() should be used."""
+            one is returned. In that case, :func:`Device.find_elements` should
+            be used."""
             elements = self.find_elements(by)
             if len(elements):
                 return elements[0]
@@ -121,12 +126,18 @@ class Device(ElectronicPrimitive):
         searcher = Device.Searcher(self.get_elements())
         return searcher.find_elements(by)
 
-    def connect_elements(self, dest, src=None):
-        if not src:
-            src = self
-        for part in (src, dest):
-            self.add_element(element)
-        self.__g.add_edge(src, dest)
+    def connect_to(self, element):
+        """Connect two elements."""
+        #print self.get_property_value("name"), element.designator
+        global G
+        G.add_edge(self, element)
 
-    def disconnect_parts(self, src, dest):
+    def disconnect_elements(self, src, dest):
         pass
+
+    def clone(self):
+        clone = ElectronicPrimitive.clone(self)
+        for origin_pin in self.find_elements(Pin):
+            pin = origin_pin.clone()
+            clone.add_element(pin)
+        return clone
