@@ -1,6 +1,6 @@
 .. _index:
 
-BB |version| Documentation
+Bionic Bunny |version| Documentation
 ============================
 
 Welcome! This is the documentation for Bionic Bunny |version|, last updated |today|.
