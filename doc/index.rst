@@ -3,7 +3,7 @@
 BB |version| Documentation
 ============================
 
-Welcome! This is the documentation for BB |version|, last updated |today|.
+Welcome! This is the documentation for Bionic Bunny |version|, last updated |today|.
 
 :Authors:
    Slade Maurer <slade@computer.org>,

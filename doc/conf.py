@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# BB documentation build configuration file, created by
+# Bionic Bunny documentation build configuration file, created by
 # sphinx-quickstart on Sun Nov 29 23:06:36 2009.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -39,7 +39,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'BB'
+project = u'Bionic Bunny'
 copyright = u'2012 Sladeware LLC'
 
 # The version info for the project you're documenting, acts as replacement for
