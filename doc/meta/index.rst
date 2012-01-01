@@ -1,13 +1,13 @@
 .. _distutils-index:
 
 ###############################
-BB meta platform
+Bionic Bunny meta platform
 ###############################
 
 :Release: |version|
 :Date: |today|
 
-This document describes the BB meta platform.
+This document describes the Bionic Bunny meta platform.
 
 Guide
 -----
