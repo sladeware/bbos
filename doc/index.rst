@@ -6,7 +6,7 @@ BB |version| Documentation
 Welcome! This is the documentation for BB |version|, last updated |today|.
 
 :Authors:
-   Slade Maurer <slade@google.com>,
+   Slade Maurer <slade@computer.org>,
    Alexander Sviridenko <d2rk@firejet.org>
 :Version: |version|
 
