@@ -9,8 +9,7 @@ from bb.hardware.primitives import Pin
 from bb.utils import module
 
 # Provide environment setup for each developer
-if getpass.getuser() == "d2rk":
-    Fritzing.set_home_dir("/opt/fritzing")
+Fritzing.set_home_dir("/opt/fritzing")
 Fritzing.add_search_path(os.path.join(module.get_dir(), "parts"))
 
 vegimeter_device = Fritzing.parse("device.fz")

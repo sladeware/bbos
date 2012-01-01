@@ -6,8 +6,9 @@
 6. Loading and running app on a Propeller and using all 8 cogs
 7. Shared Memory API
 8. Shared Memory Based Inter-Mapping Communication
-9. "Connect" Controller cog with other cogs, so they communcate with IMC and shared memory
-10. System Integration and Testing
+9. Automatic identification and assignment of device GPIO pins from Fritzing Sketch
+10. "Connect" Controller cog with other cogs, so they communcate with IMC and shared memory
+11. System Integration and Testing
 
 Design Document:
   https://docs.google.com/document/d/15U6fNcfc0FeTir46BejYtf14oOK8b4B83Xh8CfdANuI/edit
