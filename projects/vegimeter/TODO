@@ -1,3 +1,16 @@
-Alexander:
+1. Skeleton (Python Configuration)
+2. Thermometer Driver
+3. Controller threads
+4. Button Driver
+5. Heater and Pump Driver
+6. Loading and running app on a Propeller and using all 8 cogs
+7. Shared Memory API
+8. Shared Memory Based Inter-Mapping Communication
+9. "Connect" Controller cog with other cogs, so they communcate with IMC and shared memory
+10. System Integration and Testing
 
-  - vegimeter skeleton
+Design Document:
+  https://docs.google.com/document/d/15U6fNcfc0FeTir46BejYtf14oOK8b4B83Xh8CfdANuI/edit
+
+Architecture Document:
+  https://docs.google.com/drawings/d/1-p6k4T24JzqQ8bxHXnyh6eOs4cmtS7jffa-5HD3LI7g/edit
