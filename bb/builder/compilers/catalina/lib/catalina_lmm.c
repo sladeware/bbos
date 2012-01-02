@@ -2,17 +2,18 @@
  * Copyright (c) 2012 Sladeware LLC
  */
 
-#include <catalina_lmmk.h>
+#include <catalina_lmm.h>
 #include <catalina_time.h>
 
 /*
- * Include the dynamic kernel formatted as a C array. The array was produced
+ * Include the LMM dynamic kernel formatted as a C array. The array was produced
  * using the following commands:
  *
  *       homespun Catalina_LMM_dynamic.spin -b -o catalina_lmm
- *       spinc catalina_lmm.binary > lmm_array.h
+ *       spinc catalina_lmm.binary > catalina_lmm_array.h
  */
-#include <lmm_array.h>
+#include <catalina_lmm_array.h>
+#define lmm_array catalina_lmm_array /* alias */
 
 /**
  * Load LMM kernel into selected cog to start specified C function on it.
@@ -28,17 +29,17 @@
 cog_id_t
 lmm_init_cog(void function(void), unsigned long* stack, cog_id_t cog_id)
 {
-   cog_id_t cog;
-   struct {
-      unsigned long REG;
-      unsigned long PC;
-      unsigned long SP;
-   } cog_data;
+  cog_id_t cog;
+  struct {
+    unsigned long REG;
+    unsigned long PC;
+    unsigned long SP;
+  } cog_data;
 
-   cog_data.REG = _registry(); /* regisrtry address */
-   cog_data.PC  = (unsigned long)function; /* address of C function */
-   cog_data.SP  = (unsigned long)stack; /* top of stack */
-   cog = _coginit((int)&cog_data >> 2, (int)lmm_array >> 2, cog_id);
-   delay_ms(100); /* small delay for cog to initialize */
-   return cog;
+  cog_data.REG = _registry(); /* regisrtry address */
+  cog_data.PC = (unsigned long)function; /* address of C function */
+  cog_data.SP = (unsigned long)stack; /* top of stack */
+  cog = _coginit((int)&cog_data >> 2, (int)lmm_array >> 2, cog_id);
+  delay_ms(100); /* small delay for cog to initialize */
+  return cog;
 }
