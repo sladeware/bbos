@@ -13,6 +13,7 @@
 #if BBOS_CONFIG_NR_THREADS < 1
 # error System requires atleast one thread
 #endif
+/* Set final number of threads */
 #define BBOS_NR_THREADS BBOS_CONFIG_NR_THREADS
 
 /* System threads */
