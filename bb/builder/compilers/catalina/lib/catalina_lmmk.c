@@ -2,7 +2,8 @@
  * Copyright (c) 2012 Sladeware LLC
  */
 
-#include <catalina_multicog_support.h>
+#include <catalina_lmmk.h>
+#include <catalina_time.h>
 
 /*
  * Include the dynamic kernel formatted as a C array. The array was produced
@@ -11,7 +12,7 @@
  *       homespun Catalina_LMM_dynamic.spin -b -o LMM
  *       spinc LMM.binary > LMM_array.h
  */
-#include "LMM_array.h"
+#include <LMM_array.h>
 
 /**
  * Start a C function in a new available cog.
@@ -23,7 +24,7 @@
  * @return cog used, or -1 on any error
  */
 cog_id_t
-LMM_kernel_init_cog(void function(void), unsigned long* stack, cog_id_t cog_id)
+LMMK_init_cog(void function(void), unsigned long* stack, cog_id_t cog_id)
 {
    cog_id_t cog;
    struct {
@@ -36,7 +37,6 @@ LMM_kernel_init_cog(void function(void), unsigned long* stack, cog_id_t cog_id)
    cog_data.PC  = (unsigned long)function; /* address of C function */
    cog_data.SP  = (unsigned long)stack; /* top of stack */
    cog = _coginit((int)&cog_data >> 2, (int)LMM_array >> 2, cog_id);
-   wait(100); /* small delay for cog to initialize */
+   delay_ms(100); /* small delay for cog to initialize */
    return cog;
 }
-

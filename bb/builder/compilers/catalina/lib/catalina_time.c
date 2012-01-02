@@ -1,4 +1,3 @@
-
 #include <catalina_time.h>
 
 /*
@@ -9,5 +8,5 @@
 void
 delay_ms(int ms)
 {
-   _waitcnt(_cnt() + ms *(_clockfreq()/1000));
+  _waitcnt(_cnt() + ms * (_clockfreq() / 1000));
 }
