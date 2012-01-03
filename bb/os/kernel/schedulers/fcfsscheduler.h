@@ -1,12 +1,13 @@
 /*
  * FCFS scheduler interface
  *
- * Copyright (c) 2011 Sladeware LLC
+ * Copyright (c) 2012 Sladeware LLC
  */
 #ifndef __BBOS_FCFS_SCHEDULER_H
 #define __BBOS_FCFS_SCHEDULER_H
 
-#include <bb/os/kernel/scheduler.h>
+/* Include generic scheduler interface */
+#include <bb/os/kernel/schedulers/scheduler.h>
 
 #define BBOS_SCHED_NAME "FCFS scheduler"
 

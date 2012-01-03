@@ -13,11 +13,13 @@
 #if BBOS_CONFIG_NR_THREADS < 1
 # error System requires atleast one thread
 #endif
-/* Set final number of threads */
-#define BBOS_NR_THREADS BBOS_CONFIG_NR_THREADS
 
 /* System threads */
-#define BBOS_IDLE 10 /* TODO */
+#define BBOS_NR_SYSTEM_THREADS 1
+#define BBOS_IDLE BBOS_CONFIG_NR_THREADS + 0
+
+/* Set final number of threads */
+#define BBOS_NR_THREADS (BBOS_CONFIG_NR_THREADS + BBOS_NR_SYSTEM_THREADS)
 
 /* By default the number of ports in zero. In this case port interface wont be
    supported. */

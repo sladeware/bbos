@@ -1,7 +1,6 @@
 /*
- * Copyright (c) 2011 Sladeware LLC
+ * Copyright (c) 2012 Sladeware LLC
  */
-
 #include <bb/os/kernel.h>
 
 /* Banner */
@@ -16,10 +15,12 @@ bbos_port_t bbos_ports[BBOS_NR_PORTS];
 /* Initialize thread. */
 void
 bbos_thread_init(bbos_thread_id_t tid, bbos_thread_target_t target,
-                 bbos_port_id_t pid)
+            bbos_port_id_t pid)
 {
   bbos_validate_thread_id(tid);
+#if BBOS_NR_PORTS > 0
   bbos_validate_port_id(pid);
+#endif
   bbos_thread_set_target(tid, target);
   bbos_thread_set_port_id(tid, pid);
 }
@@ -30,12 +31,6 @@ bbos_thread_run(bbos_thread_id_t tid)
   bbos_validate_thread_id(tid);
   bbos_assert(bbos_thread_get_target(tid) != NULL);
   (*bbos_thread_get_target(tid))();
-}
-
-void
-bbos_port_init(bbos_port_id_t pid)
-{
-  bbos_validate_port_id(pid);
 }
 
 /* Halt the system. Display a message, then perform cleanups with exit. */
@@ -53,6 +48,15 @@ bbos_panic(const int8_t* fmt, ...)
   exit(0);
 }
 
+/**
+ * The first function that system calls, while will initialize the
+ * kernel.
+ *
+ * @note
+ *
+ * A requirement of BBOS is that you call bbos_init() before you
+ * invoke any of its other services.
+ */
 void
 bbos_init()
 {
@@ -67,10 +71,6 @@ bbos_init()
   /* Initialize scheduler */
   printf("Initialize scheduler '" BBOS_SCHED_NAME "'\n");
   sched_init();
-
-#ifdef BBOS_USE_MAPPING
-  bbos_mapping_init();
-#endif
 }
 
 /* The main loop can be overload by static scheduler in BBOS_H file. */
@@ -88,18 +88,37 @@ bbos_loop()
 #endif
 
 void
+bbos_idle_runner()
+{
+}
+
+/**
+ * Start the kernel.
+ */
+void
 bbos_start()
 {
   printf("Start kernel\n");
+
+  bbos_thread_init(BBOS_IDLE, bbos_idle_runner, 0);
+  bbos_activate_thread(BBOS_IDLE);
+
   bbos_loop();
 }
 
+/**
+ * BBOS entry point. It works in several ways. The user may define
+ * bbos_main() function to describe application functionally. In this
+ * case the system will automatically initialize itself and start the
+ * kernel. Otherwise user will have to call bbos_start() manually.
+ */
 void
 bbos()
 {
   printf("%s", bbos_banner);
   bbos_init();
+#ifdef bbos_main
   bbos_main();
   bbos_start();
+#endif
 }
-

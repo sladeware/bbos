@@ -5,24 +5,18 @@
 #define __BBOS_KERNEL_H
 
 #include <bb/os/config.h>
+
+/* Memory management */
 #include <bb/os/kernel/mm.h>
-#include <bbos_mapping.h>
 
 enum {
   BBOS_SUCCESS = 0,
   BBOS_FAILURE
 };
 
-/*******************************************************************************
- * Utils
- ******************************************************************************/
-
 #include <assert.h>
 
 #define bbos_assert(expr) assert(expr)
-
-/* Driver management */
-
 
 /*******************************************************************************
  * Threads Management
@@ -73,7 +67,11 @@ PROTOTYPE(void bbos_thread_run, (bbos_thread_id_t tid));
 
 #define bbos_resume_thread(tid) sched_resume(tid)
 
-#define bbos_deactivate_thread(tid) sched_dequeue(tid)
+/**
+ * Stop the thread and dequeue it from schedule.
+ */
+#define bbos_deactivate_thread(tid)             \
+  sched_dequeue(tid)
 
 /*******************************************************************************
  * Messaging
@@ -89,32 +87,11 @@ PROTOTYPE(void bbos_thread_run, (bbos_thread_id_t tid));
  * Inter-Thread Communication
  ******************************************************************************/
 
-PROTOTYPE(bbos_message_t* bbos_receive_message, ());
-PROTOTYPE(bbos_message_t* bbos_receive_message_from, (bbos_thread_id_t sender));
-PROTOTYPE(void bbos_send_message, (bbos_message_t* message,
-                                 bbos_thread_id_t sender));
-PROTOTYPE(bbos_message_t* bbos_alloc_message, ());
-PROTOTYPE(void bbos_free_message, (bbos_message_t* message));
-
-/*******************************************************************************
- * Ports managemet interfaces will be provided only if number of ports
- * BBOS_NR_PORTS is greater than zero.
- */
+/* ITC will be provided only if number of ports is greater than zero. */
 #if BBOS_NR_PORTS > 0
-
-extern bbos_port_t bbos_ports[BBOS_NR_PORTS];
-
-/* Select thread by its identifier. */
-#define bbos_select_port(pid) bbos_ports[pid]
-/* Compare port identifier with supported number of ports */
-#define bbos_validate_port_id(pid) pid < BBOS_NR_PORTS
-PROTOTYPE(void bbos_port_init, (bbos_port_id_t pid));
-
-#else
-
-#define bbos_port_init(pid) 0
-
+#include <bb/os/kernel/itc.h>
 #endif /* BBOS_NR_PORTS > 0 */
+
 /*******************************************************************************
  * System Management
  ******************************************************************************/
@@ -134,7 +111,5 @@ PROTOTYPE(void bbos_start, ());
 PROTOTYPE(void bbos_stop, ());
 PROTOTYPE(void bbos_main, ());
 PROTOTYPE(void bbos, ());
-
-#include <bb/os/kernel/io.h>
 
 #endif /* __BBOS_KERNEL_H */

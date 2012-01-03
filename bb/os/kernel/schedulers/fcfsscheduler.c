@@ -1,7 +1,7 @@
 /*
- * FCFS scheduler
+ * FCFS scheduler.
  *
- * Copyright (c) 2011 Sladeware LLC
+ * Copyright (c) 2012 Sladeware LLC
  */
 
 #include <bb/os.h>
@@ -38,7 +38,6 @@ sched_enqueue(bbos_thread_id_t tid)
   bbos_validate_thread_id(tid);
   if(schedule[tid].next != BBOS_IDLE)
     {
-      printf("111 %d\n", tid);
       return BBOS_FAILURE;
     }
   if (schedule[BBOS_IDLE].next == BBOS_IDLE)
@@ -52,6 +51,7 @@ sched_enqueue(bbos_thread_id_t tid)
   schedule[tid].next = schedule[BBOS_IDLE].next;
   schedule[tid].prev = schedule[BBOS_IDLE].prev;
   schedule[BBOS_IDLE].prev = tid;
+
   return BBOS_SUCCESS;
 }
 
@@ -92,5 +92,6 @@ sched_dequeue(bbos_thread_id_t tid)
     {
       schedule[BBOS_IDLE].next = BBOS_IDLE;
     }
+
   return BBOS_SUCCESS;
 }
