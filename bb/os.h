@@ -7,4 +7,9 @@
 
 #include <bb/os/kernel.h>
 
+
+PROTOTYPE(void bbos, ());
+PROTOTYPE(void bbos_main, ());
+PROTOTYPE(void bbos_start, ());
+
 #endif /* __BBOS_H */

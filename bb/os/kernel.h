@@ -1,13 +1,11 @@
-/*
- * Copyright (c) 2011 Sladeware LLC
+/**
+ * Copyright (c) 2012 Sladeware LLC
  */
 #ifndef __BBOS_KERNEL_H
 #define __BBOS_KERNEL_H
 
 #include <bb/os/config.h>
-
-/* Memory management */
-#include <bb/os/kernel/mm.h>
+#include <bb/os/kernel/mm.h> /* Memory management */
 
 enum {
   BBOS_SUCCESS = 0,
@@ -16,72 +14,119 @@ enum {
 
 #include <assert.h>
 
-#define bbos_assert(expr) assert(expr)
+#define bbos_kernel_assert(expr) assert(expr)
+
+/* List of kernel threads. */
+extern bbos_thread_t bbos_kernel_threads[BBOS_NR_THREADS];
+
+#define bbos_message_set_owner(message, owner) \
+  do {\
+    message->owner = owner;\
+  } while(0)
+
+#define bbos_message_set_command(message, command) \
+  do {\
+    message->command = command;\
+  } while(0)
+
+#define bbos_message_get_owner(message) \
+  message->owner
+
+#define bbos_message_get_command(message) \
+  message->command
 
 /*******************************************************************************
- * Threads Management
+ * The following kernel functionality aims to control and manage
+ * threads.
  ******************************************************************************/
-
-extern bbos_thread_t bbos_threads[BBOS_NR_THREADS];
-
-#define bbos_thread_set_port_id(tid, pid)       \
-  do                                            \
-    {                                           \
-      bbos_select_thread(tid).port_id = pid;    \
-    }                                           \
-  while (0)
-
-#define bbos_thread_set_target(tid, target)             \
-  do                                                    \
-    {                                                   \
-      bbos_select_thread(tid).target = target;          \
-    }                                                   \
-  while (0)
-
-#define bbos_thread_get_target(tid)             \
-  bbos_select_thread(tid).target
-
-PROTOTYPE(void bbos_thread_init, (bbos_thread_id_t tid,
-                                  bbos_thread_target_t target,
-                                  bbos_port_id_t pid));
-PROTOTYPE(void bbos_thread_run, (bbos_thread_id_t tid));
-
-/* Compare thread id with supported number of threads  */
-#define bbos_validate_thread_id(tid) tid < BBOS_NR_THREADS
-
-/* Select thread by its identifier. There is no another way to select thread. */
-#define bbos_select_thread(tid) bbos_threads[tid]
-
-/* Schedule thread with specified identifier. */
-#define bbos_activate_thread(tid)               \
-  do                                            \
-    {                                           \
-      printf("Activate thread '%d'\n", tid);    \
-      sched_enqueue(tid);                       \
-    }                                           \
-  while (0)
-
-/* This suspends a thread tid until it is manually resumed again via
-   bbos_resume_thread(). */
-#define bbos_suspend_thread(tid) sched_suspend(tid)
-
-#define bbos_resume_thread(tid) sched_resume(tid)
 
 /**
- * Stop the thread and dequeue it from schedule.
+ * Get thread by its identifier. Please use this primitive insead of
+ * direct access bbos_kernel__threads array.
  */
-#define bbos_deactivate_thread(tid)             \
-  sched_dequeue(tid)
+#define bbos_kernel_get_thread(tid) bbos_kernel_threads[tid]
+
+PROTOTYPE(void bbos_kernel_init_thread, (bbos_thread_id_t tid,
+                                         bbos_thread_runner_t runner,
+                                         bbos_port_id_t pid));
+PROTOTYPE(void bbos_kernel_enable_all_threads, ());
+PROTOTYPE(void bbos_kernel_disable_all_threads, ());
+PROTOTYPE(void bbos_thread_run, (bbos_thread_id_t tid));
+
+/**
+ * Enable thread and make it active. The system will use scheduler to
+ * schedule thread by its identifier. Use bbos_kernel_disable_thread()
+ * in order to disable thread. See also
+ * bbos_kernel_enable_all_threads() and bbos_sched_enqueue().
+ */
+#define bbos_kernel_enable_thread(tid)               \
+  do                                                 \
+    {                                                \
+      printf("Enable thread '%d'\n", tid);           \
+      bbos_sched_enqueue(tid);                       \
+    }                                                \
+  while (0)
+
+/**
+ * Stop thread's activity and dequeue it from schedule. Use
+ * bbos_kernel_enable_thread() in order to enable thread back.
+ * See also bbos_kernel_disable_all_threads() and
+ * bbos_sched_dequeue().
+ */
+#define bbos_kernel_disable_thread(tid) bbos_sched_dequeue(tid)
+
+/**
+ * Suspend thread until it is manually resumed again via
+ * bbos_kernel_resume_thread(). See also bbos_sched_suspend().
+ */
+#define bbos_kernel_suspend_thread(tid) sched_suspend(tid)
+
+/**
+ * Resume suspended thread. See also bbos_sched_resume() and
+ * bbos_sched_suspend().
+ */
+#define bbos_kernel_resume_thread(tid) bbos_sched_resume(tid)
 
 /*******************************************************************************
- * Messaging
+ * The folloing interface provides thread control primitives.
  ******************************************************************************/
 
-//#define bbos_message_is_(message)
-#define bbos_message_set_sender(message, sender) message->sender = sender
-#define bbos_message_get_sender(message) message->sender
-#define bbos_message_set_command(message, command) message->command = command
-#define bbos_message_get_command(message) message->command
+/**
+ * Compare thread id with max supported number of threads
+ * BBOS_NR_THREADS.
+ */
+#define bbos_validate_thread_id(tid) tid < BBOS_NR_THREADS
+
+/**
+ * Specify the port identifier that will be used by the system for
+ * ITC.
+ */
+#define bbos_thread_set_port_id(tid, pid)         \
+  do                                              \
+    {                                             \
+      bbos_kernel_get_thread(tid).port_id = pid;  \
+    }                                             \
+  while (0)
+
+#define bbos_thread_get_port_id(tid)            \
+  bbos_kernel_get_thread(tid).port_id
+
+/**
+ * Set thread runner. The runner is a function to be invoked by the
+ * bbos_thread_run() function.
+ */
+#define bbos_thread_set_runner(tid, runner)                 \
+  do                                                        \
+    {                                                       \
+      bbos_kernel_get_thread(tid).runner = runner;          \
+    }                                                       \
+  while (0)
+
+/**
+ * Get thread runner.
+ */
+#define bbos_thread_get_runner(tid)             \
+  bbos_kernel_get_thread(tid).runner
 
 /*******************************************************************************
  * Inter-Thread Communication
@@ -96,20 +141,20 @@ PROTOTYPE(void bbos_thread_run, (bbos_thread_id_t tid));
  * System Management
  ******************************************************************************/
 
-/* Switch execution context. Start next thread selected by scheduler. */
-#define bbos_switch_context()                                   \
-  do                                                            \
-    {                                                           \
-      bbos_validate_thread_id(sched_identify_myself());         \
-      bbos_thread_run(sched_identify_myself());                 \
-    }                                                           \
+/**
+ * Switch execution context. Start next thread selected by scheduler.
+ */
+#define bbos_kernel_switch_context()                                 \
+  do                                                                 \
+    {                                                                \
+      bbos_validate_thread_id(bbos_sched_identify_myself());         \
+      bbos_thread_run(bbos_sched_identify_myself());                 \
+    }                                                                \
   while (0)
 
-PROTOTYPE(void bbos_panic, (const int8_t* fmt, ...));
-PROTOTYPE(void bbos_init, ());
-PROTOTYPE(void bbos_start, ());
-PROTOTYPE(void bbos_stop, ());
-PROTOTYPE(void bbos_main, ());
-PROTOTYPE(void bbos, ());
+PROTOTYPE(void bbos_kernel_panic, (const int8_t* fmt, ...));
+PROTOTYPE(void bbos_kernel_init, ());
+PROTOTYPE(void bbos_kernel_start, ());
+PROTOTYPE(void bbos_kernel_stop, ());
 
 #endif /* __BBOS_KERNEL_H */

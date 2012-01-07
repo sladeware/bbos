@@ -10,9 +10,9 @@ static bbos_thread_id_t cursor = BBOS_IDLE;
 static struct record schedule[BBOS_NR_THREADS];
 
 void
-sched_init()
+bbos_sched_init()
 {
-  for (cursor=0; cursor<BBOS_NR_THREADS; cursor++)
+  for (cursor = 0; cursor < BBOS_NR_THREADS; cursor++)
     {
       schedule[cursor].next = BBOS_IDLE;
       schedule[cursor].prev = BBOS_IDLE;
@@ -21,19 +21,19 @@ sched_init()
 }
 
 bbos_thread_id_t
-sched_identify_myself()
+bbos_sched_identify_myself()
 {
   return cursor;
 }
 
 void
-sched_move()
+bbos_sched_move()
 {
   cursor = schedule[cursor].next;
 }
 
 bbos_code_t
-sched_enqueue(bbos_thread_id_t tid)
+bbos_sched_enqueue(bbos_thread_id_t tid)
 {
   bbos_validate_thread_id(tid);
   if(schedule[tid].next != BBOS_IDLE)
@@ -56,7 +56,7 @@ sched_enqueue(bbos_thread_id_t tid)
 }
 
 bbos_code_t
-sched_dequeue(bbos_thread_id_t tid)
+bbos_sched_dequeue(bbos_thread_id_t tid)
 {
   bbos_validate_thread_id(tid);
   if(schedule[tid].next == BBOS_IDLE)

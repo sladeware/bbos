@@ -1,0 +1,15 @@
+
+#define BBOS_CONFIG_NR_PORTS 2
+#define BBOS_CONFIG_NR_THREADS 2
+
+#define BBOS_CONFIG_MESSAGING_POOL_SIZE 2
+//#define BBOS_CONFIG_UNLIMIT_PORT_SIZE
+
+#define PORT0 0
+#define PORT1 1
+
+#define THREAD0 0
+#define THREAD1 1
+
+#define PING 0xFFF
+

@@ -1,0 +1,4 @@
+
+#define BBOS_CONFIG_NR_THREADS 1
+
+#define HELLOWORLD 0

@@ -1,7 +1,7 @@
 /*
  * Memory pool allocator
  *
- * Copyright (c) 2011 Sladeware LLC
+ * Copyright (c) 2012 Sladeware LLC
  */
 
 /*
@@ -15,13 +15,16 @@
 #define __BB_MM_MEMPOOL_H
 
 #include <bb/config.h>
-#include <bb/stdint.h>
+#include <bb/config/stdlib/stdint.h>
 
 /* Create new memory partition name with size n * sz bytes. */
-#define MEMPOOL(name, n, sz)               \
+#define MEMPOOL_PARTITION(name, n, sz)                    \
   int8_t name[n * sz]
 
-/*
+/* Just an alias for MEMPOOL_PARTITION */
+#define MEMPOOL_PART MEMPOOL_PARTITION
+
+/**
  * Allocate a block of memory from the pool. Basically used for better
  * performance.
  */
@@ -34,7 +37,9 @@
         }                                       \
     } while (0)
 
-/* Free a memory block. */
+/**
+ * Free a memory block.
+ */
 #define MEMPOOL_FREE(pool, block)               \
   do                                            \
     {                                           \
