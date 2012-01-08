@@ -18,6 +18,9 @@
 /**
  * Load LMM kernel into selected cog to start specified C function on it.
  *
+ * More about the Propeller Large Memory Model can be found here:
+ *  http://propeller.wikispaces.com/Large+Memory+Model
+ *
  * @function: address of C function to run (defined as 'void f(void)')
  * @stack: address of TOP of stack to use (i.e. points just after last long)
  * @cog_id: cog ID.
