@@ -1,5 +1,5 @@
 
-BB_DIR = ../..
+BB_DIR = ../../..
 
 all:
 	gcc -DBB_CONFIG_OS_H=\"ping_config.h\" -I. -I$(BB_DIR) \
