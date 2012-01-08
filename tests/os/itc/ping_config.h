@@ -1,15 +1,23 @@
-
 #define BBOS_CONFIG_NR_PORTS 2
-#define BBOS_CONFIG_NR_THREADS 2
+#define BBOS_CONFIG_NR_THREADS 7
 
-#define BBOS_CONFIG_MESSAGING_POOL_SIZE 2
+#define BBOS_CONFIG_MESSAGING_POOL_SIZE (BBOS_CONFIG_NR_THREADS * BBOS_CONFIG_NR_THREADS)
 //#define BBOS_CONFIG_UNLIMIT_PORT_SIZE
 
 #define PORT0 0
 #define PORT1 1
+#define PORT2 2
+#define PORT3 3
+#define PORT4 4
+#define PORT5 5
+#define PORT6 6
 
 #define THREAD0 0
 #define THREAD1 1
+#define THREAD2 2
+#define THREAD3 3
+#define THREAD4 4
+#define THREAD5 5
+#define THREAD6 6
 
 #define PING 0xFFF
-
