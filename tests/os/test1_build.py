@@ -12,7 +12,7 @@ compiler.add_include_dirs(["../..", "."])
 compiler.define_macro("BB_CONFIG_OS_H", '"test1_config.h"')
 
 # Take the sources from the same folder
-for filename in ("../../bb/os.c", "../../bb/os/kernel.c", 
+for filename in ("../../bb/os.c", "../../bb/os/kernel.c",
                  "../../bb/os/kernel/schedulers/fcfsscheduler.c"):
   project.add_source(filename)
 for filename in ("test1.c",):
