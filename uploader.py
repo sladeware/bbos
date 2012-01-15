@@ -5,6 +5,7 @@ import time
 import sys
 import types
 import optparse
+import operator
 
 try:
     import serial
@@ -38,7 +39,7 @@ class Long:
             | ((x >> 24) & 0xFF)
 
     @classmethod
-    def reverse_long(cls, x):
+    def reverse_bits(cls, x):
         x = (x & 0x55555555) <<  1 | (x & 0xAAAAAAAA) >>  1
         x = (x & 0x33333333) <<  2 | (x & 0xCCCCCCCC) >>  2
         x = (x & 0x0F0F0F0F) <<  4 | (x & 0xF0F0F0F0) >>  4
@@ -150,24 +151,30 @@ class Uploader(object):
         # IF
         if addr == MARKER:
             self.send_byte(chr(self.get_cpu_no()))
-            sys.stdout.write("Writing packet #%d [CPU=%d, ADDR=0x%x, SIZE=%d]\n" \
+            sys.stdout.write("Sending packet #%d [CPU=%d, ADDR=0x%x, SIZE=%d]\n" \
                                  % (seq_no, self.get_cpu_no(), addr, size))
             return
+        # LRC-checksum value (xor of each byte)
+        lrc_checksum = 0x00
         # Start transmitting page bytes
+        print "Sending packet #%d [CPU=%d, ADDR=0x%x, SIZE=%d]" \
+            % (seq_no, self.get_cpu_no(), addr, size)
         i = 0
         while i < size:
-            self.send_byte(buf[i])
+            self.stuff_and_send_byte(buf[i])
+            # Calculate the XOR value for each byte
+            lrc_checksum = operator.xor(lrc_checksum, ord(buf[i]))
             i += 1
-            sys.stdout.write("Writing packet #%d [CPU=%d, ADDR=0x%x, SIZE=%d]... %d bytes\r" \
-                                 % (seq_no, self.get_cpu_no(), addr, size, i))
-        print
-        sys.stdout.write("Waiting response... ")
         # Waiting for sync
+        print "Waiting for sync..."
         sync = self.__serial.read(2) # timeout=None <== wait
-        lrc_result = self.__serial.read(1)
         assert len(sync) == 2 # two bytes
         assert ord(sync[1]) == self.get_cpu_no()
-        sys.stdout.write("%d\n" % ord(lrc_result))
+        sys.stdout.write("Waiting for LRC checksum value... ")
+        result_lrc_checksum = ord(self.__serial.read(1))
+        print result_lrc_checksum
+        # Compare our LRC value and result LRC value from device
+        print "LRC-checksum: %d=%d" % (lrc_checksum, result_lrc_checksum)
 
     def disconnect(self):
         self.__serial.close()

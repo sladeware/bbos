@@ -84,9 +84,12 @@ entry
         rdlong SavedFreq,#0
         rdbyte SavedMode,#4
 
+        cogid r6
         ''''''''''''''''''''''''''''''''''
         mov r5, #1
-        shl r5, #16
+        mov r4, #16
+        add r4, r6
+        shl r5, r4
         mov dira, r5
         mov outa, r5
         ''''''''''''''''''''''''''''''''''
@@ -221,10 +224,6 @@ restart
         clkset  r2
 :justStartUp
         or      r6,interpreter
-        '
-        mov r1, #4
-        wrlong r1, reg_addr
-        '
         coginit r6
                 
 SavedFreq     long      $0
