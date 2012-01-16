@@ -22,6 +22,17 @@ compiler.add_library("ci")
 # You need to execute make in bb/builder/compilers/catalina to use this
 compiler.add_library("multicog")
 
+# Definitions
+for macro in (\
+    # Load a PC terminal emulator HMI plugin with screen and keyboard support
+    "PC",
+    # Reduce some plugins in order to save as much cogs as we can :)
+    "NO_MOUSE", "NO_KEYBOARD", "NO_SCREEN"
+    ):
+    compiler.define_macro(macro)
+# Propeller Demo Board support
+compiler.define_macro("DEMO")
+
 # Add sources
 for filename in ("./../../bb/os.c",
                  "./../../bb/os/kernel.c",
