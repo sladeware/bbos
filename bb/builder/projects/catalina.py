@@ -26,7 +26,7 @@ class CatalinaProject(CProject):
         self.output_filename = "%s.binary" % self.output_filename
 
         # We have to be sure that output_path file has been produced, otherwise
-        # it want be load
+        # it won't be loaded
         if not self.get_compiler().dry_run:
             if not os.path.exists(self.output_filename):
                 raise BuilderError("It seems like output file '%s' has not been " \

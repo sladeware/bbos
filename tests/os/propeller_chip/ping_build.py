@@ -23,13 +23,6 @@ compiler.add_library("ci")
 # bb/builder/compilers/catalina first.
 compiler.add_library("multicog")
 
-# Required definitions
-#compiler.define_macro("BB_CONFIG_OS_H", '<ping_config.h>"', c_symbol=True)
-# Load a PC terminal emulator HMI plugin with screen and keyboard support
-compiler.define_macro("PC")
-# Use Propeller Demo Board pin definitions and drivers
-compiler.define_macro("DEMO")
-
 # Add sources
 for filename in ("./../../../bb/os.c", "./../../../bb/os/kernel.c",
                  "./../../../bb/os/kernel/itc.c", "./../../../bb/mm/mempool.c",

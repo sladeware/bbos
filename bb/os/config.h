@@ -23,8 +23,8 @@
 #define DRIVER_FILE(type, file) <bb/os/drivers/type/file>
 
 /* This macro builds path for the proper processor header file. Allows to find
-   files related to processor in use. For example, if the using processor is
-   propeller_p8x32a and you would like to include time.h file, the
+   files related to processor in use. For example, if you are using the
+   propeller_p8x32a processor and you would like to include time.h file, the
    PROCESSOR_FILE(time.h) may produce
    "bb/os/drivers/processors/propeller_p8x32a/time.h". However this macro can be
    redefined in order to load files from different places. */
@@ -37,7 +37,7 @@
    If BBOS_CONFIG_PROCESSOR_H macro was not defined, BBOS_CONFIG_PROCESSOR can
    be defined as a processor's name in order to find it in standard driver
    library by using selection logic. For a standard processors this name equals
-   to directory name where processors configuration is located. */
+   the directory name where the processor's configuration is located. */
 #if defined(BBOS_CONFIG_PROCESSOR_H)
 # include BBOS_CONFIG_PROCESSOR_H
 #elif defined(BBOS_CONFIG_PROCESSOR)

@@ -41,8 +41,10 @@ typedef struct bbos_thread {
   bbos_thread_runner_t runner; /* Pointer to the target function to be called */
 } bbos_thread_t;
 
+/*
 typedef struct bbos_device {
 } bbos_device_t;
+*/
 
 typedef int32_t bbos_device_id_t;
 

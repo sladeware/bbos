@@ -10,7 +10,7 @@
  */
 
 #define BB_COMPILER_ANSIC_COMPLIANT
-#include <bb/builder/compilers/ansic.h>
+#include <bb/config/compilers/ansic.h>
 
 #define BB_HAS_STDINT_H
 #define BB_HAS_LONG_LONG
