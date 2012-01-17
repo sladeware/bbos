@@ -4,13 +4,15 @@
 
 /**
  * @file bb/os/drivers/onewire/onewire_bus.h
- * @brief One wire device I/O supportzz
+ * @brief One wire device I/O support
  */
 
 #ifndef __ONEWIRE_BUS_H
 #define __ONEWIRE_BUS_H
 
-#include <bbos.h>
+#include <bb/os.h>
+#include <bb/builder/compilers/catalina/include/catalina_time.h>
+#include <catalina_time.h>
 
 // ROM commands
 /** Read the 64-bit ID of the 1-Wire device;serial num; CRC */
@@ -23,20 +25,29 @@
 #define OW_SEARCH_ROM 0xF0
 #define OW_ALARM_SEARCH_ROM 0xEC
 
-#define OW_GET_INPUT()  (_ina() & ow_dpin)
-#define OW_DIR_OUTPUT() (_dira(ow_dpin, ow_dpin))
-#define OW_DIR_INPUT()  (_dira(ow_dpin, 0))
-#define OW_OUT_LOW()    (_outa(ow_dpin, 0))
-#define OW_OUT_HIGH()   (_outa(ow_dpin, ow_dpin))
+/* Remember that pins start at 0 */
+#define GET_OW_DPIN(pin) (1 << pin)
+
+#define OW_GET_INPUT(pin)  (_ina() & GET_OW_DPIN(pin))
+#define OW_DIR_OUTPUT(pin) (_dira(GET_OW_DPIN(pin), GET_OW_DPIN(pin)))
+#define OW_DIR_INPUT(pin)  (_dira(GET_OW_DPIN(pin), 0))
+#define OW_OUT_LOW(pin)    (_outa(GET_OW_DPIN(pin), 0))
+#define OW_OUT_HIGH(pin)   (_outa(GET_OW_DPIN(pin), GET_OW_DPIN(pin)))
+
+/* Sleep macro */
+#define ow_delay_usec(usecs) (_waitcnt(_cnt() + usecs * (_clockfreq() / 1000000)))
 
 /* Prototypes */
 
-uint8_t ow_reset();
+uint8_t ow_reset(uint8_t pin);
 
-#define ow_read_byte() ow_io_byte(0xFF)
-#define ow_write_byte(byte) ow_io_byte(byte)
+#define ow_read_byte(pin) ow_io_byte(0xFF, pin)
+#define ow_write_byte(byte, pin) ow_io_byte(byte, pin)
 
-uint8_t ow_io_byte(uint8_t byte);
-uint8_t ow_io_bit(uint8_t bit);
+uint8_t ow_io_byte(uint8_t byte, uint8_t pin);
+uint8_t ow_io_bit(uint8_t bit, uint8_t pin);
+
+uint8_t ow_input_pin_state(uint8_t pin);
+void ow_command(uint8_t cmd, uint8_t pin);
 
 #endif /* __ONEWIRE_BUS_H */

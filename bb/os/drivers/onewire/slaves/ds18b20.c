@@ -7,15 +7,18 @@
  * @brief DS18B20 temp sensor
  */
 
-#include <bbos.h>
+#include <bb/os.h>
 #include <bb/os/drivers/onewire/slaves/ds18b20.h>
-#include <bb/os/drivers/onewire/bus.h>
+#include <bb/os/drivers/onewire/onewire_bus.h>
 
 /**
  * Read temperature (scratchpad) of sensor.
+ *
+ * The pin argument is the P8X32A GPIO pin that connects to the DS18B20's DQ
+ * It starts at 0 and goes to 31.
  */
 float
-ds18b20_read_temperature()
+ds18b20_read_temperature(uint8_t pin)
 {
   uint8_t i;
   uint8_t sp[DS18B20_SCRATCHPAD_SIZE];
@@ -23,7 +26,7 @@ ds18b20_read_temperature()
   int temp_data;
   
   /* Start measurements */
-  if (!ow_reset())
+  if (!ow_reset(pin))
     {
       printf("Failed to reset 1-wire BUS before reading sensor's ROM.\r\n");
       return 1;
@@ -32,21 +35,21 @@ ds18b20_read_temperature()
    * Now we need to read the state from the input pin to define
    * whether the bus is "idle".
    */
-  if (!ow_input_pin_state())
+  if (!ow_input_pin_state(pin))
     {
       return 1;
     }
-  ow_command(DS18B20_CONVERT_TEMPERATURE);
+  ow_command(DS18B20_CONVERT_TEMPERATURE, pin);
   
-  if (!ow_reset())
+  if (!ow_reset(pin))
     {
       printf("Failed to reset 1-wire BUS before reading sensor's ROM.\r\n");
       return 1;
     }
-  ow_command(DS18B20_READ_SCRATCHPAD);
+  ow_command(DS18B20_READ_SCRATCHPAD, pin);
   for (i=0; i<DS18B20_SCRATCHPAD_SIZE; i++)
     {
-      sp[i] = ow_read_byte();
+      sp[i] = ow_read_byte(pin);
     }
 
   /* Process measurements */
@@ -56,4 +59,3 @@ ds18b20_read_temperature()
   
   return ((float)(temp_data * sign)) / 16.0;
 }
-
