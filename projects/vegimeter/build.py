@@ -9,7 +9,7 @@ from bb.builder.loaders import BSTLLoader
 from bb.utils import module
 
 BE_VERBOSE = True
-LOAD_BINARY_FLAG = True # Do we need to use loader to load the binary?
+LOAD_BINARY_FLAG = False # Do we need to use loader to load the binary?
 
 project = CatalinaProject("vegimeter", verbose=BE_VERBOSE)
 
@@ -28,7 +28,7 @@ for macro in (\
     # Load a PC terminal emulator HMI plugin with screen and keyboard support
     "PC",
     # Reduce some plugins in order to save as much cogs as we can :)
-    "NO_MOUSE", "NO_KEYBOARD", "NO_SCREEN"
+    #"NO_MOUSE", "NO_KEYBOARD", "NO_SCREEN"
     ):
     compiler.define_macro(macro)
 # Propeller Demo Board support
@@ -40,13 +40,9 @@ for filename in ("./../../bb/os.c",
                  "./../../bb/os/drivers/onewire/slaves/ds18b20.c",
                  "./../../bb/os/kernel.c",
                  "./../../bb/os/kernel/schedulers/fcfsscheduler.c"):
-  project.add_source(filename)
+    project.add_source(filename)
 for filename in ("temp_sensor_driver_soil_a.c",):
     project.add_source(os.path.join(module.get_dir(), filename))
-
-# Add source files
-filename = "temp_sensor_driver_soil_a.c"
-project.add_source(os.path.join(module.get_dir(), filename))
 
 # Build the project
 project.build(verbose=BE_VERBOSE)

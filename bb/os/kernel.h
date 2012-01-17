@@ -6,11 +6,7 @@
 
 #include <bb/os/config.h>
 #include <bb/os/kernel/mm.h> /* Memory management */
-
-enum {
-  BBOS_SUCCESS = 0,
-  BBOS_FAILURE
-};
+#include <bb/os/kernel/error_codes.h>
 
 #include <assert.h>
 
@@ -95,7 +91,7 @@ PROTOTYPE(void bbos_thread_run, (bbos_thread_id_t tid));
  * Compare thread id with max supported number of threads
  * BBOS_NR_THREADS.
  */
-#define bbos_validate_thread_id(tid) tid < BBOS_NR_THREADS
+#define bbos_validate_thread_id(tid) assert(tid < BBOS_NR_THREADS)
 
 /**
  * Specify the port identifier that will be used by the system for

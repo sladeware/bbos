@@ -85,7 +85,6 @@ void
 bbos_kernel_enable_all_threads()
 {
   bbos_thread_id_t tid;
-
   for (tid = 0; tid < BBOS_NR_THREADS; tid++)
     {
       bbos_kernel_enable_thread(tid);
@@ -107,4 +106,11 @@ bbos_kernel_start()
   bbos_kernel_init_thread(BBOS_IDLE, bbos_idle_runner, 0);
   bbos_kernel_enable_thread(BBOS_IDLE);
   bbos_kernel_loop();
+}
+
+void
+bbos_kernel_stop()
+{
+  printf("Stop kernel\n");
+  exit(0);
 }

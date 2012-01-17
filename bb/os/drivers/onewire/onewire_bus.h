@@ -34,8 +34,10 @@
 #define OW_OUT_LOW(pin)    (_outa(GET_OW_DPIN(pin), 0))
 #define OW_OUT_HIGH(pin)   (_outa(GET_OW_DPIN(pin), GET_OW_DPIN(pin)))
 
+#if 1
 /* Sleep macro */
 #define ow_delay_usec(usecs) (_waitcnt(_cnt() + usecs * (_clockfreq() / 1000000)))
+#endif
 
 /* Prototypes */
 

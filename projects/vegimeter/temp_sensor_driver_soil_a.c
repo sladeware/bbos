@@ -21,18 +21,18 @@
 #include <bb/builder/compilers/catalina/include/catalina_lmm.h>
 #include <stdio.h>
 
-
 void
 temp_sensor_driver_soil_a_runner(void)
 {
   /* This is P8X32A P8, QuickStart J1_9 & Vegimeter TS1 DQ */
-  uint8_t pin = 8;
-  float temperature = 0.0;
+  uint8_t pin = 0;
+  int err = 0;
+  static float temperature = 0.0;
 
   do {
     printf("Probing temperature for soil sensor A.\n");
-    temperature = ds18b20_read_temperature(pin);
-    printf("  Result: %f\n", temperature);
+    err = ds18b20_read_temperature(pin, &temperature);
+    printf("  Result: %3.2f\n", temperature);
     delay_ms(3000);
   } while(1);
 }

@@ -11,6 +11,8 @@ class CatalinaCompiler(UnixCCompiler):
     front-end), with a custom back-end that generates Large Memory Model (LMM)
     PASM code for the Propeller."""
 
+    DEFAULT_SOURCE_EXTENSIONS = [".c", ".C", ".spin"]
+
     DEFAULT_EXECUTABLES = {
         "compiler"     : ["catalina"],
         "linker_exe"   : ["catalina"]

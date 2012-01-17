@@ -43,8 +43,8 @@
 #elif defined(BBOS_CONFIG_PROCESSOR)
 # define BBOS_CONFIG_PROCESSOR_H PROCESSOR_FILE(config.h)
 #else
-# warning Cannot define processor in use. Please define BBOS_CONFIG_PROCESSOR_H \
-  or BBOS_CONFIG_PROCESSOR.
+//# warning Cannot define processor in use. Please define BBOS_CONFIG_PROCESSOR_H \
+//  or BBOS_CONFIG_PROCESSOR.
 #endif /* BBOS_CONFIG_PROCESSOR_H */
 //#include BBOS_CONFIG_PROCESSOR_H
 

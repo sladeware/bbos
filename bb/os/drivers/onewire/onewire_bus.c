@@ -27,6 +27,7 @@ uint8_t
 ow_reset(uint8_t pin)
 {
   uint8_t err;
+  err = 0;
   /* Pull bus low */
   OW_OUT_LOW(pin); /* disable internal pull-up (can be on from parasite) */
   OW_DIR_OUTPUT(pin); /* pull OW-Pin low for 480us */
@@ -50,7 +51,11 @@ uint8_t
 ow_io_bit(uint8_t bit, uint8_t pin)
 {
   OW_DIR_OUTPUT(pin); /* drive bus low */
-  ow_delay_usec(RECOVERY_DELAY); // Recovery-Time wuffwuff was 1
+
+#if 0 /* XXX:Alexander: Too fast! */
+  //ow_delay_usec(RECOVERY_DELAY); /* Recovery-Time wuffwuff was 1 */
+#endif
+
   if (bit)
     {
       OW_DIR_INPUT(pin); /* if bit is 1 set bus high (by ext. pull-up) */
@@ -64,14 +69,18 @@ ow_io_bit(uint8_t bit, uint8_t pin)
       bit = 0;  /* sample at end of read-timeslot */
     }
   ow_delay_usec(END_DELAY);
+
   OW_DIR_INPUT(pin);
+
   return bit;
 }
 
 uint8_t
 ow_io_byte(uint8_t byte, uint8_t pin)
 {
-  uint8_t i = 8, j;
+  uint8_t i = 8;
+  uint8_t j;
+
   do
     {
       j = ow_io_bit(byte & 1, pin);

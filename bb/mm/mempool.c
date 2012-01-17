@@ -46,13 +46,15 @@ mempool_resize(const void* p, uint16_t n, uint16_t sz)
 #ifdef MEMPOOL_DEBUG
       printf("%d -> %d\n", i*sz, (i+1) * sz);
 #endif
-      *(void**)(p + i * sz) = (void*)(p + (i + 1) * sz);
+      /* XXX: Catalina compiler doesn't allow you to do pointer arithmetic
+         with void. We need to cast it first. I think 4 bytes will be enought
+         for most of compilers. */
+      *(void**)((uint32_t)p + i * sz) = (void*)((uint32_t)p + (i + 1) * sz);
     }
 #ifdef MEMPOOL_DEBUG
   printf("%d -> 0\n", i * sz);
 #endif
-  /* *(void **)(p + (i - 1) * sz) = NULL; */
-  *(void **)(p + i * sz) = NULL;
+  *(void **)((uint32_t)p + i * sz) = NULL;
 }
 
 /* Allocate next free memory block from the memory pool. */

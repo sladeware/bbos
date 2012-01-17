@@ -24,6 +24,6 @@
 #define DS18B20_SCRATCHPAD_SIZE      9
 
 /* Prototypes */
-float ds18b20_read_temperature(uint8_t pin);
+int ds18b20_read_temperature(uint8_t pin, float* value);
 
 #endif /* __DS18B20_H */
