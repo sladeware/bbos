@@ -15,10 +15,11 @@ project = CatalinaProject("vegimeter", verbose=BE_VERBOSE)
 
 # Let us setup catalina compiler first
 compiler = project.get_compiler()
-compiler.add_include_dirs(["./../..", "."])
+compiler.add_include_dirs(["/opt/catalina/include", "./../..", "."])
 
 # Add required libraries
-compiler.add_library("ci")
+#compiler.add_library("ci") /* Use this when float output not required */
+compiler.add_library("c")
 # You need to execute make in bb/builder/compilers/catalina to use this
 compiler.add_library("multicog")
 
@@ -35,6 +36,8 @@ compiler.define_macro("DEMO")
 
 # Add sources
 for filename in ("./../../bb/os.c",
+                 "./../../bb/os/drivers/onewire/onewire_bus.c",
+                 "./../../bb/os/drivers/onewire/slaves/ds18b20.c",
                  "./../../bb/os/kernel.c",
                  "./../../bb/os/kernel/schedulers/fcfsscheduler.c"):
   project.add_source(filename)
