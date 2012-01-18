@@ -1,5 +1,4 @@
 /*
-
  * Copyright 2011 Sladeware LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,8 +30,12 @@ temp_sensor_driver_soil_a_runner(void)
 
   do {
     printf("Probing temperature for soil sensor A.\n");
-    err = ds18b20_read_temperature(pin, &temperature);
-    printf("  Result: %3.2f\n", temperature);
+    if (err = ds18b20_read_temperature(pin, &temperature))
+      {
+        printf("\tError: %d\n", err);
+        continue;
+      }
+    printf("\tResult: %3.2f\n", temperature);
     delay_ms(3000);
   } while(1);
 }

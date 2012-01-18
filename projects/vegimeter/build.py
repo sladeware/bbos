@@ -18,7 +18,7 @@ compiler = project.get_compiler()
 compiler.add_include_dirs(["/opt/catalina/include", "./../..", "."])
 
 # Add required libraries
-#compiler.add_library("ci") /* Use this when float output not required */
+#compiler.add_library("ci") # Use this when float output not required
 compiler.add_library("c")
 # You need to execute make in bb/builder/compilers/catalina to use this
 compiler.add_library("multicog")
