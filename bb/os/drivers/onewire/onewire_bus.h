@@ -26,7 +26,7 @@
 #define OW_ALARM_SEARCH_ROM 0xEC
 
 /* Remember that pins start at 0 */
-#define GET_OW_DPIN(pin) (1 << pin)
+#define GET_OW_DPIN(pin) (1UL << pin)
 
 #define OW_GET_INPUT(pin)  (_ina() & GET_OW_DPIN(pin))
 #define OW_DIR_OUTPUT(pin) (_dira(GET_OW_DPIN(pin), GET_OW_DPIN(pin)))
@@ -49,7 +49,7 @@ uint8_t ow_reset(uint8_t pin);
 uint8_t ow_io_byte(uint8_t byte, uint8_t pin);
 uint8_t ow_io_bit(uint8_t bit, uint8_t pin);
 
-uint8_t ow_input_pin_state(uint8_t pin);
+unsigned ow_input_pin_state(uint8_t pin);
 void ow_command(uint8_t cmd, uint8_t pin);
 
 #endif /* __ONEWIRE_BUS_H */

@@ -9,7 +9,7 @@ from bb.builder.loaders import BSTLLoader
 from bb.utils import module
 
 BE_VERBOSE = True
-LOAD_BINARY_FLAG = False # Do we need to use loader to load the binary?
+LOAD_BINARY_FLAG = True # Do we need to use loader to load the binary?
 
 project = CatalinaProject("vegimeter", verbose=BE_VERBOSE)
 

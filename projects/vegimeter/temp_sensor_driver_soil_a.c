@@ -24,18 +24,21 @@ void
 temp_sensor_driver_soil_a_runner(void)
 {
   /* This is P8X32A P8, QuickStart J1_9 & Vegimeter TS1 DQ */
-  uint8_t pin = 0;
+  uint8_t pin = 8; /* QuickStart board */
+  /* uint8_t pin = 0; */ /* DEMO Board */ 
+
   int err = 0;
   static float temperature = 0.0;
+  char whitespace[] = "   ";
 
   do {
     printf("Probing temperature for soil sensor A.\n");
     if (err = ds18b20_read_temperature(pin, &temperature))
       {
-        printf("\tError: %d\n", err);
-        continue;
-      }
-    printf("\tResult: %3.2f\n", temperature);
+        printf("%sError: %d\n", whitespace, err);
+      } else {
+      printf("%sResult: %3.2fC\n", whitespace, temperature);
+    }
     delay_ms(3000);
   } while(1);
 }

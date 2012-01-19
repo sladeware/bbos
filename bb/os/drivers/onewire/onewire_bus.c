@@ -12,7 +12,7 @@
 #define RECOVERY_DELAY 2
 #define WUFF_DELAY 12
 #define END_DELAY (60 - 15)
-uint8_t
+unsigned
 ow_input_pin_state(uint8_t pin)
 {
   return OW_GET_INPUT(pin);
