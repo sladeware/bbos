@@ -1,3 +1,0 @@
-
-uint8_t lh1500_on(uint8_t pin);
-uint8_t lh1500_off(uint8_t pin);
