@@ -13,6 +13,7 @@
 #include <bb/os.h>
 #include <bb/builder/compilers/catalina/include/catalina_time.h>
 #include <catalina_time.h>
+#include <bb/os/drivers/processors/propeller_p8x32/pins.h>
 
 // ROM commands
 /** Read the 64-bit ID of the 1-Wire device;serial num; CRC */
@@ -26,13 +27,11 @@
 #define OW_ALARM_SEARCH_ROM 0xEC
 
 /* Remember that pins start at 0 */
-#define GET_OW_DPIN(pin) (1UL << pin)
-
-#define OW_GET_INPUT(pin)  (_ina() & GET_OW_DPIN(pin))
-#define OW_DIR_OUTPUT(pin) (_dira(GET_OW_DPIN(pin), GET_OW_DPIN(pin)))
-#define OW_DIR_INPUT(pin)  (_dira(GET_OW_DPIN(pin), 0))
-#define OW_OUT_LOW(pin)    (_outa(GET_OW_DPIN(pin), 0))
-#define OW_OUT_HIGH(pin)   (_outa(GET_OW_DPIN(pin), GET_OW_DPIN(pin)))
+#define OW_GET_INPUT(pin)  GET_INPUT(pin)
+#define OW_DIR_OUTPUT(pin) DIR_OUTPUT(pin)
+#define OW_DIR_INPUT(pin)  DIR_INPUT(pin)
+#define OW_OUT_LOW(pin)    OUT_LOW(pin)
+#define OW_OUT_HIGH(pin)   OUT_HIGH(pin)
 
 #if 1
 /* Sleep macro */
