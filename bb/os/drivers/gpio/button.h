@@ -10,8 +10,8 @@
 #ifndef __BUTTON_H
 #define __BUTTON_H
 
-#define BUTTON_DELAY       20  /* ms */
-#define DEBOUNCE_LOOPS     50
+#define BUTTON_DELAY       50  /* ms */
+#define DEBOUNCE_LOOPS     20
 
 uint8_t is_button_pressed(uint8_t pin);
 
