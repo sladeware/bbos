@@ -12,3 +12,25 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
+
+#include <bb/os/drivers/gpio/button.h>
+#include <bb/os/drivers/gpio/lh1500.h>
+
+void ui_runner() {
+  uint8_t button_pin = 0;
+  uint8_t lh1500_pin = 13;
+  uint8_t on = 0;
+
+  do {
+    if(is_button_pressed(button_pin) > 0) {
+      printf("BOOM!\n");
+      if(on == 0) {
+	lh1500_on(lh1500_pin);
+	on = 1;
+      } else {
+	lh1500_off(lh1500_pin);
+	on = 0;
+      }
+    }
+  } while (1);
+}

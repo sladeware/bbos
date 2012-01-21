@@ -36,12 +36,14 @@ compiler.define_macro("DEMO")
 
 # Add sources
 for filename in ("./../../bb/os.c",
+                 "./../../bb/os/drivers/gpio/button.c",
+                 "./../../bb/os/drivers/gpio/lh1500.c",
                  "./../../bb/os/drivers/onewire/onewire_bus.c",
                  "./../../bb/os/drivers/onewire/slaves/ds18b20.c",
                  "./../../bb/os/kernel.c",
                  "./../../bb/os/kernel/schedulers/fcfsscheduler.c"):
     project.add_source(filename)
-for filename in ("temp_sensor_driver_soil_a.c",):
+for filename in ("temp_sensor_driver_soil_a.c", "ui.c"):
     project.add_source(os.path.join(module.get_dir(), filename))
 
 # Build the project
