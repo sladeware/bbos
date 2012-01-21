@@ -23,7 +23,7 @@ void ui_runner() {
 
   do {
     if(is_button_pressed(button_pin) > 0) {
-      printf("BOOM!\n");
+      printf("Button pressed!\n");
       if(on == 0) {
 	lh1500_on(lh1500_pin);
 	on = 1;

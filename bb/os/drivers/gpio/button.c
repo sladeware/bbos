@@ -17,7 +17,8 @@ uint8_t is_button_pressed(uint8_t pin) {
     delay_ms(BUTTON_DELAY);
     result += GET_INPUT(pin);
   }
+  delay_ms(BUTTON_FINAL_DELAY);
 
-  return (result < DEBOUNCE_LOOPS);
+  return (result < (DEBOUNCE_LOOPS - 1));
 }
 
