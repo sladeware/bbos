@@ -14,22 +14,18 @@
  */
 
 #include <bb/os/drivers/gpio/button.h>
-#include <bb/os/drivers/gpio/lh1500.h>
 
 void ui_runner() {
-  uint8_t button_pin = 0;
-  uint8_t lh1500_pin = 13;
-  uint8_t on = 0;
+  unsigned button_mask = 0xFFUL;
+  unsigned mask, i;
 
   do {
-    if(is_button_pressed(button_pin) > 0) {
-      printf("Button pressed!\n");
-      if(on == 0) {
-	lh1500_on(lh1500_pin);
-	on = 1;
-      } else {
-	lh1500_off(lh1500_pin);
-	on = 0;
+    mask = are_buttons_pressed(button_mask);
+    if(mask) {
+      for (i = 0; i < 8; i++, mask >>= 1) {
+	if (mask & 1UL) {
+	  printf("Button : %d\n", i);
+	}
       }
     }
   } while (1);

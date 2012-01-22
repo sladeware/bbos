@@ -49,17 +49,6 @@ temp_sensor_driver_soil_a_runner(void)
 void
 main()
 {
-  int i = 0;
-  cog_id_t cog = 0;
-  unsigned long stacks[STACK_SIZE * 7];
-
-  /* Start BBOS */
-  bbos();
-
-  /* TODO: Application threads on other cogs */
-  cog = lmm_new_cog(&ui_runner, &stacks[STACK_SIZE*(++i)]);
-
-  /* Start the runner for this cog */
-  temp_sensor_driver_soil_a_runner();
-  /* ui_runner(); */
+  /*  temp_sensor_driver_soil_a_runner(); */
+  ui_runner();
 }
