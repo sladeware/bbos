@@ -1,2 +1,2 @@
 all:
-	homespun bootloader.spin -b -L /home/d2rk/Downloads/Catalina_3.4_Linux32/target/ -D PC -D DEMO -o bootloader
+	homespun multicog_spi_bootloader.spin -b -L /usr/local/lib/catalina/target/ -D DEMO -o multicog_spi_bootloader
