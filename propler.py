@@ -455,15 +455,7 @@ def dump_header(cfg, run_fn=None):
     data = ''.join(fh.readlines())
     print "Size        : %d (bytes)" % len(data)
     hdr = ProgramHeader(data[0:PROGRAM_HEADER_SIZE])
-    print "Program Header:"
-    print " Clock speed : %d"          % hdr.clk_speed
-    print " Clock mode  : 0x%02x (%s)" % (hdr.clk_mode, ClockModes.to_string[hdr.clk_mode])
-    print " Checksum    : %d (%s)"     % (hdr.checksum, is_valid_binary_image(data))
-    print " PBase       : 0x%04x"      % hdr.pbase
-    print " VBase       : 0x%04x"      % hdr.vbase
-    print " DBase       : 0x%04x"      % hdr.dbase
-    print " PCurr       : 0x%04x"      % hdr.pcurr
-    print " DCurr       : 0x%04x"      % hdr.dcurr
+    print str(hdr)
     fh.close()
     exit(0)
 
@@ -473,6 +465,18 @@ class ProgramHeader(object):
         self.data = data
         if type(self.data) is types.ListType:
             self.data = "".join(self.data)
+
+    def __str__(self):
+        info  = "Program Header:\n"
+        info += " Clock speed : %d\n"          % self.clk_speed
+        info += " Clock mode  : 0x%02x (%s)\n" % (self.clk_mode, ClockModes.to_string[self.clk_mode])
+        info += " Checksum    : %d (%s)\n"     % (self.checksum, is_valid_binary_image(self.data))
+        info += " PBase       : 0x%04x\n"      % self.pbase
+        info += " VBase       : 0x%04x\n"      % self.vbase
+        info += " DBase       : 0x%04x\n"      % self.dbase
+        info += " PCurr       : 0x%04x\n"      % self.pcurr
+        info += " DCurr       : 0x%04x"        % self.dcurr
+        return info
 
     @property
     def clk_speed(self):
@@ -643,11 +647,13 @@ class MulticogSPIUploader(SPIUploader):
         # Put a little bit of useful information to the log
         # if it's required
         if True:
+            total_upload_size = 0
             logging.info("Task:")
             for cogid in target_cogids:
-                logging.info("\t%s => COG #%d",
-                            cogid_to_filename_mapping[cogid],
-                            cogid)
+                path = cogid_to_filename_mapping[cogid]
+                logging.info("\t%s => COG #%d", path, cogid)
+                total_upload_size += os.path.getsize(path)
+            print "Total upload size: %d (bytes)" % total_upload_size
         # Send synch signal in order to describe target
         # number of images to be sent
         self.__send_sync_signal(len(cogid_to_filename_mapping))
@@ -695,13 +701,15 @@ class MulticogSPIUploader(SPIUploader):
         # The following blocks aims to edit binary image
         if True:
             hdr = ProgramHeader(data[0:PROGRAM_HEADER_SIZE])
+            hdr.pbase = Word.split_by_bytes(self.__offset + hdr.pbase)
             # Edit pcurr value
             hdr.pcurr = Word.split_by_bytes(self.__offset + hdr.pcurr)
-            ##hdr.dcurr = Word.split_by_bytes(self.__offset + hdr.dcurr)
+            hdr.dcurr = Word.split_by_bytes(self.__offset + hdr.dcurr)
             # XXX: do we need to recalculate checksum value once the
             #      header has been updated?
             # Apply changes; attach a new header to the rest of the data
             data = list(hdr.data) + data[PROGRAM_HEADER_SIZE:]
+            logging.info(str(hdr))
         # The data may be changed till this point. Thus we have to
         # double check it
         assert(len(data) == sz)

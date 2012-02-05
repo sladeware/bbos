@@ -114,13 +114,13 @@ entry
 
         mov r0, #32                           '
         mov img_addr, img_mapping             '
-        mov r1, #$0 ' fill it by -1          '
+        mov r1, #$0 ' fill it by -1           '
 clear_img_mapping                             ' clear
         wrbyte r1, img_addr                   ' map of images
         add img_addr, #1
         djnz r0, #clear_img_mapping
 
-        call #Spinner_Init
+        'call #Spinner_Init
 
 wait_loop
         call   #SIO_ReadSync                 ' wait ...
@@ -289,13 +289,12 @@ restart
         mov r2, img_addr
         add r2, #12             ' move to pcurr and ...
         rdlong r3, r2           ' ... read pcurr and dcurr values
-        'and r3, WordMask        ' ... with stabilisation
-        wrlong r3, #12         ' replace current pcurr with the new one
+        wrlong r3, #12         ' replace current pcurr and dcurr with the new one
 
-        'mov r2, img_addr
-        'add r2, #14             ' move to dcurr and ...
-        'rdword r3, r2           ' ... read its value
-        'wrlong r3, #14         ' replace current pcurr with the new one
+        mov r2, img_addr
+        add r2, #6
+        rdlong r3, r2
+        wrlong r3, #6
 
         mov r6, interpreter     ' start working ...
         mov r5, cpu_no          ' ... on COG initialization ...
@@ -347,9 +346,9 @@ copy_to_hub mov    r1, page_addr
             djnz   r0, #:write_loop
 copy_to_hub_ret ret
 
-'''''''''''''''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ' clear_page
-'''''''''''''''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 clear_page
         mov    r0, #0
         mov    r1, max_page
@@ -361,7 +360,7 @@ clear_page
 clear_page_ret
         ret
 
-''''''''''''''''''''''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ' calc_lrc_checkum - Calculate LRC checksum value of buffer
 '
 ' Input
@@ -369,7 +368,7 @@ clear_page_ret
 '    lrc_addr = address of buffer
 ' Output
 '    lrc_rslt = result of XOR
-'''''''''''''''''''''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 calc_lrc_checksum
         mov    lrc_rslt,#0
         mov    r1,lrc_size
@@ -484,9 +483,9 @@ SIO_ReadPage_ret
 #endif
 
 #ifdef NEED_SIO_READLONG
-''''''''''''''''''''''''''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ' SIO_ReadLong : Read 4 bytes from SIO to SIO_Temp
-''''''''''''''''''''''''''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 SIO_ReadLong
               mov       SIO_Cnt1,#4
 :SIO_ReadLoop
@@ -517,9 +516,9 @@ SIO_DataReady
 SIO_DataReady_ret
               ret
 
-''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ' SIO_ReadByteRaw : Read byte from SIO to r0, without byte unstuffing
-'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 SIO_ReadByteRaw
               mov       r0,cnt
               cmp       r0,SIO_StartTime wc
@@ -543,13 +542,13 @@ SIO_ReadByteRaw_err
 SIO_ReadByteRaw_ret
               ret
 
-''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ' SIO_ReadByte : Read byte from SIO to r0, unstuffing $FF $00 to just $FF
 '
 '          NOTE: returns -1 if the timeout expires, or -2 if a sync signal
 '                (i.e. $FF CPU_no) is detected. Any other $FF $xx sequence
 '                just returns as normal.
-''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 SIO_ReadByte
               mov       SIO_StartTime,cnt
               test      save_data,#$100 wz      ' have we saved a byte?
@@ -591,10 +590,10 @@ SIO_ReadByte_ret
 save_data     long      $0                      ' $100 + byte saved (e.g. $1FF if saved $FF)
 '
 
-'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ' SIO_ByteDelay : Time to wait between bytes - this is currently set by
 '                 trial and error, but to a fairly conservative value.
-'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 SIO_ByteDelay
               mov       r1,cnt
               add       r1,ByteDelay
@@ -608,9 +607,9 @@ ByteDelay long Common#CLOCKFREQ/50
 ByteDelay long Common#CLOCKFREQ/6000
 #endif
 
-'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ' SIO_WriteByte : Write byte in r0 to SIO, without byte stuffing
-'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 SIO_WriteByteRaw
               call      #SIO_ByteDelay          ' delay between characters
               mov       r1,SIO_IO_Block         ' get ...
@@ -759,7 +758,6 @@ sect_count    long      $0
 
 ' see http://forums.parallax.com/forums/default.aspx?f=25&m=363100
 interpreter   long    ($0004 << 16) | ($F004 << 2) | %0000
-'interpreter   long    ($0000 << 16) | ($F004 << 2) | %0000
 
 '
 ' temporary storage used in mul & div calculations

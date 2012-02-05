@@ -1,28 +1,29 @@
 /*
- * The "Who I am" test run on specified cog and flush
+ * The "Blink me who I am" test run on specified cog and flush
  * correspond LED on Propeller Demo Board.
  */
 #include <catalina_cog.h>
+#include "time.h"
 
 void
 main()
 {
   unsigned reg;
-  unsigned LED_pin;
+  unsigned led_mask;
 
-  /* Initialization */
-  //for (i = 16; i < 24; i++)
-  //  {
-  //    _dira(1 << i, 1 << i);
-  //    _outa(1 << i, 0);
-  //  }
+#ifdef __CATALINA_DEMO
+  led_mask = 1 << (_cogid() + 16);
+#else /* __CATALINA_DEMO */
+#error This board is not supported
+#endif
 
-  while (1) {
-  /* Flush LED that corresponde to active cog. */
-  LED_pin = 1 << (_cogid() + 16);
-  reg = _dira(0, 0);
-  _dira(reg | LED_pin, reg | LED_pin);
-  reg = _outa(0, 0);
-  _outa(reg | LED_pin, reg | LED_pin);
-  } /* wait... */
+  while (1)
+    {
+      /* Flush LED that corresponds to active cog. */
+      reg = _dira(0, 0);
+      _dira(reg ^ led_mask, reg ^ led_mask);
+      reg = _outa(0, 0);
+      _outa(reg ^ led_mask, reg ^ led_mask);
+      delay_ms(1000);
+    } /* wait... */
 }
