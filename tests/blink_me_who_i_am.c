@@ -3,7 +3,7 @@
  * correspond LED on Propeller Demo Board.
  */
 #include <catalina_cog.h>
-#include "time.h"
+#include <catalina_icc.h>
 
 void
 main()
@@ -21,9 +21,9 @@ main()
     {
       /* Flush LED that corresponds to active cog. */
       reg = _dira(0, 0);
-      _dira(reg ^ led_mask, reg ^ led_mask);
+      _dira(led_mask, (reg & led_mask) ^ led_mask);
       reg = _outa(0, 0);
-      _outa(reg ^ led_mask, reg ^ led_mask);
-      delay_ms(1000);
-    } /* wait... */
+      _outa(led_mask, (reg & led_mask) ^ led_mask);
+      msleep(500); /* wait... */
+    }
 }
