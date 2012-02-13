@@ -13,20 +13,28 @@
  *   limitations under the License.
  */
 
-#include <bb/os/drivers/gpio/button.h>
+#include <bb/os.h>
+#include <stdio.h>
+#include <vegimeter.h>
+
+unsigned iteration_counter = 0;
 
 void ui_runner() {
-  unsigned button_mask = 0xFFUL;
-  unsigned mask, i;
+  uint8_t i = 0;
 
-  do {
-    mask = are_buttons_pressed(button_mask);
-    if(mask) {
-      for (i = 0; i < 8; i++, mask >>= 1) {
-	if (mask & 1UL) {
-	  printf("Button : %d\n", i);
-	}
+  printf("----------------------- %d ----------------------\n", iteration_counter++);
+  printf("Temperature for water sensor: %3.2fC\n", water_temperature);
+  printf("Temperature for soil sensor A: %3.2fC\n", soil_temperature_a);
+  printf("Temperature for soil sensor B: %3.2fC\n", soil_temperature_b);
+  printf("Temperature for soil sensor C: %3.2fC\n", soil_temperature_c);
+  printf("Temperature for soil sensor D: %3.2fC\n", soil_temperature_d);
+
+  if(vegimeter_buttons) {
+    for (i = 0; i < 8; i++, vegimeter_buttons >>= 1) {
+      if (vegimeter_buttons & 1UL) {
+	printf("Button pressed: %d\n", i);
       }
     }
-  } while (1);
+  buttons = 0;
+  }
 }

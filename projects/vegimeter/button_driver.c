@@ -12,3 +12,13 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
+
+#include <bb/os/drivers/gpio/button.h>
+#include <vegimeter.h>
+
+void button_driver_runner() {
+  unsigned button_mask = 0xFFUL; /* QuickStart board has P0 - P7 as buttons */
+  unsigned mask, i;
+
+  vegimeter_buttons |= are_buttons_pressed(button_mask);
+}

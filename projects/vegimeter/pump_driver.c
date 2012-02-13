@@ -12,3 +12,15 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
+
+#include <vegimeter.h>
+
+void pump_driver_runner() {
+  if (pump_on) {
+    lh1500_on(14); /* Pump */
+    printf("  >>> Pump ON! <<<\n");
+  } else {
+    lh1500_off(14); /* Pump */
+    printf("  >>> Pump OFF! <<<\n");
+  }
+}

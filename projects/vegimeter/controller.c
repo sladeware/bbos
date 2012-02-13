@@ -12,3 +12,37 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
+
+#include <stdio.h>
+#include <vegimeter.h>
+
+#define SOIL_MIN_TEMP 21.1  /* 21.1C. Almost 70F */
+#define WATER_MAX_TEMP 50.0 /* 50.0C. 104.0F */
+
+void controller_runner() {
+  /* Turn on the pump and heater if the soil is too cold */
+  if((soil_temperature_a <= SOIL_MIN_TEMP) ||
+     (soil_temperature_b <= SOIL_MIN_TEMP) ||
+     (soil_temperature_c <= SOIL_MIN_TEMP) ||
+     (soil_temperature_d <= SOIL_MIN_TEMP)) {
+    heater_on = 1;
+    pump_on = 1;
+    printf("Pump and Heater ON\n");
+  }
+
+  /* Turn off the heater if the water is too warm */
+  if(water_temperature > WATER_MAX_TEMP) {
+    heater_on = 0;
+    printf("Heater OFF\n");
+  }
+
+  /* Turn off the pump and heater if the soil is warm enough */
+  if((soil_temperature_a > SOIL_MIN_TEMP) &&
+     (soil_temperature_b > SOIL_MIN_TEMP) &&
+     (soil_temperature_c > SOIL_MIN_TEMP) &&
+     (soil_temperature_d > SOIL_MIN_TEMP)) {
+    heater_on = 0;
+    pump_on = 0;
+    printf("Pump and Heater OFF\n");
+  }
+}

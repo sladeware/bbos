@@ -12,3 +12,15 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
+
+#include <vegimeter.h>
+
+void heater_driver_runner() {
+  if (heater_on) {
+    lh1500_on(13); /* Heater */
+    printf("  >>> Heater ON! <<<\n");
+  } else {
+    lh1500_off(13); /* Heater */
+    printf("  >>> Heater OFF! <<<\n");
+  }
+}

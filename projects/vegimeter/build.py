@@ -43,7 +43,17 @@ for filename in ("./../../bb/os.c",
                  "./../../bb/os/kernel.c",
                  "./../../bb/os/kernel/schedulers/fcfsscheduler.c"):
     project.add_source(filename)
-for filename in ("temp_sensor_driver_soil_a.c", "ui.c"):
+for filename in ("temp_sensor_driver_soil_a.c",
+                 "temp_sensor_driver_soil_b.c",
+                 "temp_sensor_driver_soil_c.c",
+                 "temp_sensor_driver_soil_d.c",
+                 "temp_sensor_driver_water.c",
+                 "ui.c",
+                 "controller.c",
+                 "pump_driver.c",
+                 "button_driver.c",
+                 "heater_driver.c",
+                 "main.c"):
     project.add_source(os.path.join(module.get_dir(), filename))
 
 # Build the project
