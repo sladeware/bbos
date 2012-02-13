@@ -31,10 +31,10 @@ for macro in (\
     # Load a PC terminal emulator HMI plugin with screen and keyboard support
     "PC",
     # Reduce some plugins in order to save as much cogs as we can :)
-    #"NO_MOUSE",
-    #"NO_KEYBOARD",
+    "NO_MOUSE",
+    "NO_KEYBOARD",
     #"NO_SCREEN",
-    #"NO_GRAPHICS",
+    "NO_GRAPHICS",
     #"NO_HMI",
     ):
     compiler.define_macro(macro)
