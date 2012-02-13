@@ -9,17 +9,20 @@ from bb.builder.loaders import BSTLLoader
 from bb.utils import module
 
 BE_VERBOSE = True
-LOAD_BINARY_FLAG = True # Do we need to use loader to load the binary?
+LOAD_BINARY_FLAG = False # Do we need to use loader to load the binary?
 
 project = CatalinaProject("vegimeter", verbose=BE_VERBOSE)
 
 # Let us setup catalina compiler first
 compiler = project.get_compiler()
-compiler.add_include_dirs(["/opt/catalina/include", "./../..", "."])
+compiler.add_include_dirs([
+  "/opt/catalina/include",
+  "./../..",
+  "."])
 
 # Add required libraries
-#compiler.add_library("ci") # Use this when float output not required
-compiler.add_library("c")
+compiler.add_library("ci") # Use this when float output not required
+#compiler.add_library("c")
 # You need to execute make in bb/builder/compilers/catalina to use this
 compiler.add_library("multicog")
 
@@ -28,11 +31,16 @@ for macro in (\
     # Load a PC terminal emulator HMI plugin with screen and keyboard support
     "PC",
     # Reduce some plugins in order to save as much cogs as we can :)
-    #"NO_MOUSE", "NO_KEYBOARD", "NO_SCREEN"
+    #"NO_MOUSE",
+    #"NO_KEYBOARD",
+    #"NO_SCREEN",
+    #"NO_GRAPHICS",
+    #"NO_HMI",
     ):
     compiler.define_macro(macro)
 # Propeller Demo Board support
 compiler.define_macro("DEMO")
+
 
 # Add sources
 for filename in ("./../../bb/os.c",
@@ -53,7 +61,7 @@ for filename in ("temp_sensor_driver_soil_a.c",
                  "pump_driver.c",
                  "button_driver.c",
                  "heater_driver.c",
-                 "main.c"):
+                 "main.c",):
     project.add_source(os.path.join(module.get_dir(), filename))
 
 # Build the project

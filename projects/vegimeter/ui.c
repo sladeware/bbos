@@ -35,6 +35,6 @@ void ui_runner() {
 	printf("Button pressed: %d\n", i);
       }
     }
-  buttons = 0;
+  vegimeter_buttons = 0; /* was 'buttons' */
   }
 }

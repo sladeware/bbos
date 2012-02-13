@@ -24,6 +24,7 @@ int main() {
   unsigned delay = 10000; /* ms */
 
   printf("Starting Vegimeter!\n");
+  
   do {
     controller_runner();
 
