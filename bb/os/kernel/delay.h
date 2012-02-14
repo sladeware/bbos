@@ -14,17 +14,9 @@
  * limitations under the License.
  */
 
-#include <bb/os.h>
+#ifndef __KERNEL_DELAY_H
+#define __KERNEL_DELAY_H
 
-#ifndef __BUTTON_H
-#define __BUTTON_H
+#include <bb/os/drivers/processors/propeller_p8x32/delay.h>
 
-#define BUTTON_DELAY       4    /* ms */
-#define BUTTON_FINAL_DELAY 100  /* ms */
-#define DEBOUNCE_LOOPS     60
-#define DEBOUNCE_TOLERANCE 15
-
-uint8_t is_button_pressed(uint8_t pin);
-unsigned are_buttons_pressed(unsigned mask);
-
-#endif /* __BUTTON_H */
+#endif /* __KERNEL_DELAY_H */

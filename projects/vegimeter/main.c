@@ -14,13 +14,13 @@
  */
 
 #include <bb/os.h>
-#include <bb/os/kernel/time.h>
-#include <bb/builder/compilers/catalina/include/catalina_time.h>
-#include <bb/builder/compilers/catalina/include/catalina_lmm.h>
+#include <bb/os/kernel/delay.h>
 #include <vegimeter.h>
 
 /* This will eventually be replaced by real BBOS schedulers and running on multiple cogs */
-int main() {
+int
+main()
+{
   unsigned delay = 10000; /* ms */
 
   printf("Starting Vegimeter!\n");
@@ -40,7 +40,7 @@ int main() {
     ui_runner();
 
     printf("Sleeping for %d ms\n", delay);
-    delay_ms(delay);
+    bbos_delay_msec(delay);
   } while(1);
 
   return 0;

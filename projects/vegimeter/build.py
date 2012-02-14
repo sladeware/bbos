@@ -24,8 +24,6 @@ compiler.add_include_dirs([
 # Add required libraries
 compiler.add_library("ci") # Use this when float output not required
 #compiler.add_library("c")
-# You need to execute make in bb/builder/compilers/catalina to use this
-compiler.add_library("multicog")
 
 # Definitions
 for macro in (\
