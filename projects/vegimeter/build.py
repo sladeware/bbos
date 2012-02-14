@@ -10,6 +10,7 @@ from bb.utils import module
 
 BE_VERBOSE = True
 LOAD_BINARY_FLAG = False # Do we need to use loader to load the binary?
+HUM_RAM_SIZE = 32 * 1024
 
 project = CatalinaProject("vegimeter", verbose=BE_VERBOSE)
 
@@ -66,6 +67,10 @@ for filename in ("temp_sensor_driver_soil_a.c",
 
 # Build the project
 project.build(verbose=BE_VERBOSE)
+
+image_size = os.path.getsize(project.output_filename)
+if image_size > HUM_RAM_SIZE:
+    print >>sys.stderr, "Too large image size: %d > %d" % (image_size, HUM_RAM_SIZE)
 
 # Skip the last part if we do not need to load binary
 if not LOAD_BINARY_FLAG:
