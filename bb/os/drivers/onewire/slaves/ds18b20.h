@@ -22,8 +22,12 @@
 #define DS18B20_READ_POWER           0xB4
 /** Scratch pad size in bytes. */
 #define DS18B20_SCRATCHPAD_SIZE      9
+#define DEFAULT_MIN_TEMP_READING -54321
+
+/* Macros */
+#define DS18B20_1_100TH_CELCIUS(value) (100 * (value))
 
 /* Prototypes */
-int ds18b20_read_temperature(uint8_t pin, float* value);
+int ds18b20_read_temperature(uint8_t pin, int* value);
 
 #endif /* __DS18B20_H */

@@ -17,26 +17,15 @@
 #ifndef __VEGIMETER_H
 #define __VEGIMETER_H
 
-void button_driver_runner();
+unsigned button_driver_runner();
 void controller_runner();
-void heater_driver_runner();
-void pump_driver_runner();
-void temp_sensor_driver_water_runner();
-void temp_sensor_driver_soil_a_runner();
-void temp_sensor_driver_soil_b_runner();
-void temp_sensor_driver_soil_c_runner();
-void temp_sensor_driver_soil_d_runner();
+unsigned heater_driver_runner();
+unsigned pump_driver_runner();
+int temp_sensor_driver_water_runner();
+int temp_sensor_driver_soil_a_runner();
+int temp_sensor_driver_soil_b_runner();
+int temp_sensor_driver_soil_c_runner();
+int temp_sensor_driver_soil_d_runner();
 void ui_runner();
-
-/* Shared global variables. Written by drivers and read by the controller thread. The
-   controller clears the buttons_pressed and drivers OR values. */
-static unsigned vegimeter_buttons = 0;
-static float water_temperature = 0.0;
-static float soil_temperature_a = 0.0;
-static float soil_temperature_b = 0.0;
-static float soil_temperature_c = 0.0;
-static float soil_temperature_d = 0.0;
-static unsigned heater_on = 0;
-static unsigned pump_on = 0;
 
 #endif /* __VEGIMETER_H */

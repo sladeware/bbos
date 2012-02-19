@@ -18,7 +18,9 @@
 #include <stdio.h>
 #include <vegimeter.h>
 
-void temp_sensor_driver_soil_b_runner(void) {
+int temp_sensor_driver_soil_b_runner(void) {
+  int soil_temperature_b;
+
   /* This is P8X32A P10, QuickStart J1_11 & Vegimeter TS1 DQ */
   uint8_t pin = 10; /* QuickStart board */
   /* uint8_t pin = 2; */ /* DEMO Board */ 
@@ -27,4 +29,6 @@ void temp_sensor_driver_soil_b_runner(void) {
   if (err = ds18b20_read_temperature(pin, &soil_temperature_b)) {
       printf("Temperature sensor on pin %d error: %d\n", pin, err);
   }
+
+  return soil_temperature_b;
 }

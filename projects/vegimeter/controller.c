@@ -16,10 +16,13 @@
 #include <stdio.h>
 #include <vegimeter.h>
 
-#define SOIL_MIN_TEMP 21.1  /* 21.1C. Almost 70F */
-#define WATER_MAX_TEMP 50.0 /* 50.0C. 104.0F */
+#define SOIL_MIN_TEMP 2110  /* 21.1C. Almost 70F */
+#define WATER_MAX_TEMP 5000 /* 50.0C. 104.0F */
 
-void controller_runner() {
+void controller_runner(int water_temperature, int soil_temperature_a,
+		       int soil_temperature_b, int soil_temperature_c,
+		       int soil_temperature_d, int heater_on,
+		       int pump_on) {
   /* Turn on the pump and heater if the soil is too cold */
   if((soil_temperature_a <= SOIL_MIN_TEMP) ||
      (soil_temperature_b <= SOIL_MIN_TEMP) ||

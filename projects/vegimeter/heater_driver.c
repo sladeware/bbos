@@ -15,7 +15,9 @@
 
 #include <vegimeter.h>
 
-void heater_driver_runner() {
+unsigned heater_driver_runner() {
+  unsigned heater_on;
+
   if (heater_on) {
     lh1500_on(13); /* Heater */
     printf("  >>> Heater ON! <<<\n");
@@ -23,4 +25,6 @@ void heater_driver_runner() {
     lh1500_off(13); /* Heater */
     printf("  >>> Heater OFF! <<<\n");
   }
+
+  return heater_on;
 }

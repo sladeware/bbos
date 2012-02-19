@@ -18,7 +18,9 @@
 #include <stdio.h>
 #include <vegimeter.h>
 
-void temp_sensor_driver_water_runner(void) {
+int temp_sensor_driver_water_runner(void) {
+  int water_temperature;
+
   /* This is P8X32A P8, QuickStart J1_9 & Vegimeter TS1 DQ */
   uint8_t pin = 8; /* QuickStart board */
   /* uint8_t pin = 0; */ /* DEMO Board */
@@ -27,4 +29,6 @@ void temp_sensor_driver_water_runner(void) {
   if (err = ds18b20_read_temperature(pin, &water_temperature)) {
       printf("Temperature sensor on pin %d error: %d\n", pin, err);
   }
+
+  return water_temperature;
 }

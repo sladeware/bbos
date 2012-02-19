@@ -19,15 +19,17 @@
 
 unsigned iteration_counter = 0;
 
-void ui_runner() {
+void ui_runner(int water_temperature, int soil_temperature_a,
+	       int soil_temperature_b, int soil_temperature_c,
+	       int soil_temperature_d, unsigned vegimeter_buttons) {
   uint8_t i = 0;
 
   printf("----------------------- %d ----------------------\n", iteration_counter++);
-  printf("Temperature for water sensor: %3.2fC\n", water_temperature);
-  printf("Temperature for soil sensor A: %3.2fC\n", soil_temperature_a);
-  printf("Temperature for soil sensor B: %3.2fC\n", soil_temperature_b);
-  printf("Temperature for soil sensor C: %3.2fC\n", soil_temperature_c);
-  printf("Temperature for soil sensor D: %3.2fC\n", soil_temperature_d);
+  printf("Temperature for water sensor: %i 1/100th degrees C\n", water_temperature);
+  printf("Temperature for soil sensor A: %i 1/100th degrees C\n", soil_temperature_a);
+  printf("Temperature for soil sensor B: %i 1/100th degrees C\n", soil_temperature_b);
+  printf("Temperature for soil sensor C: %i 1/100th degrees C\n", soil_temperature_c);
+  printf("Temperature for soil sensor D: %i 1/100th degrees C\n", soil_temperature_d);
 
   if(vegimeter_buttons) {
     for (i = 0; i < 8; i++, vegimeter_buttons >>= 1) {

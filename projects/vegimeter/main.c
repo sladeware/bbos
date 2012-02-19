@@ -13,31 +13,47 @@
  * limitations under the License.
  */
 
+/* This will eventually be replaced by real BBOS schedulers and running on multiple cogs */
+
 #include <bb/os.h>
 #include <bb/os/kernel/delay.h>
 #include <vegimeter.h>
 
-/* This will eventually be replaced by real BBOS schedulers and running on multiple cogs */
 int
 main()
 {
-  unsigned delay = 10000; /* ms */
+  unsigned delay = 1000; /* ms */
+  unsigned vegimeter_buttons = 0;
+  int water_temperature = 0;
+  int soil_temperature_a = 0;
+  int soil_temperature_b = 0;
+  int soil_temperature_c = 0;
+  int soil_temperature_d = 0;
+  unsigned heater_on = 0;
+  unsigned pump_on = 0;
 
   printf("Starting Vegimeter!\n");
   
   do {
-    controller_runner();
+    controller_runner(water_temperature, soil_temperature_a, soil_temperature_b,
+		      soil_temperature_c, soil_temperature_d,
+		      soil_temperature_d, heater_on, pump_on);
 
-    button_driver_runner();
-    heater_driver_runner();
-    pump_driver_runner();
-    temp_sensor_driver_water_runner();
-    temp_sensor_driver_soil_a_runner();
-    temp_sensor_driver_soil_b_runner();
-    temp_sensor_driver_soil_c_runner();
-    temp_sensor_driver_soil_d_runner();
+    /* Button presses are hard detect until we're in a non-blocking context */
+    vegimeter_buttons = button_driver_runner(vegimeter_buttons); 
 
-    ui_runner();
+    heater_on = heater_driver_runner();
+    pump_on = pump_driver_runner();
+
+    water_temperature = temp_sensor_driver_water_runner();
+    soil_temperature_a = temp_sensor_driver_soil_a_runner();
+    soil_temperature_b = temp_sensor_driver_soil_b_runner();
+    soil_temperature_c = temp_sensor_driver_soil_c_runner();
+    soil_temperature_d = temp_sensor_driver_soil_d_runner();
+
+    ui_runner(water_temperature, soil_temperature_a, soil_temperature_b,
+	      soil_temperature_c, soil_temperature_d,
+	      soil_temperature_d, vegimeter_buttons);
 
     printf("Sleeping for %d ms\n", delay);
     bbos_delay_msec(delay);
