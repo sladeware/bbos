@@ -37,7 +37,7 @@ main()
   do {
     controller_runner(water_temperature, soil_temperature_a, soil_temperature_b,
 		      soil_temperature_c, soil_temperature_d,
-		      soil_temperature_d, heater_on, pump_on);
+		      soil_temperature_d, &heater_on, &pump_on);
 
     /* Button presses are hard detect until we're in a non-blocking context */
     vegimeter_buttons = button_driver_runner(vegimeter_buttons); 
