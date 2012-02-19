@@ -32,7 +32,7 @@ ds18b20_read_temperature(uint8_t pin, int* value)
   int temp_data;
 
   /* Initialization */
-  *value = DEFAULT_MIN_TEMP_READING;
+  *value = DEFAULT_TEMP_READING;
   ow_reset(pin);
 
   /* Start measurements */

@@ -22,7 +22,7 @@
 #define DS18B20_READ_POWER           0xB4
 /** Scratch pad size in bytes. */
 #define DS18B20_SCRATCHPAD_SIZE      9
-#define DEFAULT_MIN_TEMP_READING -54321
+#define DEFAULT_TEMP_READING 54321
 
 /* Macros */
 #define DS18B20_1_100TH_CELCIUS(value) (100 * (value))
