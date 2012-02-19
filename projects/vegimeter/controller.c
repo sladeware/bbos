@@ -40,9 +40,9 @@ void controller_runner(int water_temperature, int soil_temperature_a,
   }
 
   /* Turn off the pump and heater if the soil is warm enough */
-  if((soil_temperature_a > SOIL_MIN_TEMP) &&
-     (soil_temperature_b > SOIL_MIN_TEMP) &&
-     (soil_temperature_c > SOIL_MIN_TEMP) &&
+  if((soil_temperature_a > SOIL_MIN_TEMP) ||
+     (soil_temperature_b > SOIL_MIN_TEMP) ||
+     (soil_temperature_c > SOIL_MIN_TEMP) ||
      (soil_temperature_d > SOIL_MIN_TEMP)) {
     *heater_on = 0;
     *pump_on = 0;
