@@ -70,7 +70,7 @@ ds18b20_read_temperature(uint8_t pin, int* value)
   /* Process measurements */
   sign = sp[1] & 0xF0 ? -1 : 1; /* sign */
   temp_data = ((unsigned)(sp[1] & 0x07) << 8) | sp[0];
-  *value = DS18B20_1_100TH_CELCIUS((temp_data & 0xFFFF) * sign) / 16;
+  *value = DS18B20_1_100TH_CELCIUS((temp_data & 0xFFFF) * sign) >> 4;
 
   return 0; /* Success */
 }
