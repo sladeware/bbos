@@ -15,9 +15,7 @@
 
 #include <vegimeter.h>
 
-unsigned pump_driver_runner() {
-  unsigned pump_on;
-
+void pump_driver_runner(unsigned pump_on) {
   if (pump_on) {
     lh1500_on(14); /* Pump */
     printf("  >>> Pump ON! <<<\n");
@@ -25,6 +23,4 @@ unsigned pump_driver_runner() {
     lh1500_off(14); /* Pump */
     printf("  >>> Pump OFF! <<<\n");
   }
-
-  return pump_on;
 }

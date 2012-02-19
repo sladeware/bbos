@@ -42,8 +42,8 @@ main()
     /* Button presses are hard detect until we're in a non-blocking context */
     vegimeter_buttons = button_driver_runner(vegimeter_buttons); 
 
-    heater_on = heater_driver_runner();
-    pump_on = pump_driver_runner();
+    heater_driver_runner(heater_on);
+    pump_driver_runner(pump_on);
 
     water_temperature = temp_sensor_driver_water_runner();
     soil_temperature_a = temp_sensor_driver_soil_a_runner();

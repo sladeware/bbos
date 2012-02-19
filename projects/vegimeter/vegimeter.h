@@ -19,8 +19,8 @@
 
 unsigned button_driver_runner();
 void controller_runner();
-unsigned heater_driver_runner();
-unsigned pump_driver_runner();
+void heater_driver_runner();
+void pump_driver_runner();
 int temp_sensor_driver_water_runner();
 int temp_sensor_driver_soil_a_runner();
 int temp_sensor_driver_soil_b_runner();
