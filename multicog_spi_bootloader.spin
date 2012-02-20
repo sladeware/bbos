@@ -12,12 +12,6 @@ CON
   _xinfreq  = Common#XTALFREQ
   _stack    = Common#STACKSIZE
 
-  BOOTING = $1F00 ' TODO: correct Hub address
-
-' Basic configurations
-#define NEED_SIO_READPAGE
-#define NEED_SIO_READLONG
-
 '
 ' debugging options (note that enabling debugging will also require SLOW_XMIT
 ' to be enabled to avoid comms timeouts):
@@ -38,14 +32,8 @@ OBJ
   SIO        : "Catalina_SIO_Plugin" ' SIO plugin
 
 '_______________________________________________________________________________
-VAR
-   long Stack
-   long cog_to_img_mapping[8] ' XXX: eight?
-   byte cog
 
-'_______________________________________________________________________________
-
-PUB Start : ok | REG, DATA, PAGE, BLOCK, XFER, MAX_LOAD, B
+PUB Start : ok | REG, DATA, PAGE, BLOCK, XFER, MAX_LOAD
   ' Set up the Registry - required to use the SIO Plugin
   Common.InitializeRegistry
 
@@ -56,16 +44,6 @@ PUB Start : ok | REG, DATA, PAGE, BLOCK, XFER, MAX_LOAD, B
   XFER     := BLOCK - 8
   DATA     := XFER
   MAX_LOAD := XFER ' cannot load past here
-
-  ' Initialize booting
-  long[BOOTING][0] := 1 ' Status
-  repeat cog from 0 to 7
-        cog_to_img_mapping[cog] := $0000
-  long[BOOTING][1] := @cog_to_img_mapping
-  ' Let us reuse the last long in REGISTRY layout (CPU number) to
-  ' store address of our booting process.
-  B := BOOTING
-  REG[4] := @B
 
   ' Start the SIO plugin
   SIO.Start(BLOCK, Common#SI_PIN, Common#SO_PIN, MODE, BAUD, TRUE)
@@ -100,14 +78,6 @@ entry
         rdlong page_addr,r0                   ' get page buffer address
         add    r0,#4
         rdlong xfer_addr,r0                   ' get xfer buffer address
-        add r0, #4
-        rdlong booting_addr, r0               ' get booting
-
-        mov r0, booting_addr
-        add r0, #4
-        rdlong img_mapping, r0
-        mov img_mapping, #$6
-        shl img_mapping, #12
 
         rdlong SavedFreq,#0                   ' save the current clock freq
         rdbyte SavedMode,#4                   ' ... and mode
@@ -120,7 +90,7 @@ clear_img_mapping                             ' clear
         add img_addr, #1
         djnz r0, #clear_img_mapping
 
-        'call #Spinner_Init
+        call #Spinner_Init
 
 wait_loop
         call   #SIO_ReadSync                 ' wait ...
@@ -210,8 +180,8 @@ restart
 
         ' zero hub RAM from vbase to runtime_end, omitting
         ' any Hub RAM specified for use by the reserve cog.
-{{
-        mov     r5,runtime_end
+
+        mov r5, img_mapping 'mov     r5,runtime_end
         mov     r4,r3
         jmp     #:chckRam
 
@@ -226,40 +196,24 @@ restart
 :chckRam
         cmp     r4,r5 wz,wc
   if_b  jmp     #:zeroRam
-}}
-        rdlong  r2,#8
-        shr     r2,#16                          ' Get dbase value
-        sub     r2,#4
-        wrlong  StackMark,r2                    ' Place stack marker at dbase
-        sub     r2,#4
-        wrlong  StackMark,r2
+
         rdlong  r2,#0
         cmp     r2,SavedFreq wz                 ' Is the clock frequency the same?
-  if_ne jmp     #:changeClock
+  if_ne jmp     #:change_clock
         rdbyte  r2,#4                           ' Get the clock mode
         cmp     r2,SavedMode wz                 ' If both same, just go start COG
   if_e  jmp     #:justStartUp
-:changeClock
+:change_clock
         and     r2,#$F8                         ' Force use of RCFAST clock while
         clkset  r2                              ' letting requested clock start
         mov     r2,XtalTime
-:startupDelay
-        djnz    r2,#:startupDelay               ' Allow 20ms@20MHz for xtal/pll to settle
-        rdlong  r2,#4
-        and     r2,#$FF                         ' Then switch to selected clock
+:provide_startup_delay
+        djnz    r2, #:provide_startup_delay     ' Allow 20ms@20MHz for xtal/pll to settle
+        rdlong  r2, #4
+        and     r2, #$FF                        ' Then switch to selected clock
         clkset  r2
 
 :justStartUp
-{{
-        'mov r1, #$1F
-        'shl r1, #8
-        'mov r0, #$02
-        'wrlong r0, r1
-        'mov     time,cnt
-        'add     time,rst_delay
-        'waitcnt time,#0
-        'or r6, cpu_no
-}}
         mov r0, #0            ' start from the COG0
         mov r1, img_mapping
 :next_img
@@ -273,28 +227,31 @@ restart
         cmp img_addr, #$0 wz
    if_z jmp #:next_img
 
-{{
-        mov r5, #1
-        shl r5, #16
-        shl r5, cpu_no
-        mov r6, dira
-        or r6, r5
-        mov dira, r6
-        mov r6, outa
-        or r6, r5
-        mov outa, r6
-}}
         sub img_addr, #1        ' fix image address
 
         mov r2, img_addr
-        add r2, #12             ' move to pcurr and ...
+        add r2, #10
+        rdlong r3, r2
+        wrlong r3, #10          ' replace current dbase
+{{
+        mov r2, img_addr
+        add r2, #10
+        rdlong  r3,r2
+        shr     r3,#16          ' Get dbase value
+        sub     r3,#4
+        wrlong  StackMark,r3    ' Place stack marker at dbase
+        sub     r3,#4
+        wrlong  StackMark,r3
+}}
+        mov r2, img_addr
+        add r2, #12             ' move to byte 12 and ...
         rdlong r3, r2           ' ... read pcurr and dcurr values
-        wrlong r3, #12         ' replace current pcurr and dcurr with the new one
+        wrlong r3, #12          ' replace current pcurr and dcurr with new one
 
         mov r2, img_addr
-        add r2, #6
-        rdlong r3, r2
-        wrlong r3, #6
+        add r2, #6              ' move to byte 6 and ...
+        rdlong r3, r2           ' ... read pbase and vbase values
+        wrlong r3, #6           ' replace current pbase and vbase with new one
 
         mov r6, interpreter     ' start working ...
         mov r5, cpu_no          ' ... on COG initialization ...
@@ -417,7 +374,7 @@ Spinner_Iterate_ret
 '
 '------------------------------ SIO Routines -----------------------------------
 '
-#ifdef NEED_SIO_READPAGE
+
 '
 ' SIO_ReadPage : Read data from SIO to HUB RAM.
 ' On Entry:
@@ -479,10 +436,7 @@ SIO_ReadPage
 
 SIO_ReadPage_ret
               ret
-'
-#endif
 
-#ifdef NEED_SIO_READLONG
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ' SIO_ReadLong : Read 4 bytes from SIO to SIO_Temp
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -498,7 +452,6 @@ SIO_ReadLong
 SIO_ReadLong_ret
               ret
 
-#endif
 '
 ' SIO_DataReady - check if SIO data is ready.
 ' On exit:
@@ -741,7 +694,7 @@ xfer_addr     long      $0
 cpu_no        long      $0
 nr_imgs       long      $0
 booting_addr  long      $0
-img_mapping   long      $0
+img_mapping   long      $7918
 img_addr      long      $0
 
 max_page      long      PAGE_SIZE

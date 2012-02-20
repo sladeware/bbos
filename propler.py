@@ -8,6 +8,12 @@ import optparse
 import operator
 import logging
 
+from formats import SpinHeader, ElfHeader, ElfContext
+from propeller_chip import PropellerP8X32
+
+from ctypes import *
+from bitwise_op import *
+
 try:
     import serial
 except ImportError:
@@ -18,71 +24,13 @@ except ImportError:
 #logger = logging.getLogger()
 
 # Common hardware constants
-P8X32_NR_COGS = 8
 EEPROM_24LC256_SIZE = 32768 # bytes
-P8X32_RAM_SIZE = 262144
 
 PAGE_SIZE = 1 << 9
 DEFAULT_BAUDRATE = 115200 # Baud rate to use for all interprop comms
 BYTE_DELAY = float(1) / float(6000)
 # End of page marker
 MARKER = 0xFFFFFE
-PROGRAM_HEADER_SIZE = 16
-
-class ClockModes:
-    """Valid Clock Modes."""
-    RCFASE        = 0x00
-    RCSLOW        = 0x01
-    XINPUT        = 0x22
-    XTAL1         = 0x2A
-    XTAL2         = 0x32
-    XTAL3         = 0x3A
-    XINPUT_PLL1X  = 0x63
-    XINPUT_PLL2X  = 0x64
-    XINPUT_PLL4X  = 0x65
-    XINPUT_PLL8X  = 0x66
-    XINPUT_PLL16X = 0x67
-    XTAL1_PLL1X   = 0x6B
-    XTAL1_PLL2X   = 0x6C
-    XTAL1_PLL4X   = 0x6D
-    XTAL1_PLL8X   = 0x6E
-    XTAL1_PLL16X  = 0x6F
-    XTAL2_PLL1X   = 0x73
-    XTAL2_PLL2X   = 0x74
-    XTAL2_PLL4X   = 0x75
-    XTAL2_PLL8X   = 0x76
-    XTAL2_PLL16X  = 0x77
-    XTAL3_PLL1X   = 0x7B
-    XTAL3_PLL2X   = 0x7C
-    XTAL3_PLL4X   = 0x7D
-    XTAL3_PLL8X   = 0x7E
-    XTAL3_PLL16X  = 0x7F
-
-    to_string = {
-        XTAL1         : "XTAL1",
-        XTAL2         : "XTAL1",
-        XTAL3         : "XTAL1",
-        XINPUT_PLL1X  : "XINPUT_PLL1X",
-        XINPUT_PLL2X  : "XINPUT_PLL2X",
-        XINPUT_PLL4X  : "XINPUT_PLL4X",
-        XINPUT_PLL8X  : "XINPUT_PLL8X",
-        XINPUT_PLL16X : "XINPUT_PLL16X",
-        XTAL1_PLL1X   : "XTAL1_PLL1X",
-        XTAL1_PLL2X   : "XTAL1_PLL2X",
-        XTAL1_PLL4X   : "XTAL1_PLL4X",
-        XTAL1_PLL8X   : "XTAL1_PLL8X",
-        XTAL1_PLL16X  : "XTAL1_PLL16X",
-        XTAL2_PLL1X   : "XTAL2_PLL1X",
-        XTAL2_PLL2X   : "XTAL2_PLL2X",
-        XTAL2_PLL4X   : "XTAL2_PLL4X",
-        XTAL2_PLL8X   : "XTAL2_PLL8X",
-        XTAL2_PLL16X  : "XTAL2_PLL16X",
-        XTAL3_PLL1X   : "XTAL3_PLL1X",
-        XTAL3_PLL2X   : "XTAL3_PLL2X",
-        XTAL3_PLL4X   : "XTAL3_PLL4X",
-        XTAL3_PLL8X   : "XTAL3_PLL8X",
-        XTAL3_PLL16X  : "XTAL3_PLL16X"
-        }
 
 READ_TIMEOUT = 5 # seconds
 
@@ -96,83 +44,6 @@ DEFAULT_SERIAL_PORTS = {
 LFSR_REQUEST_LEN = 250
 LFSR_REPLY_LEN = 250
 LFSR_SEED = ord("P")
-
-#_______________________________________________________________________________
-
-def lfsr(seed):
-    """Generate bits from 8-bit LFSR with taps at 0xB2."""
-    while True:
-        yield seed & 0x01
-        seed = ((seed << 1) & 0xfe) | (((seed >> 7) ^ (seed >> 5) ^ (seed >> 4) ^ (seed >> 1)) & 1)
-
-def bytes_to_long(bytes):
-    return bytes[0] | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24)
-
-def bytes_to_word(bytes):
-    return bytes[0] | (bytes[1] << 8)
-
-class Word(object):
-    @classmethod
-    def split_by_bytes(cls, x):
-        return ((x >> 8) & 0xFF, x & 0xFF)
-
-class Long(object):
-
-    def __init__(value=None):
-        bytes= None
-        if len(value) == 1:
-            bytes = value
-        elif len(value) == 4:
-            bytes = (args)
-        else:
-            raise Exception()
-        return bytes[0] | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24)
-
-    @classmethod
-    def ror(cls, x, n):
-        return ((x >> n) & 0xFFFFFFFF) | ((x << (32 - n) & 0xFFFFFFFF))
-
-    @classmethod
-    def reverse_bytes(cls, x):
-        return ((x & 0xFF) << 24)    \
-            | ((x <<  8) & 0xFF0000) \
-            | ((x >>  8) & 0xFF00)   \
-            | ((x >> 24) & 0xFF)
-
-    @classmethod
-    def reverse_bits(cls, x):
-        x = (x & 0x55555555) <<  1 | (x & 0xAAAAAAAA) >>  1
-        x = (x & 0x33333333) <<  2 | (x & 0xCCCCCCCC) >>  2
-        x = (x & 0x0F0F0F0F) <<  4 | (x & 0xF0F0F0F0) >>  4
-        x = (x & 0x00FF00FF) <<  8 | (x & 0xFF00FF00) >>  8
-        x = (x & 0x0000FFFF) << 16 | (x & 0xFFFF0000) >> 16
-        return x
-
-    @classmethod
-    def ror(cls, x, bits):
-        lsb = 0
-        while bits:
-            bits -= 1
-            lsb = x & 0x1
-            x >>= 1
-            x |= lsb << 31
-        return x
-
-    @classmethod
-    def rol(cls, x, bits):
-        msb = 0
-        while bits:
-            bits -= 1
-            msb = (x & 0x80000000) >> 31
-            x <<= 1
-            x &= 0xFFFFFFFF
-            x |= msb
-        return x
-
-    @classmethod
-    def split_bytes(cls, x):
-        return ((x >> 24) & 0xFF, (x >> 16) & 0xFF, (x >> 8) & 0xFF, x & 0xFF)
-
 
 #_______________________________________________________________________________
 
@@ -227,7 +98,7 @@ class SPIUploader(object):
         version = 0
         for i in range(8):
             version = ((version >> 1) & 0x7F) | ((self.receive_bit(False, 0.050) << 7))
-        print "Connected to propeller v%d" % version
+        print "Connected to Propeller v%d on %s" % (version, self.__serial.port)
 
     def reset(self):
         self.__serial.flushOutput()
@@ -323,6 +194,8 @@ class Config(object):
             self.print_help_and_exit()
 
         if self.options.output_file:
+            if os.path.exists(self.options.output_file):
+                os.remove(self.options.output_file)
             hdlr = logging.FileHandler(self.options.output_file)
             logging.getLogger().addHandler(hdlr)
         else:
@@ -393,7 +266,7 @@ class ActionOptions(object):
     @classmethod
     def multicog_spi_upload_options(cls, cfg, parser):
         cls.upload_options(cfg, parser)
-        for cogid in range(1, P8X32_NR_COGS + 1):
+        for cogid in range(1, PropellerP8X32.NR_COGS + 1):
             parser.add_option("-%d" % cogid, "--cog%d" % cogid,
                               dest="cog%d" % cogid, nargs=1, type="string",
                               metavar="filename", default=None,
@@ -449,92 +322,24 @@ def is_valid_binary_image(data):
                uses_basepath=False)
 def dump_header(cfg, run_fn=None):
     # http://forums.parallax.com/showthread.php?117526-eeprom-file-format
-    filename = cfg.args.pop(0)
-    print "Binary file : %s" % filename
-    fh = open(filename)
+    fname = cfg.args.pop(0)
+    print "Binary file : %s" % fname
+    fh = open(fname)
     data = ''.join(fh.readlines())
     print "Size        : %d (bytes)" % len(data)
-    hdr = ProgramHeader(data[0:PROGRAM_HEADER_SIZE])
+
+    hdr = None
+
+    if fname.endswith(".elf"):
+        hdr = ElfHeader()
+        memmove(addressof(hdr), data, sizeof(ElfHeader))
+    else:
+        hdr = SpinHeader()
+        memmove(addressof(hdr), data, sizeof(SpinHeader))
     print str(hdr)
+
     fh.close()
     exit(0)
-
-class ProgramHeader(object):
-    def __init__(self, data):
-        assert len(data) == PROGRAM_HEADER_SIZE
-        self.data = data
-        if type(self.data) is types.ListType:
-            self.data = "".join(self.data)
-
-    def __str__(self):
-        info  = "Program Header:\n"
-        info += " Clock speed : %d\n"          % self.clk_speed
-        info += " Clock mode  : 0x%02x (%s)\n" % (self.clk_mode, ClockModes.to_string[self.clk_mode])
-        info += " Checksum    : %d (%s)\n"     % (self.checksum, is_valid_binary_image(self.data))
-        info += " PBase       : 0x%04x\n"      % self.pbase
-        info += " VBase       : 0x%04x\n"      % self.vbase
-        info += " DBase       : 0x%04x\n"      % self.dbase
-        info += " PCurr       : 0x%04x\n"      % self.pcurr
-        info += " DCurr       : 0x%04x"        % self.dcurr
-        return info
-
-    @property
-    def clk_speed(self):
-        """Clock speed."""
-        bytes = map(ord, self.data[0:4])
-        return bytes_to_long(bytes)
-
-    @property
-    def clk_mode(self):
-        """Clock mode."""
-        return ord(self.data[4:5])
-
-    @property
-    def checksum(self):
-        """Checksum"""
-        return ord(self.data[5:6])
-
-    @property
-    def pbase(self):
-        """Start address of an object."""
-        bytes = map(ord, self.data[6:8])
-        return bytes_to_word(bytes)
-
-    @pbase.setter
-    def pbase(self, bytes):
-        self.data = self.data[0:6] + chr(bytes[0]) + chr(bytes[1]) + self.data[8:]
-
-    @property
-    def vbase(self):
-        """Start address of the VAR section of an object."""
-        bytes = map(ord, self.data[8:10])
-        return bytes_to_word(bytes)
-
-    @property
-    def dbase(self):
-        """Start address of a method's stack variables."""
-        bytes = map(ord, self.data[10:12])
-        return bytes_to_word(bytes)
-
-    @property
-    def pcurr(self):
-        """Address of the next opcode to be executed."""
-        bytes = map(ord, self.data[12:14])
-        return bytes_to_word(bytes)
-
-    @pcurr.setter
-    def pcurr(self, bytes):
-        self.data = self.data[0:11] + chr(bytes[0]) + chr(bytes[1]) + self.data[13:]
-
-    @property
-    def dcurr(self):
-        """Address of the next variable to be stored on the stack."""
-        bytes = map(ord, self.data[14:])
-        return bytes_to_word(bytes)
-
-    @dcurr.setter
-    def dcurr(self, bytes):
-        self.data = self.data[0:13] + chr(bytes[0]) + chr(bytes[1]) + self.data[15:]
 
 #_______________________________________________________________________________
 
@@ -544,6 +349,58 @@ class ProgramHeader(object):
                uses_basepath=False)
 def edit_header(cfg, run_fn=None):
     pass
+
+@Config.action('extract_binary_image',
+               usage="",
+               short_desc='Extract binary image from ELF.',
+               uses_basepath=False)
+def extract_binary_image(cfg, run_fn=None):
+    src_fname = cfg.args.pop(0)
+    dst_fname = cfg.args.pop(0)
+
+    print "Source file: %s (%d bytes)" % (src_fname, os.path.getsize(src_fname))
+
+    ctx = ElfContext(src_fname)
+    (start, image_size) = ctx.get_program_size()
+    print "Image start: 0x%08x" % start
+    print "Image size: %d byte(s)" % image_size
+
+    image_buf = [chr(0)] * image_size
+
+    # load each program section
+    for i in range(ctx.hdr.phnum):
+        program = ctx.load_program_table_entry(i)
+        if not program:
+            print "Can not load program table entry %d" % i
+        print "Load program table entry", i
+        print str(program)
+        buf = ctx.load_program_segment(program)
+        if not buf:
+            print "Can not load program section %d" % i
+        for j in range(program.filesz):
+            image_buf[program.paddr - start + j] = buf[j]
+
+    # fixup the header to point past the spin bytecodes and generated PASM code
+    #hdr = SpinHeader()
+    #memmove(addressof(hdr), ''.join(image_buf), sizeof(SpinHeader))
+    #print  hdr.clk_speed
+    #hdr.vbase = image_size #Word.split_by_bytes(image_size)
+    #hdr.dbase = image_size + 2 * 4 #Word.split_by_bytes(image_size + 2 * 4) # stack markers
+    #hdr.dcurr = hdr.dbase + 4 #Word.split_by_bytes(hdr.dbase + 4)
+    #image_buf = list(hdr) + image_buf[sizeof(SpinHeader):]
+
+    img = ''.join(image_buf)
+    x = c_char_p(img)
+    hdr_p = cast(x, POINTER(SpinHeader))
+    hdr_p.contents.vbase = image_size
+    print hdr_p.contents.clk_speed
+    hdr_p.contents.dbase = image_size + 2 * 4
+    hdr_p.contents.dcurr = hdr_p.contents.dbase + 4
+
+    print "Writing image to the destination file:", dst_fname
+    dst_fh = open(dst_fname, "w")
+    dst_fh.write(img)#"".join(image_buf))
+    dst_fh.close()
 
 #_______________________________________________________________________________
 
@@ -557,13 +414,12 @@ class StandardSPIUploader(SPIUploader):
     """Standard one cog uploader."""
 
     def upload(self, data, run=True, eeprom=True):
-
         print "Under constraction!"
         exit(0)
 
         sz = len(data)
-        if sz % 4 != 0:
-            raise Exception("Invalid code size: must be a multiple of 4")
+        #if sz % 4 != 0:
+        #    raise Exception("Invalid code size: must be a multiple of 4")
         if not is_valid_binary_image(data):
             raise Exception("Not valid binary image")
         print "Sending %d bytes" % sz
@@ -638,31 +494,34 @@ def upload(cfg, run_fh=None):
 class MulticogSPIUploader(SPIUploader):
     def __init__(self, *args, **kargs):
         SPIUploader.__init__(self, *args, **kargs)
-        self.__offset = 0x00
+        self.__offset = 0
+        self.__total_upload_size = 0
 
     def upload(self, cogid_to_filename_mapping):
+        self.__total_upload_size = 0
         # Extract and sort a list of target COG id's in increase order
         target_cogids = cogid_to_filename_mapping.keys()
         target_cogids.sort()
         # Put a little bit of useful information to the log
         # if it's required
         if True:
-            total_upload_size = 0
             logging.info("Task:")
             for cogid in target_cogids:
                 path = cogid_to_filename_mapping[cogid]
                 logging.info("\t%s => COG #%d", path, cogid)
-                total_upload_size += os.path.getsize(path)
-            print "Total upload size: %d (bytes)" % total_upload_size
+                self.__total_upload_size += os.path.getsize(path)
+            print "Total upload size: %d (bytes)" % self.__total_upload_size
         # Send synch signal in order to describe target
         # number of images to be sent
         self.__send_sync_signal(len(cogid_to_filename_mapping))
         # Start uploading images on cogs one by one
+        i = 0
         for cogid in target_cogids:
             filename = cogid_to_filename_mapping.get(cogid)
-            if not self.__upload_to_cog(cogid, filename):
+            if not self.__upload_to_cog(i, cogid, filename):
                 print "Uploading has been broken."
                 break
+            i += 1
 
     def __send_sync_signal(self, byte):
         """Send two-bytes sync signal: [0xFF|BYTE]. These sequences can never
@@ -679,7 +538,7 @@ class MulticogSPIUploader(SPIUploader):
             byte = chr(byte)
         self.send_byte(byte, timeout)
         if byte == chr(0xFF):
-            self.send_byte(0, timeout)
+            self.send_byte(chr(0), timeout)
 
     def stuff_and_send_long(self, x):
         bytes = x
@@ -688,28 +547,34 @@ class MulticogSPIUploader(SPIUploader):
         for byte in bytes:
             self.stuff_and_send_byte(byte)
 
-    def __upload_to_cog(self, cogid, filename):
+    def __upload_to_cog(self, i, cogid, filename):
         bin_fh = open(filename)
-        data = list(''.join(bin_fh.readlines())) # NEW!
+        data = ''.join(bin_fh.readlines()) # NEW!
         sz = len(data)
-        if sz % 4 != 0:
-            raise Exception("Invalid code size: must be a multiple of 4")
-        logging.info("Uploading %s (%d bytes) on COG#%d" \
-                        % (filename, sz, cogid))
+        #if sz % 4 != 0:
+        #    raise Exception("Invalid code size: must be a multiple of 4")
+        logging.info("Uploading %s (%d bytes) on Cog %d" \
+                         % (filename, sz, cogid))
         print "Uploading %s (%d bytes) on COG#%d" \
             % (filename, sz, cogid)
         # The following blocks aims to edit binary image
-        if True:
-            hdr = ProgramHeader(data[0:PROGRAM_HEADER_SIZE])
-            hdr.pbase = Word.split_by_bytes(self.__offset + hdr.pbase)
-            # Edit pcurr value
-            hdr.pcurr = Word.split_by_bytes(self.__offset + hdr.pcurr)
-            hdr.dcurr = Word.split_by_bytes(self.__offset + hdr.dcurr)
-            # XXX: do we need to recalculate checksum value once the
-            #      header has been updated?
-            # Apply changes; attach a new header to the rest of the data
-            data = list(hdr.data) + data[PROGRAM_HEADER_SIZE:]
-            logging.info(str(hdr))
+
+        offset = self.__total_upload_size + i * 16
+
+        # Read and fix header
+        # XXX: do we need to recalculate checksum value once the
+        #      header has been updated?
+        data_p = c_char_p(data)
+        hdr_p = cast(data_p, POINTER(SpinHeader))
+        hdr_p.contents.pbase = self.__offset + hdr_p.contents.pbase
+        hdr_p.contents.vbase = offset + 0
+        hdr_p.contents.dbase = offset + 8
+        hdr_p.contents.pcurr = self.__offset + hdr_p.contents.pcurr
+        hdr_p.contents.dcurr = offset + 16
+
+        logging.info(str(hdr_p.contents))
+        data = list(data)
+
         # The data may be changed till this point. Thus we have to
         # double check it
         assert(len(data) == sz)
@@ -783,8 +648,8 @@ class MulticogSPIUploader(SPIUploader):
             logging.error("Timeout while expecting for '0xFF' value.")
             raise UploadingError()
         elif not ord(ff) == 0xFF:
-            logging.error("Expection '0xFF' value as the first byte of sync signal,"
-                         "but received '%d'", ff)
+            logging.error("Expecting '0xFF' value as the first byte of sync signal, "
+                         "but received '%d'", ord(ff))
             raise UploadingError()
         # Receive and verify second sync byte. Should be our COG id.
         result_cog_id = self.receive(1) # timeout=None <== wait
@@ -813,10 +678,10 @@ def multicog_spi_upload(cfg, run_fn=None):
     # Start process filenames and cogs.
     # Loading of equal binaries to different cogs is allowed.
     filenames = cfg.args
-    free_cogs = range(1, P8X32_NR_COGS + 1)
+    free_cogs = range(1, PropellerP8X32.NR_COGS + 1)
     cogid_to_filename_mapping = dict()
     # Start process mappings from command line options
-    for cogid in range(1, P8X32_NR_COGS + 1):
+    for cogid in range(1, PropellerP8X32.NR_COGS + 1):
         filename = getattr(cfg.options, "cog%d" % cogid, None)
         if filename:
             cogid_to_filename_mapping[cogid] = filename
