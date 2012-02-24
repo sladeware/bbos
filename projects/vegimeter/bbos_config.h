@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#define BBOS_CONFIG_PROCESSOR propeller_p8x32
+
 #define BBOS_CONFIG_NR_THREADS 7
 /*
 #define BBOS_NR_PORTS 2

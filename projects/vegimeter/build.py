@@ -3,50 +3,77 @@
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 
 import os.path
+import sys
 
-from bb.builder.projects import CatalinaProject
 from bb.builder.loaders import BSTLLoader
 from bb.utils import module
 
 BE_VERBOSE = True
 LOAD_BINARY_FLAG = False # Do we need to use loader to load the binary?
 HUM_RAM_SIZE = 32 * 1024
+COMPILER = "catalina"
 
-project = CatalinaProject("vegimeter", verbose=BE_VERBOSE)
+project = None
+compiler = None
 
-# Let us setup catalina compiler first
-compiler = project.get_compiler()
-compiler.add_include_dirs([
-  "/opt/catalina/include",
-  "./../..",
-  "."])
+def setup_catalina():
+    global project, compiler
+    from bb.builder.projects import CatalinaProject
+    project = CatalinaProject("vegimeter", verbose=BE_VERBOSE)
+    compiler = project.get_compiler()
+    compiler.add_include_dirs(["/opt/catalina/include",])
+    # Add required libraries
+    compiler.add_library("ci") # Use this when float output not required
+    #compiler.add_library("c")
+    # Definitions
+    for macro in (\
+        # Load a PC terminal emulator HMI plugin with screen and
+        # keyboard support
+        "PC",
+        # Reduce some plugins in order to save as much cogs as we can :)
+        "NO_MOUSE",
+        "NO_KEYBOARD",
+        #"NO_SCREEN",
+        "NO_GRAPHICS",
+        #"NO_HMI",
+        ):
+        compiler.define_macro(macro)
+        # Propeller Demo Board support
+    compiler.define_macro("DEMO")
 
-# Add required libraries
-compiler.add_library("ci") # Use this when float output not required
-#compiler.add_library("c")
+def setup_propgcc():
+    global project, compiler
+    from bb.builder.projects import CProject
+    from bb.builder.compilers import PropGCCCompiler
+    project = CProject("vegimeter", verbose=True)
+    compiler = PropGCCCompiler()
+    print compiler
+    project.set_compiler(compiler)
+    # At some point propgcc doesn't provide platform macro so we need to
+    # define it manually
+    compiler.define_macro("__linux__")
+    compiler.define_macro("BB_HAS_STDINT_H")
+    compiler.set_extra_preopts(["-Os", "-mlmm", "-Wall"])
 
-# Definitions
-for macro in (\
-    # Load a PC terminal emulator HMI plugin with screen and keyboard support
-    "PC",
-    # Reduce some plugins in order to save as much cogs as we can :)
-    "NO_MOUSE",
-    "NO_KEYBOARD",
-    #"NO_SCREEN",
-    "NO_GRAPHICS",
-    #"NO_HMI",
-    ):
-    compiler.define_macro(macro)
-# Propeller Demo Board support
-compiler.define_macro("DEMO")
+if COMPILER == "catalina":
+    setup_catalina()
+elif COMPILER == "propgcc":
+    setup_propgcc()
+else:
+    raise Exception("Not supported compiler")
 
+# Common setup
+compiler.add_include_dirs(["./../..", "."])
 
 # Add sources
+# XXX: BB related files. They will be added automatically
+# my builder later.
 for filename in ("./../../bb/os.c",
                  "./../../bb/os/drivers/gpio/button.c",
                  "./../../bb/os/drivers/gpio/lh1500.c",
                  "./../../bb/os/drivers/onewire/onewire_bus.c",
                  "./../../bb/os/drivers/onewire/slaves/ds18b20.c",
+                 "./../../bb/os/drivers/processors/propeller_p8x32/delay.c",
                  "./../../bb/os/kernel.c",
                  "./../../bb/os/kernel/schedulers/fcfsscheduler.c"):
     project.add_source(filename)
@@ -66,9 +93,9 @@ for filename in ("temp_sensor_driver_soil_a.c",
 # Build the project
 project.build(verbose=BE_VERBOSE)
 
-image_size = os.path.getsize(project.output_filename)
-if image_size > HUM_RAM_SIZE:
-    print >>sys.stderr, "Too large image size: %d > %d" % (image_size, HUM_RAM_SIZE)
+#image_size = os.path.getsize(project.output_filename)
+#if image_size > HUM_RAM_SIZE:
+#    print >>sys.stderr, "Too large image size: %d > %d" % (image_size, HUM_RAM_SIZE)
 
 # Skip the last part if we do not need to load binary
 if not LOAD_BINARY_FLAG:

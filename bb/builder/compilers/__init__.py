@@ -12,6 +12,7 @@ from bb.builder.compilers.compiler import Compiler
 from bb.builder.compilers.c import CCompiler
 from bb.builder.compilers.unixc import UnixCCompiler
 from bb.builder.compilers.catalina import CatalinaCompiler
+from bb.builder.compilers.propgcc import PropGCCCompiler
 
 SUPPORTED_COMPILERS = {
     'unix': (
@@ -38,6 +39,7 @@ SUPPORTED_COMPILERS = {
    :class:`bb.builder.compilers.c.CCompiler`               Standard C-like compiler
    :class:`bb.builder.compilers.unixc.UnixCCompiler`       Standard UNIX-style compiler
    :class:`bb.builder.compilers.catalina.CatalinaCompiler` Catalina compiler
+   :class:`bb.builder.compilers.propgcc.PropGCCCompiler`   PropGCC compiler
    ======================================================= ============================
 """
 

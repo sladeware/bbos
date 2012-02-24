@@ -17,9 +17,12 @@
 #ifndef __VEGIMETER_H
 #define __VEGIMETER_H
 
+#include <bb/os/drivers/gpio/lh1500.h>
+#include <bb/os/drivers/onewire/onewire_bus.h>
+
 unsigned button_driver_runner();
 void controller_runner();
-void heater_driver_runner();
+void heater_driver_runner(unsigned heater_on);
 void pump_driver_runner();
 int temp_sensor_driver_water_runner();
 int temp_sensor_driver_soil_a_runner();

@@ -74,7 +74,7 @@ class Compiler(object):
                 print "WARNING: undefined executable '%s'" % name
                 continue
             if not which(cmd[0]):
-                raise ExecutionError("compiler '%s' can not be found" % cmd[0])
+                raise ExecutionError("executable '%s' can not be found" % cmd[0])
 
     def get_language(self, *arg_list, **arg_dict):
         raise NotImplemented

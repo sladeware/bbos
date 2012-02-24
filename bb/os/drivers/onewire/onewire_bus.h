@@ -11,8 +11,7 @@
 #define __ONEWIRE_BUS_H
 
 #include <bb/os.h>
-#include <bb/builder/compilers/catalina/include/catalina_time.h>
-#include <catalina_time.h>
+#include <bb/os/kernel/delay.h>
 #include <bb/os/drivers/processors/propeller_p8x32/pins.h>
 
 // ROM commands
@@ -33,10 +32,8 @@
 #define OW_OUT_LOW(pin)    OUT_LOW(pin)
 #define OW_OUT_HIGH(pin)   OUT_HIGH(pin)
 
-#if 1
 /* Sleep macro */
-#define ow_delay_usec(usecs) (_waitcnt(_cnt() + usecs * (_clockfreq() / 1000000)))
-#endif
+#define ow_delay_usec(usecs) bbos_delay_usec(usecs)
 
 /* Prototypes */
 

@@ -14,11 +14,13 @@
  */
 
 #include <bb/os.h>
-#include <bb/os/drivers/onewire/onewire_bus.h>
+#include <bb/os/drivers/onewire/slaves/ds18b20.h>
 #include <stdio.h>
 #include <vegimeter.h>
 
-int temp_sensor_driver_soil_d_runner(void) {
+int
+temp_sensor_driver_soil_d_runner()
+{
   int soil_temperature_d;
 
   /* This is P8X32A 12, QuickStart J1_13 & Vegimeter TS1 DQ */
@@ -26,9 +28,10 @@ int temp_sensor_driver_soil_d_runner(void) {
   /* uint8_t pin = 4; */ /* DEMO Board */
   int err = 0;
 
-  if (err = ds18b20_read_temperature(pin, &soil_temperature_d)) {
+  if ((err = ds18b20_read_temperature(pin, &soil_temperature_d)))
+    {
       printf("Temperature sensor on pin %d error: %d\n", pin, err);
-  }
+    }
 
   return soil_temperature_d;
 }

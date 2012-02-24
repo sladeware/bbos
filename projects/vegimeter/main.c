@@ -33,14 +33,14 @@ main()
   unsigned pump_on = 0;
 
   printf("Starting Vegimeter!\n");
-  
+
   do {
     controller_runner(water_temperature, soil_temperature_a, soil_temperature_b,
-		      soil_temperature_c, soil_temperature_d,
-		      soil_temperature_d, &heater_on, &pump_on);
+                      soil_temperature_c, soil_temperature_d,
+                      soil_temperature_d, &heater_on, &pump_on);
 
     /* Button presses are hard detect until we're in a non-blocking context */
-    vegimeter_buttons = button_driver_runner(vegimeter_buttons); 
+    vegimeter_buttons = button_driver_runner(vegimeter_buttons);
 
     heater_driver_runner(heater_on);
     pump_driver_runner(pump_on);
@@ -52,8 +52,8 @@ main()
     soil_temperature_d = temp_sensor_driver_soil_d_runner();
 
     ui_runner(water_temperature, soil_temperature_a, soil_temperature_b,
-	      soil_temperature_c, soil_temperature_d,
-	      soil_temperature_d, vegimeter_buttons);
+              soil_temperature_c, soil_temperature_d,
+              soil_temperature_d, vegimeter_buttons);
 
     printf("Sleeping for %d ms\n", delay);
     bbos_delay_msec(delay);

@@ -91,6 +91,8 @@ class CCompiler(Compiler):
         self.__language_precedence_order = list()
         self.set_language_precedence_order(\
             self.DEFAULT_LANGUAGE_PRECEDENCE_ORDER)
+        self.__extra_preopts = list()
+        self.__extra_postopts = list()
 
     def set_object_extension(self, ext):
         self.__object_extension = ext
@@ -380,8 +382,24 @@ class CCompiler(Compiler):
                                                   base + self.get_object_extension()))
         return obj_filenames
 
+    def set_extra_preopts(self, extra_preopts):
+        self.__extra_preopts = extra_preopts
+
+    def get_extra_preopts(self):
+        return self.__extra_preopts
+
+    def set_extra_postopts(self, extra_postopts):
+        self.__extra_postopts = extra_postopts
+
+    def get_extra_postopts(self):
+        return self.__extra_postopts
+
     def compile(self, sources, output_dir=None, macros=None, include_dirs=None,
                 debug=0, extra_preopts=None, extra_postopts=None, depends=None):
+        # Play with extra preopts and postopts
+        extra_preopts = self.get_extra_preopts()
+        extra_postopts = self.get_extra_postopts()
+        # Setup compilation process first
         macros, objects, extra_postopts, pp_options, build = \
             self._setup_compile(sources, output_dir, macros, include_dirs, extra_postopts, depends)
         cc_options = self._gen_cc_options(pp_options, debug, extra_preopts)
