@@ -457,9 +457,14 @@ class CCompiler(Compiler):
         return macros, objects, extra, pp_options, build
 
     def link(self, objects, output_filename, *list_args, **dict_args):
-        print "Linking executable:", os.path.relpath(output_filename, \
-                                                         self.output_dir)
-        self._link(objects, output_filename, *list_args, **dict_args)
+        """Start linking process."""
+        # Adopt output file name to output directory
+        if self.get_output_dir() is not None:
+            self.set_output_filename(os.path.join(self.get_output_dir(), \
+                                                      output_filename))
+        print "Linking executable:", \
+            os.path.relpath(output_filename, self.output_dir)
+        self._link(objects, *list_args, **dict_args)
 
     def _link(self, objects, output_filename, output_dir=None, debug=False,
               extra_preargs=None, extra_postargs=None, target_lang=None):

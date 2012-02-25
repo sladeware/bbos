@@ -350,11 +350,11 @@ def dump_header(cfg, run_fn=None):
 def edit_header(cfg, run_fn=None):
     pass
 
-@Config.action('get_image_size',
+@Config.action('image_size',
                usage="",
                short_desc="Get image size.",
                uses_basepath=False)
-def _get_image_size(cfg, run_fn=None):
+def image_size(cfg, run_fn=None):
     pass
 
 def get_image_size(filename):

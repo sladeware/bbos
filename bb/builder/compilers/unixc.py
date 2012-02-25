@@ -67,7 +67,7 @@ class UnixCCompiler(CCompiler):
         except ExecutionError, msg:
             raise CompileError(msg)
 
-    def _link(self, objects, output_filename,
+    def _link(self, objects,
               output_dir=None,
               libraries=None,
               library_dirs=None,
@@ -79,13 +79,12 @@ class UnixCCompiler(CCompiler):
         objects, output_dir, libraries, library_dirs = \
             self._setup_link(objects, output_dir, libraries, library_dirs)
         lib_options = self._gen_lib_options(library_dirs, libraries)
-        if output_dir is not None:
-            output_filename = os.path.join(output_dir, output_filename)
+        # Finalize linker options
         ld_options = self._gen_ld_options(debug, extra_preargs)
         if extra_postargs:
             ld_options.extend(extra_postargs)
-        ld_options += (objects + lib_options + ['-o', output_filename])
-        mkpath(os.path.dirname(output_filename))
+        ld_options += (objects + lib_options + ['-o', self.get_output_filename()])
+        mkpath(os.path.dirname(self.get_output_filename()))
         try:
             linker = self.get_executable("linker_exe")
             if target_lang == "c++" and self.get_executable("compiler_cxx"):

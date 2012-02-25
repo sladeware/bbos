@@ -17,6 +17,10 @@ class CProject(Project):
         if not self.compiler:
             self.compiler = new_ccompiler()
 
+    def get_output_filename(self):
+        """Return output file name."""
+        return self.compiler.get_output_filename()
+
     def _build(self, sources, include_dirs=[], macros=[],
                libraries=[], library_dirs=[], dry_run=False):
         self.output_filename = os.path.join(self.compiler.get_output_dir(), \

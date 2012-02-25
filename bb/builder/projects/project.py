@@ -77,12 +77,13 @@ class Project(DistributionMetadata):
         return sources
 
     def set_compiler(self, compiler):
-        """Set compiler instance that will be used in compilation
-        process. The `compiler` has to be a sub-class of
+        """Set and return compiler instance that will be used in
+        compilation process. The `compiler` has to be a sub-class of
         :class:`bb.builder.compilers.compiler.Compiler`."""
         if not isinstance(compiler, Compiler):
             raise UnknownCompiler
         self.compiler = compiler
+        return compiler
 
     def get_compiler(self):
         """Return the :class:`bb.builder.compilers.compiler.Compiler`

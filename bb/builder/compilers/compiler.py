@@ -18,6 +18,7 @@ class Compiler(object):
         self.dry_run = dry_run
         # A common output directory for objects, libraries, etc.
         self.output_dir = ""
+        self.output_filename = ""
         self.__executables = dict()
         self.set_executables(self.DEFAULT_EXECUTABLES)
 
@@ -82,10 +83,20 @@ class Compiler(object):
     def compile(self, *arg_list, **arg_dict):
         raise NotImplemented
 
+    def set_output_filename(self, filename):
+        """Set output file name."""
+        self.output_filename = filename
+
+    def get_output_filename(self):
+        """Return output file name."""
+        return self.output_filename
+
     def get_output_dir(self):
+        """Return output directory."""
         return self.output_dir
 
     def set_output_dir(self, output_dir):
+        """Set output directory."""
         if not output_dir or type(output_dir) is not types.StringType:
             raise types.TypeError("'output_dir' must be a string or None")
         else:
