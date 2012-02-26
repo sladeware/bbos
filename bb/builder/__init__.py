@@ -1,6 +1,23 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright (c) 2011 Sladeware LLC"
+"""The BB Builder (simply builder or BBB) provides an environment for
+application development. It allows the application developer to map
+software to computational resources and is a a key part of Bionic
+Bunny."""
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
 
 import sys
 import optparse
@@ -9,7 +26,7 @@ class Config(object):
     """Class to wrap build-script functionality.
 
     Attributes:
-    optparser: An instnace of optparse.OptionParser
+    optparser: An instnace of :class:`optparse.OptionParser`
     argv: The original command line as a list.
     args: The positional command line args left over after parsing the options.
     raw_input_fn: Function used for getting raw user input.

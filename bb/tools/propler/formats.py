@@ -2,9 +2,8 @@
 
 import types
 from ctypes import *
-import propeller_chip
 
-#_______________________________________________________________________________
+import bb.tools.propler.propeller_chip
 
 class SpinHeader(Structure):
     """
@@ -41,8 +40,6 @@ class SpinHeader(Structure):
                self.clk_mode, #propeller_chip.ClockModes.to_string[self.clk_mode],
                self.checksum,
                self.pbase, self.vbase, self.dbase, self.pcurr, self.dcurr)
-
-#_______________________________________________________________________________
 
 class ElfContext(object):
     def __init__(self, filename):
@@ -102,6 +99,17 @@ class ElfProgramHeader(Structure):
             % (self.type, self.offset, self.vaddr, self.paddr,
                self.filesz, self.memsz, flags_string, self.flags, self.align)
 
+IDENT_SIGNIFICANT_BYTES = 9
+ident = [
+    0x7f, ord('E'), ord('L'), ord('F'),         # magic number
+    0x01,                                       # class
+    0x01,                                       # data
+    0x01,                                       # version
+    0x00,                                       # os / abi identification
+    0x00,                                       # abi version
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00    # padding
+]
+
 class ElfHeader(Structure):
     MACHINE_MAP = {
         0x5072: "Parallax Propeller",
@@ -122,6 +130,12 @@ class ElfHeader(Structure):
                 ("shnum", c_ushort),
                 ("shstrndx", c_ushort),
                 ]
+
+    def is_valid(self):
+        for i in range(len(self.ident)):
+            if ord(self.ident[i]) != ident[i]:
+                return False
+        return True
 
     def __str__(self):
         return "ELF Header:\n" \

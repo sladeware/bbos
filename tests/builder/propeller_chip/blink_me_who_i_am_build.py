@@ -5,14 +5,13 @@ from bb.builder.compilers import PropGCCCompiler
 from bb.tools import propler
 from bb.tools.propler import gen_ld_script
 
-NR_IMAGES = 5
+target_cogs = [2, 3]
 
-filenames = [None] * NR_IMAGES
-addresses = [0] * NR_IMAGES
+cogid_to_addr_mapping = dict()
+cogid_to_filename_mapping = dict()
 start_addr = 0
 
-for i in range(NR_IMAGES):
-    image_id = i + 1
+for image_id in target_cogs:
     script_fname = "script%d.ld" % image_id
     gen_ld_script.generate(script_fname,
                            dict(HUB_START_ADDRESS=start_addr))
@@ -24,15 +23,20 @@ for i in range(NR_IMAGES):
                                 "-Wl,-T" + script_fname])
     image.add_source("blink_me_who_i_am.c")
     image.build(verbose=True)
-    addresses[i] = start_addr
+    cogid_to_addr_mapping[image_id] = start_addr
     start_addr += propler.get_image_size(image.get_output_filename())
-    filenames[i] = image.get_output_filename()
+    cogid_to_filename_mapping[image_id] = image.get_output_filename()
 
 print "Report"
 print "==  ====================  =============  ======="
 print "%2s  %20s  %13s  %7s" % ("ID", "IMAGE", "START ADDRESS", "SIZE")
 print "==  ====================  =============  ======="
-for i in range(NR_IMAGES):
+for i in target_cogs:
     print "%2d  %20s  %13d  %7d" \
-        % (i + 1, filenames[i], addresses[i],
-           propler.get_image_size(filenames[i]))
+        % (i, cogid_to_filename_mapping[i], cogid_to_addr_mapping[i],
+           propler.get_image_size(cogid_to_filename_mapping[i]))
+
+# Upload bootloader
+propler.upload_bootloader()
+
+propler.multicog_spi_upload(cogid_to_filename_mapping, "/dev/ttyUSB0")
