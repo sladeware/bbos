@@ -7,15 +7,19 @@ import bb.tools.propler.propeller_chip
 
 class SpinHeader(Structure):
     """
-    clk_speed - clock speed.
-    clk_mode.
-    checksum.
-    pbase - Start address of an object
-    vbase - Start address of the VAR section of an object.
-    dbase - Start address of a method's stack variables.
-    pcurr - Current program counter. Starting address of the first
-    instraction to be executed.
-    dcurr - Address of the next variable to be stored on the stack."""
+    =========  ============
+    Name       Description
+    =========  ============
+    clk_speed  Clock speed.
+    clk_mode   --
+    checksum   --
+    pbase      Start address of an object.
+    vbase      Start address of the VAR section of an object.
+    dbase      Start address of a method's stack variables.
+    pcurr      Current program counter. Starting address of the first
+               instraction to be executed.
+    dcurr      Address of the next variable to be stored on the stack.
+    =========  ============"""
     _fields_ = [("clk_speed", c_int),
                 ("clk_mode", c_byte),
                 ("checksum", c_byte),
@@ -71,6 +75,7 @@ class ElfContext(object):
         return hdr
 
 class ElfProgramHeader(Structure):
+    """Program header."""
     FLAGS = [[0x1, "R"], [0x2, "W"], [0x4, "E"]]
 
     _fields_ = [("type", c_long),
@@ -111,6 +116,46 @@ ident = [
 ]
 
 class ElfHeader(Structure):
+    """ELF header.
+
+    ============== ===========
+    Name           Description
+    ============== ===========
+    `e_ident`      The initial bytes mark the file as an object file and provide machine-independent data with which to decode and interpret the file's contents.
+    `e_type`       This member identifies the object file type.
+    `e_machine`    This member's value specifies the required architecture
+                   for an individual file.
+    `e_version`    This member identifies the object file version.
+    `e_entry`      This member gives the virtual address to which the system
+                   first transfers control, thus starting the process. If the
+                   file has no associated entry point, this member holds zero.
+    `e_phoff`      This member holds the program header table's file offset in
+                   bytes. If the file has no program header table, this
+                   member holds zero.
+    `e_shoff`      This member holds the section header table's file offset in
+                   bytes. If the file has no section header table,
+                   this member holds zero.
+    `e_flags`      This member holds processor-specific flags associated with
+                   the file.
+    `e_ehsize`     This member holds the ELF header's size in bytes.
+    `e_phentsize`  This member holds the size in bytes of one entry in the
+                   file's program header table; all entries are the same size.
+    `e_phnum`      This member holds the number of entries in the program header
+                   table. Thus the product of `e_phentsize` and
+                   `e_phnum` gives
+                   the table's size in bytes. If a file has no program header
+                   table, `e_phnum` holds the value zero.
+    `e_shentsize`  This member holds a section header's size in bytes. A section
+                   header is one entry in the section header table; all entries
+                   are the same size.
+    `e_shnum`      This member holds the number of entries in the section
+                   header table. Thus the product of `e_shentsize` and `e_shnum`
+                   gives the section header table's size in bytes. If a file has
+                   no section header table, `e_shnum` holds the value zero.
+    `e_shstrndx`   This member holds the section header table index of the entry
+                   associated with the section name string table.
+    ============== ===========
+    """
     MACHINE_MAP = {
         0x5072: "Parallax Propeller",
         }

@@ -5,7 +5,7 @@ from bb.builder.compilers import PropGCCCompiler
 from bb.tools import propler
 from bb.tools.propler import gen_ld_script
 
-target_cogs = [2, 3]
+target_cogs = [2, 4, 6, 8]
 
 cogid_to_addr_mapping = dict()
 cogid_to_filename_mapping = dict()
@@ -24,17 +24,17 @@ for image_id in target_cogs:
     image.add_source("blink_me_who_i_am.c")
     image.build(verbose=True)
     cogid_to_addr_mapping[image_id] = start_addr
-    start_addr += propler.get_image_size(image.get_output_filename())
+    start_addr += propler.get_image_file_size(image.get_output_filename())
     cogid_to_filename_mapping[image_id] = image.get_output_filename()
 
 print "Report"
-print "==  ====================  =============  ======="
-print "%2s  %20s  %13s  %7s" % ("ID", "IMAGE", "START ADDRESS", "SIZE")
-print "==  ====================  =============  ======="
+print "======  ====================  =============  ======="
+print "%6s  %20s  %13s  %7s" % ("COG ID", "IMAGE", "START ADDRESS", "SIZE")
+print "======  ====================  =============  ======="
 for i in target_cogs:
-    print "%2d  %20s  %13d  %7d" \
+    print "%6d  %20s  %13d  %7d" \
         % (i, cogid_to_filename_mapping[i], cogid_to_addr_mapping[i],
-           propler.get_image_size(cogid_to_filename_mapping[i]))
+           propler.get_image_file_size(cogid_to_filename_mapping[i]))
 
 # Upload bootloader
 propler.upload_bootloader()

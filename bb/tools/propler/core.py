@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+"""Propler."""
+
 import os
 import os.path
 import time
@@ -20,9 +22,6 @@ except ImportError:
     print >>sys.stderr, "Please install pyserial."
     exit(0)
 
-# Initialize logger
-#logger = logging.getLogger()
-
 # Common hardware constants
 EEPROM_24LC256_SIZE = 32768 # bytes
 
@@ -34,11 +33,19 @@ MARKER = 0xFFFFFE
 
 READ_TIMEOUT = 5 # seconds
 
-# Default serial ports by platforms
 DEFAULT_SERIAL_PORTS = {
     "posix": "/dev/ttyUSB0",
     "nt": "COM1",
 }
+"""Default serial ports by platforms:
+
+    ======== ================
+    PLATFORM PORT
+    ======== ================
+    posix    **/dev/ttyUSB0**
+    nt       **COM1**
+    ======== ================
+"""
 
 # Processor constants
 LFSR_REQUEST_LEN = 250
@@ -48,13 +55,18 @@ LFSR_SEED = ord("P")
 from bb.builder.loaders import BSTLLoader
 
 HOME_DIR = os.path.dirname(os.path.realpath(__file__))
-multicog_bootloader_binary = os.path.join(HOME_DIR, "multicog_spi_bootloader.binary")
+MULTICOG_BOOTLOADER_BINARY_FILENAME = os.path.join(HOME_DIR, "multicog_spi_bootloader.binary")
+
+class UploadingError(Exception):
+    """Base uploading error."""
+    pass
 
 def upload_bootloader():
+    """Upload bootloader `MULTICOG_BOOTLOADER_BINARY_FILENAME`."""
     loader = BSTLLoader(verbose=True,
                         mode=BSTLLoader.Modes.EEPROM_AND_RUN,
                         device_filename="/dev/ttyUSB0")
-    loader.load(multicog_bootloader_binary)
+    loader.load(MULTICOG_BOOTLOADER_BINARY_FILENAME)
 
 class SPIUploader(object):
     """Base class for uploaders."""
@@ -68,6 +80,8 @@ class SPIUploader(object):
 
     @property
     def serial(self):
+        """Return instance of :class:`serial.Serial` that controls
+        serial port."""
         return self.__serial
 
     def __calibrate(self):
@@ -128,7 +142,9 @@ class SPIUploader(object):
     def disconnect(self):
         self.__serial.close()
 
-def extract_binary_image(filename):
+def extract_image_from_file(filename):
+    """Extract image from file `filename`. Developed for extracting
+    image from ELF binary."""
     ctx = ElfContext(filename)
     (start, image_size) = ctx.get_program_size()
     image_buf = [chr(0)] * image_size
@@ -151,8 +167,10 @@ def extract_binary_image(filename):
     return img
 
 class MulticogSPIUploader(SPIUploader):
-    # TODO: what do we need to do with binary images that have different
-    # clock speeds and modes?
+    """See :func:`multicog_spi_upload`.
+
+    TODO: what do we need to do with binary images that have different
+    clock speeds and modes?"""
     def __init__(self, *args, **kargs):
         SPIUploader.__init__(self, *args, **kargs)
         self.__offset = 0
@@ -170,7 +188,7 @@ class MulticogSPIUploader(SPIUploader):
             for cogid in target_cogids:
                 path = cogid_to_filename_mapping[cogid]
                 logging.info("\t%s => COG #%d", path, cogid)
-                self.__total_upload_size += os.path.getsize(path)
+                self.__total_upload_size += get_image_file_size(path) #os.path.getsize(path)
             print "Total upload size: %d (bytes)" % self.__total_upload_size
         # Send synch signal in order to describe target
         # number of images to be sent
@@ -214,7 +232,7 @@ class MulticogSPIUploader(SPIUploader):
 
         ctx = ElfContext(filename)
         if ctx.hdr.is_valid():
-            data = extract_binary_image(filename)
+            data = extract_image_from_file(filename)
         sz = len(data)
         #if sz % 4 != 0:
         #    raise Exception("Invalid code size: must be a multiple of 4")
@@ -223,7 +241,6 @@ class MulticogSPIUploader(SPIUploader):
         print "Uploading %s (%d bytes) on COG#%d" \
             % (filename, sz, cogid)
         # The following blocks aims to edit binary image
-
         offset = self.__total_upload_size + i * 16
 
         # Read and fix header
@@ -244,7 +261,7 @@ class MulticogSPIUploader(SPIUploader):
         # double check it
         assert(len(data) == sz)
         # Sorry, but checksum can be broken since we'are trying to
-        # hack the header. Thus assert(is_valid_binary_image(data)) is not
+        # hack the header. Thus assert(is_valid_image(data)) is not
         # working anymore here.
         #
         # OK. Now we're starting to transmit the data...
@@ -333,7 +350,13 @@ class MulticogSPIUploader(SPIUploader):
             raise UploadingError()
 
 def multicog_spi_upload(cogid_to_filename_mapping, serial_port):
-    # Instanciate uploader and connect to the target device
+    """Start multicog upload, instanciate uploader
+    :class:`MulticogSPIUploader` and connect to the
+    target device. `cogid_to_filename_mapping` represents
+    mapping of cog to filename that has to be uploaded on this cog.
+
+    Note, the multicog bootloader has to be uploaded first before you
+    will start transmitting images. See :func:`upload_bootloader`."""
     try:
         uploader = MulticogSPIUploader(port=serial_port)
         try:
@@ -369,7 +392,7 @@ class StandardSPIUploader(SPIUploader):
         sz = len(data)
         #if sz % 4 != 0:
         #    raise Exception("Invalid code size: must be a multiple of 4")
-        if not is_valid_binary_image(data):
+        if not is_valid_image(data):
             raise Exception("Not valid binary image")
         print "Sending %d bytes" % sz
         if eeprom and len(data) < EEPROM_24LC256_SIZE:
@@ -392,6 +415,7 @@ class StandardSPIUploader(SPIUploader):
             raise Exception("RAM checksum error")
 
     def send_long(self, value):
+        """Send long."""
         self.send(self.encode_long(value))
 
     def encode_long(self, value):
@@ -403,32 +427,34 @@ class StandardSPIUploader(SPIUploader):
         result.append(chr(0xf2 | (value & 0x01) | ((value & 2) << 2)))
         return "".join(result)
 
-class UploadingError(Exception):
-    pass
-
-def is_valid_binary_file(filename):
+def is_valid_image_file(filename):
+    """Takes file name and returns ``True`` if it is valid binary file.
+    See also :func:`is_valid_image`"""
     fh = open(filename)
     data = ''.join(fh.readlines())
-    is_valid = is_valid_binary_image(data)
+    is_valid = is_valid_image(data)
     fh.close()
     return is_valid
 
-def is_valid_binary_image(data):
+def is_valid_image(data):
+    """Return ``True`` if binary image is valid. The checksum includes
+    the "extra" bytes.  The extra bytes at the end are ``FF``, ``FF``,
+    ``F9``, ``FF``, ``FF``, ``FF``, ``F9``, ``FF``.  These are not
+    included in the binary file, or in the EEPROM.  These bytes are
+    added to the beginning of the stack at run time. The extra bytes
+    cause a Spin cog to jump to the ROM address ``FFF9`` when it
+    terminates. The code at ``FFF9`` contains a few Spin bytecode
+    instructions to get the cog ID and issue a cogstop."""
     bytes = bytearray(data)
     calc_checksum = reduce(lambda a, b: a + b, bytes)
-    # The checksum includes the "extra" bytes.
-    # The extra bytes at the end are $FF, $FF, $F9, $FF, $FF, $FF, $F9, $FF.
-    # These are not included in the binary file, or in the EEPROM.
-    # These bytes are added to the beginning of the stack at run time. The
-    # extra bytes cause a Spin cog to jump to the ROM address $FFF9 when it
-    # terminates. The code at $FFF9 contains a few Spin bytecode instructions
-    # to get the cog ID and issue a cogstop.
     calc_checksum += 2 * (0xFF + 0xFF + 0xF9 + 0xFF)
     if not (calc_checksum & 0xFF):
         return True
     return False
 
-def get_image_size(filename):
+def get_image_file_size(filename):
+    """Return image size contained in file `filename`. Supports SPIN and
+    ELF images."""
     ctx = ElfContext(filename)
     (start, image_size) = ctx.get_program_size()
     return image_size
