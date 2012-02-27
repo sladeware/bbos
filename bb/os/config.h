@@ -32,7 +32,10 @@
 #include <bb/config/stdlib/stddef.h>
 
 /* Hardware macro */
-#define DRIVER_FILE(type, file) <bb/os/drivers/type/file>
+
+/* This macro builds path for the proper driver header file. */
+#define BBOS_DRIVER_FILE(file) \
+  <bb/os/drivers/file>
 
 #ifndef BBOS_CONFIG_PROCESSOR
 #error Processor name has to be provided.
@@ -41,14 +44,14 @@
 /* This macro builds path for the proper processor header file. Allows
    to find files related to processor in use. For example, if you are
    using the propeller_p8x32a processor and you would like to include
-   time.h file, the PROCESSOR_FILE(time.h) may produce
+   time.h file, the BBOS_PROCESSOR_FILE(time.h) may produce
    "bb/os/drivers/processors/propeller_p8x32a/time.h". However this
    macro can be redefined in order to load files from different
    places. */
-#ifndef PROCESSOR_FILE
-#define PROCESSOR_FILE(file) \
-  DRIVER_FILE(processors, BBOS_CONFIG_PROCESSOR/file)
-#endif /* PROCESSOR_FILE */
+#ifndef BBOS_PROCESSOR_FILE
+#define BBOS_PROCESSOR_FILE(file) \
+  BBOS_DRIVER_FILE(processors/BBOS_CONFIG_PROCESSOR/file)
+#endif /* BBOS_PROCESSOR_FILE */
 
 /* Include BBOS_CONFIG_PROCESSOR_H header file with processor
    configurations. If BBOS_CONFIG_PROCESSOR_H macro was not defined,
@@ -59,9 +62,11 @@
 #if defined(BBOS_CONFIG_PROCESSOR_H)
 # include BBOS_CONFIG_PROCESSOR_H
 #elif defined(BBOS_CONFIG_PROCESSOR)
-# define BBOS_CONFIG_PROCESSOR_H PROCESSOR_FILE(config.h)
+# define BBOS_CONFIG_PROCESSOR_H BBOS_PROCESSOR_FILE(config.h)
 #else
-//# warning Cannot define processor in use. Please define BBOS_CONFIG_PROCESSOR_H or BBOS_CONFIG_PROCESSOR.
+/*# warning Cannot define processor in use.                     \
+  Please define BBOS_CONFIG_PROCESSOR_H or BBOS_CONFIG_PROCESSOR.
+*/
 #endif /* BBOS_CONFIG_PROCESSOR_H */
 #include BBOS_CONFIG_PROCESSOR_H
 
