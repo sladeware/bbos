@@ -1,10 +1,15 @@
+/*
+ * Copyright (c) 2012 Sladeware LLC
+ */
 #include <bb/os.h>
 
+#ifndef BBOS_SKIP_BANNER_PRINTING
 /* Banner */
 const static char bbos_banner[] = "BBOS version " BBOS_VERSION_STR  \
   " (" BB_PLATFORM_NAME ")"                                         \
   " (" BB_COMPILER_NAME ")"                                         \
   "\n";
+#endif /* BBOS_SKIP_BANNER_PRINTING */
 
 /**
  * BBOS entry point. It works in several ways. The user may define
@@ -16,7 +21,9 @@ const static char bbos_banner[] = "BBOS version " BBOS_VERSION_STR  \
 void
 bbos()
 {
-  printf("%s", bbos_banner);
+#ifndef BBOS_SKIP_BANNER_PRINTING
+  bbos_printf("%s", bbos_banner);
+#endif /* BBOS_SKIP_BANNER_PRINTING */
   bbos_kernel_init();
 #ifdef bbos_main
   bbos_main();

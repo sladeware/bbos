@@ -40,7 +40,7 @@ main()
                       soil_temperature_d, &heater_on, &pump_on);
 
     /* Button presses are hard detect until we're in a non-blocking context */
-    vegimeter_buttons = button_driver_runner(vegimeter_buttons);
+    vegimeter_buttons = button_driver_runner();
 
     heater_driver_runner(heater_on);
     pump_driver_runner(pump_on);

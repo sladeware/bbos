@@ -1,11 +1,15 @@
 #!/usr/bin/env python
 
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+
+import time
+
 from bb.builder.projects import CProject
 from bb.builder.compilers import PropGCCCompiler
 from bb.tools import propler
 from bb.tools.propler import gen_ld_script
 
-target_cogs = [2, 4, 6, 8]
+target_cogs = [6, 8]
 
 cogid_to_addr_mapping = dict()
 cogid_to_filename_mapping = dict()
@@ -19,7 +23,11 @@ for image_id in target_cogs:
     compiler = image.set_compiler(PropGCCCompiler())
     compiler.define_macro("__linux__")
     compiler.define_macro("BB_HAS_STDINT_H")
-    compiler.set_extra_preopts(["-Os", "-mlmm", "-Wall",
+    compiler.add_include_dirs([".", "./../../../"])
+    image.add_source("./../../../bb/os/drivers/processors/propeller_p8x32/sio.c")
+    compiler.define_macro("printf", "__simple_printf")
+    compiler.set_memory_model("lmm")
+    compiler.set_extra_preopts(["-Os", "-Wall",
                                 "-Wl,-T" + script_fname])
     image.add_source("blink_me_who_i_am.c")
     image.build(verbose=True)
@@ -27,16 +35,12 @@ for image_id in target_cogs:
     start_addr += propler.get_image_file_size(image.get_output_filename())
     cogid_to_filename_mapping[image_id] = image.get_output_filename()
 
-print "Report"
-print "======  ====================  =============  ======="
-print "%6s  %20s  %13s  %7s" % ("COG ID", "IMAGE", "START ADDRESS", "SIZE")
-print "======  ====================  =============  ======="
-for i in target_cogs:
-    print "%6d  %20s  %13d  %7d" \
-        % (i, cogid_to_filename_mapping[i], cogid_to_addr_mapping[i],
-           propler.get_image_file_size(cogid_to_filename_mapping[i]))
-
 # Upload bootloader
-propler.upload_bootloader()
+from bb.tools.propler.config import QuickStartBoardConfig, DemoBoardConfig
+config = QuickStartBoardConfig()
+propler.upload_bootloader('/dev/ttyUSB0', config)
+time.sleep(5)
+propler.multicog_spi_upload(cogid_to_filename_mapping,
+                            '/dev/ttyUSB0')#uploader.serial.port)
 
-propler.multicog_spi_upload(cogid_to_filename_mapping, "/dev/ttyUSB0")
+propler.terminal_mode()

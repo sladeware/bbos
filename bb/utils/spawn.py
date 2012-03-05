@@ -1,6 +1,18 @@
 #!/usr/bin/env python
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-__copyright__ = "Copyright (c) 2011 Sladeware LLC"
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
 
 import os
 import sys
@@ -38,7 +50,7 @@ def spawn(cmd, search_path=True, verbose=False, dry_run=False):
     must be the exact path to the executable.  If 'dry_run' is true,
     the command will not actually be run.
 
-    Raise ExecutionError if running the program fails in any way; just
+    Raise :class:`ExecutionError` if running the program fails in any way; just
     return on success."""
     if not type(cmd) is types.ListType:
         raise types.TypeError("'cmd' must be a list")
@@ -94,7 +106,7 @@ def _spawn_posix(cmd, search_path=True, verbose=False, dry_run=False):
                 import errno
                 if exc.errno == errno.EINTR:
                     continue
-                raise ExecutionError("command '%s' failed: %s" 
+                raise ExecutionError("command '%s' failed: %s"
                                             % (cmd[0], exc[-1]))
 
             if not verbose:

@@ -1,7 +1,7 @@
-
+#!/usr/bin/env python
 
 def lfsr(seed):
-    """Generate bits from 8-bit LFSR with taps at 0xB2."""
+    """Generate bits from 8-bit LFSR with taps at ``0xB2``."""
     while True:
         yield seed & 0x01
         seed = ((seed << 1) & 0xfe) | (((seed >> 7) ^ (seed >> 5) ^ (seed >> 4) ^ (seed >> 1)) & 1)

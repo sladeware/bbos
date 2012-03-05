@@ -1,53 +1,126 @@
 /*
  * Copyright (c) 2012 Sladeware LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-#include "types.h"
-#include "sio.h"
+
+/** Note, sio_put_char() and sio_get_char() is the only external dependency
+    for this file. */
+
+#include <bb/os/drivers/processors/propeller_p8x32/sio.h>
+#include <bb/os/drivers/processors/propeller_p8x32/pins.h>
 #include <stdarg.h>
 
-/* Special settings for catalina compiler */
-#ifdef __CATALINA__
-#define SIO_RX_PIN       31 /* SI_PIN   */
-#define SIO_TX_PIN       30 /* SO_PIN   */
-#define SIO_BAUDRATE 115200 /* SIO_BAUD */
+#define SIO_PRINTF_STRING_SUPPORT
+#define SIO_COGSAFE_PRINTING
+
+/**
+ * Receive a character to serial.
+ *
+ * @return
+ *
+ * 8-bit character.
+ */
+int8_t
+sio_get_char()
+{
+  int32_t rx_data;
+  uint32_t num_bitticks;
+  uint32_t bitticks_cnt;
+  int8_t i;
+
+  /* Initialization */
+  i = 8;
+  rx_data = 0;
+  num_bitticks = propeller_get_clockfreq() / SIO_BAUDRATE;
+
+  /* wait for start bit on rx pin */
+  while (GET_INPUT(SIO_RX_PIN));
+
+  /* ready to receive a byte */
+  bitticks_cnt = propeller_get_cnt() + (num_bitticks >> 1);
+  /* start receiving */
+  do
+    {
+      bitticks_cnt += num_bitticks; /* ready next bit period */
+      /* check if bit receive period done */
+      while (bitticks_cnt > propeller_get_cnt());
+      /* put the next bit */
+      rx_data >>= 1;
+      rx_data = rx_data &~ GET_MASK(SIO_RX_PIN);
+      rx_data |= GET_INPUT(SIO_RX_PIN) << SIO_RX_PIN;/* receive bit on rx pin */
+    } while (i--);
+
+  /* Enrolled version of the while-loop above. */
+#if 0
+#define RECEIVE_BIT                                                     \
+  do {                                                                  \
+    bitticks_cnt += num_bitticks;                                       \
+    while (bitticks_cnt > propeller_get_cnt());                         \
+    rx_data = rx_data &~ GET_MASK(SIO_RX_PIN);                          \
+    rx_data |= GET_INPUT(SIO_RX_PIN) << SIO_RX_PIN;                     \
+    rx_data >>= 1;                                                      \
+  } while (0)
+
+  RECEIVE_BIT;
+  RECEIVE_BIT;
+  RECEIVE_BIT;
+  RECEIVE_BIT;
+  RECEIVE_BIT;
+  RECEIVE_BIT;
+  RECEIVE_BIT;
+  RECEIVE_BIT;
 #endif
+
+  /* justify (32 - 9) and trim received byte */
+  rx_data = (rx_data >> 23) & 0xFFFF;
+
+  return (int8_t)rx_data;
+}
 
 /**
  * Writes a character to the serial. This function is safe to changing
  * of clock frequency.
- *
- * sio_put_char() is the only external dependency for this file.
- *
- * @see full_duplex_serial.h for more details.
  */
 void
-sio_put_char(char c)
+sio_put_char(int8_t c)
 {
   int frame;
   uint32_t bitticks_cnt;
   uint32_t num_bitticks;
 
   /* Initialize tx pin */
-  _dira(1 << SIO_TX_PIN, 1 << SIO_TX_PIN);
+  DIR_OUTPUT(SIO_TX_PIN);
 
   /* Ready character byte to transmit */
   frame = 0x400 | (c << 2) | 1; /* Frame format: 1 _ _ _ _ _ _ _ _ 0 1 */
 
-  num_bitticks = _clockfreq() / SIO_BAUDRATE;
-  bitticks_cnt = _cnt();
+  num_bitticks = propeller_get_clockfreq() / SIO_BAUDRATE;
+  bitticks_cnt = propeller_get_cnt();
 
   /* XXX: the following code can be enrolled in while-loop or
      for-statement.*/
 #define TRANSMIT_BIT                                                    \
   do {                                                                  \
-    _outa(1 << SIO_TX_PIN, (frame & 1) << SIO_TX_PIN);                  \
+    OUT_TO(SIO_TX_PIN, (frame & 1));                 \
     frame >>= 1; /* move to the next bit */                             \
     bitticks_cnt += num_bitticks; /* ready next bit period */           \
-    _waitcnt(bitticks_cnt); /* ensure that bit transmit period done */  \
+    while(bitticks_cnt > propeller_get_cnt()); /* ensure that bit transmit period done */  \
   } while (0)
 
   /* Transmit the frame bits one by one*/
   TRANSMIT_BIT;
+
   TRANSMIT_BIT;
   TRANSMIT_BIT;
   TRANSMIT_BIT;
@@ -56,18 +129,21 @@ sio_put_char(char c)
   TRANSMIT_BIT;
   TRANSMIT_BIT;
   TRANSMIT_BIT;
+
   TRANSMIT_BIT;
   TRANSMIT_BIT;
 }
 
+#if defined(SIO_PRINTF_STRING_SUPPORT)
 void
-sio_put_string(char* s)
+sio_put_string(int8_t* s)
 {
   while (*s)
     {
       sio_put_char(*s++);
     }
 }
+#endif /* SIO_PRINTF_STRING_SUPPORT */
 
 static const unsigned long dv[] = {
 //  4294967296      // 32 bit unsigned max
@@ -87,21 +163,23 @@ static const unsigned long dv[] = {
 static void
 xtoa(unsigned long x, const unsigned long *dp)
 {
-  char c;
+  int8_t c;
   unsigned long d;
 
   if (x)
     {
       while (x < *dp)
-        ++dp;
+        {
+          ++dp;
+        }
       do
         {
           d = *dp++;
           c = '0';
-          while(x >= d) ++c, x -= d;
+          while (x >= d) ++c, x -= d;
           sio_put_char(c);
         }
-      while(!(d & 1));
+      while (!(d & 1));
     }
   else
     {
@@ -109,37 +187,43 @@ xtoa(unsigned long x, const unsigned long *dp)
     }
 }
 
+#if defined(SIO_PRINTF_HEX_SUPPORT)
 void
 sio_put_hex(unsigned n)
 {
-  static const char hex[16] = {
+  static const int8_t hex[16] = {
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
     'A','B','C','D','E','F'
   };
   sio_put_char(hex[n & 15]);
 }
+#endif /* SIO_PRINTF_HEX_SUPPORT */
 
 static void
-_sio_multiarg_printf(const char* format, va_list a)
+_sio_multiarg_printf(const int8_t* format, va_list a)
 {
-  char c;
+  int8_t c;
   int i;
+#if defined(SIO_PRINTF_LONG_SUPPORT)
   long n;
+#endif
 
-  while (c = *format++)
+  while ((c = *format++))
     {
       if (c == '%')
         {
-          switch(c = *format++) {
-          case 's':                /* string */
-            sio_put_string(va_arg(a, char*));
+          switch ((c = *format++)) {
+#if defined(SIO_PRINTF_STRING_SUPPORT)
+          case 's': /* string */
+            sio_put_string(va_arg(a, int8_t*));
             break;
-          case 'c':                /* character */
-            sio_put_char(va_arg(a, char));
+#endif /* SIO_PRINTF_STRING_SUPPORT */
+          case 'c': /* character */
+            sio_put_char((int8_t)va_arg(a, int)); /* char? */
             break;
-          case 'd':                /* '%d' and '%i' are synonymous for output */
-          case 'i':                /* 16 bit integer */
-          case 'u':                /* 16 bit unsigned */
+          case 'd': /* '%d' and '%i' are synonymous for output */
+          case 'i': /* 16 bit integer */
+          case 'u': /* 16 bit unsigned */
             i = va_arg(a, int);
             if (c == 'i' && i < 0)
               {
@@ -148,6 +232,7 @@ _sio_multiarg_printf(const char* format, va_list a)
               }
             xtoa((unsigned)i, dv + 5);
             break;
+#if defined(SIO_PRINTF_LONG_SUPPORT)
           case 'l':                /* 32 bit long */
           case 'n':                /* 32 bit unsigned long */
             n = va_arg(a, long);
@@ -158,15 +243,21 @@ _sio_multiarg_printf(const char* format, va_list a)
               }
             xtoa((unsigned long)n, dv);
             break;
-          case 'x':                /* 16 bit hexadecimal */
+#endif /* SIO_PRINTF_LONG_SUPPORT */
+#if defined(SIO_PRINTF_HEX_SUPPORT)
+          case 'x': /* 16 bit hexadecimal */
             i = va_arg(a, int);
             sio_put_hex(i >> 12);
             sio_put_hex(i >> 8);
             sio_put_hex(i >> 4);
             sio_put_hex(i);
             break;
+#endif /* SIO_PRINTF_HEX_SUPPORT */
           case 0:
             return;
+          case '%':
+            sio_put_char('%');
+            break;
           default:
             goto bad_fmt;
           }
@@ -182,7 +273,7 @@ _sio_multiarg_printf(const char* format, va_list a)
  * See http://en.wikipedia.org/wiki/Printf#Format_placeholders
  */
 void
-sio_printf(const char* format, ...)
+sio_printf(const int8_t* format, ...)
 {
   va_list a;
   va_start(a, format);
@@ -190,35 +281,33 @@ sio_printf(const char* format, ...)
   va_end(a);
 }
 
-/*
- * Lock safe printing routines.
- */
+/*******************************
+ * Lock safe printing routines *
+ *******************************/
 
 /*
  * Note, the current implementation allows SIO_COGSAFE_PRINTING
  * to permanently reserve one lock (see locknew()).
  */
 #ifdef SIO_COGSAFE_PRINTING
-
 /** Hub address of global lock that all cogs will share. This address
  * has to be reserved and initialized (see locknew()) by multicog
  * bootloader.
  */
-static int* sio_cogsafe_lock_addr = 0;
+//static int* sio_cogsafe_lock_addr = 0;
 
 void
-sio_cogsafe_printf(const char* format, ...)
+sio_cogsafe_printf(const int8_t* format, ...)
 {
   va_list a;
   int lock_id;
-  lock_id = *multicog_lock_addr;
-  while (_lockset(lock_id)); /* wait until we lock the serial */
+  lock_id = 5;//*multicog_lock_addr;
+  while (propeller_lockset(lock_id)); /* wait until we lock the serial */
   va_start(a, format);
   _sio_multiarg_printf(format, a);
   va_end(a);
-  _lockclr(lock_id); /* unlock the serial */
+  propeller_lockclr(lock_id); /* unlock the serial */
 }
-
 #endif /* MULTICOG_SAFE_PRINTING */
 
 #ifdef SIO_LOCK_PRINTING
@@ -227,14 +316,14 @@ sio_cogsafe_printf(const char* format, ...)
  * used before.
  */
 void
-sio_lock_printf(int lock, const char* format, ...)
+sio_lock_printf(int lock, const int8_t* format, ...)
 {
   va_list a;
-  while (_lockset(lock)); /* wait until we lock the serial */
+  while (propeller_lockset(lock)); /* wait until we lock the serial */
   va_start(a, format);
   _sio_multiarg_printf(format, a);
   va_end(a);
-  _lockclr(lock); /* unlock the serial */
+  propeller_lockclr(lock); /* unlock the serial */
 }
 
 #endif /* SIO_LOCK_PRINTING */

@@ -1,6 +1,24 @@
 #!/usr/bin/env python
 
+class BoardConfig(object):
+    def get_eeprom_size(self):
+        return self.EEPROM_SIZE
 
+    def get_baudrate(self):
+        return self.BAUDRATE
+
+class DemoBoardConfig(BoardConfig):
+    BAUDRATE = 115200
+    EEPROM_SIZE = 32768
+
+class QuickStartBoardConfig(BoardConfig):
+    BAUDRATE = 115200
+    EEPROM_SIZE = 32768
+
+class CustomBoardConfig(BoardConfig):
+    EEPROM_SIZE = 32768
+    # Baud rate to use for all interprop communications
+    BAUDRATE = 115200
 
 class Config(object):
 
@@ -159,9 +177,7 @@ def dump_header(cfg, run_fn=None):
     fh = open(fname)
     data = ''.join(fh.readlines())
     print "Size        : %d (bytes)" % len(data)
-
     hdr = None
-
     if fname.endswith(".elf"):
         hdr = ElfHeader()
         memmove(addressof(hdr), data, sizeof(ElfHeader))
@@ -169,7 +185,6 @@ def dump_header(cfg, run_fn=None):
         hdr = SpinHeader()
         memmove(addressof(hdr), data, sizeof(SpinHeader))
     print str(hdr)
-
     fh.close()
     exit(0)
 

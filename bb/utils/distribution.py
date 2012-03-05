@@ -7,13 +7,14 @@ class DistributionMetadata:
     author, etc."""
 
     def __init__(self, name=None, version=None):
-        self.__name = name 
+        self.__name = name
         self.__version = version
+
+    def set_name(self, name):
+        self.__name = name
 
     def get_name(self):
         return self.__name or "UNKNOWN"
 
     def get_version(self):
         return self.__version or "0.0.0"
-
-        

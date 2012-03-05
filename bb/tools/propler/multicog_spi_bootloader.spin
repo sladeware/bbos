@@ -5,9 +5,9 @@ Bootloader.
 '_______________________________________________________________________________
 
 CON
-  ' Set these to suit the platform by modifying "Catalina_Common"
-  ' Also, that is now where the PIN definitions for the platform
-  ' are defined. Do not modify these in this file.
+' Set these to suit the platform by modifying "Catalina_Common"
+' Also, that is now where the PIN definitions for the platform
+' are defined. Do not modify these in this file.
   _clkmode  = Common#CLOCKMODE
   _xinfreq  = Common#XTALFREQ
   _stack    = Common#STACKSIZE
@@ -152,6 +152,7 @@ read_page
         cmp    r0, max_hub_load wz,wc         ' ... to hub RAM ...
  if_ae  mov    lrc_addr, page_addr            ' ... then return LRC of page buffer
         mov    lrc_size,max_page
+
         call   #calc_lrc_checksum
         call   #SIO_WriteSync
         mov    r0, lrc_rslt
@@ -162,7 +163,8 @@ restart
         mov     time, cnt
         add     time, rst_delay
         waitcnt time, #0
-
+        call #Spinner_Init
+        
         ' stop all cogs other than this one (up to LAST_COG), and restart
         ' this cog as a SPIN interpreter to execute the program now
         ' loaded in Hub RAM.
@@ -223,8 +225,7 @@ restart
         add r1, #4            ' ... and move to the next one
         mov cpu_no, r0
         add r0, #1            ' move to the next COG id
-   '     tjz r1, #:next_img   ' jump to next image if nothing to run for this cog
-        cmp img_addr, #$0 wz
+        cmp img_addr, #$0 wz  ' jump to next image if nothing to run for this cog
    if_z jmp #:next_img
 
         sub img_addr, #1        ' fix image address
@@ -232,17 +233,14 @@ restart
         mov r2, img_addr
         add r2, #10
         rdlong r3, r2
-        wrlong r3, #10          ' replace current dbase
-{{
-        mov r2, img_addr
-        add r2, #10
-        rdlong  r3,r2
+        wrlong r3, #10          ' replace current dbase and pcurr
+
         shr     r3,#16          ' Get dbase value
         sub     r3,#4
         wrlong  StackMark,r3    ' Place stack marker at dbase
         sub     r3,#4
         wrlong  StackMark,r3
-}}
+
         mov r2, img_addr
         add r2, #12             ' move to byte 12 and ...
         rdlong r3, r2           ' ... read pcurr and dcurr values
@@ -346,9 +344,9 @@ lrc_rslt      long      $0
 ' Spinner
 '''''''''''''''''''''''''''''''''''''''''
 Spinner_Init
-        mov r7, #$FF      ' set
-        shl r7, #16       ' all
-        mov dira, r7      ' to output
+        mov r7, #$FF      ' set all...
+        shl r7, #16       ' ...LEDs...
+        mov dira, r7      ' ...to output
         mov r7, #$00
         shl r7, #16
         mov outa, r7      ' as low
@@ -361,14 +359,12 @@ Spinner_Restart_ret
         ret
 
 Spinner_Iterate
-        mov r5, #1 '
-        mov r6, #16
-        add r6, r7
-        shl r5, #16 ' the first LED
-        shl r5, r7  ' move to the next LED
+        mov r6, #1 '
+        shl r6, #16 ' the first LED
+        shl r6, r7  ' move to the next LED
         add r7, #1
         and r7, #7 ' we have only eight LED's
-        or  outa, r5
+        mov outa, r6
 Spinner_Iterate_ret
         ret
 '
@@ -395,7 +391,6 @@ Spinner_Iterate_ret
 '       number indicates the packet is not for this CPU.
 
 SIO_ReadPage
-              'call #Spinner_Restart
               call      #SIO_ReadLong           ' read ...
               mov       SIO_Addr,SIO_Temp       ' ... address
 
@@ -415,7 +410,7 @@ SIO_ReadPage
               mov       SIO_Len,SIO_Cnt1        ' save size of data
 :SIO_RdLoop1
               call      #SIO_ReadByte           ' read ...
-              'call      #Spinner_Iterate
+              call      #Spinner_Iterate
               wrbyte    r0,Hub_Addr             ' ... and save ...
               add       Hub_Addr,#1             ' ... up to ...
 

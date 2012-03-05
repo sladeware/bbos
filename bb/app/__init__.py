@@ -76,8 +76,8 @@ class _UnbufferedOutputStream(_OutputStream):
 #_______________________________________________________________________________
 
 class Process(multiprocessing.Process):
-    """The process is a one to one mapping and describes a particular CPU core 
-    and the particular kernel on it. It represents the life of that kernel: 
+    """The process is a one to one mapping and describes a particular CPU core
+    and the particular kernel on it. It represents the life of that kernel:
     from its initialization to the point that it stops executing.
 
     The process is a subclass of multiprocessing.Process()."""

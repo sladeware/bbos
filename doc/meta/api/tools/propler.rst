@@ -15,3 +15,9 @@
 
 .. automodule:: bb.tools.propler.formats
    :members:
+
+:mod:`bb.tools.propler.bitwise_op` --- Bitwise operations
+=========================================================
+
+.. automodule:: bb.tools.propler.bitwise_op
+   :members:

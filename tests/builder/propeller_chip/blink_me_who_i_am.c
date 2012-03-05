@@ -3,6 +3,7 @@
  * correspond LED on Propeller Demo Board.
  */
 #include <propeller.h>
+#include <bb/os/drivers/processors/propeller_p8x32/sio.h>
 
 #define sleep_msec(msec) waitcnt((CLKFREQ / 1000) * msec + CNT);
 
@@ -22,6 +23,8 @@ main()
       DIRA |= 1 << (16 + cogid());
       OUTA |= 1 << (16 + cogid());
       sleep_msec(500); /* wait... */
+
+      sio_printf("I'm Cog #%d\n", cogid());
     }
   return 0;
 }

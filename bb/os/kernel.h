@@ -1,5 +1,17 @@
-/**
+/*
  * Copyright (c) 2012 Sladeware LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 #ifndef __BBOS_KERNEL_H
 #define __BBOS_KERNEL_H
@@ -58,7 +70,7 @@ PROTOTYPE(void bbos_thread_run, (bbos_thread_id_t tid));
 #define bbos_kernel_enable_thread(tid)               \
   do                                                 \
     {                                                \
-      printf("Enable thread '%d'\n", tid);           \
+      /* bbos_printf("Enable thread '%d'\n", tid);*/ \
       bbos_sched_enqueue(tid);                       \
     }                                                \
   while (0)
@@ -147,6 +159,10 @@ PROTOTYPE(void bbos_thread_run, (bbos_thread_id_t tid));
       bbos_thread_run(bbos_sched_identify_myself());                 \
     }                                                                \
   while (0)
+
+#ifdef BBOS_CONFIG_KERNEL_LOOP
+void bbos_kernel_loop();
+#endif
 
 PROTOTYPE(void bbos_kernel_panic, (const int8_t* fmt, ...));
 PROTOTYPE(void bbos_kernel_init, ());

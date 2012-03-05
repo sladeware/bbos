@@ -1,7 +1,7 @@
 /*
- * Main BB config
+ * Main Bionic Bunny config
  *
- * Copyright (c) 2011 Sladeware LLC
+ * Copyright (c) 2012 Sladeware LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@
 # error "Unknown compiler"
 #endif /* BB_CONFIG_COMPILER_H */
 
-/* Locate which platform we are using and define BB_CONFIG_PLATFORM_H
+/* Locate which host platform we are using and define BB_CONFIG_PLATFORM_H
    macro. If we do not have a platform config set, then try to find
    one. */
 #if !defined(BB_CONFIG_PLATFORM_H)
@@ -44,13 +44,19 @@
 # error "Unknown platform"
 #endif /* BB_CONFIG_PLATFORM_H */
 
-/* Application specific configurations */
+/* Application specific configurations go next. */
+
+/** Bionic Bunny OS specific configuration file. By default will be
+ * set as bbos_config.h. */
 #ifndef BB_CONFIG_OS_H
 # define BB_CONFIG_OS_H <bbos_config.h>
 #endif
 
-#include <bb/types.h> /* include BB specific data types */
+/* Include BB specific data types */
+#include <bb/types.h>
+#include <bb/config/stdlib/stdint.h> /* MUST be second */
 
-#include <bb/utils/tricks.h> /* include some magic tricks */
+/* Include some magic tricks */
+#include <bb/utils/tricks.h>
 
 #endif /* __BB_CONFIG_H */

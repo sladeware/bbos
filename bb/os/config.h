@@ -1,7 +1,7 @@
 /*
- * OS config
+ * Bionic Bunny OS config!
  *
- * Copyright (c) 2011 Sladeware LLC
+ * Copyright (c) 2011-2012 Sladeware LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,7 @@
 #ifndef __BBOS_CONFIG_H
 #define __BBOS_CONFIG_H
 
-#include <bb/config.h> /* MUST be first */
-#include <bb/config/stdlib/stdint.h> /* MUST be second */
+#include <bb/config.h> /* include main platform config, MUST be first */
 
 /* Include main OS configuration file defined by user. */
 #include BB_CONFIG_OS_H /* MUST be third */
@@ -38,7 +37,7 @@
   <bb/os/drivers/file>
 
 #ifndef BBOS_CONFIG_PROCESSOR
-#error Processor name has to be provided.
+#  error Processor name has to be provided.
 #endif
 
 /* This macro builds path for the proper processor header file. Allows

@@ -2,7 +2,7 @@
 
 """This module provides support for C-like compilers."""
 
-__copyright__ = "Copyright (c) 2011 Sladeware LLC"
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
 
 import os, re, sys, string
 import os.path

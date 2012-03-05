@@ -1,5 +1,5 @@
 /*
- * FCFS scheduler interface
+ * Static scheduling interface
  *
  * Copyright (c) 2012 Sladeware LLC
  *
@@ -15,18 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __BBOS_FCFS_SCHEDULER_H
-#define __BBOS_FCFS_SCHEDULER_H
+#ifndef __BBOS_STATIC_SCHEDULER_H
+#define __BBOS_STATIC_SCHEDULER_H
 
 /* Include generic scheduler interface */
 #include <bb/os/kernel/schedulers/scheduler.h>
 
-#define BBOS_SCHED_NAME "FCFS scheduler"
+#define BBOS_SCHED_NAME "Static scheduler"
 
-struct record
-{
-  bbos_thread_id_t next;
-  bbos_thread_id_t prev;
-};
+#define bbos_sched_init()
+#define bbos_sched_enqueue(tid)
+#define bbos_sched_dequeue(tid)
 
-#endif /* __BBOS_FCFS_SCHEDULER_H */
+#endif /* __BBOS_STATIC_SCHEDULER_H */

@@ -1,5 +1,17 @@
 /*
  * Copyright (c) 2012 Sladeware LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 #include <bb/os/kernel.h>
 
@@ -44,22 +56,22 @@ bbos_kernel_panic(const int8_t* fmt, ...)
  *
  * @note
  *
- * A requirement of BBOS is that you call bbos_kenrel_init() before you
- * invoke any of its other services.
+ * A requirement of BBOS is that you call bbos_kenrel_init() before
+ * you invoke any of its other services.
  */
 void
 bbos_kernel_init()
 {
   bbos_thread_id_t tid;
 
-  printf("Initialize kernel\n");
+  //bbos_printf("Initialize kernel\n");
   /* Initialize threads */
   for (tid = 0; tid < BBOS_NR_THREADS; tid++)
     {
       bbos_kernel_init_thread(tid, NULL, 0);
     }
   /* Initialize scheduler */
-  printf("Initialize scheduler '" BBOS_SCHED_NAME "'\n");
+  //bbos_printf("Initialize scheduler '" BBOS_SCHED_NAME "'\n");
   bbos_sched_init();
   /* ITC */
 #ifdef BBOS_KERNEL_ITC
@@ -68,7 +80,7 @@ bbos_kernel_init()
 }
 
 /* The main loop can be overload by static scheduler in BBOS_H file. */
-#ifndef bbos_kernel_loop
+#ifndef BBOS_CONFIG_KERNEL_LOOP
 static void
 bbos_kernel_loop()
 {
@@ -79,7 +91,7 @@ bbos_kernel_loop()
       bbos_kernel_switch_context();
     }
 }
-#endif
+#endif /* bbos_kernel_loop */
 
 void
 bbos_kernel_enable_all_threads()
@@ -102,7 +114,7 @@ bbos_idle_runner()
 void
 bbos_kernel_start()
 {
-  printf("Start kernel\n");
+  //bbos_printf("Start kernel\n");
   bbos_kernel_init_thread(BBOS_IDLE, bbos_idle_runner, 0);
   bbos_kernel_enable_thread(BBOS_IDLE);
   bbos_kernel_loop();
@@ -111,6 +123,6 @@ bbos_kernel_start()
 void
 bbos_kernel_stop()
 {
-  printf("Stop kernel\n");
+  //bbos_printf("Stop kernel\n");
   exit(0);
 }

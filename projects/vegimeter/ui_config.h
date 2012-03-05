@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#if 0
+
 #define BBOS_SKIP_BANNER_PRINTING
 #define BBOS_CONFIG_PROCESSOR propeller_p8x32
 #define BBOS_CONFIG_NR_THREADS 7
@@ -29,7 +29,7 @@
 #define BBOS_CONFIG_USE_STATIC_SCHED
 #define bbos_main()
 #define BBOS_CONFIG_KERNEL_LOOP  /* see button_driver.c */
-#endif
+
 /*
 #define BBOS_NR_PORTS 2
 #define BBOS_CONFIG_MESSAGING_POOL_SIZE (BBOS_CONFIG_NR_THREADS * BBOS_CONFIG_NR_THREADS)

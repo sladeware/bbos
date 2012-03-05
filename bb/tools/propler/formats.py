@@ -177,6 +177,8 @@ class ElfHeader(Structure):
                 ]
 
     def is_valid(self):
+        if not len(self.ident):
+            return False
         for i in range(len(self.ident)):
             if ord(self.ident[i]) != ident[i]:
                 return False
