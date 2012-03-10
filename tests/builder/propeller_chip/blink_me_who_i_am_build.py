@@ -25,6 +25,7 @@ for image_id in target_cogs:
     compiler.define_macro("BB_HAS_STDINT_H")
     compiler.add_include_dirs([".", "./../../../"])
     image.add_source("./../../../bb/os/drivers/processors/propeller_p8x32/sio.c")
+    image.add_source("./../../../bb/os/drivers/processors/propeller_p8x32/delay.c")
     compiler.define_macro("printf", "__simple_printf")
     compiler.set_memory_model("lmm")
     compiler.set_extra_preopts(["-Os", "-Wall",

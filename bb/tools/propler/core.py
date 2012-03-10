@@ -122,6 +122,8 @@ else:
 EXIT_CHARACTER = chr(3)
 
 class Terminal(object):
+    """Propler terminal for serial communications."""
+
     def __init__(self, port):
         self.sio = serial.Serial(port=port, baudrate=115200)
         self.sio.open()
@@ -145,7 +147,6 @@ class Terminal(object):
     def stop(self):
         self.is_alive = False
 
-
     def writer(self):
         try:
             while self.is_alive:
@@ -160,8 +161,11 @@ class Terminal(object):
                 if c == EXIT_CHARACTER:
                     self.stop()
                     break
-
+        except serial.SerialException, e:
+            self.stop()
+            raise
         except KeyboardInterrupt:
+            self.stop()
             raise
 
     def reader(self):
@@ -170,8 +174,12 @@ class Terminal(object):
                 c = self.sio.read()
                 sys.stdout.flush()
                 sys.stdout.write(c)
+        except serial.SerialException, e:
+            self.stop()
+            raise
         except KeyboardInterrupt:
-            pass
+            self.stop()
+            raise
 
 def terminal_mode(port="/dev/ttyUSB0"):
     print "Enter to terminal mode"
