@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
-"""The basic idea of code uploader for Parallax Propeller chip
-was taken from `uploader <http://forums.parallax.com/showthread.php?90707-Propeller-development-for-non-Windows-users>`_
+"""The basic idea of code uploader for Parallax Propeller chip was
+taken from
+`uploader <http://forums.parallax.com/showthread.php?90707-Propeller-development-for-non-Windows-users>`_
 proposed by Remy Blank."""
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
@@ -60,7 +61,8 @@ else:
     def character(b):
         return b
 
-# first choose a platform dependant way to read single characters from the console
+# First choose a platform dependant way to read single characters from
+# the console
 global console
 
 if os.name == 'nt':
@@ -70,10 +72,10 @@ if os.name == 'nt':
             pass
 
         def setup(self):
-            pass    # Do nothing for 'nt'
+            pass # Do nothing for 'nt'
 
         def cleanup(self):
-            pass    # Do nothing for 'nt'
+            pass # Do nothing for 'nt'
 
         def getkey(self):
             while True:
@@ -84,9 +86,7 @@ if os.name == 'nt':
                     if z == '\r':
                         return '\n'
                     return z
-
     console = Console()
-
 elif os.name == 'posix':
     import termios, sys, os
     class Console(object):
@@ -115,9 +115,9 @@ elif os.name == 'posix':
 
     console.setup()
     sys.exitfunc = cleanup_console      # terminal modes have to be restored on exit...
-
 else:
-    raise NotImplementedError("Sorry no implementation for your platform (%s) available." % sys.platform)
+    raise NotImplementedError("Sorry no implementation for your " \
+                                  "platform (%s) available." % sys.platform)
 
 EXIT_CHARACTER = chr(3)
 
@@ -125,7 +125,7 @@ class Terminal(object):
     """Propler terminal for serial communications."""
 
     def __init__(self, port):
-        self.sio = serial.Serial(port=port, baudrate=115200)
+        self.sio = serial.Serial(port=port, baudrate=115200, timeout=1)
         self.sio.open()
         self.is_alive = True
         self.receiver_thread = None
@@ -134,15 +134,18 @@ class Terminal(object):
     def start(self):
         # Start reader
         self.receiver_thread = threading.Thread(target=self.reader)
-        self.receiver_thread.setDaemon(True)
+        self.receiver_thread.daemon = True
         self.receiver_thread.start()
         # Start writer
         self.transmitter_thread = threading.Thread(target=self.writer)
-        self.transmitter_thread.setDaemon(True)
+        self.transmitter_thread.daemon = True
         self.transmitter_thread.start()
         # While alive
-        self.transmitter_thread.join()
-        self.receiver_thread.join()
+        try:
+            self.transmitter_thread.join()
+            self.receiver_thread.join()
+        except KeyboardInterrupt:
+            print "Interrupted"
 
     def stop(self):
         self.is_alive = False
@@ -153,7 +156,7 @@ class Terminal(object):
                 try:
                     b = console.getkey()
                 except KeyboardInterrupt:
-                    #b = serial.to_bytes([3])
+                    b = serial.to_bytes([3])
                     raise
                 c = character(b)
                 self.sio.write(b)
@@ -443,7 +446,7 @@ class MulticogSPIUploader(SPIUploaderInterface):
             for cogid in target_cogids:
                 path = cogid_to_filename_mapping[cogid]
                 logging.info("\t%s => COG #%d", path, cogid)
-                self.__total_upload_size += get_image_file_size(path) #os.path.getsize(path)
+                self.__total_upload_size += get_image_file_size(path)
             print "Total upload size: %d (bytes)" % self.__total_upload_size
         # Send synch signal in order to describe target
         # number of images to be sent
@@ -482,21 +485,19 @@ class MulticogSPIUploader(SPIUploaderInterface):
             self.stuff_and_send_byte(byte)
 
     def __upload_to_cog(self, i, cogid, filename):
-        bin_fh = open(filename)
-        data = ''.join(bin_fh.readlines()) # NEW!
-        ctx = ElfContext(filename)
-        if ctx.hdr.is_valid():
-            data = extract_image_from_file(filename)
+        # Extract image from the file
+        data = extract_image_from_file(filename)
         sz = len(data)
         if sz % 4 != 0:
             raise Exception("Invalid code size: must be a multiple of 4")
-        logging.info("Uploading %s (%d bytes) on Cog %d" \
+        logging.info("Uploading %s (%d bytes) on COG#%d" \
                          % (filename, sz, cogid))
-        print "Uploading %s (%d bytes) on COG#%d at 0x%08x" \
+        print "Uploading %s (%d bytes) on COG#%d to 0x%08x" \
             % (filename, sz, cogid, self.__offset)
         # The following blocks aims to edit binary image
         vars_size = 32 # 16
         stack_size = 128 # 128
+        # Compute an offset for working space for our program
         offset = self.__total_upload_size + i * (vars_size + stack_size)
 
         # Read and fix header
@@ -513,8 +514,8 @@ class MulticogSPIUploader(SPIUploaderInterface):
         logging.info(str(hdr_p.contents))
         data = list(data)
 
-        # The data may be changed till this point. Thus we have to
-        # double check it
+        # The data may be changed till this point, thus we have to
+        # double check its size
         assert(len(data) == sz)
         # Sorry, but checksum can be broken since we'are trying to
         # hack the header. Thus assert(is_valid_image(data)) is not
@@ -548,7 +549,6 @@ class MulticogSPIUploader(SPIUploaderInterface):
             return False
         finally:
             self.__offset += sz
-            bin_fh.close()
         return True
 
     def __send_page(self, cogid, seq_no, addr, buf, size):
@@ -608,12 +608,15 @@ class MulticogSPIUploader(SPIUploaderInterface):
             logging.error("LRC-checksum didn't match.")
             raise UploadingError()
 
-def multicog_spi_upload(cogid_to_filename_mapping, serial_port):
+def multicog_spi_upload(cogid_to_filename_mapping, serial_port, force=False):
     """Start multicog upload, instanciate uploader
-    :class:`MulticogSPIUploader` and connect to the
-    target device. `cogid_to_filename_mapping` represents
-    mapping of cog to filename that has to be uploaded on this cog. Return
-    uploading status.
+    :class:`MulticogSPIUploader` and connect to the target
+    device. `cogid_to_filename_mapping` represents mapping of cog to
+    filename that has to be uploaded on this cog. Return uploading
+    status.
+
+    If ``force`` is defined, uploader will try to continue upload
+    images until success.
 
     Note, the multicog bootloader has to be uploaded first before you
     will start transmitting images. See :func:`upload_bootloader`."""
@@ -632,39 +635,34 @@ def multicog_spi_upload(cogid_to_filename_mapping, serial_port):
     print "  %55s | %7d |" % (" ", total_size)
     print "                                                          +---------+"
 
-    output_file = "logs"
-    if output_file:
-        if os.path.exists(output_file):
-            os.remove(output_file)
-        hdlr = logging.FileHandler(output_file)
-        logging.getLogger().addHandler(hdlr)
-    logging.getLogger().setLevel(logging.DEBUG)
-
-    continuous = True
-    #while True:
-    uploader = MulticogSPIUploader(port=serial_port)
     try:
-        # Use standard connection in order to define whether we have
-        # propeller device to work with
-        uploader.connect()
-        # If so, we no longer need this information and mode. Reset
-        # propeller and wait for bootloader initialization.
-        uploader.reset()
-        time.sleep(2)
-        uploader.upload(cogid_to_filename_mapping)
-    except KeyboardInterrupt:
-        print
+        while True:
+            try:
+                uploader = MulticogSPIUploader(port=serial_port)
+                # Use standard connection in order to define whether
+                # we have propeller device to work with
+                uploader.connect()
+                # If so, we no longer need this information and
+                # mode. Reset propeller and wait for bootloader
+                # initialization.
+                uploader.reset()
+                time.sleep(2)
+                uploader.upload(cogid_to_filename_mapping)
+            except (KeyboardInterrupt, SystemExit):
+                print # prevent overlapping with uploader's printing
+                print "Process has been interrupted"
+            except Exception, e:
+                print
+                print e
+                if force:
+                    continue
+                else:
+                    break
+            break
+    except (KeyboardInterrupt, SystemExit):
+        print # prevent overlapping with uploader's printing
         print "Process has been interrupted"
-        #    break
-        #except Exception, e:
-        #    print
-        #    print e
-        #    if continuous:
-        #        continue
-        #    else:
-        #        break
-        uploader.disconnect()
-        #break
+    uploader.disconnect()
 
 class Commands:
     SHUTDOWN               = 0
@@ -765,8 +763,8 @@ def is_valid_image(data):
     return False
 
 def get_image_file_size(filename):
-    """Return image size contained in file `filename`. Supports SPIN and
-    ELF images."""
+    """Return image size contained in file `filename`. Supports SPIN
+    and ELF images."""
     ctx = ElfContext(filename)
     (start, image_size) = ctx.get_program_size()
     return image_size

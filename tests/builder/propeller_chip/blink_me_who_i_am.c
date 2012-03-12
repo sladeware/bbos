@@ -5,7 +5,6 @@
  * Copyright (c) 2012 Sladeware LLC
  */
 
-#include <propeller.h>
 #include <bb/os/drivers/processors/propeller_p8x32/config.h>
 #include <bb/os/drivers/processors/propeller_p8x32/pins.h>
 #include <bb/os/drivers/processors/propeller_p8x32/sio.h>
@@ -14,7 +13,8 @@
 int
 main()
 {
-  propeller_set_dira_bits(0x00FF0000);
+  bbos_delay_msec(100 * cogid());
+  //propeller_set_dira_bits(0x00FF0000);
 
   while (1)
     {
@@ -27,7 +27,8 @@ main()
       propeller_set_outa_bits(1 << (16 + cogid()));
       bbos_delay_msec(500); /* wait... */
 
-      sio_printf("I'm Cog #%d\n", cogid());
+      sio_printf("I am running on cog#%d\n", propeller_cogid());
+      bbos_delay_msec(500); /* wait... */
     }
 
   return 0;

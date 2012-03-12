@@ -1,4 +1,4 @@
-Copyright (c) 2011 Sladeware LLC
+Copyright (c) 2011-2012 Sladeware LLC
 
 Bionic Bunny Project version XXX
 
@@ -10,10 +10,15 @@ CONTENTS
 INSTALLING ON LINUX AND OTHER PLATFORMS
 =======================================
 
-Download and install Python 2.5 from http://www.python.org/download/
+Download and install Python 2.5 or higher from
+http://www.python.org/download/.
 
-Copy the latest version of BB platform to the place where it will live
-(e.g. /opt/bbproject/). Go to this directory and run install.py script
-from the root as follows:
+Download the latest version of BB platform from http://bionicbunny.org
+to the place where it will live (e.g. /opt/bionicbunny/). Go to this
+directory and run install.py script from the root as follows:
 
  $ sudo install.py
+
+or
+
+ $ sudo make install

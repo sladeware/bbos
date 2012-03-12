@@ -29,6 +29,7 @@
 #undef propeller_lockret
 
 #ifdef __CATALINA__
+#  define propeller_cogid() _cogid()
 #  define propeller_get_clockfreq() _clockfreq()
 #  define propeller_get_cnt() _cnt()
 #  define propeller_waitcnt(a) _waitcnt(a)
@@ -37,6 +38,7 @@
 #  define propeller_lockset(lock) _lockset(lock)
 #  define propeller_lockret(lock) _lockret(lock)
 #elif __GNUC__
+#  define propeller_cogid() cogid()
 #  define propeller_get_clockfreq() CLKFREQ
 #  define propeller_get_cnt() CNT
 #  define propeller_waitcnt(a) waitcnt(a)

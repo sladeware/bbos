@@ -9,7 +9,7 @@ from bb.builder.compilers import PropGCCCompiler
 from bb.tools import propler
 from bb.tools.propler import gen_ld_script
 
-target_cogs = [6, 8]
+target_cogs = [5, 7]
 
 cogid_to_addr_mapping = dict()
 cogid_to_filename_mapping = dict()
@@ -42,6 +42,6 @@ config = QuickStartBoardConfig()
 propler.upload_bootloader('/dev/ttyUSB0', config)
 time.sleep(5)
 propler.multicog_spi_upload(cogid_to_filename_mapping,
-                            '/dev/ttyUSB0')#uploader.serial.port)
+                            '/dev/ttyUSB0', force=True)#uploader.serial.port)
 
 propler.terminal_mode()

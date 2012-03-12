@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-/** Note, sio_put_char() and sio_get_char() is the only external dependency
-    for this file. */
+/**
+ * Note, sio_put_char() and sio_get_char() is the only external dependency
+ * for this file.
+ */
 
 #include <bb/os/drivers/processors/propeller_p8x32/sio.h>
 #include <bb/os/drivers/processors/propeller_p8x32/pins.h>
@@ -112,7 +114,7 @@ sio_put_char(int8_t c)
      for-statement.*/
 #define TRANSMIT_BIT                                                    \
   do {                                                                  \
-    OUT_TO(SIO_TX_PIN, (frame & 1));                 \
+    OUT_TO(SIO_TX_PIN, (frame & 1));                                    \
     frame >>= 1; /* move to the next bit */                             \
     bitticks_cnt += num_bitticks; /* ready next bit period */           \
     while(bitticks_cnt > propeller_get_cnt()); /* ensure that bit transmit period done */  \
@@ -120,7 +122,7 @@ sio_put_char(int8_t c)
 
   /* Transmit the frame bits one by one*/
   TRANSMIT_BIT;
-
+  /* Actual 8-bit data */
   TRANSMIT_BIT;
   TRANSMIT_BIT;
   TRANSMIT_BIT;
