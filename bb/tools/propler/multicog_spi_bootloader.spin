@@ -237,9 +237,9 @@ restart
 
         shr     r3,#16          ' Get dbase value
         sub     r3,#4
-        wrlong  StackMark,r3    ' Place stack marker at dbase
+        'wrlong  StackMark,r3    ' Place stack marker at dbase
         sub     r3,#4
-        wrlong  StackMark,r3
+        'wrlong  StackMark,r3
 
         mov r2, img_addr
         add r2, #12             ' move to byte 12 and ...

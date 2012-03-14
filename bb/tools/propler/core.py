@@ -142,8 +142,8 @@ class Terminal(object):
         self.transmitter_thread.start()
         # While alive
         try:
-            self.transmitter_thread.join()
             self.receiver_thread.join()
+            self.transmitter_thread.join()
         except KeyboardInterrupt:
             print "Interrupted"
 
@@ -183,6 +183,7 @@ class Terminal(object):
         except KeyboardInterrupt:
             self.stop()
             raise
+        print "EXIT"
 
 def terminal_mode(port="/dev/ttyUSB0"):
     print "Enter to terminal mode"
@@ -219,7 +220,6 @@ def dump_header(fname):
         memmove(addressof(hdr), data, sizeof(SpinHeader))
     print str(hdr)
     fh.close()
-    exit(0)
 
 def upload_bootloader(port="/dev/ttyUSB0", config=None):
     """Upload bootloader `MULTICOG_BOOTLOADER_BINARY_FILENAME` by using

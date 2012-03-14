@@ -13,16 +13,61 @@ from bb.builder.errors import *
 from bb.utils.host_os.path import mkpath
 from bb.utils.spawn import which, ExecutionError
 
+class Linker(object):
+    def __init__(self):
+        self.__output_dir = ""
+        self.__output_filename = ""
+        self.__opts = list()
+
+    def add_opt(self, opt):
+        self.__opts.append(opt)
+
+    def add_opts(self, opts):
+        for opt in opts:
+            self.add_opt(opt)
+
+    def get_opts(self):
+        return self.__opts
+
+    def set_output_filename(self, filename):
+        """Set output file name."""
+        self.__output_filename = filename
+
+    def get_output_filename(self):
+        """Return output file name."""
+        return self.__output_filename
+
+    def get_output_dir(self):
+        """Return output directory."""
+        return self.__output_dir
+
+    def set_output_dir(self, output_dir):
+        """Set output directory."""
+        if not output_dir or type(output_dir) is not types.StringType:
+            raise types.TypeError("'output_dir' must be a string or None")
+        else:
+            self.__output_dir = output_dir
+
+    def link(self, objects, output_filename, *list_args, **dict_args):
+        """Start linking process."""
+        # Adopt output file name to output directory
+        if self.get_output_dir() is not None:
+            self.set_output_filename(os.path.join(self.get_output_dir(), \
+                                                      output_filename))
+        print "Linking executable:", \
+            os.path.relpath(output_filename, self.output_dir)
+        self._link(objects, *list_args, **dict_args)
+
 class CCompiler(Compiler):
     """Abstract base class to define the interface of the standard C
     compiler that must be implemented by real compiler class.
 
     The basic idea behind a compiler abstraction class is that each
     instance can be used for all the compiler/link steps in building a
-    single project. Thus, we have an attributes common to all of
-    those compile and link steps -- include directories, macros to
-    define, libraries to link against, etc. -- are attributes to the
-    compiler instance.
+    single project. Thus, we have an attributes common to all of those
+    compile and link steps -- include directories, macros to define,
+    libraries to link against, etc. -- are attributes to the compiler
+    instance.
 
     Flags are `verbose` (show verbose output), `dry_run`
     (don't actually execute the steps) and `force` (rebuild everything,
@@ -35,7 +80,11 @@ class CCompiler(Compiler):
     extension, and one with ``.cpp``, it is still linked as
     ``c++``. The order can be changed by using
     :func:`CCompiler.set_language_precedence_order`. By default it
-    equals to :const:`CCompiler.DEFAULT_LANGUAGE_PRECEDENCE_ORDER`."""
+    equals to :const:`CCompiler.DEFAULT_LANGUAGE_PRECEDENCE_ORDER`.
+
+    Learn more about GCC options:
+    http://gcc.gnu.org/onlinedocs/gcc/Option-Summary.html
+    """
 
     DEFAULT_LANGUAGE_PRECEDENCE_ORDER = ["c++", "objc", "c"]
     """Default language precedence order: ``c++``, ``objc``, ``c``."""
@@ -93,6 +142,35 @@ class CCompiler(Compiler):
             self.DEFAULT_LANGUAGE_PRECEDENCE_ORDER)
         self.__extra_preopts = list()
         self.__extra_postopts = list()
+        self.__linker = None
+
+    # ------------------------- Linker ---------------------------
+
+    def get_linker(self):
+        """Returns linker object."""
+        return self.__linker
+
+    def set_linker(self, linker):
+        """Set and return linker object that will be used by compiler
+        in linking process."""
+        self.__linker = linker
+        return self.__linker
+
+    def add_linker_opt(self, opt):
+        """Add linker option as ``-Wl,'option'''."""
+        self.__linker_opts.append("-Wl%s" % opt)
+
+    def get_linker_opts(self):
+        return self.__linker_opts
+
+    def remove_linker_opt(self, opt):
+        raise NotImplemented()
+
+    def set_linker_opts(self, opts):
+        """Set linker options. See add_linker_opt()."""
+        self.__linker_opts = opts
+
+    # -----------------------
 
     def set_object_extension(self, ext):
         self.__object_extension = ext
@@ -409,7 +487,9 @@ class CCompiler(Compiler):
             except KeyError:
                 continue
             print "Compiling:", src
-            self._compile(obj, src, ext, cc_options, extra_postopts, pp_options)
+            # Note: we pass a copy of sources, options, etc. since we
+            # need to privent their modification
+            self._compile(obj, src, ext, list(cc_options), extra_postopts, pp_options)
         return objects
 
     def _compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts):

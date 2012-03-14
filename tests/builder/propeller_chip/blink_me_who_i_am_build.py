@@ -9,27 +9,36 @@ from bb.builder.compilers import PropGCCCompiler
 from bb.tools import propler
 from bb.tools.propler import gen_ld_script
 
-target_cogs = [5, 7]
+target_cogs = [5, 6]
 
 cogid_to_addr_mapping = dict()
 cogid_to_filename_mapping = dict()
 start_addr = 0
 
+propler.dump_header("blink_me_who_i_am5")
+propler.dump_header("blink_me_who_i_am6")
+exit(0)
+
 for image_id in target_cogs:
     script_fname = "script%d.ld" % image_id
     gen_ld_script.generate(script_fname,
-                           dict(HUB_START_ADDRESS=start_addr))
+                           dict(HUB_START_ADDRESS=start_addr), \
+                               HUB_LEN=(32*1024 + start_addr))
     image = CProject("blink_me_who_i_am%d" % image_id)
+    # Setup compiler
     compiler = image.set_compiler(PropGCCCompiler())
     compiler.define_macro("__linux__")
     compiler.define_macro("BB_HAS_STDINT_H")
     compiler.add_include_dirs([".", "./../../../"])
+    #compiler.define_macro("printf", "__simple_printf")
+    compiler.set_memory_model("lmm")
+    compiler.set_extra_preopts(["-Os", "-Wall"])
+    # Setup linker
+    linker = compiler.get_linker()
+    linker.add_opts(["-Wl,-T" + script_fname])
+
     image.add_source("./../../../bb/os/drivers/processors/propeller_p8x32/sio.c")
     image.add_source("./../../../bb/os/drivers/processors/propeller_p8x32/delay.c")
-    compiler.define_macro("printf", "__simple_printf")
-    compiler.set_memory_model("lmm")
-    compiler.set_extra_preopts(["-Os", "-Wall",
-                                "-Wl,-T" + script_fname])
     image.add_source("blink_me_who_i_am.c")
     image.build(verbose=True)
     cogid_to_addr_mapping[image_id] = start_addr
@@ -44,4 +53,4 @@ time.sleep(5)
 propler.multicog_spi_upload(cogid_to_filename_mapping,
                             '/dev/ttyUSB0', force=True)#uploader.serial.port)
 
-propler.terminal_mode()
+#propler.terminal_mode()

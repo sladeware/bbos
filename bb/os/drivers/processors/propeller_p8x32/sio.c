@@ -117,7 +117,7 @@ sio_put_char(int8_t c)
     OUT_TO(SIO_TX_PIN, (frame & 1));                                    \
     frame >>= 1; /* move to the next bit */                             \
     bitticks_cnt += num_bitticks; /* ready next bit period */           \
-    while(bitticks_cnt > propeller_get_cnt()); /* ensure that bit transmit period done */  \
+    while (bitticks_cnt > propeller_get_cnt()); /* ensure that bit transmit period done */ \
   } while (0)
 
   /* Transmit the frame bits one by one*/
@@ -296,19 +296,18 @@ sio_printf(const int8_t* format, ...)
  * has to be reserved and initialized (see locknew()) by multicog
  * bootloader.
  */
-//static int* sio_cogsafe_lock_addr = 0;
+#define SIO_COGSAFE_LOCK_ADDR (int*)0x61A8
 
 void
 sio_cogsafe_printf(const int8_t* format, ...)
 {
   va_list a;
-  int lock_id;
-  lock_id = 5;//*multicog_lock_addr;
-  while (propeller_lockset(lock_id)); /* wait until we lock the serial */
+  while (*SIO_COGSAFE_LOCK_ADDR); /* wait until we lock the serial */
+  *SIO_COGSAFE_LOCK_ADDR = 1;
   va_start(a, format);
   _sio_multiarg_printf(format, a);
   va_end(a);
-  propeller_lockclr(lock_id); /* unlock the serial */
+  *SIO_COGSAFE_LOCK_ADDR = 0; /* unlock the serial */
 }
 #endif /* MULTICOG_SAFE_PRINTING */
 

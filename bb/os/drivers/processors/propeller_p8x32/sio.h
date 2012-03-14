@@ -64,7 +64,7 @@ void sio_printf(const int8_t* format, ...);
 
 /* By default SIO_LOCK_PRINTING is enabled */
 //#define SIO_LOCK_PRINTING
-//#define SIO_COGSAFE_PRINTING /* <! */
+#define SIO_COGSAFE_PRINTING /* <! */
 
 #ifdef SIO_COGSAFE_PRINTING
 /*

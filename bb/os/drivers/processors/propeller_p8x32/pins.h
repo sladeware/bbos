@@ -54,7 +54,7 @@
 #  define propeller_set_dira_bits(bits) DIRA |= (bits)
 #  define propeller_clr_dira_bits(bits) DIRA &= ~(bits)
 /* Update bits of OUTA register */
-#  define propeller_set_outa_bit(bits, v) OUTA = (OUTA &~ (bits)) | (v)
+#  define propeller_set_outa_bit(bit, v) OUTA = (OUTA &~ (bit)) | (v)
 #  define propeller_set_outa_bits(bits) OUTA |= (bits)
 #  define propeller_clr_outa_bits(bits) OUTA &= ~(bits)
 #  define propeller_get_ina_bits() INA

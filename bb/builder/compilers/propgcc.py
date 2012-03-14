@@ -11,11 +11,11 @@ class PropGCCCompiler(UnixCCompiler):
     Microcontroller. Project page: http://code.google.com/p/propgcc/.
 
     Please use compiler specific method instead of direct defining
-    compiler options (such as memory model) in order to escape from unexpected
-    errors. For example to set `lmm` memory model use :func:`set_memory_model`
-    instead of defining `-mlmm` option. Otherwise you may have conflicts
-    between symbols in the main C program and symbols in the local cog C
-    program.
+    compiler options (such as memory model) in order to escape from
+    unexpected errors. For example to set `lmm` memory model use
+    :func:`set_memory_model` instead of defining `-mlmm`
+    option. Otherwise you may have conflicts between symbols in the
+    main C program and symbols in the local cog C program.
 
     Please visit `Common GCC Options <http://code.google.com/p/propgcc/wiki/PropGccCompileOptions>`_
     to learn more about Propeller specific options."""
@@ -91,6 +91,7 @@ class PropGCCCompiler(UnixCCompiler):
             extra_preargs = []
         if self.get_memory_model():
             extra_preargs.append("-m%s" % self.get_memory_model())
+        extra_preargs.extend(self.get_linker().get_opts()) # remove this!
         UnixCCompiler._link(self, objects, output_dir, libraries,
                             library_dirs, debug, extra_preargs,
                             extra_postargs, target_lang)

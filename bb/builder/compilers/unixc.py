@@ -5,10 +5,13 @@ __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 import os
 from types import *
 
-from bb.builder.compilers.c import CCompiler
+from bb.builder.compilers.c import CCompiler, Linker
 from bb.builder.errors import *
 from bb.utils.spawn import spawn, which, ExecutionError
 from bb.utils.host_os.path import mkpath
+
+class LD(Linker):
+    pass
 
 class UnixCCompiler(CCompiler):
     """This class is subclass of
@@ -58,6 +61,7 @@ class UnixCCompiler(CCompiler):
 
     def __init__(self, verbose=None, dry_run=False):
         CCompiler.__init__(self, verbose, dry_run)
+        self.set_linker(LD())
 
     def _compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts):
         compiler = self.get_executable('compiler')

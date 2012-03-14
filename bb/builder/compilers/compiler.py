@@ -7,18 +7,11 @@ import types
 from bb.builder.errors import *
 from bb.utils.spawn import which, ExecutionError
 
-class Compiler(object):
-    """The basic compiler class."""
-
+class ProgramHandler(object):
     DEFAULT_EXECUTABLES = dict()
     """Default executables."""
 
-    def __init__(self, verbose=None, dry_run=False):
-        self.verbose = verbose
-        self.dry_run = dry_run
-        # A common output directory for objects, libraries, etc.
-        self.output_dir = ""
-        self.output_filename = ""
+    def __init__(self):
         self.__executables = dict()
         self.set_executables(self.DEFAULT_EXECUTABLES)
 
@@ -76,6 +69,18 @@ class Compiler(object):
                 continue
             if not which(cmd[0]):
                 raise ExecutionError("executable '%s' can not be found" % cmd[0])
+
+
+class Compiler(ProgramHandler):
+    """The basic compiler class."""
+
+    def __init__(self, verbose=None, dry_run=False):
+        self.verbose = verbose
+        self.dry_run = dry_run
+        # A common output directory for objects, libraries, etc.
+        self.output_dir = ""
+        self.output_filename = ""
+        ProgramHandler.__init__(self)
 
     def get_language(self, *arg_list, **arg_dict):
         raise NotImplemented
