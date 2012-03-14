@@ -22,8 +22,8 @@ exit(0)
 for image_id in target_cogs:
     script_fname = "script%d.ld" % image_id
     gen_ld_script.generate(script_fname,
-                           dict(HUB_START_ADDRESS=start_addr), \
-                               HUB_LEN=(32*1024 + start_addr))
+                           dict(HUB_START_ADDRESS=start_addr,
+                                HUB_LEN=(32*1024 + start_addr)))
     image = CProject("blink_me_who_i_am%d" % image_id)
     # Setup compiler
     compiler = image.set_compiler(PropGCCCompiler())

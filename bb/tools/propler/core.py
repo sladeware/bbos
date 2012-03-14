@@ -202,11 +202,12 @@ class UploadingError(Exception):
     pass
 
 def dump_header(fname):
+    """Dump header."""
     # http://forums.parallax.com/showthread.php?117526-eeprom-file-format
-    print "Binary file : %s" % fname
+    print "File : %s" % fname
     fh = open(fname)
     data = ''.join(fh.readlines())
-    print "Size        : %d (bytes)" % len(data)
+    print "Size : %d (bytes)" % len(data)
     hdr = None
     ctx = ElfContext(fname)
     if ctx.hdr.is_valid():
@@ -376,21 +377,24 @@ def extract_image_from_file(filename):
     """Extract image from file `filename`. Developed for extracting
     image from ELF binary."""
     ctx = ElfContext(filename)
+    # Verify ELF context
     if not ctx.hdr.is_valid():
         fh = open(filename, "rb")
         img = fh.read()
         fh.close()
         return img
     (start, image_size) = ctx.get_program_size()
+    
     image_buf = [chr(0)] * image_size
     # load each program section
     for i in range(ctx.hdr.phnum):
         program = ctx.load_program_table_entry(i)
+        #print program
         if not program:
             print "Can not load program table entry %d" % i
         buf = ctx.load_program_segment(program)
         if not buf:
-            print "Can not load program section %d" % i
+            print "Cannot load program section %d" % i
         for j in range(program.filesz):
             image_buf[program.paddr - start + j] = buf[j]
     img = ''.join(image_buf)

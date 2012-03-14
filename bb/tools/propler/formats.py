@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+
 import types
 from ctypes import *
 
@@ -46,6 +48,8 @@ class SpinHeader(Structure):
                self.pbase, self.vbase, self.dbase, self.pcurr, self.dcurr)
 
 class ElfContext(object):
+    """ELF context."""
+
     def __init__(self, filename):
         self.fname = filename
         self.fh = open(filename)
