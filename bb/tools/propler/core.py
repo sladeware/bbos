@@ -1,10 +1,5 @@
 #!/usr/bin/env python
 
-"""The basic idea of code uploader for Parallax Propeller chip was
-taken from
-`uploader <http://forums.parallax.com/showthread.php?90707-Propeller-development-for-non-Windows-users>`_
-proposed by Remy Blank."""
-
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 
 import os
@@ -20,23 +15,21 @@ from ctypes import *
 
 from bb.utils.spawn import spawn
 from bb.tools.propler.formats import SpinHeader, ElfHeader, ElfContext, ElfSectionHeader
-from bb.tools.propler.propeller_chip import PropellerP8X32
+from bb.tools.propler.chips import PropellerP8X32
 from bb.tools.propler.bitwise_op import *
 from bb.tools.propler.config import CustomBoardConfig, QuickStartBoardConfig, DemoBoardConfig
 
 def dump_header(fname, data=None):
     """Dump header."""
     # http://forums.parallax.com/showthread.php?117526-eeprom-file-format
-<<<<<<< .mine
     if fname:
         print "Binary file : %s" % fname
         fh = open(fname)
         data = ''.join(fh.readlines())
-=======
     print "File : %s" % fname
     fh = open(fname)
     data = ''.join(fh.readlines())
->>>>>>> .r631
+
     print "Size : %d (bytes)" % len(data)
     hdr = None
     if fname:
@@ -63,16 +56,9 @@ def extract_image_from_file(filename):
         img = fh.read()
         fh.close()
         return img
-
     (start, image_size) = ctx.get_program_size()
-<<<<<<< .mine
     start = 0 # TODO: fix this
-
-=======
-    
->>>>>>> .r631
     image_buf = [chr(0)] * image_size
-
     # Experemental!
     pos = 0
     for i in range(ctx.hdr.shnum):
