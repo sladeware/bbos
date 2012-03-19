@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 
+"""The basic idea of code uploader for Parallax Propeller chip was
+taken from
+`uploader <http://forums.parallax.com/showthread.php?90707-Propeller-development-for-non-Windows-users>`_
+proposed by Remy Blank."""
+
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 
 import os
@@ -12,18 +17,17 @@ import operator
 import logging
 import threading
 from ctypes import *
-
-from bb.utils.spawn import spawn
-from bb.tools.propler.formats import SpinHeader, ElfHeader, ElfContext, ElfSectionHeader
-from bb.tools.propler.propeller_chip import PropellerP8X32
-from bb.tools.propler.bitwise_op import *
-from bb.tools.propler.config import CustomBoardConfig, QuickStartBoardConfig, DemoBoardConfig
-
 try:
     import serial
 except ImportError:
     print >>sys.stderr, "Please install pyserial."
     exit(0)
+
+from bb.utils.spawn import spawn
+from bb.tools.propler.formats import *
+from bb.tools.propler.chips import *
+from bb.tools.propler.bitwise_op import *
+from bb.tools.propler.boards import *
 
 DEFAULT_SERIAL_PORTS = {
     "posix": "/dev/ttyUSB0",

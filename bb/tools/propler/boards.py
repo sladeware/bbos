@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__all__ = ["CustomBoardConfig", "QuickStartBoardConfig", "DemoBoardConfig"]
 
 class BoardConfig(object):
     """Base board config."""

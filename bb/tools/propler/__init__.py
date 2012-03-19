@@ -24,7 +24,7 @@ __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 
 import sys
 
-from bb.tools.propler.core import *
+from bb.tools.propler.image import *
 from bb.tools.propler.disasm import *
 from bb.tools.propler.terminal import *
 from bb.tools.propler.uploader import *
