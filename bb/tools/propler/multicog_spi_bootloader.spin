@@ -1,6 +1,8 @@
-{{
-Bootloader.
-}}
+'
+' Bootloader.
+'
+' Copyright (c) 2012 Sladeware LLC
+'
 
 '_______________________________________________________________________________
 
@@ -90,8 +92,6 @@ clear_img_mapping                             ' clear
         add img_addr, #1
         djnz r0, #clear_img_mapping
 
-        call #Spinner_Init
-
 wait_loop
         call   #SIO_ReadSync                 ' wait ...
         cmps   r0, #0 wz, wc                 ' ... for ...
@@ -163,7 +163,6 @@ restart
         mov     time, cnt
         add     time, rst_delay
         waitcnt time, #0
-        call #Spinner_Init
         
         ' stop all cogs other than this one (up to LAST_COG), and restart
         ' this cog as a SPIN interpreter to execute the program now
@@ -224,23 +223,27 @@ restart
         rdlong img_addr, r1   ' read image addr ...
         add r1, #4            ' ... and move to the next one
         mov cpu_no, r0
+
         add r0, #1            ' move to the next COG id
         cmp img_addr, #$0 wz  ' jump to next image if nothing to run for this cog
    if_z jmp #:next_img
+
+ '       cmp cpu_no, #4 wz
+ '  if_z jmp #:next_img
 
         sub img_addr, #1        ' fix image address
 
         mov r2, img_addr
         add r2, #10
         rdlong r3, r2
-        wrlong r3, #10          ' replace current dbase and pcurr
+'        wrlong r3, #10          ' replace current dbase and pcurr
 
         shr     r3,#16          ' Get dbase value
         sub     r3,#4
         'wrlong  StackMark,r3    ' Place stack marker at dbase
         sub     r3,#4
         'wrlong  StackMark,r3
-
+{{
         mov r2, img_addr
         add r2, #12             ' move to byte 12 and ...
         rdlong r3, r2           ' ... read pcurr and dcurr values
@@ -255,6 +258,18 @@ restart
         mov r5, cpu_no          ' ... on COG initialization ...
         or r5, r6               ' ... command
         coginit r5              ' initialize COG
+}}
+
+        mov r2, img_addr
+        add r2, #4
+        shl r2, #16
+
+        mov r6, interpreter     ' start working ...
+        'mov r5, cpu_no          ' ... on COG initialization ...
+        mov r5, #8 ' new
+        or r6, r2
+        or r6, r5               ' ... command
+        coginit r6              ' initialize COG
 
         mov     time, cnt       ' small ...
         add     time, rst_delay ' ... delay to allow COG
@@ -264,8 +279,8 @@ restart
 
 :finish
         nop
-
-
+        'cogid   r6
+        'cogstop r6        
 
 SavedFreq     long      $0
 SavedMode     long      $0
@@ -276,6 +291,7 @@ XtalTime      long      20 * 20000 / 4 / 1      ' 20ms (@20MHz, 1 inst/loop)
 
 time          long 0
 rst_delay     long 8000000
+next_delay    long 80000000
 
 '-------------------------------- Utility routines -----------------------------
 
@@ -340,33 +356,6 @@ lrc_addr      long      $0
 lrc_size      long      $0
 lrc_rslt      long      $0
 
-'''''''''''''''''''''''''''''''''''''''''
-' Spinner
-'''''''''''''''''''''''''''''''''''''''''
-Spinner_Init
-        mov r7, #$FF      ' set all...
-        shl r7, #16       ' ...LEDs...
-        mov dira, r7      ' ...to output
-        mov r7, #$00
-        shl r7, #16
-        mov outa, r7      ' as low
-Spinner_Init_ret
-        ret
-
-Spinner_Restart
-        mov r7, #0
-Spinner_Restart_ret
-        ret
-
-Spinner_Iterate
-        mov r6, #1 '
-        shl r6, #16 ' the first LED
-        shl r6, r7  ' move to the next LED
-        add r7, #1
-        and r7, #7 ' we have only eight LED's
-        mov outa, r6
-Spinner_Iterate_ret
-        ret
 '
 '------------------------------ SIO Routines -----------------------------------
 '
@@ -410,7 +399,6 @@ SIO_ReadPage
               mov       SIO_Len,SIO_Cnt1        ' save size of data
 :SIO_RdLoop1
               call      #SIO_ReadByte           ' read ...
-              call      #Spinner_Iterate
               wrbyte    r0,Hub_Addr             ' ... and save ...
               add       Hub_Addr,#1             ' ... up to ...
 
@@ -705,7 +693,8 @@ end_addr      long      $0
 sect_count    long      $0
 
 ' see http://forums.parallax.com/forums/default.aspx?f=25&m=363100
-interpreter   long    ($0004 << 16) | ($F004 << 2) | %0000
+'interpreter   long    ($0004 << 16) | ($F004 << 2) | %0000
+interpreter   long    ($0000 << 16) | ($F004 << 2) | %0000
 
 '
 ' temporary storage used in mul & div calculations

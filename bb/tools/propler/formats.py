@@ -47,6 +47,9 @@ class SpinHeader(Structure):
                self.checksum,
                self.pbase, self.vbase, self.dbase, self.pcurr, self.dcurr)
 
+# Just to be sure
+assert sizeof(SpinHeader) == 16, "Size of spin header must be 16 bytes!"
+
 class ElfContext(object):
     """ELF context."""
 
@@ -61,16 +64,32 @@ class ElfContext(object):
     def get_program_size(self):
         start = 0xFFFFFFFF
         end = 0
+        ## The following implemetation reflects implementation from
+        ## propeller-load tool.
         for i in range(self.hdr.phnum):
             program = self.load_program_table_entry(i)
             if program.paddr < start:
                 start = program.paddr
             if (program.paddr + program.filesz) > end:
                 end = program.paddr + program.filesz
+
+        #for i in range(self.hdr.shnum):
+        #    section = self.load_section_table_entry(i)
+        #    if section.addr < start:
+        #        start = section.addr
+        #    if (section.addr + section.size) > end:
+        #        end = section.addr + section.size
+        
         return (start, end - start)
 
-    def load_program_segment(self, program):
-        return self.data[program.offset:program.offset + program.filesz]
+    def load_section_table_entry(self, i):
+        offset = self.hdr.shoff + (i * self.hdr.shentsize)
+        hdr = ElfSectionHeader()
+        memmove(addressof(hdr), self.data[offset:offset + sizeof(ElfSectionHeader)], sizeof(ElfSectionHeader))
+        return hdr
+
+    def load_section_segment(self, section):
+        return self.data[section.offset:section.offset + section.size]
 
     def load_program_table_entry(self, i):
         o = self.hdr.phoff + (i * self.hdr.phentsize)
@@ -78,18 +97,55 @@ class ElfContext(object):
         memmove(addressof(hdr), self.data[o:o + sizeof(ElfProgramHeader)], sizeof(ElfProgramHeader))
         return hdr
 
+    def load_program_segment(self, program):
+        return self.data[program.offset:program.offset + program.filesz]
+
+class ElfSectionHeader(Structure):
+    SHT_NULL =0
+    SHT_PROGBITS =1
+    SHT_SYMTAB =2
+    SHT_STRTAB =3
+    SHT_RELA =4
+    SHT_HASH =5
+    SHT_DYNAMIC =6
+    SHT_NOTE =7
+    SHT_NOBITS =8
+    SHT_REL =9
+    SHT_SHLIB =10
+    SHT_DYNSYM =11
+    SHT_LOPROC =0x70000000
+    SHT_HIPROC =0x7fffffff
+    SHT_LOUSER =0x80000000
+    SHT_HIUSER =0xffffffff
+
+    _fields_ = [("name"      , c_long),
+                ("type"      , c_long),
+                ("flags"     , c_long),
+                ("addr"      , c_long),
+                ("offset"    , c_long),
+                ("size"      , c_long),
+                ("link"      , c_long),
+                ("info"      , c_long),
+                ("addralign" , c_long),
+                ("entsize"   , c_long)]
+
 class ElfProgramHeader(Structure):
-    """Program header."""
+    """An executable or shared object file's program header table is
+    an array of structures, each describing a segment or other
+    information the system needs to prepare the program for
+    execution. Program headers are meaningful only for executable and
+    shared object files. A file specifies its own program header size
+    with the ELF header's e_phentsize and e_phnum members."""
     FLAGS = [[0x1, "R"], [0x2, "W"], [0x4, "E"]]
 
-    _fields_ = [("type", c_long),
-                ("offset", c_long),
-                ("vaddr", c_long),
-                ("paddr", c_long),
-                ("filesz", c_long),
-                ("memsz", c_long),
-                ("flags", c_long),
-                ("align", c_long)]
+    _fields_ = [("type"   , c_long),
+                ("offset" , c_long),
+                ("vaddr"  , c_long),
+                ("paddr"  , c_long),
+                ("filesz" , c_long),
+                ("memsz"  , c_long),
+                ("flags"  , c_long),
+                ("align"  , c_long)]
 
     def __str__(self):
         flags_string = ""
@@ -164,20 +220,20 @@ class ElfHeader(Structure):
         0x5072: "Parallax Propeller",
         }
 
-    _fields_ = [("ident", (c_char * 16)), # Magic number and other info
-                ("type", c_ushort), # Object file type
-                ("machine", c_ushort),
-                ("version", c_uint),
-                ("entry", c_uint),
-                ("phoff", c_uint),
-                ("shoff", c_uint),
-                ("flags", c_uint),
-                ("ehsize", c_ushort),
+    _fields_ = [("ident"    , (c_char * 16)), # Magic number and other info
+                ("type"     , c_ushort), # Object file type
+                ("machine"  , c_ushort),
+                ("version"  , c_uint),
+                ("entry"    , c_uint),
+                ("phoff"    , c_uint),
+                ("shoff"    , c_uint),
+                ("flags"    , c_uint),
+                ("ehsize"   , c_ushort),
                 ("phentsize", c_ushort),
-                ("phnum", c_ushort),
+                ("phnum"    , c_ushort),
                 ("shentsize", c_ushort),
-                ("shnum", c_ushort),
-                ("shstrndx", c_ushort),
+                ("shnum"    , c_ushort),
+                ("shstrndx" , c_ushort),
                 ]
 
     def is_valid(self):
@@ -196,17 +252,20 @@ class ElfHeader(Structure):
             " version                   : 0x%08x\n" \
             " entry point address       : 0x%08x\n" \
             " start of program headers  : %d (bytes into file)\n" \
+            " start of section headers  : %d (bytes into file)\n" \
             " size of program headers   : %d (bytes)\n" \
             " number of program headers : %d\n" \
             " size of section headers   : %d (bytes)\n" \
-            " number of section headers : %d" \
+            " number of section headers : %d\n" \
+            " section header string table index : %d" \
             % ("".join([" %02x" % ord(c) for c in self.ident]),
                self.type,
                self.machine, self.MACHINE_MAP[self.machine],
                self.version,
                self.entry,
                self.phoff,
+               self.shoff,
                self.phentsize,
                self.phnum,
                self.shentsize,
-               self.shnum)
+               self.shnum, self.shstrndx)

@@ -22,7 +22,23 @@ Output::
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 
+import sys
+
 from bb.tools.propler.core import *
+from bb.tools.propler.disasm import *
+from bb.tools.propler.terminal import *
+from bb.tools.propler.uploader import *
+
+def terminal_mode(port="/dev/ttyUSB0"):
+    """Enter propler to terminal mode."""
+    print "Enter to terminal mode"
+    print "_" * 70
+    print
+    term = Terminal(port)
+    term.start()
+    print "\r", "_" * 70
+    print
+    print "Exit from terminal mode"
 
 def main(argv):
     from bb.tools.propler.config import Config

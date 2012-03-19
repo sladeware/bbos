@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+
 class PropellerP8X32(object):
+    """Propeller chip."""
     NR_COGS = 8
     RAM_SIZE = 262144
 
