@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 #include <bb/os/config.h>
-#include BBOS_PROCESSOR_FILE(shmem.h)
+#include <bb/os/drivers/processors/propeller_p8x32/shmem.h>
 #include <string.h>
 
 int8_t
@@ -24,17 +24,22 @@ shmem_read_byte(int32_t addr)
 }
 
 void
-shmem_read(int32_t src_addr, void* dst, size_t n)
-{
-  memcpy(dst, (void*)src_addr, n);
-}
-
-void
 shmem_write_byte(int32_t addr, int8_t byte)
 {
   *(int8_t*)addr = byte;
 }
 
+void
+shmem_read(int32_t src_addr, void* dst, size_t n)
+{
+  memcpy(dst, (void*)src_addr, n);
+}
+
+/**
+ * Write n bytes for the HUB RAM. Note, a single long in the hub will
+ * be updated in one hub turn. Thus the routine will use the locks,
+ * since we are updating a multi-long structure.
+ */
 void
 shmem_write(int32_t dst_addr, void* src, size_t n)
 {

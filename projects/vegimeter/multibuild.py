@@ -2,13 +2,14 @@
 
 import os
 import time
+
 from bb.utils import module
 from bb.tools import propler
 from bb.tools.propler import gen_ld_script
+from bb.builder.projects import CProject
+from bb.builder.compilers import PropGCCCompiler
 
 def create_propgcc_project():
-    from bb.builder.projects import CProject
-    from bb.builder.compilers import PropGCCCompiler
     project = CProject("vegimeter", verbose=True)
     compiler = PropGCCCompiler()
     project.set_compiler(compiler)
@@ -57,7 +58,7 @@ cogid_to_addr_mapping = dict()
 cogid_to_filename_mapping = dict()
 start_addr = 0
 cogid_to_instance_mapping = {
-    7: ui_instance,
+    6: ui_instance,
     4: buttons_driver_instance,
 }
 
@@ -70,40 +71,22 @@ for image_id, handler in cogid_to_instance_mapping.items():
     compiler = image.get_compiler()
     compiler.define_macro("__linux__")
     compiler.define_macro("BB_HAS_STDINT_H")
-    compiler.set_extra_preopts(["-Os", "-mlmm", "-Wall",
-                                "-Wl,-T" + script_fname
-                                ])
+    compiler.set_extra_preopts(["-Os", "-Wall"])
+    linker = compiler.get_linker()
+    linker.add_opts(["-Wl,-T" + script_fname])
 
     image.build(verbose=True)
     cogid_to_addr_mapping[image_id] = start_addr
     start_addr += propler.get_image_file_size(image.get_output_filename())
     cogid_to_filename_mapping[image_id] = image.get_output_filename()
 
-print "+-------------------------------------------------------------------+"
-print "| %-65s |" % "Report"
-print "+--------+--------------------------------+---------------+---------+"
-print "| %6s | %30s | %13s | %7s |" \
-    % ("COG ID", "IMAGE", "START ADDRESS", "SIZE")
-print "+--------+--------------------------------+---------------+---------+"
-total_size = 0
-for i in cogid_to_instance_mapping.keys():
-    sz = propler.get_image_file_size(cogid_to_filename_mapping[i])
-    print "| %6d | %30s | %13d | %7d |" \
-        % (i, cogid_to_filename_mapping[i], cogid_to_addr_mapping[i], sz)
-    total_size += sz
-print "+--------+--------------------------------+---------------+---------+"
-print "  %55s | %7d |" % (" ", total_size)
-print "                                                          +---------+"
-
-#filename = cogid_to_filename_mapping[2]
-#propler.dump_header(filename)
+    #raw_input()
 
 from bb.tools.propler.config import QuickStartBoardConfig, DemoBoardConfig
 config = DemoBoardConfig() #QuickStartBoardConfig()
 
 print "Uploading bootloader"
 uploader = propler.upload_bootloader('/dev/ttyUSB0', config)
-
 # Very important! Let bootloader to settle!
 time.sleep(7)
 

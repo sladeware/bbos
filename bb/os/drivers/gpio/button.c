@@ -18,8 +18,10 @@
 #include <bb/os/kernel/delay.h>
 #include <bb/os/drivers/processors/propeller_p8x32/pins.h>
 
-/* Input argument is the button pin scanned. Returns 1 when
-   the button is pressed and 0 otherwise */
+/**
+ * Input argument is the button pin scanned. Returns 1 when the button
+ * is pressed and 0 otherwise.
+ */
 uint8_t
 is_button_pressed(uint8_t pin)
 {
@@ -32,18 +34,24 @@ is_button_pressed(uint8_t pin)
       OUT_HIGH(pin);
       DIR_OUTPUT(pin);
       DIR_INPUT(pin);
-      bbos_delay_msec(BUTTON_DELAY);
+      BBOS_DELAY_MSEC(BUTTON_DELAY);
       result += GET_INPUT(pin);
     }
-  bbos_delay_msec(BUTTON_FINAL_DELAY);
-
+  BBOS_DELAY_MSEC(BUTTON_FINAL_DELAY);
+  /* Return result value */
   return (result < (DEBOUNCE_LOOPS - DEBOUNCE_TOLERANCE));
 }
 
-/* Input argument is a bit mask of buttons scanned.
-   Returns a bit mask of the buttons that were pressed */
-unsigned
-are_buttons_pressed(unsigned mask)
+/**
+ * Input argument is a bit mask of buttons scanned. Returns a bit
+ * mask of the buttons that were pressed.
+ */
+
+/* TODO: run this function from HUB if compiled for LMM. */
+/* NOTE:Slade: see another implementation from demos for propgcc in
+   demos/forumists/jazzed/QSwam/qswam.c */
+uint16_t
+are_buttons_pressed(uint16_t mask)
 {
   uint32_t result[32];
   uint32_t output;
@@ -62,9 +70,9 @@ are_buttons_pressed(unsigned mask)
       OUT_HIGH_MASK(mask);
       DIR_OUTPUT_MASK(mask);
       DIR_INPUT_MASK(mask);
-      bbos_delay_msec(BUTTON_DELAY);
-      output = GET_INPUT_MASK(mask);
+      BBOS_DELAY_MSEC(BUTTON_DELAY);
 
+      output = GET_INPUT_MASK(mask);
       for (pin = 0; (output > 0) && (pin < 32); pin++, output >>= 1)
         {
           if (output & 1UL)
@@ -73,12 +81,17 @@ are_buttons_pressed(unsigned mask)
             }
         }
     }
-  bbos_delay_msec(BUTTON_FINAL_DELAY);
+
+  BBOS_DELAY_MSEC(BUTTON_FINAL_DELAY);
+
+  OUT_LOW_MASK(mask);
+  DIR_INPUT_MASK(mask);
 
   /* Process the results and return the mask of pressed buttons */
   for (pin = 0, output = 0; pin < 32; pin++)
     {
-      if ((result[pin] > 0) && (result[pin] < (DEBOUNCE_LOOPS - DEBOUNCE_TOLERANCE)))
+      if ((result[pin] > 0) \
+          && (result[pin] < (DEBOUNCE_LOOPS - DEBOUNCE_TOLERANCE)))
         {
           output |= 0x80000000UL;
         }

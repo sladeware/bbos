@@ -78,23 +78,24 @@ void ui_runner()
 
   vegimeter_buttons = 0;
   /* Read buttons state from the shared memory region */
-  //shmem_read(VEGIMETER_BUTTONS_ADDR, &vegimeter_buttons, 2);
-
+  shmem_read(VEGIMETER_BUTTONS_ADDR, &vegimeter_buttons, 2);
+  sio_cogsafe_printf("Buttohns: %d\n", vegimeter_buttons);
   if (vegimeter_buttons)
     {
       for (i = 0; i < 8; i++, vegimeter_buttons >>= 1)
         {
           if (vegimeter_buttons & 1UL)
-            {
-              sio_printf((const int8_t*)"Button pressed: %d\n", i);
-            }
+          {
+            sio_cogsafe_printf("Button pressed: %d\n", i);
+          }
         }
-      /* Clear buttons state */
+      // Clear buttons state
 
-      shmem_write_byte(VEGIMETER_BUTTONS_ADDR, 0);
-      shmem_write_byte(VEGIMETER_BUTTONS_ADDR + 1, 0);
+      //shmem_write_byte(VEGIMETER_BUTTONS_ADDR, 0);
+      //shmem_write_byte(VEGIMETER_BUTTONS_ADDR + 1, 0);
       //vegimeter_buttons = 0;
     }
+
 }
 
 void
@@ -112,10 +113,18 @@ main()
 {
   /* Test ui running. Blink an LED that corresponds to the
      running COG id in order to define that our program is alive. */
-  DIR_OUTPUT((1 << 4) + cogid());
-  OUT_HIGH((1 << 4) + cogid());
+  //propeller_set_dira_bits(1 << (16 + cogid()));
+  //propeller_set_outa_bits(1 << (16 + cogid()));
 
-  bbos();
+  sio_init();
+
+  while (1)
+    {
+      sio_cogsafe_printf("[UI%d]\n", propeller_cogid());
+      //ui_runner();
+      BBOS_DELAY_MSEC(500);
+    }
+  //bbos();
 
   return 0;
 }

@@ -5,10 +5,13 @@ __all__ = ["CustomBoardConfig", "QuickStartBoardConfig", "DemoBoardConfig"]
 
 class BoardConfig(object):
     """Base board config."""
+
     def get_eeprom_size(self):
+        """Return EEPROM size."""
         return self.EEPROM_SIZE
 
     def get_baudrate(self):
+        """Return baudrate."""
         return self.BAUDRATE
 
 class DemoBoardConfig(BoardConfig):
@@ -17,10 +20,10 @@ class DemoBoardConfig(BoardConfig):
     .. image:: http://www.parallax.com/DesktopModules/CATALooKStore/MakeThumbImage.aspx?ID=%2fPortals%2f0%2fImages%2fProd%2f3%2f321%2f32100-M.jpg&PORTALID=0&W=120&H=120
 
     ===========  ======
-    ATTRIBUTE    VALUE
+    Property     Value
     ===========  ======
-    baudrate     115200
-    EEPROM size  32768
+    BAUDRATE     115200
+    EEPROM_SIZE  32768
     ===========  ======
     """
     BAUDRATE = 115200
@@ -32,10 +35,10 @@ class QuickStartBoardConfig(BoardConfig):
     .. image:: http://www.parallax.com/DesktopModules/CATALooKStore/MakeThumbImage.aspx?ID=%2fPortals%2f0%2fImages%2fProd%2f4%2f400%2f40000-M.jpg&PORTALID=0&W=120&H=120
 
     ===========  ======
-    ATTRIBUTE    VALUE
+    Property     Value
     ===========  ======
-    baudrate     115200
-    EEPROM size  32768
+    BAUDRATE     115200
+    EEPROM_SIZE  32768
     ===========  ======
     """
     BAUDRATE = 115200

@@ -4,7 +4,10 @@
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 
-import os, re, sys, string
+import re
+import sys
+import string
+import os
 import os.path
 from types import *
 
@@ -82,9 +85,7 @@ class CCompiler(Compiler):
     :func:`CCompiler.set_language_precedence_order`. By default it
     equals to :const:`CCompiler.DEFAULT_LANGUAGE_PRECEDENCE_ORDER`.
 
-    Learn more about GCC options:
-    http://gcc.gnu.org/onlinedocs/gcc/Option-Summary.html
-    """
+    Learn more about GCC options: http://gcc.gnu.org/onlinedocs/gcc/Option-Summary.html"""
 
     DEFAULT_LANGUAGE_PRECEDENCE_ORDER = ["c++", "objc", "c"]
     """Default language precedence order: ``c++``, ``objc``, ``c``."""
@@ -157,7 +158,7 @@ class CCompiler(Compiler):
         return self.__linker
 
     def add_linker_opt(self, opt):
-        """Add linker option as ``-Wl,'option'''."""
+        """Add linker option as -Wl,option."""
         self.__linker_opts.append("-Wl%s" % opt)
 
     def get_linker_opts(self):

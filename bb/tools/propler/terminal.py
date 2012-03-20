@@ -1,19 +1,23 @@
 #!/usr/bin/env python
 
-"""This is a console application that provides a small terminal application."""
+"""This is a console application that provides a small terminal
+application."""
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __all__ = ["Terminal"]
 
+#_____________________________________________________________________
+
 import os
 import sys
 import threading
-
 try:
     import serial
 except ImportError:
     print >>sys.stderr, "Please install pyserial."
     exit(0)
+
+#_____________________________________________________________________
 
 if sys.version_info >= (3, 0):
     def character(b):
@@ -82,23 +86,77 @@ else:
 
 EXIT_CHARACTER = chr(3)
 
+#_____________________________________________________________________
+
 class Terminal(object):
     """Propler terminal for serial communications."""
 
+    class Transmitter(threading.Thread):
+        """Thread-transmitter. Transmit data from device."""
+        def __init__(self, terminal):
+            threading.Thread.__init__(self)
+            self.terminal = terminal
+
+        def run(self):
+            try:
+                while self.terminal.is_alive():
+                    try:
+                        b = console.getkey()
+                    except KeyboardInterrupt:
+                        b = serial.to_bytes([3])
+                        raise
+                    c = character(b)
+                    self.terminal.sio.write(b)
+                    if c == EXIT_CHARACTER:
+                        self.terminal.stop()
+                        break
+            except serial.SerialException, e:
+                self.terminal.stop()
+                raise
+            except KeyboardInterrupt:
+                self.terminal.stop()
+                raise
+
+    class Receiver(threading.Thread):
+        """Thread-receiver."""
+        def __init__(self, terminal):
+            threading.Thread.__init__(self)
+            self.terminal = terminal
+
+        def run(self):
+            try:
+                while self.terminal.is_alive():
+                    c = self.terminal.sio.read()
+                    sys.stdout.flush()
+                    sys.stdout.write(c)
+            except serial.SerialException, e:
+                self.terminal.stop()
+                raise
+            except KeyboardInterrupt:
+                self.terminal.stop()
+                raise
+            print "EXIT"
+
     def __init__(self, port):
-        self.sio = serial.Serial(port=port, baudrate=115200, timeout=2)
+        self.sio = serial.Serial(port=port, baudrate=115200,
+                                 timeout=2)
         self.sio.open()
-        self.is_alive = True
+        self.__is_alive = True
         self.receiver_thread = None
         self.transmitter_thread = None
 
+    def is_alive(self):
+        """Return whether terminal *is alive* or not."""
+        return self.__is_alive
+
     def start(self):
-        # Start reader
-        self.receiver_thread = threading.Thread(target=self.reader)
+        """Start terminal: start transmitter and receiver threads."""
+        # Start receiver
+        self.receiver_thread = self.Receiver(self)
         self.receiver_thread.daemon = True
         self.receiver_thread.start()
-        # Start writer
-        self.transmitter_thread = threading.Thread(target=self.writer)
+        # Start transmitter
+        self.transmitter_thread = self.Transmitter(self)
         self.transmitter_thread.daemon = True
         self.transmitter_thread.start()
         # While alive
@@ -109,42 +167,6 @@ class Terminal(object):
             print "Interrupted"
 
     def stop(self):
-        self.is_alive = False
-
-    def writer(self):
-        try:
-            while self.is_alive:
-                try:
-                    b = console.getkey()
-                except KeyboardInterrupt:
-                    b = serial.to_bytes([3])
-                    raise
-                c = character(b)
-                self.sio.write(b)
-
-                if c == EXIT_CHARACTER:
-                    self.stop()
-                    break
-        except serial.SerialException, e:
-            self.stop()
-            raise
-        except KeyboardInterrupt:
-            self.stop()
-            raise
-
-    def reader(self):
-        try:
-            while self.is_alive:
-                c = self.sio.read()
-                sys.stdout.flush()
-                sys.stdout.write(c)
-        except serial.SerialException, e:
-            self.stop()
-            raise
-        except KeyboardInterrupt:
-            self.stop()
-            raise
-        print "EXIT"
-
-
-
+        """Stop terminal."""
+        self.__is_alive = False
+        self.sio.close()

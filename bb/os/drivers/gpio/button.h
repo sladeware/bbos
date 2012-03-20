@@ -25,6 +25,6 @@
 #define DEBOUNCE_TOLERANCE 15
 
 uint8_t is_button_pressed(uint8_t pin);
-unsigned are_buttons_pressed(unsigned mask);
+uint16_t are_buttons_pressed(uint16_t mask);
 
 #endif /* __BUTTON_H */

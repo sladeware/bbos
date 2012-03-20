@@ -49,6 +49,8 @@
 #define SIO_MODE_OPENDRAIN_TX   4
 #define SIO_MODE_IGNORE_TX_ECHO 8
 
+void sio_init();
+
 int8_t sio_get_char();
 void sio_put_char(int8_t c);
 

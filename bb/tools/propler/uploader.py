@@ -7,6 +7,8 @@ proposed by Remy Blank."""
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 
+#_____________________________________________________________________
+
 import os
 import os.path
 import time
@@ -24,10 +26,12 @@ except ImportError:
     exit(0)
 
 from bb.utils.spawn import spawn
-from bb.tools.propler.formats import *
+from bb.tools.propler.image import *
 from bb.tools.propler.chips import *
 from bb.tools.propler.bitwise_op import *
 from bb.tools.propler.boards import *
+
+#_____________________________________________________________________
 
 DEFAULT_SERIAL_PORTS = {
     "posix": "/dev/ttyUSB0",
@@ -199,7 +203,7 @@ class SPIUploader(SPIUploaderInterface):
         SPIUploaderInterface.__init__(self, *args, **kargs)
 
     def upload_file(self, filename, run=True, eeprom=False):
-        image = extract_image_from_file(filename)
+        image = Image.extract_from_file(filename)
         self.upload_image(image, run, eeprom)
 
     @classmethod
@@ -284,7 +288,7 @@ class MulticogSPIUploader(SPIUploaderInterface):
             for cogid in target_cogids:
                 path = cogid_to_filename_mapping[cogid]
                 logging.info("\t%s => COG #%d", path, cogid)
-                self.__total_upload_size += get_image_file_size(path)
+                self.__total_upload_size += Image.get_file_size(path)
             print "Total upload size: %d (bytes)" % self.__total_upload_size
         # Send synch signal in order to describe target
         # number of images to be sent
@@ -324,7 +328,7 @@ class MulticogSPIUploader(SPIUploaderInterface):
 
     def __upload_to_cog(self, i, cogid, filename):
         # Extract image from the file
-        data = extract_image_from_file(filename)
+        data = Image.extract_from_file(filename)
         sz = len(data)
         if sz % 4 != 0:
             raise Exception("Invalid code size: must be a multiple of 4")
@@ -467,7 +471,7 @@ def multicog_spi_upload(cogid_to_filename_mapping, serial_port,
     print "+--------+--------------------------------+---------+"
     total_size = 0
     for (cogid, filename) in cogid_to_filename_mapping.items():
-        sz = get_image_file_size(filename)
+        sz = Image.get_file_size(filename)
         print "| %6d | %30s | %7d |" % (cogid, filename, sz)
         total_size += sz
     print "+--------+--------------------------------+---------+"

@@ -40,12 +40,10 @@ button_driver_runner()
   uint16_t vegimeter_buttons;
   uint16_t button_mask = 0xFFUL; /* QuickStart board has P0 - P7 as buttons */
 
-  bbos_delay_msec(3000);
-
-  shmem_read(VEGIMETER_BUTTONS_ADDR, &vegimeter_buttons, 2);
-  vegimeter_buttons |= are_buttons_pressed(button_mask);
-  shmem_write(VEGIMETER_BUTTONS_ADDR, &vegimeter_buttons, 2);
-  sio_printf((const int8_t*)"Buttons: %d\n", vegimeter_buttons);
+  //shmem_read(VEGIMETER_BUTTONS_ADDR, &vegimeter_buttons, 2);
+  vegimeter_buttons = are_buttons_pressed(button_mask); // |=
+  sio_cogsafe_printf("Buttons:%d\n", vegimeter_buttons);
+  //shmem_write(VEGIMETER_BUTTONS_ADDR, &vegimeter_buttons, 2);
 }
 
 int
@@ -53,10 +51,21 @@ main()
 {
   /* Test button driver running. Blink an LED that corresponds to the
      running COG id in order to define that our program is alive. */
-  //DIR_OUTPUT((1 << 4) + cogid());
-  //OUT_HIGH((1 << 4) + cogid());
+  //propeller_set_dira_bits(1 << (16 + cogid()));
+  //propeller_set_outa_bits(1 << (16 + cogid()));
+
+  sio_init();
+
+  do
+    {
+      sio_cogsafe_printf("[BD%d]\n", propeller_cogid());
+      button_driver_runner();
+      BBOS_DELAY_MSEC(200);
+    } while (1);
 
   /* Start Bionic Bunny OS */
-  bbos();
+  //bbos_kernel_loop();
+
   return 0;
 }
+

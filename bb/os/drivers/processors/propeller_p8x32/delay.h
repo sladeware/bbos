@@ -1,6 +1,41 @@
 /*
  * Copyright (c) 2012 Sladeware LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+#include <bb/os/drivers/processors/propeller_p8x32/config.h>
+
+/**
+ * The minimal waitcnt windows value must always be at least 381 to
+ * avoid unexpectedly long delays.
+ */
+#define MIN_WAITCNT_WINDOW 381
+
+static int
+int_max(int a, int b)
+{
+  b = a - b;
+  a -= b & (b >> 31);
+  return a;
+}
+
+#define BBOS_DELAY_MSEC(msec)                                           \
+  do {                                                                  \
+    propeller_waitcnt(int_max((propeller_get_clockfreq() / 1000) * msec - 3932, \
+                              MIN_WAITCNT_WINDOW) +                     \
+                      propeller_get_cnt());                             \
+  } while (0)
+
 #ifdef __CATALINA__
 #include <catalina_icc.h>
 

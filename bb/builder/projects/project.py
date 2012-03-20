@@ -113,7 +113,7 @@ class Project(DistributionMetadata):
             self.verbose = verbose
         if sources:
             self.add_sources(sources)
-        print "Building project '%s' version '%s'" % (self.get_name(), self.get_version())
+        print "Building '%s'" % self.get_name()
         if self.verbose:
             self.compiler.verbose = self.verbose
         if output_dir:

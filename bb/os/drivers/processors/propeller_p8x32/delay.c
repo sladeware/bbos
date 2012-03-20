@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 #include <bb/os/drivers/processors/propeller_p8x32/delay.h>
-
+#include <bb/os/drivers/processors/propeller_p8x32/sio.h>
 #ifdef __CATALINA__
 
 void
@@ -24,12 +24,22 @@ bbos_delay_usec(int usecs)
 }
 
 #elif defined(__GNUC__)
-#include <propeller.h>
+
+#include <sys/thread.h>
 
 void
 bbos_delay_msec(int msec)
 {
-  waitcnt((CLKFREQ / 1000) * msec + CNT);
+#if 0 /* XXX: version for threading support. See __naputil(). */
+  unsigned waitcycles;
+  unsigned msecond = propeller_get_clockfreq() / 1000;
+
+  waitcycles = propeller_get_cnt() + msec * msecond;
+  __napuntil(waitcycles);
+  
+#else
+  BBOS_DELAY_MSEC(msec);
+#endif
 }
 
 void
