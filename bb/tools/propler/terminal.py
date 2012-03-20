@@ -135,7 +135,6 @@ class Terminal(object):
             except KeyboardInterrupt:
                 self.terminal.stop()
                 raise
-            print "EXIT"
 
     def __init__(self, port):
         self.sio = serial.Serial(port=port, baudrate=115200,

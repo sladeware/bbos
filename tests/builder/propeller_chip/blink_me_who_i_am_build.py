@@ -24,13 +24,8 @@ start_addr = 0
 for image_id in target_cogs:
     script_fname = "script%d.ld" % image_id
     gen_ld_script.generate(script_fname,
-<<<<<<< .mine
-                           dict(HUB_START_ADDRESS="0x%x" % start_addr,
-                                HUB_LEN=(32*1024 + start_addr)))
-=======
                            dict(HUB_START_ADDRESS=start_addr,
                                 HUB_LEN=(32*1024 + start_addr)))
->>>>>>> .r635
     image = CProject("blink_me_who_i_am%d" % image_id)
     image.add_source("./../../../bb/os/drivers/processors/propeller_p8x32/sio.c")
     image.add_source("./../../../bb/os/drivers/processors/propeller_p8x32/delay.c")
