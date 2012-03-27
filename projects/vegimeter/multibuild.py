@@ -5,7 +5,6 @@ import time
 
 from bb.utils import module
 from bb.tools import propler
-from bb.tools.propler import gen_ld_script
 from bb.builder.projects import CProject
 from bb.builder.compilers import PropGCCCompiler
 
@@ -66,7 +65,7 @@ for image_id, handler in cogid_to_instance_mapping.items():
     image = create_propgcc_project()
     handler(image)
     script_fname = "%s_script.ld" % image.get_name()
-    gen_ld_script.generate(script_fname,
+    propler.gen_ld_script.generate(script_fname,
                            dict(HUB_START_ADDRESS=start_addr))
     compiler = image.get_compiler()
     compiler.define_macro("__linux__")
@@ -77,13 +76,12 @@ for image_id, handler in cogid_to_instance_mapping.items():
 
     image.build(verbose=True)
     cogid_to_addr_mapping[image_id] = start_addr
-    start_addr += propler.get_image_file_size(image.get_output_filename())
+    start_addr += propler.Image.get_file_size(image.get_output_filename())
     cogid_to_filename_mapping[image_id] = image.get_output_filename()
 
     #raw_input()
 
-from bb.tools.propler.config import QuickStartBoardConfig, DemoBoardConfig
-config = DemoBoardConfig() #QuickStartBoardConfig()
+config = propler.DemoBoardConfig() #QuickStartBoardConfig()
 
 print "Uploading bootloader"
 uploader = propler.upload_bootloader('/dev/ttyUSB0', config)

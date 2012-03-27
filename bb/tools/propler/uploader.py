@@ -519,7 +519,8 @@ def upload_bootloader(port="/dev/ttyUSB0", config=None):
         raise Exception("Please provide config")
     catalina_config = catalina_board_configs.get(config.__class__, None)
     if not catalina_config:
-        raise Exception("Oops")
+        raise Exception("Cannot find catalina config for %s" %
+                        config.__class__.__name__)
     bootloader_src = os.path.join(HOME_DIR, "multicog_spi_bootloader.spin")
     bootloader_binary = "multicog_spi_bootloader"
     spawn(["homespun", bootloader_src, "-b",

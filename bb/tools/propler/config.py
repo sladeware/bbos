@@ -1,24 +1,6 @@
 #!/usr/bin/env python
 
-class BoardConfig(object):
-    def get_eeprom_size(self):
-        return self.EEPROM_SIZE
-
-    def get_baudrate(self):
-        return self.BAUDRATE
-
-class DemoBoardConfig(BoardConfig):
-    BAUDRATE = 115200
-    EEPROM_SIZE = 32768
-
-class QuickStartBoardConfig(BoardConfig):
-    BAUDRATE = 115200
-    EEPROM_SIZE = 32768
-
-class CustomBoardConfig(BoardConfig):
-    EEPROM_SIZE = 32768
-    # Baud rate to use for all interprop communications
-    BAUDRATE = 115200
+__copyright__ = "Copyrigt (c) 2012 Sladeware LLC"
 
 class Config(object):
 
