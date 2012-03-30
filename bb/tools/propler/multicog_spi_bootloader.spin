@@ -1,39 +1,41 @@
-'
-' Bootloader.
-'
-' Copyright (c) 2012 Sladeware LLC
-'
-
-'_______________________________________________________________________________
+'*********************************************************************
+'* Bootloader.
+'*
+'* Copyright (c) 2012 Sladeware LLC
+'*
+'*********************************************************************
 
 CON
-' Set these to suit the platform by modifying "Catalina_Common"
-' Also, that is now where the PIN definitions for the platform
-' are defined. Do not modify these in this file.
+  ' Set these to suit the platform by modifying "Catalina_Common"
+  ' Also, that is now where the PIN definitions for the platform
+  ' are defined. Do not modify these in this file.
   _clkmode  = Common#CLOCKMODE
   _xinfreq  = Common#XTALFREQ
   _stack    = Common#STACKSIZE
 
-'
-' debugging options (note that enabling debugging will also require SLOW_XMIT
-' to be enabled to avoid comms timeouts):
-'
-'#define SLOW_XMIT
+  ' Debugging options (note that enabling debugging will also require
+  ' SLOW_XMIT to be enabled to avoid comms timeouts):
+  '#define SLOW_XMIT
+
+  NR_COGS = 8
+  LAST_COG = NR_COGS ' last cog to be stoped. 
 
   PAGE_SIZE = Common#FLIST_SSIZ
   ' Set these to suit the Generic SD Loader, or whatever other
   ' program is executed on the master propeller.
   MODE      = Common#SIO_LOAD_MODE
   BAUD      = Common#SIO_BAUD
+
   ' Set up Proxy, HMI and CACHE symbols and constants:
 #include "Constants.inc"
 
-'_______________________________________________________________________________
+'_____________________________________________________________________
+
 OBJ
   Common     : "Catalina_Common"     ' Common definitions
   SIO        : "Catalina_SIO_Plugin" ' SIO plugin
 
-'_______________________________________________________________________________
+'_____________________________________________________________________
 
 PUB Start : ok | REG, DATA, PAGE, BLOCK, XFER, MAX_LOAD
   ' Set up the Registry - required to use the SIO Plugin
@@ -60,7 +62,8 @@ PUB Start : ok | REG, DATA, PAGE, BLOCK, XFER, MAX_LOAD
   SIO_IO_Block := BLOCK
   cognew(@entry, @REG)
 
-'_______________________________________________________________________________
+'_____________________________________________________________________
+
 DAT
         org 0
 '
@@ -84,11 +87,11 @@ entry
         rdlong SavedFreq,#0                   ' save the current clock freq
         rdbyte SavedMode,#4                   ' ... and mode
 
-        mov r0, #32                           '
-        mov img_addr, img_mapping             '
-        mov r1, #$0 ' fill it by -1           '
-clear_img_mapping                             ' clear
-        wrbyte r1, img_addr                   ' map of images
+        mov r0, #32                   '
+        mov img_addr, img_mapping     '
+        mov r1, #$0 ' fill it by -1   '
+clear_img_mapping                     ' clear
+        wrbyte r1, img_addr           ' map of images
         add img_addr, #1
         djnz r0, #clear_img_mapping
 
@@ -98,8 +101,8 @@ wait_loop
   if_be jmp    #wait_loop                    ' ... sync signal
         mov    nr_imgs, r0                   ' number of images to be read
 
-read_img                                     ' start reading ...
-        tjz    nr_imgs, #restart             ' ... required number of images
+read_img                          ' start reading
+        tjz    nr_imgs, #restart  ' ... required number of images
         sub    nr_imgs, #1
 
 img_wait_loop                                 ' start waiting for the image
@@ -168,15 +171,15 @@ restart
         ' this cog as a SPIN interpreter to execute the program now
         ' loaded in Hub RAM.
 
-        cogid   r6                           ' set our cog id
-        mov     r1, #Common#LAST_COG+1       ' don't restart beyond LAST_COG
+        cogid   r6              ' set our cog id
+        mov     r1, #LAST_COG   ' don't restart beyond this cog
 :stop_cog
         sub     r1,#1
         cmp     r1,r6 wz
  if_nz  cogstop r1
-        tjnz    r1,#:stop_cog
+        tjnz    r1, #:stop_cog
 
-        rdlong  r3,#8                           ' Get vbase value
+        rdlong  r3,#8           ' Get vbase value
         and     r3,WordMask
 
         ' zero hub RAM from vbase to runtime_end, omitting
@@ -203,7 +206,7 @@ restart
   if_ne jmp     #:change_clock
         rdbyte  r2,#4                           ' Get the clock mode
         cmp     r2,SavedMode wz                 ' If both same, just go start COG
-  if_e  jmp     #:justStartUp
+  if_e  jmp     #:start_up
 :change_clock
         and     r2,#$F8                         ' Force use of RCFAST clock while
         clkset  r2                              ' letting requested clock start
@@ -214,68 +217,41 @@ restart
         and     r2, #$FF                        ' Then switch to selected clock
         clkset  r2
 
-:justStartUp
+:start_up
         mov r0, #0            ' start from the COG0
-        mov r1, img_mapping
-:next_img
-        cmp r0, #8 wz         ' check whether it is the last cog...
+        mov r1, img_mapping   ' start from the first image
+:load_next_img
+        cmp r0, NR_COGS wz    ' check whether it is the last cog
    if_z jmp #:finish          ' ... yes - jump to finish
-        rdlong img_addr, r1   ' read image addr ...
+        rdlong img_addr, r1   ' read image addr
         add r1, #4            ' ... and move to the next one
-        mov cpu_no, r0
+        mov cpu_no, r0        ' save cog id and ...
+        add r0, #1            ' move to the next one
+        cmp img_addr, #$0 wz  ' jump if nothing to run for this cog
+   if_z jmp #:load_next_img
 
-        add r0, #1            ' move to the next COG id
-        cmp img_addr, #$0 wz  ' jump to next image if nothing to run for this cog
-   if_z jmp #:next_img
-
- '       cmp cpu_no, #4 wz
- '  if_z jmp #:next_img
+'        cmp cpu_no, #5 wz
+'   if_z jmp #:load_next_img
+        cmp cpu_no, #5 wz
+   if_nz cmp cpu_no, #3 wz
+   if_nz jmp #:load_next_img
 
         sub img_addr, #1        ' fix image address
 
-        mov r2, img_addr
-        add r2, #10
-        rdlong r3, r2
-'        wrlong r3, #10          ' replace current dbase and pcurr
+        mov r2, img_addr     ' put image address
+        add r2, #4           ' ... as PAR argument for
+        shl r2, #16          ' ... coginit instruction
 
-        shr     r3,#16          ' Get dbase value
-        sub     r3,#4
-        'wrlong  StackMark,r3    ' Place stack marker at dbase
-        sub     r3,#4
-        'wrlong  StackMark,r3
-{{
-        mov r2, img_addr
-        add r2, #12             ' move to byte 12 and ...
-        rdlong r3, r2           ' ... read pcurr and dcurr values
-        wrlong r3, #12          ' replace current pcurr and dcurr with new one
+        mov r6, interpreter  ' start working on COG initialization ...
+        or r6, r2            ' ... set image address ...
+        'or r6, cpu_no        ' ... set cpu no ...
+        coginit r6           ' initialize COG
 
-        mov r2, img_addr
-        add r2, #6              ' move to byte 6 and ...
-        rdlong r3, r2           ' ... read pbase and vbase values
-        wrlong r3, #6           ' replace current pbase and vbase with new one
+        mov time, cnt        ' small ...
+        add time, rst_delay  ' ... delay to allow COG
+        waitcnt time, #0     ' ... to settle
 
-        mov r6, interpreter     ' start working ...
-        mov r5, cpu_no          ' ... on COG initialization ...
-        or r5, r6               ' ... command
-        coginit r5              ' initialize COG
-}}
-
-        mov r2, img_addr
-        add r2, #4
-        shl r2, #16
-
-        mov r6, interpreter     ' start working ...
-        'mov r5, cpu_no          ' ... on COG initialization ...
-        mov r5, #8 ' new
-        or r6, r2
-        or r6, r5               ' ... command
-        coginit r6              ' initialize COG
-
-        mov     time, cnt       ' small ...
-        add     time, rst_delay ' ... delay to allow COG
-        waitcnt time, #0        ' ... to settle
-
-        jmp #:next_img
+        jmp #:load_next_img  ' load next available image
 
 :finish
         nop
@@ -290,7 +266,7 @@ Zero          long      $0
 XtalTime      long      20 * 20000 / 4 / 1      ' 20ms (@20MHz, 1 inst/loop)
 
 time          long 0
-rst_delay     long 8000000
+rst_delay     long 80000000 ' 8000000
 next_delay    long 80000000
 
 '-------------------------------- Utility routines -----------------------------
@@ -694,7 +670,7 @@ sect_count    long      $0
 
 ' see http://forums.parallax.com/forums/default.aspx?f=25&m=363100
 'interpreter   long    ($0004 << 16) | ($F004 << 2) | %0000
-interpreter   long    ($0000 << 16) | ($F004 << 2) | %0000
+interpreter   long    ($0000 << 16) | ($F004 << 2) | %1000
 
 '
 ' temporary storage used in mul & div calculations

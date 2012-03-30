@@ -15,8 +15,8 @@
  */
 
 /**
- * Note, sio_put_char() and sio_get_char() is the only external dependency
- * for this file.
+ * Note, sio_put_char() and sio_get_char() is the only external
+ * dependency for this file.
  */
 
 #include <bb/os/drivers/processors/propeller_p8x32/sio.h>
@@ -359,9 +359,9 @@ sio_printf(const int8_t* format, ...)
  * has to be reserved and initialized (see propeller_locknew()) by
  * multicog bootloader.
  */
-#define SIO_COGSAFE_LOCK_ADDR (int8_t*)0x7530
+#define SIO_COGSAFE_LOCK_ADDR (int16_t*)0x7530
 
-static int8_t cogsafe_lock;
+static int16_t cogsafe_lock;
 
 void
 sio_init()
@@ -377,12 +377,11 @@ sio_init()
     {
       cogsafe_lock = propeller_locknew();
       *(SIO_COGSAFE_LOCK_ADDR) = cogsafe_lock + 1;
-      BBOS_DELAY_MSEC(1);
+      propeller_lockclr(cogsafe_lock);
     }
   else
     {
       cogsafe_lock = cogsafe_lock - 1;
-      BBOS_DELAY_MSEC(1);
     }
 #endif /* SIO_COGSAFE_PRINTING */ 
 }

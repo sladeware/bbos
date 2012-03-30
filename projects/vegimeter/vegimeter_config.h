@@ -1,4 +1,6 @@
-
+/*
+ * Copyright (c) 2012 Sladeware LLC
+ */
 #ifndef __VEGIMETER_CONFIG_H
 #define __VEGIMETER_CONFIG_H
 

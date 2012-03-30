@@ -25,18 +25,18 @@ class Image(object):
         """Dump binary header."""
         print "Size : %d (bytes)" % len(data)
         hdr = None
-        if fname:
-            ctx = ElfContext(fname)
-            if ctx.hdr.is_valid():
-                hdr = ElfHeader()
-                memmove(addressof(hdr), data, sizeof(ElfHeader))
-                image = cls.extract_from_file(fname)
-                hdr = SpinHeader()
-                memmove(addressof(hdr), image, sizeof(SpinHeader))
-            else:
-                hdr = SpinHeader()
-                memmove(addressof(hdr), data, sizeof(SpinHeader))
-                print str(hdr)
+        ctx = ElfContext()
+        ctx.parse_data(data)
+        if ctx.hdr.is_valid():
+            hdr = ElfHeader()
+            memmove(addressof(hdr), data, sizeof(ElfHeader))
+            image = cls.extract_from_file(fname)
+            hdr = SpinHeader()
+            memmove(addressof(hdr), image, sizeof(SpinHeader))
+        else:
+            hdr = SpinHeader()
+            memmove(addressof(hdr), data, sizeof(SpinHeader))
+            print str(hdr)
 
     @classmethod
     def dump_file_header(cls, fname):
@@ -56,7 +56,8 @@ class Image(object):
     def extract_from_file(cls, filename):
         """Extract image from file `filename`. Developed for extracting
         image from ELF binary."""
-        ctx = ElfContext(filename)
+        ctx = ElfContext()
+        ctx.parse_file(filename)
         # Verify ELF context
         if not ctx.hdr.is_valid():
             fh = open(filename, "rb")
@@ -72,7 +73,8 @@ class Image(object):
             section = ctx.load_section_table_entry(i)
             if not section:
                 print "Can not load section table entry %d" % i
-            if section.type != ElfSectionHeader.SHT_PROGBITS:
+            if section.type not in (ElfSectionHeader.SHT_PROGBITS,
+                                    ElfSectionHeader.SHT_NOBITS):
                 continue
             buf = ctx.load_section_segment(section)
             for j in range(section.size):
@@ -150,7 +152,8 @@ class Image(object):
     def get_file_size(cls, filename):
         """Return image size contained in file `filename`. Supports
         SPIN and ELF images."""
-        ctx = ElfContext(filename)
+        ctx = ElfContext()
+        ctx.parse_file(filename)
         (start, image_size) = ctx.get_program_size()
         return image_size
 
@@ -159,8 +162,8 @@ class SpinHeader(Structure):
     =========  ============
     Name       Description
     =========  ============
-    clk_speed  Clock speed.
-    clk_mode   --
+    clkfreq    Clock speed.
+    clkmode    --
     checksum   --
     pbase      Start address of an object.
     vbase      Start address of the VAR section of an object.
@@ -169,8 +172,8 @@ class SpinHeader(Structure):
                instraction to be executed.
     dcurr      Address of the next variable to be stored on the stack.
     =========  ============"""
-    _fields_ = [("clk_speed", c_int),
-                ("clk_mode", c_byte),
+    _fields_ = [("clkfreq", c_int),
+                ("clkmode", c_byte),
                 ("checksum", c_byte),
                 ("pbase", c_short),
                 ("vbase", c_short),
@@ -181,16 +184,16 @@ class SpinHeader(Structure):
 
     def __str__(self):
         return "Spin header:\n" \
-            " clock speed : %d\n" \
-            " clock mode  : 0x%02x (s)\n" \
-            " checksum    : %d\n" \
-            " pbase       : 0x%04x\n" \
-            " vbase       : 0x%04x\n" \
-            " dbase       : 0x%04x\n" \
-            " pcurr       : 0x%04x\n" \
-            " dcurr       : 0x%04x"\
-            % (self.clk_speed,
-               self.clk_mode, #propeller_chip.ClockModes.to_string[self.clk_mode],
+            " clkfreq  : %d Hz\n" \
+            " clkmode  : 0x%02x (%s)\n" \
+            " checksum : %d\n" \
+            " pbase    : 0x%04x\n" \
+            " vbase    : 0x%04x\n" \
+            " dbase    : 0x%04x\n" \
+            " pcurr    : 0x%04x\n" \
+            " dcurr    : 0x%04x"\
+            % (self.clkfreq,
+               self.clkmode, PropellerP8X32.ClockModes.to_string[self.clkmode],
                self.checksum,
                self.pbase, self.vbase, self.dbase, self.pcurr, self.dcurr)
 
@@ -201,15 +204,35 @@ assert sizeof(SpinHeader) == 16, \
 class ElfContext(object):
     """This class represents ELF context."""
 
-    def __init__(self, filename):
-        self.fname = filename
-        self.fh = open(filename)
-        self.data = ''.join(self.fh.readlines())
-        # Read header
-        self.hdr = ElfHeader()
-        memmove(addressof(self.hdr), self.data, sizeof(ElfHeader))
+    def __init__(self):
+        self.__fname = None
+        self.__fh = None
+        self.__data = None
+        self.__hdr = None
+
+    @property
+    def hdr(self):
+        """Return `ElfHeader` instance."""
+        return self.__hdr
+
+    def parse_file(self, filename):
+        """Parse file. See also `parse_data`."""
+        self.__fname = filename
+        self.__fh = open(filename)
+        self.parse_data(''.join(self.__fh.readlines()))
+        self.__fh.close()
+
+    def parse_data(self, data):
+        """Parse data."""
+        self.__hdr = ElfHeader()
+        self.__data = data
+        memmove(addressof(self.__hdr), self.__data, sizeof(ElfHeader))
+
+    def get_filename(self):
+        return self.__fname
 
     def get_program_size(self):
+        """Return `start` and `end` of the program."""
         start = 0xFFFFFFFF
         end = 0
         ## The following implemetation reflects implementation from
@@ -231,22 +254,24 @@ class ElfContext(object):
         return (start, end - start)
 
     def load_section_table_entry(self, i):
+        """Load i-th section table entry and return `ElfSectionHeader`
+        instance."""
         offset = self.hdr.shoff + (i * self.hdr.shentsize)
         hdr = ElfSectionHeader()
-        memmove(addressof(hdr), self.data[offset:offset + sizeof(ElfSectionHeader)], sizeof(ElfSectionHeader))
+        memmove(addressof(hdr), self.__data[offset:offset + sizeof(ElfSectionHeader)], sizeof(ElfSectionHeader))
         return hdr
 
     def load_section_segment(self, section):
-        return self.data[section.offset:section.offset + section.size]
+        return self.__data[section.offset:section.offset + section.size]
 
     def load_program_table_entry(self, i):
         o = self.hdr.phoff + (i * self.hdr.phentsize)
         hdr = ElfProgramHeader()
-        memmove(addressof(hdr), self.data[o:o + sizeof(ElfProgramHeader)], sizeof(ElfProgramHeader))
+        memmove(addressof(hdr), self.__data[o:o + sizeof(ElfProgramHeader)], sizeof(ElfProgramHeader))
         return hdr
 
     def load_program_segment(self, program):
-        return self.data[program.offset:program.offset + program.filesz]
+        return self.__data[program.offset:program.offset + program.filesz]
 
 class ElfSectionHeader(Structure):
     SHT_NULL =0

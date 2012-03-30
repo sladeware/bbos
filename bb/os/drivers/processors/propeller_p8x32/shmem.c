@@ -29,6 +29,7 @@ shmem_write_byte(int32_t addr, int8_t byte)
   *(int8_t*)addr = byte;
 }
 
+/* TODO: More than one long required a lock. */
 void
 shmem_read(int32_t src_addr, void* dst, size_t n)
 {
@@ -40,6 +41,7 @@ shmem_read(int32_t src_addr, void* dst, size_t n)
  * be updated in one hub turn. Thus the routine will use the locks,
  * since we are updating a multi-long structure.
  */
+/* TODO: More than one long required a lock. */
 void
 shmem_write(int32_t dst_addr, void* src, size_t n)
 {

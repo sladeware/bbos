@@ -20,9 +20,8 @@
 #include BBOS_PROCESSOR_FILE(shmem.h)
 #include BBOS_PROCESSOR_FILE(sio.h)
 #include BBOS_PROCESSOR_FILE(pins.h)
-
+/* Application configs */
 #include "button_driver.h"
-//#include "vegimeter.h"
 
 void
 bbos_kernel_loop()
@@ -38,33 +37,34 @@ void
 button_driver_runner()
 {
   uint16_t vegimeter_buttons;
-  uint16_t button_mask = 0xFFUL; /* QuickStart board has P0 - P7 as buttons */
+  /* QuickStart board has P0 - P7 as buttons */
+  int16_t button_mask = 0xFFUL;
 
-  //shmem_read(VEGIMETER_BUTTONS_ADDR, &vegimeter_buttons, 2);
-  vegimeter_buttons = are_buttons_pressed(button_mask); // |=
-  sio_cogsafe_printf("Buttons:%d\n", vegimeter_buttons);
-  //shmem_write(VEGIMETER_BUTTONS_ADDR, &vegimeter_buttons, 2);
+  /* Read, update and store pressed buttons on vegimeter device.
+     We need just one byte from the button mask. */
+  vegimeter_buttons = shmem_read_byte(VEGIMETER_BUTTONS_ADDR);
+  vegimeter_buttons = (int8_t)are_buttons_pressed(button_mask); /* |=?*/
+  shmem_write_byte(VEGIMETER_BUTTONS_ADDR, vegimeter_buttons);
 }
 
 int
 main()
 {
   /* Test button driver running. Blink an LED that corresponds to the
-     running COG id in order to define that our program is alive. */
-  //propeller_set_dira_bits(1 << (16 + cogid()));
-  //propeller_set_outa_bits(1 << (16 + cogid()));
+     running COG id in order to define, that our program is alive. */
+#if 0
+  propeller_set_dira_bits(1 << (16 + cogid()));
+  propeller_set_outa_bits(1 << (16 + cogid()));
+#endif
 
+  /* Initialize shared memory area. */
+  shmem_write_byte(VEGIMETER_BUTTONS_ADDR, 0);
+
+  /* Initialize SIO driver for communication purposes */
   sio_init();
 
-  do
-    {
-      sio_cogsafe_printf("[BD%d]\n", propeller_cogid());
-      button_driver_runner();
-      BBOS_DELAY_MSEC(200);
-    } while (1);
-
   /* Start Bionic Bunny OS */
-  //bbos_kernel_loop();
+  bbos_kernel_loop();
 
   return 0;
 }

@@ -15,10 +15,11 @@
  */
 
 #include <bb/os.h>
+#include <bb/os/kernel/delay.h>
+/* Processor dependent includes */
 #include BBOS_PROCESSOR_FILE(shmem.h)
 #include BBOS_PROCESSOR_FILE(sio.h)
 #include BBOS_PROCESSOR_FILE(pins.h)
-#include <bb/os/kernel/delay.h>
 
 unsigned iteration_counter = 0;
 
@@ -57,10 +58,12 @@ ui_runner(int water_temperature, int soil_temperature_a,
 }
 #else
 
-void ui_runner()
+void
+ui_runner()
 {
   uint8_t i = 0;
-  uint16_t vegimeter_buttons;
+  int8_t vegimeter_buttons;
+
   /*
   printf("----------------------- %d ----------------------\n",
          iteration_counter++);
@@ -76,24 +79,16 @@ void ui_runner()
          soil_temperature_d);
   */
 
-  vegimeter_buttons = 0;
-  /* Read buttons state from the shared memory region */
-  shmem_read(VEGIMETER_BUTTONS_ADDR, &vegimeter_buttons, 2);
-  sio_cogsafe_printf("Buttohns: %d\n", vegimeter_buttons);
+  /* Read buttons state from the shared memory. */
+  vegimeter_buttons = shmem_read_byte(VEGIMETER_BUTTONS_ADDR);
+
   if (vegimeter_buttons)
     {
       for (i = 0; i < 8; i++, vegimeter_buttons >>= 1)
-        {
-          if (vegimeter_buttons & 1UL)
-          {
-            sio_cogsafe_printf("Button pressed: %d\n", i);
-          }
-        }
-      // Clear buttons state
-
-      //shmem_write_byte(VEGIMETER_BUTTONS_ADDR, 0);
-      //shmem_write_byte(VEGIMETER_BUTTONS_ADDR + 1, 0);
-      //vegimeter_buttons = 0;
+        if (vegimeter_buttons & 1)
+          sio_cogsafe_printf("Button pressed: %d\n", i);
+      /* Zero buttons state */
+      shmem_write_byte(VEGIMETER_BUTTONS_ADDR, 0);
     }
 
 }
@@ -113,18 +108,14 @@ main()
 {
   /* Test ui running. Blink an LED that corresponds to the
      running COG id in order to define that our program is alive. */
-  //propeller_set_dira_bits(1 << (16 + cogid()));
-  //propeller_set_outa_bits(1 << (16 + cogid()));
+#if 0
+  propeller_set_dira_bits(1 << (16 + cogid()));
+  propeller_set_outa_bits(1 << (16 + cogid()));
+#endif
 
   sio_init();
 
-  while (1)
-    {
-      sio_cogsafe_printf("[UI%d]\n", propeller_cogid());
-      //ui_runner();
-      BBOS_DELAY_MSEC(500);
-    }
-  //bbos();
+  bbos_kernel_loop();
 
   return 0;
 }

@@ -337,8 +337,8 @@ class MulticogSPIUploader(SPIUploaderInterface):
         print "Uploading %s (%d bytes) on COG#%d to 0x%08x" \
             % (filename, sz, cogid, self.__offset)
         # The following blocks aims to edit binary image
-        vars_size = 128 # 16
-        stack_size = 512 # 128
+        vars_size = 512 # 16
+        stack_size = 1024 # 128
         # Compute an offset for working space for our program
         offset = self.__total_upload_size + i * (vars_size + stack_size)
 
@@ -351,8 +351,8 @@ class MulticogSPIUploader(SPIUploaderInterface):
         hdr_p.contents.vbase = offset + 0
         hdr_p.contents.dbase = offset + vars_size
         hdr_p.contents.pcurr = self.__offset + hdr_p.contents.pcurr
-        hdr_p.contents.dcurr = offset + (vars_size + stack_size)
-
+        hdr_p.contents.dcurr = offset + vars_size + 4 #offset + (vars_size + stack_size)
+        #print str(hdr_p.contents)
         logging.info(str(hdr_p.contents))
         data = list(data)
 

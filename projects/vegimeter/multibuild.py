@@ -8,6 +8,9 @@ from bb.tools import propler
 from bb.builder.projects import CProject
 from bb.builder.compilers import PropGCCCompiler
 
+#propler.Image.dump_file_header("/home/d2rk/Workspace/bionicbunny/trunk/bb/tools/propler/tests/special.binary")
+#exit(0)
+
 def create_propgcc_project():
     project = CProject("vegimeter", verbose=True)
     compiler = PropGCCCompiler()
@@ -83,10 +86,10 @@ for image_id, handler in cogid_to_instance_mapping.items():
 
 config = propler.DemoBoardConfig() #QuickStartBoardConfig()
 
-print "Uploading bootloader"
-uploader = propler.upload_bootloader('/dev/ttyUSB0', config)
+#print "Uploading bootloader"
+#uploader = propler.upload_bootloader('/dev/ttyUSB0', config)
 # Very important! Let bootloader to settle!
-time.sleep(7)
+#time.sleep(7)
 
 print "Uploading images"
 propler.multicog_spi_upload(cogid_to_filename_mapping,

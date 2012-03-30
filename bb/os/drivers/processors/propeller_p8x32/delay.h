@@ -29,12 +29,12 @@ int_max(int a, int b)
   return a;
 }
 
-#define BBOS_DELAY_MSEC(msec)                                           \
-  do {                                                                  \
-    propeller_waitcnt(int_max((propeller_get_clockfreq() / 1000) * msec - 3932, \
-                              MIN_WAITCNT_WINDOW) +                     \
-                      propeller_get_cnt());                             \
-  } while (0)
+/**
+ * Macro for a millisecond delay.
+ */
+#define BBOS_DELAY_MSEC(msec)                                         \
+  propeller_waitcnt(int_max((propeller_get_clockfreq() / 1000) * msec - 3932, MIN_WAITCNT_WINDOW) + \
+                    propeller_get_cnt())
 
 #ifdef __CATALINA__
 #include <catalina_icc.h>
@@ -55,5 +55,5 @@ void bbos_delay_usec(int usec);
 #define bbos_delay_sec(sec) sleep(sec)
 
 #else
-#error Not supported compiler, please report support team
+#  error Not supported compiler, please report support team
 #endif
