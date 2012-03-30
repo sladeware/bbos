@@ -244,7 +244,7 @@ restart
 
         mov r6, interpreter  ' start working on COG initialization ...
         or r6, r2            ' ... set image address ...
-        'or r6, cpu_no        ' ... set cpu no ...
+        or r6, cpu_no        ' ... set cpu no ...
         coginit r6           ' initialize COG
 
         mov time, cnt        ' small ...
@@ -670,7 +670,7 @@ sect_count    long      $0
 
 ' see http://forums.parallax.com/forums/default.aspx?f=25&m=363100
 'interpreter   long    ($0004 << 16) | ($F004 << 2) | %0000
-interpreter   long    ($0000 << 16) | ($F004 << 2) | %1000
+interpreter   long    ($0000 << 16) | ($F004 << 2) | %0000
 
 '
 ' temporary storage used in mul & div calculations

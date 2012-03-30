@@ -64,20 +64,20 @@ ui_runner()
   uint8_t i = 0;
   int8_t vegimeter_buttons;
 
-  /*
-  printf("----------------------- %d ----------------------\n",
-         iteration_counter++);
-  printf("Temperature for water sensor: %i 1/100th degrees C\n",
-         water_temperature);
-  printf("Temperature for soil sensor A: %i 1/100th degrees C\n",
-         soil_temperature_a);
-  printf("Temperature for soil sensor B: %i 1/100th degrees C\n",
-         soil_temperature_b);
-  printf("Temperature for soil sensor C: %i 1/100th degrees C\n",
-         soil_temperature_c);
-  printf("Temperature for soil sensor D: %i 1/100th degrees C\n",
-         soil_temperature_d);
-  */
+#if 0
+  bbos_printf("----------------------- %d ----------------------\n",
+              iteration_counter++);
+  bbos_printf("Temperature for water sensor: %i 1/100th degrees C\n",
+              water_temperature);
+  bbos_printf("Temperature for soil sensor A: %i 1/100th degrees C\n",
+              soil_temperature_a);
+  bbos_printf("Temperature for soil sensor B: %i 1/100th degrees C\n",
+              soil_temperature_b);
+  bbos_printf("Temperature for soil sensor C: %i 1/100th degrees C\n",
+              soil_temperature_c);
+  bbos_printf("Temperature for soil sensor D: %i 1/100th degrees C\n",
+              soil_temperature_d);
+#endif
 
   /* Read buttons state from the shared memory. */
   vegimeter_buttons = shmem_read_byte(VEGIMETER_BUTTONS_ADDR);
@@ -86,7 +86,7 @@ ui_runner()
     {
       for (i = 0; i < 8; i++, vegimeter_buttons >>= 1)
         if (vegimeter_buttons & 1)
-          sio_cogsafe_printf("Button pressed: %d\n", i);
+          bbos_printf("Button pressed: %d\n", i);
       /* Zero buttons state */
       shmem_write_byte(VEGIMETER_BUTTONS_ADDR, 0);
     }
@@ -108,7 +108,7 @@ main()
 {
   /* Test ui running. Blink an LED that corresponds to the
      running COG id in order to define that our program is alive. */
-#if 0
+#if 1
   propeller_set_dira_bits(1 << (16 + cogid()));
   propeller_set_outa_bits(1 << (16 + cogid()));
 #endif

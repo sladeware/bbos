@@ -18,17 +18,15 @@
 
 #include "vegimeter_config.h"
 
-#define BBOS_SKIP_BANNER_PRINTING
-#define BBOS_CONFIG_PROCESSOR propeller_p8x32
 #define BBOS_CONFIG_NR_THREADS 7
 
 #define SIO_COGSAFE_PRINTING
 #define SIO_PRINTF_STRING_SUPPORT
-#define bbos_printf sio_printf
+#define bbos_printf sio_cogsafe_printf
 
 #define BBOS_CONFIG_USE_STATIC_SCHED
 #define bbos_main()
-#define BBOS_CONFIG_KERNEL_LOOP  /* see button_driver.c */
+#define BBOS_CONFIG_KERNEL_LOOP /* see button_driver.c */
 
 /*
 #define BBOS_NR_PORTS 2

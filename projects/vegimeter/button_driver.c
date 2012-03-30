@@ -52,7 +52,7 @@ main()
 {
   /* Test button driver running. Blink an LED that corresponds to the
      running COG id in order to define, that our program is alive. */
-#if 0
+#if 1
   propeller_set_dira_bits(1 << (16 + cogid()));
   propeller_set_outa_bits(1 << (16 + cogid()));
 #endif

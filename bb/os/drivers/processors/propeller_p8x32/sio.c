@@ -101,7 +101,7 @@ HUBTEXT void
 sio_put_char(int8_t c)
 {
   int frame = 0;
-  int i = 11;
+  //int i = 11;
   uint32_t bitticks_cnt;
   uint32_t num_bitticks;
 

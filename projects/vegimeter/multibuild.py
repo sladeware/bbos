@@ -73,7 +73,7 @@ for image_id, handler in cogid_to_instance_mapping.items():
     compiler = image.get_compiler()
     compiler.define_macro("__linux__")
     compiler.define_macro("BB_HAS_STDINT_H")
-    compiler.set_extra_preopts(["-Os", "-Wall"])
+    compiler.set_extra_preopts(["-Os"]) # -Wall?
     linker = compiler.get_linker()
     linker.add_opts(["-Wl,-T" + script_fname])
 
