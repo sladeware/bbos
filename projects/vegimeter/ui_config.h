@@ -13,6 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+/**
+ * @file ui_config.h
+ * @brief UI config
+ */
+
 #ifndef __UI_CONFIG_H
 #define __UI_CONFIG_H
 

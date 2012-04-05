@@ -13,6 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+/**
+ * @file button_driver_config.h
+ * @brief Button driver config
+ */
+
 #ifndef __BUTTON_DRIVER_CONFIG_H
 #define __BUTTON_DRIVER_CONFIG_H
 
