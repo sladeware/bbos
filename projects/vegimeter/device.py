@@ -14,15 +14,16 @@
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 
+import re
 import os.path
 import getpass
 
 from bb.hardware.design import Network
-from bb.hardware.compatibility import Fritzing
 from bb.hardware.primitives import Pin
 from bb.utils import module
+from bb.tools import Fritzing
 
-# Provide environment setup for each developer
+# Setup environment for each developer
 Fritzing.set_home_dir("/opt/fritzing")
 Fritzing.add_search_path(os.path.join(module.get_dir(), "parts"))
 
@@ -30,21 +31,44 @@ vegimeter_device = Fritzing.parse("device.fz")
 #for element in vegimeter_device.get_elements():
 #    print element.get_property_value("name"), element.designator
 
+#_____________________________________________________________________
+
 import networkx
-#from bb.hardware.primitives import G
+from bb.hardware.primitives import G
 
 quickstart = vegimeter_device.find_element("QSP1")
 tempsensor1 = vegimeter_device.find_element("TS1")
 
-#print "Connections of TS1 with QSB1"
-#for src_pin in tempsensor1.find_elements(Pin):
-#    for dst_pin in quickstart.find_elements(Pin):
-#        res = networkx.bidirectional_dijkstra(G, src_pin, dst_pin)
-#        if res:
-#            length, path = res
-#            print "%s (%s) ==> %s (%s)" \
-#                % (src_pin.get_property_value("name"), src_pin.designator,
-#                   dst_pin.get_property_value("name"), dst_pin.designator)
+## The next snippet shows all the pins
+#pins = tempsensor1.find_elements(Pin)
+#for pin in pins:
+#    print pin.get_property_value("name")
+
+print
+
+def get_quickstartboard_pin_designator(name):
+    mapping = {
+        33 : 34, 32 : 33, 21 : 18, 7 : 8, 26 : 28, 2 : 3, 17 : 38,
+        1 : 2, 18 : 39, 30 : 32, 16 : 37, 25 : 27, 27 : 29, 28 : 30,
+        40 : 26, 14 : 15, 20 : 17, 24 : 21, 10 : 11, 31 : 16, 11 : 12,
+        22 : 19, 0 : 1, 23 : 20, 13 : 14, 29 : 31, 6 : 7, 39 : 25,
+        3 : 4, 36 : 22, 9 : 10, 12 : 13, 15 : 36, 8 : 9, 38 : 24,
+        4 : 5, 34 : 35, 37 : 23, 19 : 40, 5 : 6
+        }
+    m = re.match(r"connector(\d+)", name)
+    return mapping[int(m.group(1))]
+
+print "Connections of TS1 with QSB1"
+for src_pin in tempsensor1.find_elements(Pin):
+    for dst_pin in quickstart.find_elements(Pin):
+        res = networkx.bidirectional_dijkstra(G, src_pin, dst_pin)
+        if res:
+            length, path = res
+            print "%s (%s) ==> %s (%s)" \
+                % (src_pin.get_property_value("name"),
+                   get_quickstartboard_pin_designator(src_pin.designator),
+                   dst_pin.get_property_value("name"),
+                   get_quickstartboard_pin_designator(dst_pin.designator))
 #exit(0)
 
 def bill_of_materials():

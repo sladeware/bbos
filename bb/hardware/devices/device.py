@@ -14,6 +14,37 @@ class Device(ElectronicPrimitive):
     can contain one or more parts that are packaged together (e.g. a
     74HCT32)."""
 
+    class Searcher(list):
+        def __init__(self, source):
+            self.__source = source
+            self.__elements = []
+            list.__init__(self, self.__source)
+
+        def find_elements(self, by):
+            """Returns elements of this device that is identified by `by`,
+            or ``None`` if there is no such object.
+
+            The by argument can be represented by a function, string, class or
+            number. Omitting the by argument causes all object to be matched."""
+            if type(by) == types.TypeType:
+                for element in self.__source:
+                    if isinstance(element, by):
+                        self.__elements.append(element)
+            elif type(by) in (types.StringType, types.UnicodeType):
+                for element in self.__source:
+                    if element.designator == by:
+                        self.__elements.append(element)
+            return Device.Searcher(self.__elements)
+
+        def find_element(self, by):
+            """If there is more than one child matching the search, the first
+            one is returned. In that case, :func:`Device.find_elements` should
+            be used."""
+            elements = self.find_elements(by)
+            if len(elements):
+                return elements[0]
+            return None
+
     # Device register keeps complete list of all devices so the instance
     # of device can not be managed by different device managers.
     element_register = dict()
@@ -77,37 +108,6 @@ class Device(ElectronicPrimitive):
         """Return list of elements that owns to this device."""
         global G
         return G.neighbors(self)
-
-    class Searcher(list):
-        def __init__(self, source):
-            self.__source = source
-            self.__elements = []
-            list.__init__(self, self.__source)
-
-        def find_elements(self, by):
-            """Returns elements of this device that is identified by `by`,
-            or ``None`` if there is no such object.
-
-            The by argument can be represented by a function, string, class or
-            number. Omitting the by argument causes all object to be matched."""
-            if type(by) == types.TypeType:
-                for element in self.__source:
-                    if isinstance(element, by):
-                        self.__elements.append(element)
-            elif type(by) in (types.StringType, types.UnicodeType):
-                for element in self.__source:
-                    if element.designator == by:
-                        self.__elements.append(element)
-            return Device.Searcher(self.__elements)
-
-        def find_element(self, by):
-            """If there is more than one child matching the search, the first
-            one is returned. In that case, :func:`Device.find_elements` should
-            be used."""
-            elements = self.find_elements(by)
-            if len(elements):
-                return elements[0]
-            return None
 
     def find_element(self, by):
         """If there is more than one child matching the search, the first
