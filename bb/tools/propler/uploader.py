@@ -25,6 +25,7 @@ except ImportError:
     print >>sys.stderr, "Please install pyserial."
     exit(0)
 
+from bb.utils import module
 from bb.utils.spawn import spawn
 from bb.tools.propler.image import *
 from bb.tools.propler.chips import *
@@ -507,7 +508,7 @@ def multicog_spi_upload(cogid_to_filename_mapping, serial_port,
         print "Process has been interrupted"
     uploader.disconnect()
 
-def upload_bootloader(port="/dev/ttyUSB0", config=None):
+def upload_bootloader(port="/dev/ttyUSB0", config=None, rebuild=False):
     """Upload bootloader `MULTICOG_BOOTLOADER_BINARY_FILENAME` by using
     :class:`SPIUploader`."""
 
@@ -522,13 +523,14 @@ def upload_bootloader(port="/dev/ttyUSB0", config=None):
         raise Exception("Cannot find catalina config for %s" %
                         config.__class__.__name__)
     bootloader_src = os.path.join(HOME_DIR, "multicog_spi_bootloader.spin")
-    bootloader_binary = "multicog_spi_bootloader"
-    spawn(["homespun", bootloader_src, "-b",
-           "-L", "/usr/local/lib/catalina/target/",
-           "-D", catalina_config,
-           "-o", bootloader_binary], verbose=True)
+    bootloader_binary = os.path.join(module.get_dir(), "multicog_spi_bootloader.binary")
+    if rebuild or not os.path.exists(bootloader_binary):
+        spawn(["homespun", bootloader_src, "-b",
+               "-L", "/usr/local/lib/catalina/target/",
+               "-D", catalina_config,
+               "-o", bootloader_binary], verbose=True)
     # Fix binary name, since '.binary' will be added automatically
-    bootloader_binary += ".binary"
+    #bootloader_binary += ".binary"
     uploader = SPIUploader(port=port)
     uploader.connect()
     uploader.upload_file(bootloader_binary, eeprom=True)
