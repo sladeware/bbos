@@ -3,8 +3,9 @@
 try:
     import networkx
 except ImportError:
-    print "Please install network"
-    exit(0)
+    print >>sys.stderr, "Please install networkx library:", \
+        "http://networkx.lanl.gov"
+    sys.exit(1)
 
 class Network(object):
     g = networkx.DiGraph()

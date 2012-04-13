@@ -9,8 +9,9 @@ import copy
 try:
     import networkx
 except ImportError:
-    print "Please install network"
-    exit(0)
+    print >>sys.stderr, "Please install networkx library:", \
+        "http://networkx.lanl.gov"
+    exit(1)
 G = networkx.DiGraph()
 
 class Property(object):
