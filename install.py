@@ -8,6 +8,11 @@ __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 import sys
 import os
 
+REQUIRED_PYTHON_MODULES = {
+    "serial": "please download and install pyserial from http://pyserial.sourceforge.net",
+    "networkx": "please download and install networkx library from http://networkx.lanl.gov",
+}
+
 # These are needed in a couple of spots, so just compute them once.
 PREFIX = os.path.normpath(sys.prefix)
 EXEC_PREFIX = os.path.normpath(sys.exec_prefix)
@@ -208,12 +213,34 @@ def get_config_vars(*args):
     else:
         return _config_vars
 
-print " ____  ____    ___           _        _ _"
-print "| __ )| __ )  |_ _|_ __  ___| |_ __ _| | |"
-print "|  _ \|  _ \   | || '_ \/ __| __/ _` | | |"
-print "| |_) | |_) |  | || | | \__ \ || (_| | | |"
-print "|____/|____/  |___|_| |_|___/\__\__,_|_|_|"
-print
+#_______________________________________________________________________________
+
+def banner():
+    print " ____  ____    ___           _        _ _ "
+    print "| __ )| __ )  |_ _|_ __  ___| |_ __ _| | |"
+    print "|  _ \|  _ \   | || '_ \/ __| __/ _` | | |"
+    print "| |_) | |_) |  | || | | \__ \ || (_| | | |"
+    print "|____/|____/  |___|_| |_|___/\__\__,_|_|_|"
+    print
+
+def check_dependencies():
+    ok = True
+    print "Checking for dependencies:"
+    for mod_name, err_msg in REQUIRED_PYTHON_MODULES.items():
+        try:
+            __import__(mod_name)
+            print "* '%s'... [OK]" % mod_name
+        except ImportError:
+            msg = "[NOT FOUND]"
+            if err_msg:
+                msg = err_msg
+            print "* '%s'... %s" % (mod_name, msg)
+            ok = False
+    return ok
+
+#_______________________________________________________________________________
+
+banner()
 
 BB_HOME = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 BB_PACKAGE_NAME = 'bb'
@@ -232,5 +259,10 @@ to = os.path.join(libdest, BB_PACKAGE_NAME)
 if os.path.exists(to) or os.path.lexists(to):
     print "Removing old link:", to
     os.unlink(to)
+
+if not check_dependencies():
+    print "Sorry, but BB cannot be installed"
+    exit(1)
+
 print "Creating a link:", to
 os.symlink(BB_PACKAGE_PATH, to)
