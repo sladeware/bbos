@@ -6,11 +6,13 @@ import os
 import platform
 from types import *
 
-import bb.builder
+from bb import builder
 from bb.utils.distribution import DistributionMetadata
 from bb.builder.compilers import Compiler
 from bb.builder.loaders import Loader
 from bb.builder.errors import *
+
+#_______________________________________________________________________________
 
 class Project(DistributionMetadata):
     """Class representing a project."""
@@ -108,7 +110,7 @@ class Project(DistributionMetadata):
         """Start building process."""
         # Control verbose
         if not verbose:
-            verbose = getattr(bb.builder.config.options, 'verbose', verbose)
+            verbose = builder.get_config().options.verbose
         if verbose is not None:
             self.verbose = verbose
         if sources:
@@ -120,7 +122,7 @@ class Project(DistributionMetadata):
             self.compiler.set_output_dir(output_dir)
         # Control dry run mode
         if not dry_run:
-            dry_run = getattr(bb.builder.config.options, 'dry_run', dry_run)
+            dry_run = builder.get_config().options.dry_run
         if dry_run is not None:
             self.compiler.dry_run = dry_run
         self.compiler.check_executables()
