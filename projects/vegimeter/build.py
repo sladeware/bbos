@@ -2,110 +2,95 @@
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 
-import os.path
-import sys
+import os
+import time
 
-from bb.builder.loaders import BSTLLoader
 from bb.utils import module
+from bb.tools import propler
+from bb import builder
+from bb.builder.projects import CProject
+from bb.builder.compilers import PropGCCCompiler
 
-BE_VERBOSE = True
-LOAD_BINARY_FLAG = False # Do we need to use loader to load the binary?
-HUM_RAM_SIZE = 32 * 1024
-COMPILER = "catalina"
-
-project = None
-compiler = None
-
-def setup_catalina():
-    global project, compiler
-    from bb.builder.projects import CatalinaProject
-    project = CatalinaProject("vegimeter", verbose=BE_VERBOSE)
-    compiler = project.get_compiler()
-    compiler.add_include_dirs(["/opt/catalina/include",])
-    # Add required libraries
-    compiler.add_library("ci") # Use this when float output not required
-    #compiler.add_library("c")
-    # Definitions
-    for macro in (\
-        # Load a PC terminal emulator HMI plugin with screen and
-        # keyboard support
-        "PC",
-        # Reduce some plugins in order to save as much cogs as we can :)
-        "NO_MOUSE",
-        "NO_KEYBOARD",
-        #"NO_SCREEN",
-        "NO_GRAPHICS",
-        #"NO_HMI",
-        ):
-        compiler.define_macro(macro)
-        # Propeller Demo Board support
-    compiler.define_macro("DEMO")
-
-def setup_propgcc():
-    global project, compiler
-    from bb.builder.projects import CProject
-    from bb.builder.compilers import PropGCCCompiler
-    project = CProject("vegimeter", verbose=True)
+def create_image():
+    image = CProject("image")
     compiler = PropGCCCompiler()
-    print compiler
-    project.set_compiler(compiler)
+    image.set_compiler(compiler)
     # At some point propgcc doesn't provide platform macro so we need to
     # define it manually
     compiler.define_macro("__linux__")
     compiler.define_macro("BB_HAS_STDINT_H")
-    compiler.set_extra_preopts(["-Os", "-mlmm", "-Wall"])
+    compiler.define_macro("printf", "__simple_printf")
+    compiler.set_memory_model("LMM") # case insensetive
+    compiler.set_extra_preopts(["-Os", "-Wall"])
 
-if COMPILER == "catalina":
-    setup_catalina()
-elif COMPILER == "propgcc":
-    setup_propgcc()
-else:
-    raise Exception("Not supported compiler")
+    for filename in ("./../../bb/os.c",
+                     "./../../bb/os/drivers/processors/propeller_p8x32/delay.c",
+                     "./../../bb/os/kernel.c",
+                     #"./../../bb/os/kernel/schedulers/fcfsscheduler.c"
+                     ):
+        image.add_source(filename)
+    compiler = image.get_compiler()
+    compiler.add_include_dirs(["./../..", "."])
+    return image
 
-# Common setup
-compiler.add_include_dirs(["./../..", "."])
+def buttons_driver_image(image):
+    compiler = image.get_compiler()
+    compiler.define_macro("BB_CONFIG_OS_H", '"button_driver_config.h"')
+    image.set_name("button_driver_image")
+    for filename in ("./../../bb/os/drivers/gpio/button.c",
+                     "./../../bb/os/drivers/processors/propeller_p8x32/shmem.c",
+                     "./../../bb/os/drivers/processors/propeller_p8x32/sio.c",
+                     "button_driver.c"):
+        image.add_source(os.path.join(module.get_dir(), filename))
 
-# Add sources
-# XXX: BB related files. They will be added automatically
-# my builder later.
-for filename in ("./../../bb/os.c",
-                 "./../../bb/os/drivers/gpio/button.c",
-                 "./../../bb/os/drivers/gpio/lh1500.c",
-                 "./../../bb/os/drivers/onewire/onewire_bus.c",
-                 "./../../bb/os/drivers/onewire/slaves/ds18b20.c",
-                 "./../../bb/os/drivers/processors/propeller_p8x32/delay.c",
-                 "./../../bb/os/kernel.c",
-                 "./../../bb/os/kernel/schedulers/fcfsscheduler.c"):
-    project.add_source(filename)
-for filename in ("temp_sensor_driver_soil_a.c",
-                 "temp_sensor_driver_soil_b.c",
-                 "temp_sensor_driver_soil_c.c",
-                 "temp_sensor_driver_soil_d.c",
-                 "temp_sensor_driver_water.c",
-                 "ui.c",
-                 "controller.c",
-                 "pump_driver.c",
-                 "button_driver.c",
-                 "heater_driver.c",
-                 "main.c",):
-    project.add_source(os.path.join(module.get_dir(), filename))
+def ui_image(image):
+    compiler = image.get_compiler()
+    compiler.define_macro("BB_CONFIG_OS_H", '"ui_config.h"')
+    image.set_name("ui_image")
+    for filename in ("ui.c",
+                     "./../../bb/os/drivers/processors/propeller_p8x32/shmem.c",
+                     "./../../bb/os/drivers/processors/propeller_p8x32/sio.c",
+                     ):
+        image.add_source(os.path.join(module.get_dir(), filename))
 
-# Build the project
-project.build(verbose=BE_VERBOSE)
+cogid_to_addr_mapping = dict()
+cogid_to_filename_mapping = dict()
+start_addr = 0
+cogid_to_instance_mapping = {
+    6: ui_image,
+    4: buttons_driver_image,
+}
 
-#image_size = os.path.getsize(project.output_filename)
-#if image_size > HUM_RAM_SIZE:
-#    print >>sys.stderr, "Too large image size: %d > %d" % (image_size, HUM_RAM_SIZE)
+if __name__ == "__main__":
+    builder.get_config().parse_command_line()
 
-# Skip the last part if we do not need to load binary
-if not LOAD_BINARY_FLAG:
-    exit(0)
+    for image_id, handler in cogid_to_instance_mapping.items():
+        image = create_image()
+        handler(image)
+        script_fname = "%s_script.ld" % image.get_name()
+        propler.gen_ld_script.generate(script_fname,
+                                       dict(HUB_START_ADDRESS=start_addr))
+        compiler = image.get_compiler()
+        compiler.define_macro("__linux__")
+        compiler.define_macro("BB_HAS_STDINT_H")
+        compiler.set_extra_preopts(["-Os"]) # -Wall?
+        linker = compiler.get_linker()
+        linker.add_opts(["-Wl,-T" + script_fname])
 
-# Setup loader to load our binary
-loader = BSTLLoader(verbose=BE_VERBOSE,
-                    mode=BSTLLoader.Modes.RAM_ONLY,
-                    device_filename="/dev/ttyUSB0")
-project.set_loader(loader)
+        image.build()
+        cogid_to_addr_mapping[image_id] = start_addr
+        start_addr += propler.Image.get_file_size(image.get_output_filename())
+        cogid_to_filename_mapping[image_id] = image.get_output_filename()
 
-# Load the project binary
-project.load()
+    config = propler.QuickStartBoardConfig()
+
+    print "Uploading bootloader"
+    uploader = propler.upload_bootloader('/dev/ttyUSB0', config)
+    # Very important! Let bootloader to settle!
+    time.sleep(7)
+
+    print "Uploading images"
+    # We can also use uploader.serial.port instead of direct selection
+    propler.multicog_spi_upload(cogid_to_filename_mapping,
+                                '/dev/ttyUSB0')
+    propler.terminal_mode()
