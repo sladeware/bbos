@@ -5,7 +5,6 @@
  * Copyright (c) 2012 Sladeware LLC
  */
 
-#include <bb/os/drivers/processors/propeller_p8x32/config.h>
 #include <bb/os/drivers/processors/propeller_p8x32/pins.h>
 #include <bb/os/drivers/processors/propeller_p8x32/sio.h>
 #include <bb/os/drivers/processors/propeller_p8x32/delay.h>
@@ -13,8 +12,12 @@
 int
 main()
 {
+  sio_init();
+  printf("A"); // Initialization?
+
   while (1)
     {
+#if 1
       /* Flush LED that corresponds to active cog. */
       propeller_set_dira_bits(1 << (16 + cogid()));
       propeller_set_outa_bits(1 << (16 + cogid()));
@@ -23,7 +26,9 @@ main()
       propeller_clr_dira_bits(1 << (16 + cogid()));
       propeller_clr_outa_bits(1 << (16 + cogid()));
       bbos_delay_msec(500); /* wait... */
+#endif
 
+      //sio_cogsafe_printf("Hi!");
       sio_cogsafe_printf("Cog %d is running!\n", propeller_cogid());
     }
 
