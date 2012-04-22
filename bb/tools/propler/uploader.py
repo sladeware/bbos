@@ -152,7 +152,7 @@ class SPIUploaderInterface(object):
         version = 0
         for i in range(8):
             version = ((version >> 1) & 0x7F) | ((self.receive_bit(False, 0.050) << 7))
-        print "Connected to propeller v%d on '%s'" % (version, self.__serial.port)
+        print "Connecting to propeller v%d on '%s'" % (version, self.__serial.port)
         if version:
             return True
         self.disconnect()
@@ -187,15 +187,30 @@ class SPIUploaderInterface(object):
         return nbytes
 
     def disconnect(self):
+        print "Disconnecting"
         self.serial.close()
-        print "Disconnected"
 
 
-class Commands:
-    SHUTDOWN               = 0
-    LOAD_TO_RAM_AND_RUN    = 1
-    LOAD_TO_EEPROM         = 2
-    LOAD_TO_EEPROM_AND_RUN = 3
+class BootloaderCommands:
+
+    @classmethod
+    def get_command_list(cls):
+        return sorted(cls.commands, key=lambda cmd: cls.commands[cmd])
+
+    @classmethod
+    def get_code_list(cls):
+        return sorted(cls.commands.values())
+
+    @classmethod
+    def get_command_code(cls, name):
+        return cls.commands[name]
+
+    commands = {
+        "SHUTDOWN"               : 0,
+        "LOAD_TO_RAM_AND_RUN"    : 1,
+        "LOAD_TO_EEPROM"         : 2,
+        "LOAD_TO_EEPROM_AND_RUN" : 3
+        }
 
 class SPIUploader(SPIUploaderInterface):
     """Standard one cog uploader."""
@@ -225,8 +240,7 @@ class SPIUploader(SPIUploaderInterface):
         count_bytes = len(image)
         count_longs = count_bytes // 4
         print "Ready to transmit", count_bytes, "bytes"
-        command = [Commands.SHUTDOWN, Commands.LOAD_TO_RAM_AND_RUN,
-                   Commands.LOAD_TO_EEPROM, Commands.LOAD_TO_EEPROM_AND_RUN][eeprom * 2 + run]
+        command = BootloaderCommands.get_code_list()[eeprom * 2 + run]
         self.send_long(command)
         self.send_long(count_longs)
         #time.sleep(0.05)
@@ -264,6 +278,11 @@ class SPIUploader(SPIUploaderInterface):
         result.append(chr(0xf2 | (value & 0x01) | ((value & 2) << 2)))
         return "".join(result)
 
+#_____________________________________________________________________
+
+class MulticogBootloaderCommands(BootloaderCommands):
+    pass
+
 class MulticogSPIUploader(SPIUploaderInterface):
     """See :func:`multicog_spi_upload`.
 
@@ -274,9 +293,9 @@ class MulticogSPIUploader(SPIUploaderInterface):
         self.__offset = 0
         self.__total_upload_size = 0
 
-    def upload(self, cogid_to_filename_mapping):
-        # Very important to select right timeout. Non-blocking mode is
-        # not allowed
+    def upload(self, cogid_to_filename_mapping, run=True, eeprom=False):
+        # Very important to select right timeout.
+        # Non-blocking mode is not allowed.
         self.serial.timeout = 5
         self.__total_upload_size = 0
         # Extract and sort a list of target COG id's in increase order
@@ -291,6 +310,9 @@ class MulticogSPIUploader(SPIUploaderInterface):
                 logging.info("\t%s => COG #%d", path, cogid)
                 self.__total_upload_size += Image.get_file_size(path)
             print "Total upload size: %d (bytes)" % self.__total_upload_size
+        # Send the command that will describe the further steps
+        command = MulticogBootloaderCommands.get_code_list()[eeprom * 2 + run]
+        #self.send_byte(command)
         # Send synch signal in order to describe target
         # number of images to be sent
         self.__send_sync_signal(len(cogid_to_filename_mapping))
@@ -454,31 +476,37 @@ class MulticogSPIUploader(SPIUploaderInterface):
             raise UploadingError()
 
 def multicog_spi_upload(cogid_to_filename_mapping, serial_port,
+                        run=True, eeprom=False,
                         force=False, bootloader_settle_delay=5):
     """Start multicog upload, instanciate uploader
     :class:`MulticogSPIUploader` and connect to the target
     device. `cogid_to_filename_mapping` represents mapping of cog to
-    filename that has to be uploaded on this cog. Return uploading
-    status.
+    file name that has to be uploaded on this cog. As result the 
+    function returns uploading status.
 
-    If ``force`` is defined, uploader will try to continue upload
-    images until success.
+    By default the images will be uploaded to the RAM and will be
+    launched one by one once the uploading is finished. You may
+    set ``run`` as False, so bootloader will not execute uploaded images,
+    and ``eeprom`` as True to cause it to load images to EEPROM.
+
+    You can set ``force`` as True, then uploader will try to continue
+    uploading images until success.
 
     Note, the multicog bootloader has to be uploaded first before you
     will start transmitting images. See :func:`upload_bootloader`."""
 
-    print "+--------+--------------------------------+---------+"
-    print "| %6s | %30s | %7s |" % ("COG ID", "IMAGE", "SIZE")
-    print "+--------+--------------------------------+---------+"
+    print "+--------+----------------------------------------------+----------------------+"
+    print "| %6s | %44s | %20s |" % ("COG ID", "IMAGE", "SIZE")
+    print "+--------+----------------------------------------------+----------------------+"
     total_size = 0
     for (cogid, filename) in cogid_to_filename_mapping.items():
         sz = Image.get_file_size(filename)
-        print "| %6d | %30s | %7d |" % (cogid, filename, sz)
+        print "| %6d | %44s | %20d |" % (cogid, os.path.basename(filename), sz)
         total_size += sz
-    print "+--------+--------------------------------+---------+"
-    print "  %39s | %7d |" % (" ", total_size)
-    print "                                          +---------+"
-
+    print "+--------+----------------------------------------------+----------------------+"
+    print "  %53s | %20d |" % (" ", total_size)
+    print "                                                        +----------------------+"
+    # Create uploader instance and pass mapping of images
     try:
         while True:
             try:
@@ -486,12 +514,11 @@ def multicog_spi_upload(cogid_to_filename_mapping, serial_port,
                 # Use standard connection in order to define whether
                 # we have propeller device to work with
                 uploader.connect()
-                # If so, we no longer need this information and
-                # mode. Reset propeller and wait for bootloader
-                # initialization.
+                # ... we no longer need this information and mode.
+                # Reset propeller and wait for bootloader initialization.
                 uploader.reset()
                 time.sleep(bootloader_settle_delay)
-                uploader.upload(cogid_to_filename_mapping)
+                uploader.upload(cogid_to_filename_mapping, run, eeprom)
             except (KeyboardInterrupt, SystemExit):
                 print # prevent overlapping with uploader's printing
                 print "Process has been interrupted"
@@ -507,6 +534,8 @@ def multicog_spi_upload(cogid_to_filename_mapping, serial_port,
         print # prevent overlapping with uploader's printing
         print "Process has been interrupted"
     uploader.disconnect()
+
+#_____________________________________________________________________
 
 def upload_bootloader(port="/dev/ttyUSB0", config=None, rebuild=False):
     """Upload bootloader `MULTICOG_BOOTLOADER_BINARY_FILENAME` by using

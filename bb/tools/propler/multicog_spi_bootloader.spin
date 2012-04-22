@@ -1,9 +1,10 @@
-'*********************************************************************
-'* Bootloader.
-'*
-'* Copyright (c) 2012 Sladeware LLC
-'*
-'*********************************************************************
+'_____________________________________________________________________
+'
+' Bootloader.
+'
+' Copyright (c) 2012 Sladeware LLC
+'_____________________________________________________________________
+'
 
 CON
   ' Set these to suit the platform by modifying "Catalina_Common"
@@ -15,7 +16,7 @@ CON
 
   ' Debugging options (note that enabling debugging will also require
   ' SLOW_XMIT to be enabled to avoid comms timeouts):
-  '#define SLOW_XMIT
+'#define SLOW_XMIT
 
   NR_COGS = 8
   LAST_COG = NR_COGS ' last cog to be stoped. 
@@ -122,7 +123,7 @@ img_wait_loop                                 ' start waiting for the image
 read_page
         call   #clear_page                    ' clear the page
         mov    Hub_Addr, page_addr            ' read a page from SIO ...
-        call   #SIO_ReadPage                  ' ... to page buffer
+        call   #sio_read_page                 ' ... to page buffer
         cmp    SIO_Addr,SIO_EOP wz            ' all done?
  if_z   jmp    #read_img                      ' yes - read next image
 
@@ -232,9 +233,9 @@ restart
 
 '        cmp cpu_no, #5 wz
 '   if_z jmp #:load_next_img
-        cmp cpu_no, #5 wz
-   if_nz cmp cpu_no, #3 wz
-   if_nz jmp #:load_next_img
+'        cmp cpu_no, #5 wz
+'   if_nz cmp cpu_no, #3 wz
+'   if_nz jmp #:load_next_img
 
         sub img_addr, #1        ' fix image address
 
@@ -271,14 +272,18 @@ next_delay    long 80000000
 
 '-------------------------------- Utility routines -----------------------------
 
-'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'_____________________________________________________________________
+'
 ' copy_to_hub - copy page buffer to Hub RAM.
 '
 ' Input:
-'   dst_addr : address to copy to (note - will not copy beyond max_hub_load).
+'   dst_addr : address to copy to (note - will not copy beyond
+'              max_hub_load).
 '
 ' NOTE: We assume everything is LONG aligned.
-''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'_____________________________________________________________________
+'
+
 copy_to_hub mov    r1, page_addr
             mov    r0, max_page
             shr    r0, #2                           ' divide by 4 to get longs
@@ -293,9 +298,11 @@ copy_to_hub mov    r1, page_addr
             djnz   r0, #:write_loop
 copy_to_hub_ret ret
 
-''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-' clear_page
-''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'_____________________________________________________________________
+'
+' clear_page - clear the page
+'_____________________________________________________________________
+'
 clear_page
         mov    r0, #0
         mov    r1, max_page
@@ -307,7 +314,8 @@ clear_page
 clear_page_ret
         ret
 
-''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'_____________________________________________________________________
+'
 ' calc_lrc_checkum - Calculate LRC checksum value of buffer
 '
 ' Input
@@ -315,7 +323,8 @@ clear_page_ret
 '    lrc_addr = address of buffer
 ' Output
 '    lrc_rslt = result of XOR
-''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'_____________________________________________________________________
+'
 calc_lrc_checksum
         mov    lrc_rslt,#0
         mov    r1,lrc_size
@@ -327,17 +336,18 @@ calc_lrc_checksum
         djnz   r1,#:calc_lrc_checksum_loop
 calc_lrc_checksum_ret
         ret
-'
+
 lrc_addr      long      $0
 lrc_size      long      $0
 lrc_rslt      long      $0
 
-'
-'------------------------------ SIO Routines -----------------------------------
-'
+'=====================================================================
+' SIO Routines
+'=====================================================================
 
+'_____________________________________________________________________
 '
-' SIO_ReadPage : Read data from SIO to HUB RAM.
+' sio_read_page : Read data from SIO to HUB RAM.
 ' On Entry:
 '    SIO_Addr  (32-bit): source address (not used, but updated after read)
 '    Hub_Addr  (32-bit): destination address in main memory, 16-bits used
@@ -354,12 +364,13 @@ lrc_rslt      long      $0
 '
 ' NOTE: to maintain synchronization, all data is read even if the CPU
 '       number indicates the packet is not for this CPU.
-
-SIO_ReadPage
-              call      #SIO_ReadLong           ' read ...
+'_____________________________________________________________________
+'
+sio_read_page
+              call      #sio_read_long           ' read ...
               mov       SIO_Addr,SIO_Temp       ' ... address
 
-              call      #SIO_ReadLong           ' read ...
+              call      #sio_read_long           ' read ...
               mov       SIO_Len,SIO_Temp        ' ... size
 
               mov       SIO_Cnt1,SIO_Len        ' assume ...
@@ -388,18 +399,20 @@ SIO_ReadPage
               mov       r0,SIO_Addr             ' was this packet ...
               shr       r0,#24                  ' ... intended ...
               cmp       r0,cpu_no wz            ' ... for this CPU?
-        if_nz jmp       #SIO_ReadPage            ' no - read another packet
+        if_nz jmp       #sio_read_page          ' no - read another packet
               mov       r0,SIO_Addr             ' yes - remove CPU number ...
               and       r0, low24               ' ... from ...
               mov       SIO_Addr,r0             ' ... data address
 
-SIO_ReadPage_ret
+sio_read_page_ret
               ret
 
-''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-' SIO_ReadLong : Read 4 bytes from SIO to SIO_Temp
-''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-SIO_ReadLong
+'_____________________________________________________________________
+'
+' sio_read_long : Read 4 bytes from SIO to SIO_Temp
+'_____________________________________________________________________
+
+sio_read_long
               mov       SIO_Cnt1,#4
 :SIO_ReadLoop
               call      #SIO_ReadByte
@@ -408,9 +421,10 @@ SIO_ReadLong
               or        SIO_Temp,r0
               ror       SIO_Temp,#8
               djnz      SIO_Cnt1,#:SIO_ReadLoop
-SIO_ReadLong_ret
+sio_read_long_ret
               ret
 
+'_____________________________________________________________________
 '
 ' SIO_DataReady - check if SIO data is ready.
 ' On exit:
@@ -418,6 +432,7 @@ SIO_ReadLong_ret
 '    r2 = address of rx_tail
 '    r3 = rx_tail
 '    Z flag set is no data ready (i.e. rx_tail = rx_head).
+'_____________________________________________________________________
 '
 SIO_DataReady
               rdlong    r1,SIO_IO_Block         ' get rx_head
@@ -428,9 +443,11 @@ SIO_DataReady
 SIO_DataReady_ret
               ret
 
-''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'_____________________________________________________________________
+'
 ' SIO_ReadByteRaw : Read byte from SIO to r0, without byte unstuffing
-''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'_____________________________________________________________________
+'
 SIO_ReadByteRaw
               mov       r0,cnt
               cmp       r0,SIO_StartTime wc
@@ -502,10 +519,12 @@ SIO_ReadByte_ret
 save_data     long      $0                      ' $100 + byte saved (e.g. $1FF if saved $FF)
 '
 
-''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'_____________________________________________________________________
+'
 ' SIO_ByteDelay : Time to wait between bytes - this is currently set by
 '                 trial and error, but to a fairly conservative value.
-''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'_____________________________________________________________________
+'
 SIO_ByteDelay
               mov       r1,cnt
               add       r1,ByteDelay
@@ -519,9 +538,11 @@ ByteDelay long Common#CLOCKFREQ/50
 ByteDelay long Common#CLOCKFREQ/6000
 #endif
 
-''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'_____________________________________________________________________
+'
 ' SIO_WriteByte : Write byte in r0 to SIO, without byte stuffing
-''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'_____________________________________________________________________
+'
 SIO_WriteByteRaw
               call      #SIO_ByteDelay          ' delay between characters
               mov       r1,SIO_IO_Block         ' get ...
@@ -567,14 +588,15 @@ SIO_WriteByte
 SIO_WriteByte_ret
               ret
 
-''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'_____________________________________________________________________
+'
 ' SIO_WriteSync : Write the Sync signal ($FF $01 for CPU #1, or $FF $03 for CPU #3).
 '                 These sequences can never be generated accidentally because during
 '                 normal sending $FF is stuffed to $FF $00
 ' On Entry:
 '    cpu_no : CPU number (must be non zero!)
-''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-
+'_____________________________________________________________________
+'
 SIO_WriteSync
               mov       r0,#$FF
               call      #SIO_WriteByteRaw
@@ -583,15 +605,18 @@ SIO_WriteSync
 SIO_WriteSync_ret
               ret
 
-''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-' SIO_ReadSync : Wait for the Sync Signal ($FF $01 for CPU #1, or $FF $03 for CPU #3).
+'_____________________________________________________________________
+'
+' SIO_ReadSync : Wait for the Sync Signal ($FF $01 for CPU #1, or
+' $FF $03 for CPU #3).
 '                These sequences can never be generated accidentally because during
 '                normal sending $FF is stuffed to $FF $00, so we can wait for this
 '                without the risk of accidentally being triggered by a program being
 '                sent to another CPU.
 '
 '                NOTE: ReadByteRaw returns failure if timeout expires
-''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'_____________________________________________________________________
+'
 SIO_ReadSync
               mov       SIO_StartTime,cnt
 :read_loop
@@ -619,8 +644,10 @@ SIO_ReadSync
 SIO_ReadSync_ret
               ret
 
+'_____________________________________________________________________
 '
-' SIO data
+' SIO-specific variables
+'_____________________________________________________________________
 '
 SIO_Addr      long      $0
 SIO_Len       long      $0
@@ -631,6 +658,7 @@ SIO_IO_Block  long      $0                      ' address of shared I/O block
 SIO_EOP       long      $00FFFFFE               ' end of page marker
 SIO_StartTime long      $0
 one_sec       long      Common#CLOCKFREQ
+
 '
 '------------------------------- Common Variables ------------------------------
 '
