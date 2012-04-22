@@ -10,15 +10,18 @@ CONTENTS
 INSTALLING ON LINUX AND OTHER PLATFORMS
 =======================================
 
-Download and install Python 2.5 or higher from
-http://www.python.org/download/.
+First, of all, you need to install prerequisites, BB requires Python 2.5
+or higher:
 
-Download the latest version of BB platform from http://bionicbunny.org
-to the place where it will live (e.g. /opt/bionicbunny/). Go to this
-directory and run install.py script from the root as follows:
+  $ sudo apt-get install git python python-networkx
 
- $ sudo install.py
+Next, download the latest version of BB platform (see http://bionicbunny.org)
+to the place where it will live (e.g. /opt/bionicbunny/):
 
-or
+  $ git clone git@github.com:sladeware/bbos.git bionicbunny
 
- $ sudo make install
+Go to this directory and run installation script as root:
+
+  $ cd /opt/bionicbunny/
+  $ sudo make install
+
