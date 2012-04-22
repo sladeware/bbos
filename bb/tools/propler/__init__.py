@@ -37,6 +37,7 @@ def terminal_mode(port="/dev/ttyUSB0"):
     print
     term = Terminal(port)
     term.start()
+    print
     print "\r", "_" * 70
     print
     print "Exit from terminal mode"
