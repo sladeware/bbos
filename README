@@ -20,8 +20,11 @@ to the place where it will live (e.g. /opt/bionicbunny/):
 
   $ git clone git@github.com:sladeware/bbos.git bionicbunny
 
-Go to this directory and run installation script as root:
+Go to this directory and initiate configuration process:
 
   $ cd /opt/bionicbunny/
-  $ sudo make install
+  $ ./configure
 
+Once configuration was successfully done, run installation as root:
+
+  $ sudo make install
