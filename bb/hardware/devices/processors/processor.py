@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright (c) 2011 Sladeware LLC"
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
 
-from bb.eda.devices import Device
+#_______________________________________________________________________________
+
+from bb.hardware.devices import Device
 from bb.utils.type_check import is_sequence, verify_int
 
 #_______________________________________________________________________________

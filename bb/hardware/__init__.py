@@ -2,4 +2,4 @@
 
 #from bb.eda.primitives import *
 #from bb.eda.components import *
-#from bb.eda.devices import *
+from bb.hardware.devices import *

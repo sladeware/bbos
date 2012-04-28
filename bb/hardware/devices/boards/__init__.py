@@ -1,5 +1,5 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright (c) 2011 Sladeware LLC"
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
 
-from bb.eda.devices.boards.board import *
+from bb.hardware.devices.boards.board import *

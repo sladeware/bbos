@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 
-from bb.eda import Device
+from bb.hardware import Device
 
 #_______________________________________________________________________________
 
@@ -17,6 +17,7 @@ class Breadboard(Device):
         Device.__init__(self)
         self.designator_format = "PROTOBOARD_%d"
 
+# Make Protoboard to be an alias of Breadboard
 Protoboard = Breadboard
 
 #_______________________________________________________________________________
