@@ -53,8 +53,8 @@ class _OutputStream:
             # We do not use here get_num_processes() since we may have an
             # execution delay between processes. Thus we will use max possible
             # number of processes, which is number of mappings.
-            if Application.get_active_instance().get_num_mappings() > 1:
-                mapping = Application.get_active_instance().get_active_mapping()
+            if Application.get_running_instance().get_num_mappings() > 1:
+                mapping = Application.get_running_instance().get_active_mapping()
                 prefix = self.PREFIX_FORMAT % mapping.name
             if data != "\n":
                 # Print prefix only if we have some data
@@ -147,7 +147,36 @@ class Application(object):
     """This class describes BB application. Note, the only one application can
     be executed per session."""
 
+    class Object(object):
+        """This class handles application object activity in order to provide
+        management of simulation and development modes.
+
+        Just for internal use for each object the global mode value will
+        be copied and saved as the special attribute. Thus the object will be
+        able to recognise environment's mode in which it was initially started."""
+
+        def __init__(self):
+            self.mode = None
+
+        @classmethod
+        def simulation_method(cls, target):
+            """Mark method as method only for simulation purposes."""
+            def simulate(self, *args, **kargs):
+                if not self.mode:
+                    self.mode = get_mode()
+                    if self.mode is SIMULATION_MODE:
+                        return target(self, *args, **kargs)
+                    self.mode = None
+                else:
+                    if self.mode == SIMULATION_MODE:
+                        return target(self, *args, **kargs)
+            return simulate
+
+    # Only one running instance
+    running_instance = None
+
     def __init__(self, mappings=[], mappings_execution_interval=0, devices=[]):
+        verify_list(mappings)
         self.__network = Network(mappings)
         self.__mappings_execution_interval = 0
         self.set_mappings_execution_interval(mappings_execution_interval)
@@ -169,8 +198,8 @@ class Application(object):
         for device in devices:
             self.add_device(device)
         # Register this application instance
-        from bb.app import appmanager
-        appmanager.register_application(self)
+        #from bb.app import appmanager
+        #appmanager.register_application(self)
 
     @property
     def network(self):
@@ -215,10 +244,13 @@ class Application(object):
     def get_num_processes(self):
         return len(self.__processes)
 
+    @classmethod
+    def get_running_instance(klass):
+        return klass.running_instance
+
     def start(self):
         print "Start application"
-        appmanager.set_active_application(self)
-        Application.active_instance = self
+        Application.running_instance = self
         if not self.get_num_mappings():
             raise Exception("Nothing to run. Please, add at least one mapping "
                             "to this application.")
@@ -258,7 +290,7 @@ class Application(object):
             if process.is_alive():
                 print "Kill process %d" % process.pid
                 process.kill()
-        Application.active_instance = None
+        Application.running_instance = None
 
     ### Device management
 
@@ -328,27 +360,3 @@ class Traceable(object):
             return ret
         return dummy
 
-class Context(object):
-    """This class handles application object activity in order to provide
-    management of simulation and development modes.
-
-    Just for internal use for each object the global mode value will
-    be copied and saved as the special attribute. Thus the object will be
-    able to recognise environment's mode in which it was initially started."""
-
-    def __init__(self):
-        self.mode = None
-
-    @classmethod
-    def simulation_method(cls, target):
-        """Mark method as method only for simulation purposes."""
-        def simulate(self, *args, **kargs):
-            if not self.mode:
-                self.mode = get_mode()
-                if self.mode is SIMULATION_MODE:
-                    return target(self, *args, **kargs)
-                self.mode = None
-            else:
-                if self.mode == SIMULATION_MODE:
-                    return target(self, *args, **kargs)
-        return simulate
