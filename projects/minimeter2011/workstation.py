@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright (c) 2011 Sladeware LLC"
+__copyright__ = "Copyright (c) 2011-2012 Sladeware LLC"
 
 """The workstation connects to database and process the packages received from
 a network of minimeter devices."""
 
 from bb.app import Mapping
-from bb.hardware.parts import Board, Processor
+from bb.hardware.devices.boards import Board
+from bb.hardware.devices.processors import Processor
 from bb.os import OS, Thread
 from bb.utils.module import get_file
 
@@ -61,7 +62,7 @@ class WorkstationDevice(Board):
         if not isinstance(mapping, Mapping):
             raise TypeError("mapping should be a Mapping() instance")
         # Build a random board for the first time
-        processor = Processor("A process", 1, [Processor.Core("A core", mapping)])
+        processor = Processor("A processor", num_cores=1, cores=[Processor.Core("A core", mapping)])
         #Board.__init__(self, "A board", 1, [processor])
 
 class Workstation(Mapping):
