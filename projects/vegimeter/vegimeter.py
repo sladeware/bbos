@@ -1,36 +1,31 @@
 #!/usr/bin/env python
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 
-#_______________________________________________________________________________
+from bb.app import Mapping
+from bb.os import OS
+from bb.hardware.devices.boards import Board
 
-import os
+from device import vegimeter_device
 
-from bb.tools import Fritzing
-from bb.utils import module
+class VegimeterOS(OS):
+    pass
 
-#_______________________________________________________________________________
-# Vegimeter device
+class Vegimeter(Mapping):
+    def __init__(self):
+        Mapping.__init__(self, name="V", os_class=VegimeterOS)
+        # Initialize hardware support. 
+        board = vegimeter_device.find_element("QSP1")
 
-# First of all we need to setup Fritzing
-Fritzing.set_home_dir("/opt/fritzing")
-Fritzing.add_search_path(os.path.join(module.get_dir(), "parts"))
-
-# Note, this may take some time
-vegimeter_device = Fritzing.parse("device.fz")
-
-def bill_of_materials():
-    bill_of_materials = dict()
-    for element in vegimeter_device.get_elements():
-        name = element.get_property_value("name")
-        if name not in bill_of_materials:
-            bill_of_materials[name] = 0
-        bill_of_materials[name] += 1
-    return bill_of_materials
-
-#_______________________________________________________________________________
-
-if __name__ == "__main__":
-    print "Vegimeter bill of materials:"
-    for name, amount in bill_of_materials().items():
-        print "\t%d %s(s)" % (amount, name)
