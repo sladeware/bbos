@@ -141,3 +141,6 @@ class Device(ElectronicPrimitive):
             pin = origin_pin.clone()
             clone.add_element(pin)
         return clone
+
+def verify_device(device):
+    pass
