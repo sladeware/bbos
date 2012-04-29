@@ -2,6 +2,8 @@
 
 __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
+#_______________________________________________________________________________
+
 from bb.utils.type_check import verify_list, verify_int, verify_string, is_tuple
 from bb.app.mapping import Mapping, verify_mapping
 

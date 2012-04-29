@@ -1,12 +1,23 @@
 #!/usr/bin/env python
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-"""The BB kernel.
-
-Build-time and life-time errors.
-"""
+"""The BBOS kernel."""
 
 __version__ = "$Rev: 401 $"
-__copyright__ = "Copyright (c) 2011 Sladeware LLC"
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+
+#_______________________________________________________________________________
 
 import sys
 import signal
@@ -21,12 +32,51 @@ import time
 import bb
 from bb.utils.builtins import caller
 from bb.utils.type_check import verify_list, verify_string, verify_bool
-from bb.os import OSObject, OSObjectMetadata
 from bb.os.kernel.errors import *
 from bb.os.kernel.schedulers import *
-from bb.app import Traceable, Application
+from bb.app import appmanager
+from bb.app.application import Traceable, Application
 from bb.mm.mempool import MemPool, mwrite
 from bb.hardware import verify_device, Device
+
+#_______________________________________________________________________________
+
+class OS(object):
+    """This class describes BB operating system. The Mapping uses this class to
+    create OS instance. Once system is created, the mapping will call main entry
+    point and then start() to run the system."""
+
+    class Object(Application.Object):
+        """The root main class for BBOS kernel and other operating system parts."""
+        def __init__(self):
+            Application.Object.__init__(self)
+
+        class Metadata(object):
+            NAME = None
+
+            def __init__(self, name=None):
+                self.__name = None
+                if name:
+                    self.set_name(name)
+                elif hasattr(self, "NAME"):
+                    self.set_name(self.NAME)
+
+            def set_name(self, name):
+                self.__name = name
+
+            def get_name(self):
+                return self.__name
+
+    def __init__(self, **kargs):
+        self.kernel = Kernel()
+
+    def main(self):
+        pass
+
+    def start(self):
+        """This method implements OS's activity. You may override this method in
+        subclass."""
+        self.kernel.start()
 
 #_______________________________________________________________________________
 
@@ -59,7 +109,7 @@ def kernel_extension(name, default=True):
 
 #_______________________________________________________________________________
 
-class Thread(OSObject):
+class Thread(OS.Object):
     """The thread is an atomic unit action within the BB
     operating system, which describes application specific actions
     wrapped into a single context of execution.
@@ -97,7 +147,7 @@ class Thread(OSObject):
 
         target is callable object to be invoked by the start() method.
         Default is None, meaning nothing is called."""
-        OSObject.__init__(self)
+        OS.Object.__init__(self)
         self.__name = None
         if name:
             self.set_name(name)
@@ -670,7 +720,7 @@ class ITC(KernelExtension):
 
 #_______________________________________________________________________________
 
-class Driver(OSObject, OSObjectMetadata):
+class Driver(OS.Object, OS.Object.Metadata):
     """A BB device driver controls a hardware component or device
     represented by Device. Interaction with drivers is done through
     DriverManager, which can be obtained via
@@ -824,7 +874,7 @@ class DriverManager(object):
         """Return a list of all devices currently bound to the driver."""
         return self.__devices
 
-class DeviceManager(OSObject):
+class DeviceManager(OS.Object):
     """Every device in BBOS system is managed by an instance of
     this class. Device manager represents a device from the mapping.
 
@@ -843,7 +893,7 @@ class DeviceManager(OSObject):
 
         driver defines a Driver instance that manages device. Please
         see Driver class."""
-        OSObject.__init__(self)
+        OS.Object.__init__(self)
         self.__device = None
         self.__set_device(device)
         self.__driver = None
@@ -1048,11 +1098,11 @@ class IMC(KernelExtension):
 
 #_______________________________________________________________________________
 
-class System(OSObject, Traceable):
+class System(OS.Object, Traceable):
     """The heart of BB operating system. In order to connect with application
-    inherits OSObject class."""
+    inherits OS.Object class."""
     def __init__(self, *args, **kargs):
-        OSObject.__init__(self)
+        OS.Object.__init__(self)
         print self.banner()
         print "Initialize kernel"
         self.__modules = {}
@@ -1072,7 +1122,7 @@ class System(OSObject, Traceable):
             data = str(data)
         print data
 
-    @OSObject.simulation_method
+    @OS.Object.simulation_method
     def test(self):
         print "Test kernel"
         if not self.get_num_threads():
@@ -1082,7 +1132,7 @@ class System(OSObject, Traceable):
             self.warning("Unknown devices: %s" % ", ".join([str(device) for device
                                                 in self.get_unknown_devices()]))
 
-    @OSObject.simulation_method
+    @OS.Object.simulation_method
     def start(self):
         self.test()
         print "Start kernel"
@@ -1096,7 +1146,7 @@ class System(OSObject, Traceable):
         except SystemExit, e:
             self.stop()
 
-    @OSObject.simulation_method
+    @OS.Object.simulation_method
     def stop(self):
         """Shutdown everything and perform a clean system stop."""
         print "Kernel stopped"
@@ -1107,7 +1157,7 @@ class System(OSObject, Traceable):
         fname = inspect.getmodule(inspect.stack()[2][0]).__file__
         print "%s:%d:WARNING: %s" % (fname, lineno, text)        
 
-    @OSObject.simulation_method
+    @OS.Object.simulation_method
     def panic(self, text):
         """Halt the system.
 
@@ -1122,7 +1172,7 @@ class System(OSObject, Traceable):
         # call kernel's stop. See start() method for more information.
         self.stop()
 
-    @OSObject.simulation_method
+    @OS.Object.simulation_method
     def banner(self):
         """Return nice BB OS banner."""
         return "BBOS Kernel v0.2.0." + \
@@ -1198,7 +1248,7 @@ def Kernel(**selected_extensions):
     # If IMC extension wasn't selected but the mapping with this kernel
     # interructs with other mappings (sends or receives any data) through an
     # application network, this extension will be added by force.
-    app = Application.get_active_instance()
+    app = appmanager.get_running_application()
     if 'imc' not in use_extensions and \
             len(app.network.edges([app.get_active_mapping()])):
         use_extensions.append('imc')
