@@ -12,8 +12,8 @@ mouse, keyboard and provides a USB interface for programming. There are
 button, an on/off switch and a 24LC256-I/ST EEPROM for program storage.
 It has a 5.000MHz replacable crystal oscillator."""
 
-from bb.eda.devices.boards import Board, Breadboard
-from bb.eda.components.processors.propeller_p8x32a import PropellerP8X32A
+from bb.hardware.devices.boards import Board, Breadboard
+from bb.hardware.devices.processors.propeller_p8x32a import PropellerP8X32A
 
 #_______________________________________________________________________________
 

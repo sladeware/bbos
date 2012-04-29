@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright (c) 2011 Sladeware LLC"
+__copyright__ = "Copyright (c) 2011-2012 Sladeware LLC"
 
-from bb.eda.components import Pin
-from bb.eda.components.processors import Processor
+from bb.hardware.devices import Pin
+from bb.hardware.devices.processors import Processor
 from bb.utils.type_check import verify_list
 
 #_______________________________________________________________________________

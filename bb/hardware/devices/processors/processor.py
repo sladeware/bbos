@@ -44,7 +44,7 @@ class Processor(Device):
         outside world with mapping, that allows operating system to all
         ather devices."""
 
-        def __init__(self, mapping=None):
+        def __init__(self, name, mapping=None):
             self.__processor = None
             self.__mapping = None
             if mapping:
@@ -69,7 +69,7 @@ class Processor(Device):
             returns None."""
             return self.__mapping
 
-    def __init__(self, num_cores=0, cores=None):
+    def __init__(self, name, num_cores=0, cores=None):
         Device.__init__(self)
         if num_cores < 1:
             raise Exception("Number of cores must be greater than zero.")
