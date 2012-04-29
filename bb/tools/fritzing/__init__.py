@@ -232,6 +232,7 @@ class Fritzing(object):
             cls._part_handlers_by_id[ph.module_id] = ph
             cls._part_filenames_by_id[ph.module_id] = pfile
             has_updates = True
+        print # empty line
         # Rewrite index file only if it has some updates
         if has_updates:
             cls.__write_index()
