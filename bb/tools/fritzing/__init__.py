@@ -18,10 +18,20 @@ open source software initiative to support designers and artists ready
 to move from physical prototyping to actual product. It was developed
 at the University of Applied Sciences of Potsdam.
 
-The Fritzing EDA is represented by :class:`Fritzing` class.
+The Fritzing EDA is represented by :mod:`bb.tools.fritzing` package.
+
+At the very first time, once you will try to interract with parts, Fritzing will
+use :func:`bb.tools.fritzing.index_parts` to automatically index all parts
+located on your machine at search pathes (see
+:func:`bb.tools.fritzing.get_search_pathes()`). All the indexed parts will be
+stored at index file. This file has
+`JSON (JavaScript Object Notation) format <http://en.wikipedia.org/wiki/JSON>`_
+and its name can be obtained by :func:`bb.tools.fritzing.get_index_filename`.
 """
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
+
+#_______________________________________________________________________________
 
 import copy
 import re
@@ -40,265 +50,8 @@ from bb.lib.crypto.md5 import md5sum
 from bb.utils.type_check import verify_list, verify_string, is_string, \
     is_tuple, is_list
 
-class Fritzing(object):
-    """This class represents Fritzing environment.
-
-    At the very first time, once you will try to interract with parts
-    Fritzing will use :func:`Fritzing.index_parts` to automatically
-    index all parts located on your machine at search pathes (see
-    :func:`Fritzing.get_search_pathes()`). All the indexed parts will
-    be stored at index file. This file has `JSON (JavaScript Object
-    Notation) format <http://en.wikipedia.org/wiki/JSON>`_ and can be
-    obtained by :func:`Fritzing.get_index_filename`.
-    """
-
-    _home_dir = None
-    _user_dir = None
-    _search_pathes = list()
-    _index_filename = "fritzing.index"
-
-    def __init__(self):
-        pass
-
-    @classmethod
-    def get_home_dir(cls):
-        """Return path to the directory with Fritzing distribution."""
-        return cls._home_dir
-
-    @classmethod
-    def set_home_dir(cls, path):
-        """Set fritzing home directory."""
-        if not path or not os.path.exists(path):
-            raise IOError("Directory '%s' does not exist" % path)
-        cls._home_dir = path
-
-    @classmethod
-    def get_default_user_dir(cls):
-        """Return default path to the global fritzing user directory
-        depending on operating system (``os.name``)."""
-        default_dirs = {
-            "posix": "%s/.config/Fritzing" % os.environ["HOME"],
-            }
-        return default_dirs.get(os.name, None)
-
-    @classmethod
-    def get_user_dir(cls):
-        """Return path to the global user directory. The location of this
-        directory differs depending on operating system, and might
-        even be hidden by default (see Fritzing.get_default_user_dir())."""
-        return cls._user_dir or cls.get_default_user_dir()
-
-    @classmethod
-    def set_user_dir(cls, path):
-        """Set fritzing user directory."""
-        if not path or not os.path.exists(path):
-            raise IOError("Path '%s' does not exist" % path)
-        cls._user_dir = path
-
-    @classmethod
-    def add_search_path(cls, path):
-        """Add a new path to fritzing search pathes."""
-        cls._search_pathes.append(path)
-
-    @classmethod
-    def add_search_pathes(cls, pathes):
-        for path in pathes:
-            cls.add_search_path(path)
-
-    @classmethod
-    def get_search_pathes(cls):
-        """Return a list of strings that specifies the search path for
-        Fritzing files. By default includes user directory and home
-        directory."""
-        pathes = list()
-        pathes.extend(cls._search_pathes)
-        for path in (Fritzing.get_home_dir(), Fritzing.get_user_dir()):
-            if path: pathes.append(path)
-        return pathes
-
-    @classmethod
-    def find_part_files(cls, pathes, recursive=False):
-        """Search and return a list of Fritzing part files ``.fzp`` that can be
-        found at given `pathes`. List subdirectories recursively if flag
-        `recursive` is ``True``."""
-        if not is_list(pathes):
-            pathes = [pathes]
-        files = list()
-        for path in pathes:
-            if os.path.isdir(path):
-                for name in os.listdir(path):
-                    if name.startswith("."): # improve this
-                        continue
-                    pathes.append(os.path.join(path, name))
-            elif os.path.isfile(path) and (path.endswith(PartHandler.FILE_EXT) \
-                                               or path.endswith(PartHandler.ZFILE_EXT)):
-                files.append(os.path.abspath(path))
-        return files
-
-    @classmethod
-    def set_index_filename(cls, filename):
-        """Set the name of the index file that will be used by Fritzing. If file
-        does not exist it will be created."""
-        cls._index_filename = filename
-
-    @classmethod
-    def get_index_filename(cls):
-        """Return the name of index file."""
-        return cls._index_filename
-
-    _parts_index = dict()
-    _part_handlers_by_id = dict()
-    _part_filenames_by_id = dict()
-
-    @classmethod
-    def index_parts(cls, search_pathes=None, force=False):
-        """Index all Fritzing parts that can be found at
-        `search_pathes`. By default if `search_pathes` were not
-        defined then :func:`Fritzing.get_search_pathes` will be used.
-
-        Once all the parts were indexed, they are stored at index file
-        :func:`Fritzing.get_index_filename` in order to increase
-        performance in future. However, each new time created index file
-        is loading and the system is removing obsolete parts and add new
-        parts if such will be found.
-
-        In order to reindex parts set `force` as ``True``."""
-        if len(cls._parts_index):
-            return
-        # Use environment search pathes if search_pathes list
-        # was not defined.
-        if not search_pathes:
-            search_pathes = cls.get_search_pathes()
-            # Check default environment pathes such as user
-            # specific directory and home directory. Print warning
-            # message if they does not exist.
-            # We also need to remove these directories from search
-            # pathes. They has to be processed in a special way.
-            magic_pathes = list()
-            if not cls.get_home_dir():
-                print "WARNING: home directory can not be defined.", \
-                    "Please set it manually by using Fritzing.set_home_dir()"
-            else:
-                search_pathes.remove(cls.get_home_dir())
-                magic_pathes.append(cls.get_home_dir())
-            if not cls.get_user_dir():
-                print "WARNING: user specific directory can not be defined.", \
-                    "Please set it manually by using Fritzing.set_user_dir()"
-            else:
-                search_pathes.remove(cls.get_user_dir())
-                magic_pathes.append(cls.get_home_dir())
-            # Scan magic pathes and extend existed search pathes.
-            for magic_path in magic_pathes:
-                for parts_location in ("parts", "resources/parts"):
-                    for group in ("core", "user", "obsolete", "contrib"):
-                        path = os.path.join(magic_path, parts_location, group)
-                        if not os.path.exists(path):
-                            continue
-                        search_pathes.append(path)
-        # Read old index file if such already exists
-        if os.path.exists(cls.get_index_filename()):
-            index_fh = open(cls.get_index_filename())
-            cls._parts_index = json.loads(''.join(index_fh.readlines()))
-            index_fh.close()
-        all_part_files = list()
-        # Scan all search pathes one by one and extract part files
-        for search_path in search_pathes:
-            sys.stdout.write("Scaning %s... " % search_path)
-            new_part_files = cls.find_part_files(search_path, recursive=True)
-            print "%d" % len(new_part_files)
-            all_part_files.extend(new_part_files)
-        # Look up for broken files and remove them
-        broken_files = set(cls._parts_index.keys()) - set(all_part_files)
-        for filename in broken_files:
-            del cls._parts_index[filename]
-        # Start working...
-        has_updates = False
-        counter = 0
-        total = len(all_part_files)
-        for pfile in all_part_files:
-            frmt = "%"+ str(len(str(total))) +"d/%d\r"
-            sys.stdout.write("Indexing " + frmt % (counter, total))
-            counter += 1
-            # Make check sum for this file
-            checksum = md5sum(pfile)
-            if pfile in cls._parts_index:
-                (old_checksum, old_module_id) = cls._parts_index[pfile]
-                if old_checksum == checksum:
-                    cls._part_handlers_by_id[old_module_id] = None
-                    cls._part_filenames_by_id[old_module_id] = pfile
-                    continue
-            ph = PartHandler(pfile)
-            cls._parts_index[pfile] = (checksum, ph.module_id)
-            cls._part_handlers_by_id[ph.module_id] = ph
-            cls._part_filenames_by_id[ph.module_id] = pfile
-            has_updates = True
-        print # empty line
-        # Rewrite index file only if it has some updates
-        if has_updates:
-            cls.__write_index()
-        # Update
-
-    @classmethod
-    def load_part_handler_by_id(cls, id):
-        """Try to load part by its id (see `moduleId` attribute) and
-        return :class:`PartHandler` instance."""
-        part_handler = cls._part_handlers_by_id.get(id, None)
-        if not part_handler:
-            filename = cls._part_filenames_by_id.get(id, None)
-            if not filename:
-                raise Exception("Can not found part with id '%s'" % id)
-            part_handler = cls._part_handlers_by_id[id] = PartHandler(filename)
-        return part_handler
-
-    @classmethod
-    def __write_index(cls):
-        fh = open(cls.get_index_filename(), "w")
-        fh.write(json.dumps(cls._parts_index))
-        fh.close()
-
-    @classmethod
-    def reindex_parts(cls):
-        """Perform complete reindexing. The
-        :func:`Fritzing.get_index_filename` will be removed and the
-        cache will be erased."""
-        cls._parts_index = dict()
-        cls.index_parts(force=True)
-
-    @classmethod
-    def fix_filename(cls, filename):
-        """Try to fix given filename if such file does not exist by using search
-        pathes."""
-        if os.path.exists(filename):
-            return filename
-        for search_path in get_search_pathes():
-            fixed_filename = os.path.abspath(os.path.join(search_path, filename))
-            if os.path.exists(fixed_filename):
-                return fixed_filename
-        raise IOError("Can not fix file: '%s'" % filename)
-
-    @classmethod
-    def parse(cls, filename):
-        """Create an xml parser and use it to parse a
-        document. Return Device object.
-        The document name is passed in as `filename`.
-
-        The document type (sketch or part) will be defined automatically
-        by using file extension."""
-        if not os.path.exists(filename):
-            raise IOError("No such file: '%s'" % filename)
-        cls.index_parts()
-        if filename.endswith(SketchHandler.FILE_EXT):
-            # OK, we're going to work with sketch, we need to index
-            # all the parts first in order to ommit collisions
-            handler = SketchHandler()
-            handler.open(filename)
-        elif filename.endswith(PartHandler.FILE_EXT) or \
-                filename.ednswith(PartHandler.ZFILE_EXT):
-            handler = PartHandler()
-            handler.open(filename)
-        else:
-            raise Exception("Do not know how to open %s" % fname)
-        return handler.get_object()
+#_______________________________________________________________________________
+# XML support primitives
 
 def get_text(nodes):
     rc = []
@@ -306,6 +59,244 @@ def get_text(nodes):
         if node.nodeType == node.TEXT_NODE:
             rc.append(node.data)
     return ''.join(rc)
+
+#_______________________________________________________________________________
+
+_home_dir = None
+_user_dir = None
+_search_pathes = list()
+_index_filename = "fritzing.index"
+
+def get_home_dir():
+    """Return path to the directory with Fritzing distribution."""
+    global _home_dir
+    return _home_dir
+
+def set_home_dir(path):
+    """Set fritzing home directory."""
+    global _home_dir
+    if not path or not os.path.exists(path):
+        raise IOError("Directory '%s' does not exist" % path)
+    _home_dir = path
+
+def get_default_user_dir():
+    """Return default path to the global fritzing user directory
+    depending on operating system (``os.name``)."""
+    default_dirs = {
+        "posix": "%s/.config/Fritzing" % os.environ["HOME"],
+    }
+    return default_dirs.get(os.name, None)
+
+def get_user_dir():
+    """Return path to the global user directory. The location of this
+    directory differs depending on operating system, and might
+    even be hidden by default (see get_default_user_dir())."""
+    return _user_dir or get_default_user_dir()
+
+def set_user_dir(path):
+    """Set fritzing user directory."""
+    if not path or not os.path.exists(path):
+        raise IOError("Path '%s' does not exist" % path)
+    _user_dir = path
+
+def add_search_path(path):
+    """Add a new path to Fritzing search pathes."""
+    _search_pathes.append(path)
+
+def add_search_pathes(pathes):
+    """Add a list of pathes to Fritzing search pathes. See also
+    add_search_path()."""
+    for path in pathes:
+        add_search_path(path)
+
+def get_search_pathes():
+    """Return a list of strings that specifies the search path for
+    Fritzing files. By default includes user directory and home
+    directory."""
+    pathes = list()
+    pathes.extend(_search_pathes)
+    for path in (get_home_dir(), get_user_dir()):
+        if path:
+            pathes.append(path)
+    return pathes
+
+def find_part_files(pathes, recursive=False):
+    """Search and return a list of Fritzing part files ``.fzp`` that can be
+    found at given `pathes`. List subdirectories recursively if flag
+    `recursive` is ``True``."""
+    if not is_list(pathes):
+        pathes = [pathes]
+    files = list()
+    for path in pathes:
+        if os.path.isdir(path):
+            for name in os.listdir(path):
+                if name.startswith("."): # improve this
+                    continue
+                pathes.append(os.path.join(path, name))
+        elif os.path.isfile(path) and (path.endswith(PartHandler.FILE_EXT) \
+                                           or path.endswith(PartHandler.ZFILE_EXT)):
+            files.append(os.path.abspath(path))
+    return files
+
+def set_index_filename(filename):
+    """Set the name of the index file that will be used by Fritzing. If file
+    does not exist it will be created."""
+    _index_filename = filename
+
+def get_index_filename():
+    """Return the name of index file."""
+    return _index_filename
+
+_parts_index = dict()
+_part_handlers_by_id = dict()
+_part_filenames_by_id = dict()
+
+def index_parts(search_pathes=None, force=False):
+    """Index all Fritzing parts that can be found at
+    `search_pathes`. By default if `search_pathes` were not
+    defined then :func:`get_search_pathes` will be used.
+
+    Once all the parts were indexed, they are stored at index file
+    :func:`get_index_filename` in order to increase
+    performance in future. However, each new time created index file
+    is loading and the system is removing obsolete parts and add new
+    parts if such will be found.
+
+    In order to reindex parts set `force` as ``True``."""
+    global _parts_index
+    global _part_handlers_by_id
+    global _part_filenames_by_id
+    if len(_parts_index):
+        return
+    # Use environment search pathes if search_pathes list was not defined
+    if not search_pathes:
+        search_pathes = get_search_pathes()
+        # Check default environment pathes such as user
+        # specific directory and home directory. Print warning
+        # message if they does not exist.
+        # We also need to remove these directories from search
+        # pathes. They has to be processed in a special way.
+        magic_pathes = list()
+        if not get_home_dir():
+            raise Exception("WARNING: home directory can not be defined.", \
+                "Please set it manually by using bb.tools.fritzing.set_home_dir().")
+        else:
+            search_pathes.remove(get_home_dir())
+            magic_pathes.append(get_home_dir())
+        if not get_user_dir():
+            print "WARNING: user specific directory can not be defined.", \
+                "Please set it manually by using bb.tools.fritzing.set_user_dir()"
+        else:
+            search_pathes.remove(get_user_dir())
+            magic_pathes.append(get_home_dir())
+        # Scan magic pathes and extend existed search pathes.
+        for magic_path in magic_pathes:
+            for parts_location in ("parts", "resources/parts"):
+                for group in ("core", "user", "obsolete", "contrib"):
+                    path = os.path.join(magic_path, parts_location, group)
+                    if not os.path.exists(path):
+                        continue
+                    search_pathes.append(path)
+    # Read old index file if such already exists
+    if os.path.exists(get_index_filename()):
+        index_fh = open(get_index_filename())
+        _parts_index = json.loads(''.join(index_fh.readlines()))
+        index_fh.close()
+    all_part_files = list()
+    # Scan all search pathes one by one and extract part files
+    for search_path in search_pathes:
+        sys.stdout.write("Scaning %s... " % search_path)
+        new_part_files = find_part_files(search_path, recursive=True)
+        print "%d" % len(new_part_files)
+        all_part_files.extend(new_part_files)
+    # Look up for broken files and remove them
+    broken_files = set(_parts_index.keys()) - set(all_part_files)
+    for filename in broken_files:
+        del _parts_index[filename]
+    # Start working...
+    has_updates = False
+    counter = 0
+    total = len(all_part_files)
+    for pfile in all_part_files:
+        frmt = "%"+ str(len(str(total))) +"d/%d\r"
+        sys.stdout.write("Indexing " + frmt % (counter, total))
+        counter += 1
+        # Make check sum for this file
+        checksum = md5sum(pfile)
+        if pfile in _parts_index:
+            (old_checksum, old_module_id) = _parts_index[pfile]
+            if old_checksum == checksum:
+                _part_handlers_by_id[old_module_id] = None
+                _part_filenames_by_id[old_module_id] = pfile
+                continue
+        ph = PartHandler(pfile)
+        _parts_index[pfile] = (checksum, ph.module_id)
+        _part_handlers_by_id[ph.module_id] = ph
+        _part_filenames_by_id[ph.module_id] = pfile
+        has_updates = True
+    print # empty line
+    # Rewrite index file only if it has some updates
+    if has_updates:
+        __write_index()
+    # Update
+
+def reindex_parts():
+    """Perform complete reindexing. The :func:`get_index_filename` will be
+    removed and the cache will be erased."""
+    _parts_index = dict()
+    index_parts(force=True)
+
+def load_part_handler_by_id(id):
+    """Try to load part by its id (see `moduleId` attribute) and
+    return :class:`PartHandler` instance."""
+    part_handler = _part_handlers_by_id.get(id, None)
+    if not part_handler:
+        filename = _part_filenames_by_id.get(id, None)
+        if not filename:
+            raise Exception("Can not found part with id '%s'" % id)
+        part_handler = _part_handlers_by_id[id] = PartHandler(filename)
+    return part_handler
+
+def __write_index():
+    fh = open(get_index_filename(), "w")
+    fh.write(json.dumps(_parts_index))
+    fh.close()
+
+def fix_filename(filename):
+    """Try to fix given filename if such file does not exist by using search
+    pathes."""
+    if os.path.exists(filename):
+        return filename
+    for search_path in get_search_pathes():
+        fixed_filename = os.path.abspath(os.path.join(search_path, filename))
+        if os.path.exists(fixed_filename):
+            return fixed_filename
+    raise IOError("Can not fix file: '%s'" % filename)
+
+def parse(filename):
+    """Create an xml parser and use it to parse a
+    document. Return Device object.
+    The document name is passed in as `filename`.
+
+    The document type (sketch or part) will be defined automatically
+    by using file extension."""
+    if not os.path.exists(filename):
+        raise IOError("No such file: '%s'" % filename)
+    index_parts()
+    if filename.endswith(SketchHandler.FILE_EXT):
+        # OK, we're going to work with sketch, we need to index
+        # all the parts first in order to ommit collisions
+        handler = SketchHandler()
+        handler.open(filename)
+    elif filename.endswith(PartHandler.FILE_EXT) or \
+            filename.ednswith(PartHandler.ZFILE_EXT):
+        handler = PartHandler()
+        handler.open(filename)
+    else:
+        raise Exception("Do not know how to open %s" % fname)
+    return handler.get_object()
+
+#_______________________________________________________________________________
 
 class Handler(object):
     def __init__(self, obj=None):
@@ -483,7 +474,7 @@ class InstanceHandler(Handler):
         reference designator."""
         if not element.getAttribute("moduleIdRef"):
             raise Exception("Instance does not have 'moduleIdRef' attribute")
-        part_handler = Fritzing.load_part_handler_by_id( \
+        part_handler = load_part_handler_by_id( \
             element.getAttribute("moduleIdRef"))
         if not part_handler:
             # The path attribute has the following view: :path
@@ -495,7 +486,7 @@ class InstanceHandler(Handler):
                 if part_fname.startswith(os.sep):
                     part_fname = part_fname[1:]
                 part_fname = os.path.abspath( \
-                    os.path.join(Fritzing.get_search_pathes()[0], part_fname))
+                    os.path.join(get_search_pathes()[0], part_fname))
             if not os.path.exists(part_fname):
                 raise IOError("No such part: '%s'" % part_fname)
             part_handler = PartHandler(fname=part_fname)
@@ -682,3 +673,4 @@ class PartHandler(Handler):
             name = property_.getAttribute("name")
             text = get_text(property_.childNodes)
             self._object.set_property(name, get_text(property_.childNodes))
+

@@ -21,13 +21,13 @@ import getpass
 from bb.hardware.design import Network
 from bb.hardware.primitives import Pin
 from bb.utils import module
-from bb.tools import Fritzing
+from bb.tools import fritzing
 
 # First of all we need to setup Fritzing for each developer
-Fritzing.set_home_dir("/opt/fritzing")
-Fritzing.add_search_path(os.path.join(module.get_dir(), "parts"))
+fritzing.set_home_dir("/opt/fritzing")
+fritzing.add_search_path(os.path.join(module.get_dir(), "parts"))
 
-vegimeter_device = Fritzing.parse("device.fz")
+vegimeter_device = fritzing.parse("device.fz")
 
 def bill_of_materials():
     bill_of_materials = dict()
