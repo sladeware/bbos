@@ -36,7 +36,7 @@ import types
 import json
 
 from bb.hardware.devices import Device, Pin, Wire
-from bb.crypto.md5 import md5sum
+from bb.lib.crypto.md5 import md5sum
 from bb.utils.type_check import verify_list, verify_string, is_string, \
     is_tuple, is_list
 

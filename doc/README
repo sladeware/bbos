@@ -1,4 +1,5 @@
 You must install pyserial to build this documentation. More information:
+
        http://pypi.python.org/pypi/pyserial
 
 Please run the following command in order to generate docs in html format:

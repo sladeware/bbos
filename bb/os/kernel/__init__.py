@@ -115,23 +115,23 @@ class Thread(OS.Object):
     wrapped into a single context of execution.
 
     The following example shows how to create a new thread and add it
-    to the kernel:
+    to the kernel::
 
-    class Demo(Thread):
-        def __init__(self):
-            Thread.__init__(self, name="DEMO")
+        class Demo(Thread):
+            def __init__(self):
+                Thread.__init__(self, name="DEMO")
 
-        @Thread.runner
-        def hello_world(self):
+            @Thread.runner
+            def hello_world(self):
+                print "Hello world!"
+
+        thread = kernel.add_thread(Demo())
+
+    Which is equivalent to::
+
+        def hello_world():
             print "Hello world!"
-
-    thread = kernel.add_thread(Demo())
-
-    Which is equivalent to:
-
-    def hello_world():
-        print "Hello world!"
-    thread = kernel.add_thread(Thread("DEMO", hello_world))
+        thread = kernel.add_thread(Thread("DEMO", hello_world))
     """
 
     # This constant keeps marked runners sorted by owner class. The content of
@@ -206,16 +206,17 @@ class Thread(OS.Object):
         return self.__runner
 
     def get_runner_name(self):
-        """Returns name of the runner which is the function name. By
-        default if runner was not defined, returns None.
+        """Returns name of the runner which is the function name::
 
-        def hello_world():
-            print "Hello world!"
+            def hello_world():
+                print "Hello world!"
 
-        thread = Thread("HELLO_WORLD", hello_world)
-        print thread.get_runner_name()
+            thread = Thread("HELLO_WORLD", hello_world)
+            print thread.get_runner_name()
 
-        As result we will have string hello_world.
+        As result we will have string ``hello_world``.
+        
+        By default if runner was not defined, returns ``None``.
         """
         if self.get_runner():
             return self.get_runner().__name__
@@ -270,22 +271,22 @@ class Messenger(Thread):
     specified map of predefined handlers.
 
     The following example shows the most simple case how to define a
-    new message handler by using Messenger.message_handler() decorator:
+    new message handler by using Messenger.message_handler() decorator::
 
-    class SerialMessenger(Messenger):
-        @Messenger.message_handler("SERIAL_OPEN")
-        def serial_open_handler(self, message):
-            print "Open serial connection"
+        class SerialMessenger(Messenger):
+            @Messenger.message_handler("SERIAL_OPEN")
+            def serial_open_handler(self, message):
+                print "Open serial connection"
 
-    Or the same example, but without decorator:
+    Or the same example, but without decorator::
 
-    class SerialMessenger(Messenger):
-        def __init__(self):
-            Messenger.__init__(self)
-            self.add_message_handler("SERIAL_OPEN", self.serial_open_handler)
+        class SerialMessenger(Messenger):
+            def __init__(self):
+                Messenger.__init__(self)
+                self.add_message_handler("SERIAL_OPEN", self.serial_open_handler)
 
-        def serial_open_handler(self, message):
-            print "Open serial connection"
+            def serial_open_handler(self, message):
+                print "Open serial connection"
 
     When a SerialMessenger object receives a SERIAL_OPEN message, the
     message is directed to SerialMessenger.serial_open_handler handler
@@ -727,25 +728,25 @@ class Driver(OS.Object, OS.Object.Metadata):
     Kernel.find_driver_manager().
 
     The following example shows the most simple case how to define a
-    new action handler by using Driver.action_handler() decorator:
+    new action handler by using Driver.action_handler() decorator::
 
-    class SerialDriver(Driver):
-        def __init__(self):
-            Driver.__init__(self, "SERIAL_DRIVER")
+        class SerialDriver(Driver):
+            def __init__(self):
+                Driver.__init__(self, "SERIAL_DRIVER")
 
-        @Driver.action_handler("SERIAL_OPEN")
-        def open_handler(self, device):
-            print "Open serial connection"
+            @Driver.action_handler("SERIAL_OPEN")
+            def open_handler(self, device):
+                print "Open serial connection"
 
-    Or the same example, but without decorator:
+    Or the same example, but without decorator::
 
-    class SerialDriver(Driver):
-        def __init__(self):
-            Driver.__init__(self, "SERIAL_DRIVER")
-            self.add_action_handler("SERIAL_OPEN", self.serial_open_handler)
+        class SerialDriver(Driver):
+            def __init__(self):
+                Driver.__init__(self, "SERIAL_DRIVER")
+                self.add_action_handler("SERIAL_OPEN", self.serial_open_handler)
 
-        def serial_open_handler(self, message):
-            print "Open serial connection"
+            def serial_open_handler(self, message):
+                print "Open serial connection"
 
     Note, in order to privent any conflicts with already defined
     methods the action handler should be named by concatinating
@@ -942,7 +943,9 @@ class HardwareManagement(KernelExtension):
         self.__device_managers = dict()
         self.__driver_managers = dict()
         # Now use mapping to register outside devices via hardware interface
-        if self.get_mapping():
+        mapping = self.get_mapping()
+        # XXX: do we need to warn user that this kernel is outside of mapping?
+        if mapping:
             for device in mapping.hardware.get_board().get_devices():
                 self.register_device(device)
 
@@ -1115,6 +1118,7 @@ class System(OS.Object, Traceable):
 
     def get_mapping(self):
         #mapping = Application.get_running_instance().get_active_mapping()
+        #return mapping
         return None
 
     def echo(self, data):
