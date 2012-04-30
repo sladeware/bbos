@@ -72,7 +72,7 @@ class _UnbufferedOutputStream(_OutputStream):
         self.stream = stream
 
     def write(self, data):
-        OutputStream.write(self, data)
+        _OutputStream.write(self, data)
         self.stream.flush()
 
     def __getattr__(self, attr):
