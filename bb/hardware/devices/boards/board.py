@@ -13,9 +13,11 @@ class Breadboard(Device):
     Because the solderless breadboard does not require soldering, it
     is reusable. This makes it easy to use for creating temporary
     prototypes and experimenting with circuit design."""
+
+    DEFAULT_DESIGNATOR_FORMAT="PROTOBOARD_%d"
+
     def __init__(self):
         Device.__init__(self)
-        self.designator_format = "PROTOBOARD_%d"
 
 # Make Protoboard to be an alias of Breadboard
 Protoboard = Breadboard

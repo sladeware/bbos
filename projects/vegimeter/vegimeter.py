@@ -14,7 +14,7 @@
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 
-from bb.app import Mapping
+from bb.app import mapping_factory
 from bb.os import OS
 from bb.hardware.devices.boards import Board
 
@@ -23,9 +23,7 @@ from device import vegimeter_device
 class VegimeterOS(OS):
     pass
 
-class Vegimeter(Mapping):
-    def __init__(self):
-        Mapping.__init__(self, name="V", os_class=VegimeterOS)
-        # Initialize hardware support. 
-        board = vegimeter_device.find_element("QSP1")
+vegimeter_class = mapping_factory(name_format="V%d",
+                                  os_class=VegimeterOS)
 
+board = vegimeter_device.find_element("QSP1")

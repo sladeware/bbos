@@ -55,7 +55,7 @@ class _OutputStream:
             # number of processes, which is number of mappings.
             if Application.get_running_instance().get_num_mappings() > 1:
                 mapping = Application.get_running_instance().get_active_mapping()
-                prefix = self.PREFIX_FORMAT % mapping.name
+                prefix = self.PREFIX_FORMAT % mapping.get_name()
             if data != "\n":
                 # Print prefix only if we have some data
                 self.stream.write(prefix)
@@ -85,13 +85,14 @@ class Process(multiprocessing.Process):
     and the particular kernel on it. It represents the life of that kernel:
     from its initialization to the point that it stops executing.
 
-    The process is a subclass of multiprocessing.Process()."""
+    The process is a subclass of :class:`multiprocessing.Process`."""
 
     def __init__(self, mapping):
         self.__mapping = mapping
 
         def bootstrapper():
-            os = mapping.os_class(**mapping.build_params)
+            os_class = mapping.get_os_class()
+            os = os_class(**mapping.get_build_params())
             os.main()
             os.kernel.start()
             return os
@@ -104,12 +105,16 @@ class Process(multiprocessing.Process):
             self.fh = open(self.fname, "w")
 
     def get_mapping(self):
+        """Return :class:`bb.app.application.Process` instance that runs under
+        this process."""
         return self.__mapping
 
     def get_pid(self):
+        """Return process PID."""
         return self.pid
 
     def start(self):
+        """Start the process."""
         from bb import simulator
         # Save a reference to the current stdout
         old_stdout = sys.stdout
@@ -133,6 +138,7 @@ class Process(multiprocessing.Process):
             print "Redirect %d output to %d terminal" % (self.pid, self.term.pid)
 
     def kill(self):
+        """Kill this process. See also :func:`os.kill`."""
         from bb import simulator
         if simulator.config.get_option("multiterminal"):
             self.term.terminate()
@@ -145,7 +151,10 @@ class Process(multiprocessing.Process):
 
 class Application(object):
     """This class describes BB application. Note, the only one application can
-    be executed per session."""
+    be executed per session.
+
+    By default if `devices` were not pass, one will be created and marked as
+    active. Atherwise the last device in the list will be active."""
 
     class Object(object):
         """This class handles application object activity in order to provide
@@ -190,9 +199,7 @@ class Application(object):
         # process will be able to define the mapping by pid.
         #self.__processes = self.__manager.dict()
         self.__processes = list()
-        # Initialize device control. By default if devices were not pass, one
-        # will be created and marked as active. Atherwise the last device in
-        # the list will be active.
+        # Initialize device control.
         if not devices:
             devices.append(Device())
         for device in devices:
@@ -203,16 +210,23 @@ class Application(object):
 
     @property
     def network(self):
+        """Return :class:`bb.app.network.Network` instance that represents a
+        network of all :class:`bb.app.mapping.Mapping` instances under this
+        application."""
         return self.__network
 
     def add_mapping(self, mapping):
+        """Add :class:`bb.app.mapping.Mapping` instance to the network."""
         self.network.add_node(mapping)
         return mapping
 
     def add_mappings(self, mappings):
+        """Add a list of :class:`bb.app.mapping.Mapping` instances to the
+        network."""
         self.network.add_nodes(mappings)
 
     def remove_mapping(self, mapping):
+        """Remove :class:`bb.app.mapping.Mapping` instance from the network."""
         self.network.remove_node(mapping)
 
     def get_num_mappings(self):
@@ -263,7 +277,7 @@ class Application(object):
             for i in execution_order:
                 # Take a random mapping
                 mapping = self.get_mappings()[i]
-                if not mapping.os_class:
+                if not mapping.get_os_class():
                     raise Exception("Cannot create OS instance.")
                 process = Process(mapping)
                 process.start()
@@ -292,17 +306,17 @@ class Application(object):
                 process.kill()
         Application.running_instance = None
 
-    ### Device management
-
     def add_device(self, device):
+        """Add :class:`bb.hardware.devices.device.Device` instance."""
         pass
 
     def remove_device(self, device):
+        """Return device."""
         pass
 
     def get_active_device(self, device):
+        """Return active device."""
         pass
-        
 
 class Traceable(object):
     """The Traceable interface allows you to track Object activity within an

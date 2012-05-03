@@ -29,12 +29,13 @@ except ImportError:
 #_______________________________________________________________________________
 
 class Edge(object):
-    """This class represents an edge between two nodes in a graph. Each edge
-    has a direction (from sender to receiver, or back and forth), plus a set of
+    """This class represents an edge between two nodes in a graph, where each
+    node is represented by :class:`bb.app.mapping.Mapping`. Each edge has a
+    direction (from `sender` to `receiver`, or back and forth), plus a set of
     attributes such as label (a text associated with it), etc.
 
     The edge also describes sending device and receiving device. Sending device
-    is device used by sender to send the data trough this edge to receiver.
+    is device used by `sender` to send the data trough this edge to `receiver`.
 
     A sending device initiates the transmission of data, instructions, and
     information while a receiving device accepts the items transmitted."""
@@ -54,10 +55,11 @@ class Edge(object):
         self.__attributes = attributes
 
     def get_nodes(self):
-        """"Return the sender and receiver nodes that this edge connects."""
+        """Return the sender and receiver nodes that this edge connects."""
         return (self.get_sender(), self.get_receiver())
 
     def get_sender(self):
+        """Return sender."""
         return self.__sender
 
     def get_sending_device(self):
@@ -72,6 +74,7 @@ class Edge(object):
                                                                     device))
 
     def get_receiver(self):
+        """Return receiver."""
         return self.__receiver
 
     def get_receiving_device(self):
@@ -170,23 +173,26 @@ class Network(networkx.MultiDiGraph):
 
     def add_edge(self, sender, receiver, key=None, attr_dict=None, **attrs):
         """Create an edge between sender and receiver. Return an edge
-        represented by NetworkXEdge instance which is mainly replacing a tuple
-        (sender, receiver, key, attrs).
+        represented by :class:`NetworkXEdge` instance which is mainly replacing
+        a tuple (sender, receiver, key, attrs).
 
-        sender and receiver can be represented by a tuple of mapping and target
-        communication device.
+        `sender` and `receiver` can be represented by a tuple of mapping and
+        target communication device.
 
-        key is an optional hashable identifier. By default it has
-        NetworkXEdge.KEY_FORMAT format. Note, this key has to be unique in order to
-        distinguish multiedges between a pair of nodes. At the same time
-        edge's label equals to the key.
+        `key` is an optional hashable identifier. By default it has
+        :const:`NetworkXEdge.KEY_FORMAT` format. Note, this key has to be unique
+        in order to distinguish multiedges between a pair of nodes. At the same
+        time edge's label equals to the key.
 
         By default label equals to the key value but can be changes by using
-        associated data as follows:
-        >>> add_edge(Mapping("M1"), Mapping("M2"), label="My serial connection")
-        or
-        >>> edge = add_edge(Mapping("M1"), Mapping("M2"))
-        >>> edge.set_label("My serial connection")
+        associated data as follows::
+
+            edge = network.add_edge(Mapping("M1"), Mapping("M2"), label="My serial connection")
+
+        or::
+
+            edge = network.add_edge(Mapping("M1"), Mapping("M2"))
+            edge.set_label("My serial connection")
 
         Note, the nodes for sender and receiver mappings will be automatically
         added if they are not already in the graph."""

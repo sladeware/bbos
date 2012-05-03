@@ -401,7 +401,8 @@ class SketchHandler(Handler):
             else:
                 src_connector = part.find_elements(Pin).find_element(id_)
             if not src_connector:
-                raise Exception("Can not find pin '%s' of '%s'" % (id_, part.designator))
+                raise Exception("Can not find pin '%s' of '%s'" %
+                                (id_, part.get_designator()))
             connects_elements = connector_element.getElementsByTagName("connects")
             if not connects_elements:
                 continue
@@ -442,7 +443,7 @@ class PinHandler(Handler):
         </connector>"""
         id_ = connector_element.getAttribute("id")
         if id_:
-            self._object.designator = id_
+            self._object.set_designator(id_)
         name = connector_element.getAttribute("name")
         if name:
             self._object.set_property("name", name)
@@ -497,7 +498,7 @@ class InstanceHandler(Handler):
         # Part reference designator
         elements = element.getElementsByTagName("title")
         if elements:
-            self._object.designator = get_text(elements[0].childNodes)
+            self._object.set_designator(get_text(elements[0].childNodes))
 
     @property
     def model_index(self):

@@ -17,7 +17,7 @@ __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 from bb.hardware.devices.boards.board import Board
 
 class P8X32AQuickStartBoard(Board):
-    """This class represents P8X32A QuickStart board:
-    http://www.parallax.com/StoreSearchResults/tabid/768/txtSearch/QuickStart/List/0/SortField/4/ProductID/748/Default.aspx"""
+    """This class represents `P8X32A QuickStart board
+    <http://www.parallax.com/StoreSearchResults/tabid/768/txtSearch/QuickStart/List/0/SortField/4/ProductID/748/Default.aspx>`_."""
     def __init__(self):
         pass

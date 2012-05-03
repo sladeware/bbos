@@ -11,8 +11,8 @@ _application_table = list()
 _active_application = None
 
 def new_application(*args, **kargs):
-    """Create and return the new Application instance. The new application will
-    be the automatically marked as active."""
+    """Create and return the new :class:`bb.app.application.Application`
+    instance. The new application will be the automatically marked as active."""
     application = Application(*args, **kargs)
     # NOTE: Do not register application here, it did this automatically
     # once an instance was created. The reason, the application can be
@@ -45,4 +45,6 @@ def get_active_application():
     return _active_application
 
 def get_running_application():
+    """Return currently running :class:`bb.app.application.Application`
+    insance."""
     return Application.get_running_instance()

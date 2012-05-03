@@ -66,7 +66,7 @@ class WorkstationDevice(Board):
         #Board.__init__(self, "A board", 1, [processor])
 
 class Workstation(Mapping):
-    os_class = WorkstationOS
+    DEFAULT_OS_CLASS = WorkstationOS
 
     def __init__(self, name):
         Mapping.__init__(self, name)

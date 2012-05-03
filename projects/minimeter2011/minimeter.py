@@ -31,7 +31,7 @@ class MinimeterOS(OS):
 
         # Unique ID that is a primary key in the database's minimeter table
         self.unique_id = hash(
-            appmanager.get_running_application().get_active_mapping().name)
+            appmanager.get_running_application().get_active_mapping().get_name())
 
         # The record containing statistics on the samples collected
         self.record = None

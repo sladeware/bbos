@@ -12,25 +12,20 @@ Application
 =========================================
 
 .. automodule:: bb.app.application
-
-.. autoclass:: Application
-   :members:
-
-.. autoclass:: Process
    :members:
 
 :mod:`bb.app.manager` --- AppManager
 ====================================
 
 .. automodule:: bb.app.manager
+   :members:
    
 :mod:`bb.app.mapping` --- Mapping
 =================================
 
 .. automodule:: bb.app.mapping
-
-.. autoclass:: Mapping
    :members:
+
 
 :mod:`bb.app.network` --- Network
 =================================

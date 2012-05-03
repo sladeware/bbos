@@ -968,20 +968,31 @@ class HardwareManagement(KernelExtension):
         mapping = self.get_mapping()
         # XXX: do we need to warn user that this kernel is outside of mapping?
         if mapping:
-            for device in mapping.hardware.get_board().get_devices():
-                self.register_device(device)
-
-    #####################
-    # Device management #
-    #####################
+            core = mapping.hardware.get_core()
+            print "\tCore:", core
+            processor = mapping.hardware.get_processor()
+            print "\tProcessor:", processor
+            board = mapping.hardware.get_board()
+            print "\tBoard:", board
+            if board:
+                for device in board.get_devices():
+                    self.register_device(device)
 
     def register_device(self, device):
-        """This method registers device."""
+        """This method registers device. For each new device will be created
+        :class:`DeviceManager` instance that will control it. Device is
+        registering by its designator
+        (see :func:`bb.hardware.primitives.primitive.Primitive.get_designator`).
+        
+        The system will also try to identify driver that will helps to control
+        this device. Once the driver was found, it will be registered with help
+        of :func:`register_driver` and the device will be bind to it by using
+        :func:`bind_device_to_driver`."""
         if self.is_registered_device(device):
             raise KernelException("Device '%s' was already registered." %
-                                  device.get_name())
+                                  device.get_designator())
         manager = DeviceManager(device)
-        self.__device_managers[device.name] = manager
+        self.__device_managers[device.get_designator()] = manager
 
     def is_registered_device(self, device):
         """Define whether or not the device was registered."""
@@ -1009,6 +1020,9 @@ class HardwareManagement(KernelExtension):
 
     def find_device_manager(self, name):
         """Return :class:`DeviceManager` by `name`."""
+        if name not in self.__device_managers:
+            raise Exception("Device manager that controls device %s wasn't found" %
+                            name)
         return self.__device_managers[name]
 
     def get_device_managers(self):
@@ -1152,9 +1166,8 @@ class System(OS.Object, Traceable):
             extension.__init__(self)
 
     def get_mapping(self):
-        #mapping = Application.get_running_instance().get_active_mapping()
-        #return mapping
-        return None
+        mapping = Application.get_running_instance().get_active_mapping()
+        return mapping
 
     def echo(self, data):
         if not isinstance(data, types.StringType):
