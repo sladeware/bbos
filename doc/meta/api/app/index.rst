@@ -5,13 +5,37 @@ Application
 *************************
 
 :mod:`bb.app` --- Application
-===================================
+=============================
 
-.. automodule:: bb.app
 
-.. autoclass:: Application
+:mod:`bb.app.application` --- Application
+=========================================
+
+.. automodule:: bb.app.application
    :members:
 
-.. autoclass:: Process
+:mod:`bb.app.manager` --- AppManager
+====================================
+
+.. automodule:: bb.app.manager
+   :members:
+   
+:mod:`bb.app.mapping` --- Mapping
+=================================
+
+.. automodule:: bb.app.mapping
    :members:
 
+
+:mod:`bb.app.network` --- Network
+=================================
+
+.. automodule:: bb.app.network
+
+.. autoclass:: Edge
+   :members:
+   
+.. autoclass:: Network
+   :members:
+   
+   

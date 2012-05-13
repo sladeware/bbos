@@ -1,15 +1,12 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright (c) 2011 Sladeware LLC"
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
 
-from bb.eda import Device
-
-#_______________________________________________________________________________
+from bb.hardware.devices import Device
+from bb.os.drivers.net.wireless.xbee import XBeeDriver
 
 class XBee(Device):
-    desigrator_format = "XBEE_%d"
+    DEFAULT_DRIVER_CLASS=XBeeDriver
+    DEFAULT_DESIGNATOR_FORMAT="XBEE_%d"
+    DEFAULT_SHORT_DESCRIPTION="Xbee 802.15.4 radio module"
 
-    def __str__(self):
-        """Returns a string containing a concise, human-readable
-        description of this object."""
-        return "Xbee 802.15.4 radio module"

@@ -2,15 +2,15 @@
 
 __copyright__ = "Copyright (c) 2011 Sladeware LLC"
 
-from bb.hardware import Part
+from bb.hardware.devices import Device
 
-class LED(Part):
+class LED(Device):
     RED = "red"
     GREEN = "green"
     YELLOW = "yellow"
 
     def __init__(self, color=None):
-        Part.__init__(self, "LED")
+        Device.__init__(self, "LED")
         self.__color = color
 
     def get_color(self):

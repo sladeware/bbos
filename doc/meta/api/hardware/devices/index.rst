@@ -1,12 +1,13 @@
 .. _api:
 
 *************************
-Hardware Support
+Devices
 *************************
 
 .. toctree::
    :maxdepth: 2
 
-   primitives.rst
-   devices/index.rst
+   device.rst
+   boards.rst
+   processors/index.rst
 

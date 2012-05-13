@@ -12,15 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Build-time and life-time Kernel errors."""
-
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 
-class KernelException(Exception):
-    """The root kernel exception."""
+from bb.app import mapping_factory
+from bb.os import OS
+from bb.hardware.devices.boards import Board
 
-class KernelTypeException(KernelException):
-    """Raised when object has incorrect type."""
+from device import vegimeter_device
 
-class KernelModuleException(KernelException):
-    """Raised when we unable to load an expected module."""
+class VegimeterOS(OS):
+    pass
+
+vegimeter_class = mapping_factory(name_format="V%d",
+                                  os_class=VegimeterOS)
+
+board = vegimeter_device.find_element("QSP1")

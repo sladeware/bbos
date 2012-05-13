@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright (c) 2011 Sladeware LLC"
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
 
+from bb.app import appmanager
 from bb.app import Application, Mapping
 from bb.os import OS, Kernel, Thread, Port
 from bb.mm.mempool import MemPool, mwrite
-from bb.hardware.parts.boards import PropellerDemoBoard
-from bb.hardware.parts.net.wireless.xbee import XBee
-from bb.hardware.parts.leds import LED
+from bb.hardware.devices.boards import PropellerDemoBoard
+from bb.hardware.devices.net.wireless.xbee import XBee
+from bb.hardware.devices.leds import LED
 
 import time
 
@@ -30,7 +31,7 @@ class MinimeterOS(OS):
 
         # Unique ID that is a primary key in the database's minimeter table
         self.unique_id = hash(
-            Application.get_active_instance().get_active_mapping().name)
+            appmanager.get_running_application().get_active_mapping().get_name())
 
         # The record containing statistics on the samples collected
         self.record = None

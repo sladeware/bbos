@@ -21,30 +21,33 @@ import getpass
 from bb.hardware.design import Network
 from bb.hardware.primitives import Pin
 from bb.utils import module
-from bb.tools import Fritzing
+from bb.tools import fritzing
 
-# Setup environment for each developer
-Fritzing.set_home_dir("/opt/fritzing")
-Fritzing.add_search_path(os.path.join(module.get_dir(), "parts"))
+# First of all we need to setup Fritzing for each developer
+fritzing.set_home_dir("/opt/fritzing")
+fritzing.add_search_path(os.path.join(module.get_dir(), "parts"))
 
-vegimeter_device = Fritzing.parse("device.fz")
-#for element in vegimeter_device.get_elements():
-#    print element.get_property_value("name"), element.designator
+vegimeter_device = fritzing.parse("device.fz")
 
-#_____________________________________________________________________
+def bill_of_materials():
+    bill_of_materials = dict()
+    for element in vegimeter_device.get_elements():
+        name = element.get_property_value("name")
+        if name not in bill_of_materials:
+            bill_of_materials[name] = 0
+        bill_of_materials[name] += 1
+    return bill_of_materials
 
-import networkx
-from bb.hardware.primitives import G
+if __name__ == "__main__":
+    print "Vegimeter bill of materials:"
+    for name, amount in bill_of_materials().items():
+        print "\t%d %s(s)" % (amount, name)
 
-quickstart = vegimeter_device.find_element("QSP1")
-tempsensor1 = vegimeter_device.find_element("TS1")
-
+"""
 ## The next snippet shows all the pins
 #pins = tempsensor1.find_elements(Pin)
 #for pin in pins:
 #    print pin.get_property_value("name")
-
-print
 
 def get_quickstartboard_pin_designator(name):
     mapping = {
@@ -69,17 +72,10 @@ for src_pin in tempsensor1.find_elements(Pin):
                    get_quickstartboard_pin_designator(src_pin.designator),
                    dst_pin.get_property_value("name"),
                    get_quickstartboard_pin_designator(dst_pin.designator))
-#exit(0)
 
-def bill_of_materials():
-    bill_of_materials = dict()
-    for element in vegimeter_device.get_elements():
-        name = element.get_property_value("name")
-        if name not in bill_of_materials:
-            bill_of_materials[name] = 0
-        bill_of_materials[name] += 1
-    return bill_of_materials
+import networkx
+from bb.hardware.primitives import G
 
-print "Vegimeter bill of materials:"
-for name, amount in bill_of_materials().items():
-    print "\t%d %s(s)" % (amount, name)
+quickstart = vegimeter_device.find_element("QSP1")
+tempsensor1 = vegimeter_device.find_element("TS1")
+"""

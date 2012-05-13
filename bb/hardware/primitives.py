@@ -14,6 +14,8 @@ except ImportError:
     exit(1)
 G = networkx.DiGraph()
 
+#_______________________________________________________________________________
+
 class Property(object):
     """This class represents property of a primitive."""
     def __init__(self, name, value=None, groups=()):
@@ -35,19 +37,56 @@ class Property(object):
 class Primitive(object):
     """This class is basic for any primitive.
 
-    Each primitive has unique ID -- designator :attr:`Primitive.designator` for
-    identification. By default the system tries to generate it with help of
-    :attr:`Primitive.designator_format`. However it can be
-    changed manually by using :attr:`Primitive.designator` property."""
+    Each primitive has unique ID -- designator :attr:`get_designator`
+    for identification. By default the system tries to generate it with help of
+    :func:`get_designator_format()` and :func:`generate_designator`. However it
+    can be changed manually by using :func:`set_designator` method."""
 
-    def __init__(self):
+    DEFAULT_DESIGNATOR_FORMAT="P%d"
+    """This designator format will be used by all the primitives that will
+    inherit this class. By default primitives will have such designators:
+    ``P0``, ``P1``, ..., etc. The format can be changed later by using
+    :func:`set_designator_format` method."""
+    
+    DEFAULT_PROPERTIES=dict()
+    """Dictionary of default properties used by all the primitives that will
+    inherit this class."""
+
+    DEFAULT_SHORT_DESCRIPTION="Just another primitive"
+    """This constant keeps a short description of the primitive. The main idea
+    to use it with :func:`__str__` method::
+    
+        my_primitive = Primitive(short_description="My prititive")
+        print str(my_primitive)
+        
+    Prints ``My primitive``."""
+
+    def __init__(self, designator=None, designator_format=None,
+                 short_description=None):
         self.__properties = dict()
         self.__owner = None
         self.__id = id(self)
-        self.__designator_format = "P%d"
+        self.__designator_format = None
+        self.set_designator_format(self.DEFAULT_DESIGNATOR_FORMAT)
+        if designator_format:
+            self.set_designator_format(designator_format)
         self.__designator = None
+        if designator:
+            self.set_designator(designator)
+        else:
+            self.generate_designator()
+        self.__short_description = None
+        self.set_short_description(self.DEFAULT_SHORT_DESCRIPTION)
+        if short_description:
+            self.set_short_description(short_description)
         global G
         G.add_node(self)
+
+    def set_short_description(self, text):
+        self.__short_description = text
+
+    def get_short_description(self):
+        return self.__short_description
 
     def clone(self):
         """Creates and returns a copy of this object. The default
@@ -61,8 +100,7 @@ class Primitive(object):
             setattr(clone, k, v)
         return clone
 
-    @property
-    def designator_format(self):
+    def get_designator_format(self):
         """Defines the format string to be used with the part
         designator. A reference designator unambiguously identifies a
         component in an electrical schematic (circuit diagram) or on a
@@ -71,13 +109,24 @@ class Primitive(object):
         C1002."""
         return self.__designator_format
 
-    @designator_format.setter
-    def designator_format(self, frmt):
+    def generate_designator(self, counter=0):
+        """Generate a new designator and set it as the current one by using
+        :func:`set_designator`. Return new designator.
+        
+        Usually generator uses designator format and
+        `counter` that represents the number of relatives."""
+        designator = self.get_designator_format() % counter
+        self.set_designator(designator)
+        return designator
+
+    def set_designator_format(self, frmt):
+        """Set designator format. For example ``P%d``."""
         self.__designator_format = frmt
 
-    @property
-    def designator(self):
-        """Designator is the name of a part on a printed circuit by
+    def get_designator(self):
+        """Return designator value.
+        
+        Designator is the name of a part on a printed circuit by
         convention beginning with one or two letters followed by a
         numeric value. The letter designates the class of component;
         eg. "Q" is commonly used as a prefix for transistors.
@@ -93,11 +142,13 @@ class Primitive(object):
         drawing, and bill of materials. Manufacturing uses the
         reference designators to determine where to stuff parts on the
         board. Field service uses them to identify and replace failed
-        parts."""
+        parts.
+        
+        See also :func:`generate_designator`."""
         return self.__designator
 
-    @designator.setter
-    def designator(self, text):
+    def set_designator(self, text):
+        """Set designator."""
         self.__designator = text
 
     @property
@@ -113,12 +164,8 @@ class Primitive(object):
         """Returns a reference to the owner object."""
         return self.__owner
 
-    @owner.setter
-    def owner(self, primitive):
+    def set_owner(self, primitive):
         self.__owner = primitive
-
-    #def property(cls):
-    #    pass
 
     def add_property(self, property):
         """Add a new property for the primitive."""
@@ -129,6 +176,9 @@ class Primitive(object):
         self.__properties[property.name] = property
 
     def has_property(self, property_):
+        """Return whether or not the primitive has a property `property_`. The
+        `property_` can be defined as a string or instance of
+        :class:`Property` class."""
         property_name = property_
         if isinstance(property_, Property):
             property_name = property_.name
@@ -163,13 +213,26 @@ class Primitive(object):
         """Return all properties."""
         return self.__properties
 
+    def __str__(self):
+        """Returns a string containing a concise, human-readable
+        description of this object."""
+        return self.get_short_description()
+
+
 class ElectronicPrimitive(Primitive):
     """This class represents basic electrical design primitive."""
 
+#_______________________________________________________________________________
+
 class Pin(ElectronicPrimitive):
-    """A pin is an electrical design primitive. Pins give a part its
+    """A pin is an electrical design primitive derived from
+    :class:`ElectronicPrimitive` class. Pins give a part its
     electrical properties and define connection points on the part for
-    directing signals in and out."""
+    directing signals in and out.
+    
+    Each pin has electrical type. Electrical type represents the type of
+    electrical connection the pin makes. This can be used to detect electrical
+    wiring errors in your schematic."""
 
     class ElectricalTypes:
         """Class of possible electrical types."""
@@ -179,18 +242,16 @@ class Pin(ElectronicPrimitive):
 
     def __init__(self):
         ElectronicPrimitive.__init__(self)
-        self._connections = dict()
+        self.__connections = dict()
         self.__electrical_type = None
 
-    @property
-    def electrical_type(self):
-        """Electrical type represents the type of electrical connection the pin
-        makes. This can be used to detect electrical wiring errors in your
-        schematic."""
+    def get_electrical_type(self):
+        """Return electrical type of this pin."""
         return self.__electrical_type
 
-    @electrical_type.setter
-    def electrical_type(self, type_):
+    def set_electrical_type(self, type_):
+        """Set electrical type. See :class:`Pin.ElectricalTypes` to find support
+        types."""
         if not getattr(Pin.ElectricalTypes, type_):
             raise
         self.__electrical_type = type_
@@ -200,14 +261,17 @@ class Pin(ElectronicPrimitive):
         G.add_edge(self, pin)
         G.add_edge(pin, self)
         if not self.is_connected_to(pin):
-            self._connections[id(pin)] = pin
+            self.__connections[id(pin)] = pin
             pin.connect_to(self)
 
     def is_connected_to(self, pin):
-        return id(pin) in self._connections
+        return id(pin) in self.__connections
+
+#_______________________________________________________________________________
 
 class Note(Primitive):
-    """A note is a design primitive (non-electrical). It is used to
+    """A note is a design primitive (non-electrical), derived from class
+    :class:`Primitive`. It is used to
     add informational or instructional text to a specific area within
     a schematic, in a similar vain to that of commenting a program's
     source code."""
@@ -223,8 +287,11 @@ class Note(Primitive):
     def text(self, text):
         self.__text = text
 
+#_______________________________________________________________________________
+
 class Wire(ElectronicPrimitive):
-    """A wire is an electrical design primitive. It is an object that
+    """A wire is an electrical design primitive derived from
+    :class:`ElectronicPrimitive`. It is an object that
     forms an electrical connection between points on a schematic and is
     analogous to a physical wire."""
 
@@ -239,7 +306,7 @@ class Wire(ElectronicPrimitive):
 
     def find_pin(self, by):
         for pin in (self.first_pin, self.second_pin):
-            if pin.designator == by:
+            if pin.get_designator() == by:
                 return pin
 
     def disconnect(self):
@@ -252,9 +319,12 @@ class Wire(ElectronicPrimitive):
         return self.second_pin
 
     def clone(self):
+        """Clone the wire. Return cloned :class:`Wire` object."""
         clone = ElectronicPrimitive.clone(self)
         clone.connect(self.get_first_pin().clone(), self.get_second_pin().clone())
         return clone
+
+#_______________________________________________________________________________
 
 class Bus(ElectronicPrimitive):
     """A bus is an electrical design primitive. It is an object that represents
