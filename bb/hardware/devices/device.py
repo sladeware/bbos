@@ -12,7 +12,21 @@ class Device(ElectronicPrimitive):
     physical device. Device is any type of electrical component. It
     will have functions and properties unique to its type. Each device
     can contain one or more parts that are packaged together (e.g. a
-    74HCT32)."""
+    74HCT32).
+    
+    When the device is used under operating system, it manages it with help
+    of :class:`bb.os.kernel.DeviceManager` and controles it with
+    help of :class:`bb.os.kernel.Driver`. It is always better to define driver
+    that will control your device when your are planing to create a device. When
+    the driver is defined the OS will use :func:`get_driver` method to obtaine
+    driver instance and then use
+    :func:`bb.os.kernel.HardwareManagement.bind_device_to_driver` in order to
+    tie these two objects.
+    """
+
+    DEFAULT_DRIVER_CLASS=None
+    """This constant keeps default :class:`bb.os.kernel.Driver` class that
+    can be taken by :func:`Device.get_driver`."""
 
     class Searcher(list):
         def __init__(self, source):
@@ -32,7 +46,7 @@ class Device(ElectronicPrimitive):
                         self.__elements.append(element)
             elif type(by) in (types.StringType, types.UnicodeType):
                 for element in self.__source:
-                    if element.designator == by:
+                    if element.get_designator() == by:
                         self.__elements.append(element)
             return Device.Searcher(self.__elements)
 
@@ -58,8 +72,10 @@ class Device(ElectronicPrimitive):
     def unregister_driver(self, driver):
         pass
 
-    def __get_default_driver(self):
-        return None
+    def get_driver(self, version=None):
+        """Return :class:`bb.os.kernel.Driver` class that should control this
+        device. By default returns :const:`DEFAULT_DRIVER_CLASS`."""
+        return self.DEFAULT_DRIVER_CLASS
 
     def has_element(self, element):
         global G
@@ -78,14 +94,14 @@ class Device(ElectronicPrimitive):
         #Device.element_register[id(element)] = self
         # Assume designator
         if element.get_property_value("name"):
-            if self.find_element(element.designator):
+            if self.find_element(element.get_designator()):
                 pass
         else:
-            if not element.designator_format:
+            if not element.get_designator_format():
                 raise Exception("Element %s does not have designator format." \
                                     % element)
             relatives = self.find_elements(self.__class__)
-            element.designator = element.designator_format % len(relatives)
+            element.generate_designator(counter=len(relatives))
         self.connect_to(element)
         return element
 
@@ -93,9 +109,9 @@ class Device(ElectronicPrimitive):
         """The `original` element is replacing by a `new`, whose
         designator attribute is set to the designator of the original
         element."""
-        original_designator = original.designator()
+        original_designator = original.get_designator()
         self.remove_element(original)
-        new.designator(original_designator)
+        new.set_designator(original_designator)
         self.add_element(new)
 
     def remove_element(self, element):
@@ -111,7 +127,7 @@ class Device(ElectronicPrimitive):
 
     def find_element(self, by):
         """If there is more than one child matching the search, the first
-        one is returned. In that case, Device.find_elements() should be used."""
+        one is returned. In that case, :func:`find_elements` should be used."""
         elements = self.find_elements(by)
         if len(elements):
             return elements[0]
@@ -141,3 +157,6 @@ class Device(ElectronicPrimitive):
             pin = origin_pin.clone()
             clone.add_element(pin)
         return clone
+
+def verify_device(device):
+    pass

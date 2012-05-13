@@ -1,11 +1,21 @@
 Copyright (c) 2011-2012 Sladeware LLC
 
-Bionic Bunny Project version XXX
+Bionic Bunny <http://bionicbunny.org>
 
 CONTENTS
 ========
 
- * Installing on Linux and other platforms
+ * WHAT IS BIONIC BUNNY?
+ * INSTALLING ON LINUX AND OTHER PLATFORMS
+
+WHAT IS BIONIC BUNNY?
+=====================
+
+Bionic Bunny (BB) is a platform for embedded systems development, providing
+microkernel operating system-like functionality. It provides
+language-independent, hardware-independent and network-transparent communication
+for power efficient computing in heterogeneous microcontroller robotics
+applications.
 
 INSTALLING ON LINUX AND OTHER PLATFORMS
 =======================================

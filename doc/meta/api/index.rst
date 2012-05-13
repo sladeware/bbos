@@ -10,8 +10,11 @@
 Doc.
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
    app/index.rst
-   eda/index.rst
+   os/index.rst
+   hardware/index.rst
+   builder/index.rst
+   tools/index.rst
 

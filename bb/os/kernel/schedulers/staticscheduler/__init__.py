@@ -38,4 +38,4 @@ class StaticScheduler(object, Scheduler):
     def get_order(self):
         return self.__order
 
-import bb.os.kernel.schedulers.staticscheduler.setup
+#import bb.os.kernel.schedulers.staticscheduler.setup
