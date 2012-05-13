@@ -1,58 +1,56 @@
 #!/usr/bin/env python
 
-"""This module contains basic design primitives."""
+"""This module contains basic hardware primitives.
+"""
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 
-import copy
-
-try:
-    import networkx
-except ImportError:
-    print >>sys.stderr, "Please install networkx library:", \
-        "http://networkx.lanl.gov"
-    exit(1)
-G = networkx.DiGraph()
-
 #_______________________________________________________________________________
 
-class Property(object):
-    """This class represents property of a primitive."""
-    def __init__(self, name, value=None, groups=()):
-        self.__name = name
-        self.__value = value
+import copy
 
-    @property
-    def name(self):
-        return self.__name
+from bb.lib.graph import networkx
 
-    @property
-    def value(self):
-        return self.__value
+class Graph(networkx.Graph):
 
-    @value.setter
-    def value(self, new_value):
-        self.__value = new_value
+    def __init__(self, nodes=[]):
+        networkx.Graph.__init__(self)
+
+G = Graph()
+
+#_______________________________________________________________________________
 
 class Primitive(object):
     """This class is basic for any primitive.
 
-    Each primitive has unique ID -- designator :attr:`get_designator`
-    for identification. By default the system tries to generate it with help of
-    :func:`get_designator_format()` and :func:`generate_designator`. However it
-    can be changed manually by using :func:`set_designator` method."""
+    Each primitive has unique ID -- designator for identification that can be
+    obtained by :func:`get_designator`. By default the system tries to generate
+    it with help of :func:`get_designator_format()` and
+    :func:`generate_designator`. However it can be changed manually by using
+    :func:`set_designator` method.
 
-    DEFAULT_DESIGNATOR_FORMAT="P%d"
+    A primitive may also have properties where each property is represented
+    by :class:`Primitive.Property`. For example, if you would like to add
+    weight of your primitive ``my_primitive``, you can do this as follows::
+
+        my_primitive.add_property(Primitive.Property("weight", 87))
+
+    Now people will be able to define the weight of the primitive::
+
+        print my_primitive.get_primitive("weight").value
+    """
+
+    DESIGNATOR_FORMAT="P%d"
     """This designator format will be used by all the primitives that will
     inherit this class. By default primitives will have such designators:
     ``P0``, ``P1``, ..., etc. The format can be changed later by using
     :func:`set_designator_format` method."""
     
-    DEFAULT_PROPERTIES=dict()
+    PROPERTIES=dict()
     """Dictionary of default properties used by all the primitives that will
     inherit this class."""
 
-    DEFAULT_SHORT_DESCRIPTION="Just another primitive"
+    SHORT_DESCRIPTION="Just another primitive"
     """This constant keeps a short description of the primitive. The main idea
     to use it with :func:`__str__` method::
     
@@ -61,13 +59,35 @@ class Primitive(object):
         
     Prints ``My primitive``."""
 
+    class Property(object):
+        """This class represents property of a primitive. Each property
+        consists of `name` and `value`.
+        """
+
+        def __init__(self, name, value=None, groups=()):
+            self.__name = name
+            self.__value = value
+
+        @property
+        def name(self):
+            return self.__name
+
+        @property
+        def value(self):
+            return self.__value
+
+        @value.setter
+        def value(self, new_value):
+            self.__value = new_value
+
+
     def __init__(self, designator=None, designator_format=None,
                  short_description=None):
         self.__properties = dict()
         self.__owner = None
         self.__id = id(self)
         self.__designator_format = None
-        self.set_designator_format(self.DEFAULT_DESIGNATOR_FORMAT)
+        self.set_designator_format(self.DESIGNATOR_FORMAT)
         if designator_format:
             self.set_designator_format(designator_format)
         self.__designator = None
@@ -76,7 +96,7 @@ class Primitive(object):
         else:
             self.generate_designator()
         self.__short_description = None
-        self.set_short_description(self.DEFAULT_SHORT_DESCRIPTION)
+        self.set_short_description(self.SHORT_DESCRIPTION)
         if short_description:
             self.set_short_description(short_description)
         global G
@@ -94,7 +114,8 @@ class Primitive(object):
         a new instance of the same class and then copies the field
         values (including object references) from this instance to the
         new instance. A "deep" copy, in contrast, would also
-        recursively clone nested objects."""
+        recursively clone nested objects.
+        """
         clone = self.__class__()
         for k, v in self.__dict__.iteritems():
             setattr(clone, k, v)
@@ -169,7 +190,7 @@ class Primitive(object):
 
     def add_property(self, property):
         """Add a new property for the primitive."""
-        if not isinstance(property, Property):
+        if not isinstance(property, Primitive.Property):
             raise Exception("Not a Property")
         if self.has_property(property):
             raise Exception("This property is already defined")
@@ -180,7 +201,7 @@ class Primitive(object):
         `property_` can be defined as a string or instance of
         :class:`Property` class."""
         property_name = property_
-        if isinstance(property_, Property):
+        if isinstance(property_, Primitive.Property):
             property_name = property_.name
         return property_name in self.properties
 
@@ -189,15 +210,17 @@ class Primitive(object):
         if property_:
             property_.value = value
             return property_
-        property_ = Property(name, value, group)
+        property_ = Primitive.Property(name, value, group)
         self.add_property(property_)
         return property_
 
     def get_properties(self, group=None):
-        """Return all the properties. See also :attr:`Primitive.properties`."""
+        """Return all the properties. See also :attr:`Primitive.properties`.
+        """
         return self.properties
 
     def get_property(self, name):
+        """Return :class:`Primitive.Property` instance by `name`."""
         if not self.has_property(name):
             return None
         return self.properties[name]
@@ -216,11 +239,12 @@ class Primitive(object):
     def __str__(self):
         """Returns a string containing a concise, human-readable
         description of this object."""
-        return self.get_short_description()
+        return "Primitive <%s>" % self.get_designator()
 
 
 class ElectronicPrimitive(Primitive):
-    """This class represents basic electrical design primitive."""
+    """This class represents basic electrical design primitive.
+    """
 
 #_______________________________________________________________________________
 

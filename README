@@ -25,7 +25,7 @@ or higher:
 
   $ sudo apt-get install make git python python-networkx
 
-Next, download the latest version of BB platform (see http://bionicbunny.org)
+Next, download the latest version of BB platform (see <http://bionicbunny.org>)
 to the place where it will live (e.g. /opt/bionicbunny/):
 
   $ git clone git@github.com:sladeware/bbos.git bionicbunny

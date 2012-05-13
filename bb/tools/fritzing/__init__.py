@@ -80,17 +80,18 @@ def set_home_dir(path):
     _home_dir = path
 
 def get_default_user_dir():
-    """Return default path to the global fritzing user directory
-    depending on operating system (``os.name``)."""
+    """Return default path to the global Fritzing user directory depending on
+    operating system (``os.name``).
+    """
     default_dirs = {
         "posix": "%s/.config/Fritzing" % os.environ["HOME"],
     }
     return default_dirs.get(os.name, None)
 
 def get_user_dir():
-    """Return path to the global user directory. The location of this
-    directory differs depending on operating system, and might
-    even be hidden by default (see get_default_user_dir())."""
+    """Return path to the global user directory. The location of this directory
+    differs depending on operating system, and might even be hidden by default
+    (see :func:`get_default_user_dir`)."""
     return _user_dir or get_default_user_dir()
 
 def set_user_dir(path):
@@ -100,19 +101,21 @@ def set_user_dir(path):
     _user_dir = path
 
 def add_search_path(path):
-    """Add a new path to Fritzing search pathes."""
+    """Add a new path to Fritzing search pathes.
+    """
     _search_pathes.append(path)
 
 def add_search_pathes(pathes):
     """Add a list of pathes to Fritzing search pathes. See also
-    add_search_path()."""
+    :func:`add_search_path`.
+    """
     for path in pathes:
         add_search_path(path)
 
 def get_search_pathes():
-    """Return a list of strings that specifies the search path for
-    Fritzing files. By default includes user directory and home
-    directory."""
+    """Return a list of strings that specifies the search path for Fritzing
+    files. By default includes user directory and home directory.
+    """
     pathes = list()
     pathes.extend(_search_pathes)
     for path in (get_home_dir(), get_user_dir()):
@@ -144,7 +147,8 @@ def set_index_filename(filename):
     _index_filename = filename
 
 def get_index_filename():
-    """Return the name of index file."""
+    """Return the name of index file.
+    """
     return _index_filename
 
 _parts_index = dict()
@@ -152,17 +156,17 @@ _part_handlers_by_id = dict()
 _part_filenames_by_id = dict()
 
 def index_parts(search_pathes=None, force=False):
-    """Index all Fritzing parts that can be found at
-    `search_pathes`. By default if `search_pathes` were not
-    defined then :func:`get_search_pathes` will be used.
+    """Index all Fritzing parts that can be found at `search_pathes`. By default
+    if `search_pathes` were not defined then :func:`get_search_pathes` will be
+    used.
 
     Once all the parts were indexed, they are stored at index file
-    :func:`get_index_filename` in order to increase
-    performance in future. However, each new time created index file
-    is loading and the system is removing obsolete parts and add new
-    parts if such will be found.
+    :func:`get_index_filename` in order to increase performance in
+    future. However, each new time created index file is loading and the system
+    is removing obsolete parts and add new parts if such will be found.
 
-    In order to reindex parts set `force` as ``True``."""
+    In order to reindex parts set `force` as ``True``.
+    """
     global _parts_index
     global _part_handlers_by_id
     global _part_filenames_by_id
@@ -274,12 +278,13 @@ def fix_filename(filename):
     raise IOError("Can not fix file: '%s'" % filename)
 
 def parse(filename):
-    """Create an xml parser and use it to parse a
-    document. Return Device object.
-    The document name is passed in as `filename`.
+    """Create an xml parser and use it to parse a document. Return
+    :class:`bb.hardware.devices.device.Device` object. The document name is
+    passed in as `filename`.
 
     The document type (sketch or part) will be defined automatically
-    by using file extension."""
+    by using file extension.
+    """
     if not os.path.exists(filename):
         raise IOError("No such file: '%s'" % filename)
     index_parts()
@@ -512,15 +517,15 @@ class InstanceHandler(Handler):
         self.__model_index = new_index
 
 class PartHandler(Handler):
-    """A Fritzing part is made up of a number of files, one required
-    metadata file (file suffix is ``.fzp``, so the metadata file is also
-    referred to as an FZP), and up to four SVG files.
+    """A Fritzing part is made up of a number of files, one required metadata
+    file (file suffix is ``.fzp``, so the metadata file is also referred to as
+    an FZP), and up to four SVG files.
 
     The `Fritzing metadata file
-    <http://fritzing.org/developer/fritzing-part-format/>`_ lists a
-    part's title, description, and other properties, as well as a
-    references to the part's SVG files. It also specifies a part's
-    connectors and internal buses."""
+    <http://fritzing.org/developer/fritzing-part-format/>`_ lists a part's
+    title, description, and other properties, as well as a references to the
+    part's SVG files. It also specifies a part's connectors and internal buses.
+    """
 
     ROOT_TAG_NAME = "module"
     CONNECTORS_TAG_NAME = "connectors"
@@ -596,8 +601,9 @@ class PartHandler(Handler):
     def read(self):
         """Read part::
 
-        <module fritzingVersion="..." moduleId="...">
-        </module>"""
+            <module fritzingVersion="..." moduleId="...">
+            </module>
+        """
         if not self._buf:
             raise Exception("The buffer is empty. Nothing to read.")
         self._doc = xml.dom.minidom.parseString(self._buf)

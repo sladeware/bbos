@@ -12,11 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The BBOS kernel! The kernel is represented by :class:`bb.os.kernel.Kernel`
-class and aims to control every single OS activity.
+"""A kernel represents a non-blocking computational resource, which is in most
+cases simply a core of a microcontroller. Threads run within a kernel using a
+customizable time sharing scheduler algorithm.
 
-The kernel consists of extensions. The extension can be created with help of
-:func:`kernel_extension` decorator."""
+The kernel is represented by :class:`bb.os.kernel.Kernel` class and consists of
+extensions. The extension can be created with help of :func:`kernel_extension`
+decorator.
+"""
 
 __version__ = "$Rev: 401 $"
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
@@ -272,12 +275,12 @@ class Idle(Thread):
         pass
 
 class Messenger(Thread):
-    """This class is a special form of thread, which allows to
-    automatically provide an action for received message by using
-    specified map of predefined handlers.
+    """This class is a special form of thread, which allows to automatically
+    provide an action for received message by using specified map of predefined
+    handlers.
 
-    The following example shows the most simple case how to define a
-    new message handler by using Messenger.message_handler() decorator::
+    The following example shows the most simple case how to define a new message
+    handler by using :func:`Messenger.message_handler` decorator::
 
         class SerialMessenger(Messenger):
             @Messenger.message_handler("SERIAL_OPEN")
@@ -294,14 +297,16 @@ class Messenger(Thread):
             def serial_open_handler(self, message):
                 print "Open serial connection"
 
-    When a SerialMessenger object receives a SERIAL_OPEN message, the
-    message is directed to SerialMessenger.serial_open_handler handler
-    for the actual processing.
+    When a :class:`SerialMessenger` object receives a ``SERIAL_OPEN`` message,
+    the message is directed to :func:`SerialMessenger.serial_open_handler`
+    handler for the actual processing.
 
-    Note, in order to privent any conflicts with already defined
-    methods the message handler should be named by concatinating
-    "_handler" postfix to the the name of handler,
-    e.g. serial_open_handler()."""
+    .. note::
+
+      In order to privent any conflicts with already defined methods the message
+      handler should be named by concatinating `_handler` postfix to the the
+      name of handler, e.g. ``serial_open_handler``.
+    """
 
     MESSAGE_HANDLERS_MAP_PER_CLASS = dict()
     PORT_NAME_FORMAT = "MESSENGER_PORT_%d"
@@ -342,9 +347,9 @@ class Messenger(Thread):
 
     @classmethod
     def message_handler(dec_cls, cmd):
-        """A special decorator to reduce a few unnecessary steps to
-        add a new message handler. See add_message_handler() for more
-        details."""
+        """A special decorator to reduce a few unnecessary steps to add a new
+        message handler. See :func:`add_message_handler` for more details.
+        """
         verify_message_command(cmd)
         target_cls_name = caller(2)
         if not target_cls_name in table:
@@ -356,7 +361,8 @@ class Messenger(Thread):
 
     def add_message_handler(self, command, handler):
         """Maps a command extracted from a message to the specified handler
-        function."""
+        function.
+        """
         if not callable(handler):
             raise Exception("The handler %s has to be callable." % handler)
         if self.has_message_handler(command):
@@ -365,18 +371,20 @@ class Messenger(Thread):
         self.__message_handlers_map[command] = handler
 
     def get_supported_messages(self):
-        """Returns a list of messages for which the messenger has
-        handlers."""
+        """Returns a list of messages for which the messenger has handlers.
+        """
         return self.__message_handlers_map.keys()
 
     def has_message_handler(self, command):
-        """This method is alias to Messenger.find_message_handler(),
-        but it returns True if handler was found or False otherwise."""
+        """This method is alias to :func:`find_message_handler`, but it returns
+        True if handler was found or ``False`` otherwise.
+        """
         return not not self.find_message_handler(command)
 
     def find_message_handler(self, command):
         """Returns message handler if there is a handler for command,
-        or None if there is no such handler."""
+        or ``None`` if there is no such handler.
+        """
         if not command in self.get_supported_messages():
             return None
         handler = self.__message_handlers[command]
@@ -398,6 +406,8 @@ class Messenger(Thread):
 class ThreadManagement(KernelExtension):
     """This class represents thread management that is used as kernel
     extension."""
+
+    Thread=Thread
 
     def __init__(self, threads=list(), scheduler=StaticScheduler()):
         KernelExtension.__init__(self)
@@ -969,13 +979,13 @@ class HardwareManagement(KernelExtension):
         # XXX: do we need to warn user that this kernel is outside of mapping?
         if mapping:
             core = mapping.hardware.get_core()
-            print "\tCore:", core
+            print "\tCore: %s" % core
             processor = mapping.hardware.get_processor()
-            print "\tProcessor:", processor
+            print "\tProcessor: %s" % processor
             board = mapping.hardware.get_board()
-            print "\tBoard:", board
+            print "\tBoard: %s" % board
             if board:
-                for device in board.get_devices():
+                for device in board.find_elements(Device):
                     self.register_device(device)
 
     def register_device(self, device):
@@ -1261,7 +1271,8 @@ class System(OS.Object, Traceable):
 
     def find_module(self, name):
         """Find module's object by its name. Return None if module was
-        not identified."""
+        not identified.
+        """
         name = verify_string(name)
         try:
             return self.__modules[name]
@@ -1283,10 +1294,10 @@ def get_running_kernel():
     return Traceable.find_running_instance(Kernel)
 
 def Kernel(**selected_extensions):
-    """This kernel factory creates and returns Kernel class with all
-    required extensions. selected_extensions contains extensions that
-    have to be included (if they have True value) or excluded (if they
-    have False value) from list of extensions that will extend kernel
+    """This kernel factory creates and returns :class:`Kernel` class with all
+    required extensions. `selected_extensions` contains extensions that have to
+    be included (if they have ``True`` value) or excluded (if they have
+    ``False`` value) from list of extensions that will extend kernel
     functionality."""
     use_extensions = _DEFAULT_KERNEL_EXTENSIONS
     # Verify and update the list of extensions to be used
