@@ -14,16 +14,67 @@
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 
-from bb.app import mapping_factory
-from bb.os import OS
+import time
+import random
+
+from bb import OS, Mapping
 from bb.hardware.devices.boards import Board
 
 from device import vegimeter_device
 
-class VegimeterOS(OS):
-    pass
+#_______________________________________________________________________________
 
-vegimeter_class = mapping_factory(name_format="V%d",
-                                  os_class=VegimeterOS)
+class UI(OS):
+    shmem = None
+
+    def main(self):
+        self.shmem = self.kernel.load_module(
+            "bb.os.drivers.processors.propeller_p8x32.shmem")
+        self.kernel.add_thread(self.kernel.Thread("UI_ID", self.ui_runner))
+
+    def ui_runner(self):
+        vegimeter_buttons = int(self.shmem.shmem_read(10, 1)[0])
+        if vegimeter_buttons:
+            for i in range(8):
+                if vegimeter_buttons & 1:
+                    print "Button pressed: %d" % i
+                vegimeter_buttons >>= 1
+        # Zero buttons state
+        self.shmem.shmem_write(10, 0)
+
+#_______________________________________________________________________________
+
+class ButtonDriver(OS):
+    shmem = None # shared memory library
+
+    def main(self):
+        self.shmem = self.kernel.load_module(
+            "bb.os.drivers.processors.propeller_p8x32.shmem")
+        self.kernel.add_thread(self.kernel.Thread("BUTTON_DRIVER",
+                                                  self.button_driver_runner))
+
+    def button_driver_runner(self):
+        random.seed()
+        self.shmem.shmem_write(10, random.randint(1, 8))
+        time.sleep(2)
+
+#_______________________________________________________________________________
+
+ui = Mapping(name="UI", os_class=UI)
+button_driver = Mapping(name="BUTTON_DRIVER", os_class=ButtonDriver)
+
+MAP_COGID_MAPPING = {
+    3: ui,
+    5: button_driver,
+    }
 
 board = vegimeter_device.find_element("QSP1")
+processor = board.find_element("PRCR1")
+
+for cogid, mapping in MAP_COGID_MAPPING.items():
+    cog = processor.get_cog(cogid)
+    if not cog:
+        print "Cannot assign mapping %s to the cog %d" % (mapping, cogid)
+        exit(0)
+    cog.set_mapping(mapping)
+

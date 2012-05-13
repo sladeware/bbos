@@ -6,6 +6,7 @@ from bb.app import appmanager
 
 import vegimeter
 
-vegetable_plant_guard = appmanager.new_application([vegimeter.Vegimeter()])
+mappings = [vegimeter.ui, vegimeter.button_driver]
+vegetable_plant_guard = appmanager.new_application(mappings)
 vegetable_plant_guard.add_device(vegimeter.vegimeter_device)
 vegetable_plant_guard.start()
