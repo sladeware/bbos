@@ -29,12 +29,12 @@ name of format ``ROBOT%d`` and will be powered by operating system ``RobotOS``.
 Several ways to define a new :class:`Mapping` that will control our robot::
 
     class Robot(Mapping):
-        DEFAULT_FORTMAT_NAME="ROBOT%d"
-        DEFAULT_OS_CLASS=RobotOS
+        NAME_FORMAT="ROBOT%d"
+        OS_CLASS=RobotOS
 
 or with help of :func:`mapping_factory` factory::
 
-    robot_class = mapping_factory(format_name="ROBOT%d", os_class=RobotOS)
+    robot_class = mapping_factory(name_format="ROBOT%d", os_class=RobotOS)
 
 Once the class has been created we can create our first robot::
 
@@ -52,8 +52,10 @@ to the :class:`Mapping`::
     core = processor.get_core() # get core #0
     core.set_mapping(robot1)
 
-Now we can explore hardware, for example print the processor's name:
-``print robot1.hardware.get_processor()``
+Now we can explore hardware, for example print the processor's short
+description::
+
+    print robot1.hardware.get_processor()
 
 """
 
@@ -75,7 +77,8 @@ class HardwareAgent(object):
     mapping lives.
 
     For example on which core of which processor and on what
-    board."""
+    board.
+    """
 
     def __init__(self, core=None):
         self.__core = None
@@ -88,10 +91,16 @@ class HardwareAgent(object):
 
     def get_board(self):
         """Return :class:`bb.hardware.devices.boards.board.Board` instance on
-        which we have our processor."""
-        if not self.get_processor():
+        which :class:`bb.hardware.devices.processors.processor.Processor` is
+        located.
+        """
+        processor = self.get_processor()
+        if not processor:
             return None
-        return self.get_processor().get_owner()
+        board = None
+        nb = processor.G.neighbors(processor)
+        board = nb[0]
+        return board
 
     def is_processor_defined(self):
         """Whether or not a processor was defined. Return ``True`` value if the
@@ -104,7 +113,7 @@ class HardwareAgent(object):
         instance."""
         if not self.get_core():
             return None
-        return self.get_core().get_owner()
+        return self.get_core().get_processor()
 
     def is_core_defined(self):
         """Whether or not a core was defined."""
@@ -222,14 +231,19 @@ class Mapping(InstanceTracking):
         """Generate unique name for this mapping. Generator uses name format
         (see :func:`get_name_format`) and number of instances
         (see :func:`bb.utils.instance.InstanceTracking.get_num_instances`) of
-        the particular :class:`Mapping` class."""
+        the particular :class:`Mapping` class.
+        """
         frmt = self.get_name_format()
         self.set_name(frmt % self.get_num_instances())
         return self.get_name()
 
     def set_name(self, name):
-        """Set mapping name. Note the name must be unique withing an
-        application."""
+        """Set mapping name.
+
+        .. note::
+
+           The name must be unique withing an application.
+        """
         self.__name = name
 
     def get_name(self):

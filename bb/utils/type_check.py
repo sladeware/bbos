@@ -1,13 +1,44 @@
 #!/usr/bin/env python
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-__copyright__ = "Copyright (c) 2011 Sladeware LLC"
+__copyright__ = "Copyright (c) 2011-2012 Sladeware LLC"
 
-"""Validation tools for generic object structures."""
+"""Validation tools for generic object structures.
+"""
 
 from types import *
 
+def validate(**_params_):
+    def check_types(_func_, _params_ = _params_):
+        def modified(*args, **kw):
+            arg_names = _func_.func_code.co_varnames
+            kw.update(zip(arg_names, args))
+            for name, type in _params_.iteritems():
+                param = kw[name]
+                if isinstance(type, TypeType):
+                    assert param is None or isinstance(param, type),\
+                        "Parameter '%s' should be type '%s'" % (name, type.__name__)
+                elif isinstance(type, FunctionType):
+                   assert type(param), "Parameter '%s' didn't pass %s" % (name, type.__name__)
+                else:
+                    assert "!"
+            return _func_(**kw)
+        return modified
+    return check_types
+
 def is_int(var):
-    """Return true if the specified object is an integer."""
+    """Return ``True`` if the specified object is an integer."""
     return type(var) is IntType
 
 def is_long(var):
@@ -51,11 +82,13 @@ def verify_boolean(var):
 
 verify_bool = verify_boolean
 
-def verify_int(var):
+def validate_int(var):
     if var and not is_int(var):
         raise TypeError("'%s' is not a int type: %s" %
                         (var.__class__.__name__, var))
     return var
+
+verify_int = validate_int # Remove
 
 def verify_list(var):
     if var and not is_list(var):

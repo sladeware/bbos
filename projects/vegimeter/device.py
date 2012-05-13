@@ -18,8 +18,8 @@ import re
 import os.path
 import getpass
 
-from bb.hardware.design import Network
 from bb.hardware.primitives import Pin
+from bb.hardware.devices.processors.propeller_p8x32 import PropellerP8X32A_Q44
 from bb.utils import module
 from bb.tools import fritzing
 
@@ -28,6 +28,12 @@ fritzing.set_home_dir("/opt/fritzing")
 fritzing.add_search_path(os.path.join(module.get_dir(), "parts"))
 
 vegimeter_device = fritzing.parse("device.fz")
+# Fix vegimeter device design loaded from Fritzing schematic. The reason is,
+# the current version of QuickStart Board doesn't have a parts such as
+# Propeller P8X32A-Q44 microchip. Thus we need to add them manually.
+board = vegimeter_device.find_element("QSP1")
+processor = board.add_element(PropellerP8X32A_Q44())
+processor.set_designator("PRCR1")
 
 def bill_of_materials():
     bill_of_materials = dict()
