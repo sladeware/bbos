@@ -118,7 +118,9 @@ class Process(multiprocessing.Process):
 
     def get_mapping(self):
         """Return :class:`bb.app.application.Process` instance that runs under
-        this process."""
+        this process.
+
+        """
         return self.__mapping
 
     def get_pid(self):
@@ -162,19 +164,22 @@ class Process(multiprocessing.Process):
 #_______________________________________________________________________________
 
 class Application(object):
-    """This class describes BB application. Note, the only one application can
-    be executed per session.
+    """This class describes BB application.
 
     By default if `devices` were not pass, one will be created and marked as
-    active. Atherwise the last device in the list will be active."""
+    active. Atherwise the last device in the list will be active.
+
+    """
 
     class Object(object):
         """This class handles application object activity in order to provide
-        management of simulation and development modes.
+        management of different modes.
 
         Just for internal use for each object the global mode value will
         be copied and saved as the special attribute. Thus the object will be
-        able to recognise environment's mode in which it was initially started."""
+        able to recognise environment's mode in which it was initially started.
+
+        """
 
         def __init__(self):
             self.mode = None
@@ -220,12 +225,15 @@ class Application(object):
         #from bb.app import appmanager
         #appmanager.register_application(self)
 
-    @property
-    def network(self):
+    def get_network(self):
         """Return :class:`bb.app.network.Network` instance that represents a
         network of all :class:`bb.app.mapping.Mapping` instances under this
-        application."""
+        application.
+        """
         return self.__network
+
+    def network(self):
+        return self.get_network()
 
     def add_mapping(self, mapping):
         """Add :class:`bb.app.mapping.Mapping` instance to the network."""
@@ -234,7 +242,8 @@ class Application(object):
 
     def add_mappings(self, mappings):
         """Add a list of :class:`bb.app.mapping.Mapping` instances to the
-        network."""
+        network.
+        """
         self.network.add_nodes(mappings)
 
     def remove_mapping(self, mapping):
@@ -246,6 +255,10 @@ class Application(object):
         return len(self.get_mappings())
 
     def get_mappings(self):
+        """Return list of :class:`bb.app.mapping.Mapping` instances that
+        belong to this application. This can be also done by analysing
+        application network (see also :func:`get_network`).
+        """
         return self.network.get_nodes()
 
     def set_mappings_execution_interval(self, value):
@@ -257,10 +270,13 @@ class Application(object):
         self.__mappings_execution_interval = value
 
     def get_mappings_execution_interval(self):
+        """Return time interval (delay) between mappings execution. See also
+        :func:`set_mappings_execution_interval`.
+        """
         return self.__mappings_execution_interval
 
     def get_active_mapping(self):
-        """Return currently running mapping."""
+        """Return currently running :class:`bb.app.mapping.Mapping` instance."""
         process = multiprocessing.current_process()
         #print >>sys.stderr, self.__processes
         #if not process in self.__processes:
@@ -268,13 +284,23 @@ class Application(object):
         return process.get_mapping()
 
     def get_num_processes(self):
+        """Return number of running processes."""
         return len(self.__processes)
 
     @classmethod
     def get_running_instance(klass):
+        """Return currently running :class:`Application` instance."""
         return klass.running_instance
 
     def start(self):
+        """Launch the application. Application will randomly execute mappings
+        one by one with specified delay (see
+        :func:`set_mappings_execution_interval`).
+
+        .. note::
+    
+           The only one application can be executed per session.
+        """
         print "Start application"
         Application.running_instance = self
         if not self.get_num_mappings():
@@ -292,11 +318,11 @@ class Application(object):
                 if not mapping.get_os_class():
                     raise Exception("Cannot create OS instance.")
                 process = Process(mapping)
+                self.__processes.append(process)
                 process.start()
                 print "Start process %d" % process.get_pid()
-                self.__processes.append(process)
-                # Do we need some delay? If so, sleep for some time before the
-                # next mapping will be executed
+                # Check for delay. Sleep for some time before the
+                # next mapping will be executed.
                 time.sleep(self.get_mappings_execution_interval())
             # Wait for each process
             for process in self.__processes:
@@ -307,6 +333,7 @@ class Application(object):
             self.stop()
 
     def stop(self):
+        """Stop application."""
         # Very important! We need to terminate all the children in order to
         # close all open pipes. Otherwise we will get
         # "IOError: [Errno 32]: Broken pipe". So look up for workers first
