@@ -232,11 +232,13 @@ class Application(object):
         """
         return self.__network
 
+    @property
     def network(self):
         return self.get_network()
 
     def add_mapping(self, mapping):
-        """Add :class:`bb.app.mapping.Mapping` instance to the network."""
+        """Add :class:`bb.app.mapping.Mapping` instance to the network. Return
+        added mapping."""
         self.network.add_node(mapping)
         return mapping
 
