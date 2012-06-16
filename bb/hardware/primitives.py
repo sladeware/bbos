@@ -1,9 +1,22 @@
 #!/usr/bin/env python
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-"""This module contains basic hardware primitives.
+"""This module contains basic hardware primitives, such as pin, bus, wire, etc.
 """
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__all__ = ['Primitive', 'ElectronicPrimitive', 'Pin', 'Wire', 'Bus', 'Note', 'G']
 
 #_______________________________________________________________________________
 
@@ -24,8 +37,9 @@ class Primitive(object):
     """This class is basic for any primitive.
 
     Each primitive has unique ID -- designator for identification that can be
-    obtained by :func:`get_designator`. By default the system tries to generate
-    it with help of :func:`get_designator_format()` and
+    obtained by :func:`get_designator`. However this ID is unique only within
+    primitives from the same device. By default the system tries to generate
+    designator with help of :func:`get_designator_format()` and
     :func:`generate_designator`. However it can be changed manually by using
     :func:`set_designator` method.
 
@@ -170,6 +184,7 @@ class Primitive(object):
 
     def set_designator(self, text):
         """Set designator."""
+        # TODO(team): designator should be unique within its graph
         self.__designator = text
 
     @property
@@ -298,7 +313,7 @@ class Note(Primitive):
     :class:`Primitive`. It is used to
     add informational or instructional text to a specific area within
     a schematic, in a similar vain to that of commenting a program's
-    source code."""
+    source code. Mostly used by GUI."""
     def __init__(self):
         Primitive.__init__(self)
         self.__text = ""
@@ -315,37 +330,59 @@ class Note(Primitive):
 
 class Wire(ElectronicPrimitive):
     """A wire is an electrical design primitive derived from
-    :class:`ElectronicPrimitive`. It is an object that
-    forms an electrical connection between points on a schematic and is
-    analogous to a physical wire."""
+    :class:`ElectronicPrimitive`. It is an object that forms an electrical
+    connection between points on a schematic and is analogous to a physical
+    wire.
+
+    The pins can be set separately."""
+
+    # TODO(team): provide right pins naming. Not first pin and second pin.
+    # Maybe source pin and destination pin?
 
     def __init__(self):
         ElectronicPrimitive.__init__(self)
+        self.__first_pin = None
+        self.__second_pin = None
 
     def connect(self, first_pin, second_pin):
-        self.first_pin = first_pin
-        self.second_pin = second_pin
+        """Connect two pins."""
+        self.set_first_pin(first_pin)
+        self.set_second_pin(second_pin)
         G.add_edge(first_pin, second_pin)
         G.add_edge(second_pin, first_pin)
 
     def find_pin(self, by):
-        for pin in (self.first_pin, self.second_pin):
+        for pin in (self.__first_pin, self.__second_pin):
             if pin.get_designator() == by:
                 return pin
 
     def disconnect(self):
-        self.first_pin = self.second_pin = None
+        self.__first_pin = self.__second_pin = None
+
+    def set_first_pin(self, pin):
+        self.__first_pin = pin
 
     def get_first_pin(self):
-        return self.first_pin
+        return self.__first_pin
+
+    def set_second_pin(self, pin):
+        self.__second_pin = pin
 
     def get_second_pin(self):
-        return self.second_pin
+        return self.__second_pin
 
     def clone(self):
-        """Clone the wire. Return cloned :class:`Wire` object."""
+        """Clone this wire. Return cloned :class:`Wire` object."""
         clone = ElectronicPrimitive.clone(self)
-        clone.connect(self.get_first_pin().clone(), self.get_second_pin().clone())
+        # Clone first pin if possible
+        if self.get_first_pin():
+            clone.set_first_pin(self.get_first_pin().clone())
+        if self.get_second_pin():
+            clone.set_second_pin(self.get_second_pin().clone())
+        if not None in (clone.get_first_pin(), clone.get_second_pin()):
+            clone.connect(clone.get_first_pin(), clone.get_second_pin())
+        #if not None in (self.get_first_pin(), self.get_second_pin()):
+        #    clone.connect(self.get_first_pin().clone(), self.get_second_pin().clone())
         return clone
 
 #_______________________________________________________________________________
