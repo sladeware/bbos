@@ -30,8 +30,7 @@ and its name can be obtained by :func:`bb.tools.fritzing.get_index_filename`.
 """
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
-
-#_______________________________________________________________________________
+__author__ = "<oleks.sviridenko@gmail.com> Alexander Sviridenko"
 
 import copy
 import re
@@ -45,22 +44,19 @@ import string
 import types
 import json
 
-from bb.hardware.devices import Device, Pin, Wire
+from bb.hardware import primitives
+from bb.hardware.devices import Device
 from bb.lib.crypto.md5 import md5sum
 from bb.utils.type_check import verify_list, verify_string, is_string, \
     is_tuple, is_list
 
-#_______________________________________________________________________________
 # XML support primitives
-
 def get_text(nodes):
     rc = []
     for node in nodes:
         if node.nodeType == node.TEXT_NODE:
             rc.append(node.data)
     return ''.join(rc)
-
-#_______________________________________________________________________________
 
 _home_dir = None
 _user_dir = None
@@ -91,7 +87,8 @@ def get_default_user_dir():
 def get_user_dir():
     """Return path to the global user directory. The location of this directory
     differs depending on operating system, and might even be hidden by default
-    (see :func:`get_default_user_dir`)."""
+    (see :func:`get_default_user_dir`).
+    """
     return _user_dir or get_default_user_dir()
 
 def set_user_dir(path):
@@ -126,7 +123,8 @@ def get_search_pathes():
 def find_part_files(pathes, recursive=False):
     """Search and return a list of Fritzing part files ``.fzp`` that can be
     found at given `pathes`. List subdirectories recursively if flag
-    `recursive` is ``True``."""
+    `recursive` is ``True``.
+    """
     if not is_list(pathes):
         pathes = [pathes]
     files = list()
@@ -143,12 +141,12 @@ def find_part_files(pathes, recursive=False):
 
 def set_index_filename(filename):
     """Set the name of the index file that will be used by Fritzing. If file
-    does not exist it will be created."""
+    does not exist it will be created.
+    """
     _index_filename = filename
 
 def get_index_filename():
-    """Return the name of index file.
-    """
+    """Return the name of index file."""
     return _index_filename
 
 _parts_index = dict()
@@ -222,9 +220,13 @@ def index_parts(search_pathes=None, force=False):
     counter = 0
     total = len(all_part_files)
     for pfile in all_part_files:
-        frmt = "%"+ str(len(str(total))) +"d/%d\r"
-        sys.stdout.write("Indexing " + frmt % (counter, total))
         counter += 1
+        #frmt = "%"+ str(len(str(total))) +"d/%d\r"
+        #sys.stdout.write("Indexing parts" + frmt % (counter, total))
+        done = float(counter) / float(total)
+        sys.stdout.write("Indexing [{0:50s}] {1:.1f}%".format('#' * int(done * 50), done * 100))
+        sys.stdout.write("\r")
+        sys.stdout.flush()
         # Make check sum for this file
         checksum = md5sum(pfile)
         if pfile in _parts_index:
@@ -246,18 +248,20 @@ def index_parts(search_pathes=None, force=False):
 
 def reindex_parts():
     """Perform complete reindexing. The :func:`get_index_filename` will be
-    removed and the cache will be erased."""
+    removed and the cache will be erased.
+    """
     _parts_index = dict()
     index_parts(force=True)
 
 def load_part_handler_by_id(id):
     """Try to load part by its id (see `moduleId` attribute) and
-    return :class:`PartHandler` instance."""
+    return :class:`PartHandler` instance.
+    """
     part_handler = _part_handlers_by_id.get(id, None)
     if not part_handler:
         filename = _part_filenames_by_id.get(id, None)
         if not filename:
-            raise Exception("Can not found part with id '%s'" % id)
+            raise Exception('Can not found part with id "%s"' % id)
         part_handler = _part_handlers_by_id[id] = PartHandler(filename)
     return part_handler
 
@@ -268,7 +272,8 @@ def __write_index():
 
 def fix_filename(filename):
     """Try to fix given filename if such file does not exist by using search
-    pathes."""
+    pathes.
+    """
     if os.path.exists(filename):
         return filename
     for search_path in get_search_pathes():
@@ -401,10 +406,10 @@ class SketchHandler(Handler):
         for connector_element in connectors_element.getElementsByTagName("connector"):
             id_ = connector_element.getAttribute("connectorId")
             src_connector = None
-            if isinstance(part, Wire):
+            if isinstance(part, primitives.Wire):
                 src_connector = part.find_pin(id_)
             else:
-                src_connector = part.find_elements(Pin).find_element(id_)
+                src_connector = part.find_elements(primitives.Pin).find_element(id_)
             if not src_connector:
                 raise Exception("Can not find pin '%s' of '%s'" %
                                 (id_, part.get_designator()))
@@ -416,13 +421,13 @@ class SketchHandler(Handler):
                 dst_part_index = connection_element.getAttribute("modelIndex")
                 dst_handler = self.find_instance_handler_by_index(dst_part_index)
                 dst_part = dst_handler.get_object()
-                if isinstance(dst_part, Wire):
+                if isinstance(dst_part, primitives.Wire):
                     pin = dst_part.find_pin(connection_element.getAttribute("connectorId"))
                     if not pin:
                         raise Exception("Cannot find pin")
                     src_connector.connect_to(pin)
                 else:
-                    dst_connector = dst_part.find_elements(Pin).find_element(\
+                    dst_connector = dst_part.find_elements(primitives.Pin).find_element(\
                         connection_element.getAttribute("connectorId"))
                     src_connector.connect_to(dst_connector)
 
@@ -435,17 +440,19 @@ class SketchHandler(Handler):
 
 class PinHandler(Handler):
     """Learn more about connectors from `Fritzing part format
-    <http://fritzing.org/developer/fritzing-part-format/>`_."""
+    <http://fritzing.org/developer/fritzing-part-format/>`_.
+    """
     METADATA_PROPERTIES = ("description",)
 
     def __init__(self):
-        self._object = Pin()
+        self._object = primitives.Pin()
 
     def read(self, connector_element):
         """Read connector::
 
         <connector id="..." name="..." type="...">
-        </connector>"""
+        </connector>
+        """
         id_ = connector_element.getAttribute("id")
         if id_:
             self._object.set_designator(id_)
@@ -477,7 +484,8 @@ class InstanceHandler(Handler):
         </instance>
 
         It may include ``<title>...</title>`` which will be translated as
-        reference designator."""
+        reference designator.
+        """
         if not element.getAttribute("moduleIdRef"):
             raise Exception("Instance does not have 'moduleIdRef' attribute")
         part_handler = load_part_handler_by_id( \
@@ -509,7 +517,8 @@ class InstanceHandler(Handler):
     def model_index(self):
         """This property allows you to set/get instance model
         index. This index represents model index on particular
-        sketch."""
+        sketch.
+        """
         return self.__model_index
 
     @model_index.setter
@@ -618,7 +627,7 @@ class PartHandler(Handler):
         self._object.id = self.module_id = self._root.getAttribute("moduleId")
 
         if self.module_id == "WireModuleID":
-            self._object = Wire()
+            self._object = primitives.Wire()
 
         # Put attributes such as author, description, date, label, etc. as
         # properties of the metadata instance for this part
@@ -662,7 +671,7 @@ class PartHandler(Handler):
             connector_handler.read(connector_element)
             pins.append(connector_handler.get_object())
         # Handle special cases
-        if isinstance(self._object, Wire):
+        if isinstance(self._object, primitives.Wire):
             self._object.connect(pins[0], pins[1])
             return
         # Simply add all the pins to the element
