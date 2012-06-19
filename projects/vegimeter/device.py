@@ -13,6 +13,7 @@
 # limitations under the License.
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "<oleks.sviridenko@gmail.com> Alexander Sviridenko"
 
 import re
 import os.path
@@ -23,8 +24,10 @@ from bb.hardware.devices.processors.propeller_p8x32 import PropellerP8X32A_Q44
 from bb.utils import module
 from bb.tools import fritzing
 
-# First of all we need to setup Fritzing for each developer
-fritzing.set_home_dir("/opt/fritzing")
+# First of all you need to setup Fritzing
+# XXX: developer can use fritzing.set_home_dir() to setup home directory
+# directly.
+fritzing.find_home_dir()
 fritzing.add_search_path(os.path.join(module.get_dir(), "parts"))
 
 vegimeter_device = fritzing.parse("device.fz")
