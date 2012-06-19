@@ -13,8 +13,7 @@
 # limitations under the License.
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
-
-#_______________________________________________________________________________
+__author__ = "<oleks.sviridenko@gmail.com> Alexander Sviridenko"
 
 import types
 import threading
@@ -35,8 +34,6 @@ from bb.app.network import Network
 from bb.hardware import Device
 from bb.utils.type_check import verify_list, verify_int, verify_string
 
-#_______________________________________________________________________________
-
 SIMULATION_MODE = 'SIMULATION'
 DEV_MODE = 'DEVELOPMENT'
 
@@ -48,8 +45,6 @@ def get_mode():
 def is_simulation_mode():
     return 'bb.simulator' in sys.modules
 
-#_______________________________________________________________________________
-
 class _OutputStream:
     PREFIX_FORMAT = "[%s] "
 
@@ -58,7 +53,8 @@ class _OutputStream:
 
     def write(self, data):
         """See number of processes within an application. Do not show process
-        identifier if we have less than two processes."""
+        identifier if we have less than two processes.
+        """
         prefix = ''
         from bb import simulator
         if not simulator.config.get_option("multiterminal"):
@@ -78,7 +74,8 @@ class _OutputStream:
 
 class _UnbufferedOutputStream(_OutputStream):
     """This class is a subclass of _OutputStream and handles unbuffered output
-    stream. Just do flush() after each write()."""
+    stream. It just does flush() after each write().
+    """
 
     def __init__(self, stream):
         self.stream = stream
@@ -90,14 +87,13 @@ class _UnbufferedOutputStream(_OutputStream):
     def __getattr__(self, attr):
         return getattr(self.stream, attr)
 
-#_______________________________________________________________________________
-
 class Process(multiprocessing.Process):
-    """The process is a one to one mapping and describes a particular CPU core
-    and the particular kernel on it. It represents the life of that kernel:
+    """The process is a one to one mapping, which describes a particular CPU
+    core and the particular kernel on it. It represents the life of that kernel:
     from its initialization to the point that it stops executing.
 
-    The process is a subclass of :class:`multiprocessing.Process`."""
+    The process is a subclass of :class:`multiprocessing.Process`.
+    """
 
     def __init__(self, mapping):
         self.__mapping = mapping
@@ -119,7 +115,6 @@ class Process(multiprocessing.Process):
     def get_mapping(self):
         """Return :class:`bb.app.application.Process` instance that runs under
         this process.
-
         """
         return self.__mapping
 
@@ -161,13 +156,23 @@ class Process(multiprocessing.Process):
             os.rmdir(self.tmpdir)
         os.kill(self.pid, signal.SIGTERM)
 
-#_______________________________________________________________________________
-
 class Application(object):
-    """This class describes BB application.
+    """This class describes BB application. An application is defined by a BB
+    model and is comprised of a set of processes running on a particular system
+    topology to perform work meeting the application's requirements. Each
+    process correnspond to the appropriate :class:`Mapping` instance from
+    `mappings`.
 
-    By default if `devices` were not pass, one will be created and marked as
-    active. Atherwise the last device in the list will be active.
+    It combines all of the build systems of all of the defined
+    processes. Therefore the application includes the models of processes, their
+    communication, hardware description, simulation and build specifications. At
+    the same time the processes inside of an application can be segmented into
+    `clusters`, or a group of CPUs.
+
+    The application also controls the hardware or devices that will be managed
+    by mappings. By default if `devices` were not pass, one will be created and
+    marked as active root device. Atherwise the last device in the list will be
+    active.
 
     """
 
@@ -216,11 +221,12 @@ class Application(object):
         # process will be able to define the mapping by pid.
         #self.__processes = self.__manager.dict()
         self.__processes = list()
-        # Initialize device control.
+        # Initialize device control management
+        self.__devices = dict()
+        self.__active_device = None
         if not devices:
             devices.append(Device())
-        for device in devices:
-            self.add_device(device)
+        self.add_devices(devices)
         # Register this application instance
         #from bb.app import appmanager
         #appmanager.register_application(self)
@@ -238,7 +244,8 @@ class Application(object):
 
     def add_mapping(self, mapping):
         """Add :class:`bb.app.mapping.Mapping` instance to the network. Return
-        added mapping."""
+        added mapping.
+        """
         self.network.add_node(mapping)
         return mapping
 
@@ -267,8 +274,8 @@ class Application(object):
         """Set a new value for mappings execution interval."""
         verify_int(value)
         if value < 0:
-            raise Exception("Mappings execution interval value can not be less "
-                            "than zero: %d" % value)
+            raise Exception('Mappings execution interval value can not be less '
+                            'than zero: %d' % value)
         self.__mappings_execution_interval = value
 
     def get_mappings_execution_interval(self):
@@ -348,20 +355,38 @@ class Application(object):
         Application.running_instance = None
 
     def add_device(self, device):
-        """Add :class:`bb.hardware.devices.device.Device` instance."""
-        pass
+        """Add :class:`bb.hardware.devices.device.Device` instance to the list
+        of devices controled by this application. Return device instance for
+        further work. The device will be marked as `active` device.
+        """
+        self.__devices[id(device)] = device
+        self.set_active_device(device)
+        return device
+
+    def set_active_device(self, device):
+        """Set device, that is already controled by this application, as active
+        device, so all the hardware operations and manipulation will apply to
+        this device instance.
+        """
+        self.__active_device = device
+
+    def add_devices(self, devices):
+        """Add a set of devices. See :func:`add_device`."""
+        for device in devices:
+            self.add_device(device)
 
     def remove_device(self, device):
         """Return device."""
-        pass
+        del self.__devices[id(device)]
 
     def get_active_device(self, device):
         """Return active device."""
-        pass
+        return self.__active_device
 
 class Traceable(object):
     """The Traceable interface allows you to track Object activity within an
-    application."""
+    application.
+    """
     __table = {}
 
     def __new__(klass, *args, **kargs):

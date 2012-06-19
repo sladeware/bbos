@@ -16,9 +16,9 @@
 """
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
-__all__ = ['Primitive', 'ElectronicPrimitive', 'Pin', 'Wire', 'Bus', 'Note', 'G']
-
-#_______________________________________________________________________________
+__author__ = "<oleks.sviridenko@gmail.com> Alexander Sviridenko"
+__all__ = ['Primitive', 'ElectronicPrimitive', 'Pin', 'Wire', 'Bus', 'Note',
+           'G']
 
 import copy
 
@@ -30,8 +30,6 @@ class Graph(networkx.Graph):
         networkx.Graph.__init__(self)
 
 G = Graph()
-
-#_______________________________________________________________________________
 
 class Primitive(object):
     """This class is basic for any primitive.
@@ -71,7 +69,8 @@ class Primitive(object):
         my_primitive = Primitive(short_description="My prititive")
         print str(my_primitive)
         
-    Prints ``My primitive``."""
+    Prints ``My primitive``.
+    """
 
     class Property(object):
         """This class represents property of a primitive. Each property
@@ -179,7 +178,8 @@ class Primitive(object):
         board. Field service uses them to identify and replace failed
         parts.
         
-        See also :func:`generate_designator`."""
+        See also :func:`generate_designator`.
+        """
         return self.__designator
 
     def set_designator(self, text):
@@ -214,7 +214,8 @@ class Primitive(object):
     def has_property(self, property_):
         """Return whether or not the primitive has a property `property_`. The
         `property_` can be defined as a string or instance of
-        :class:`Property` class."""
+        :class:`Property` class.
+        """
         property_name = property_
         if isinstance(property_, Primitive.Property):
             property_name = property_.name
@@ -253,7 +254,8 @@ class Primitive(object):
 
     def __str__(self):
         """Returns a string containing a concise, human-readable
-        description of this object."""
+        description of this object.
+        """
         return "Primitive <%s>" % self.get_designator()
 
 
