@@ -63,6 +63,13 @@ _user_dir = None
 _search_pathes = list()
 _index_filename = "fritzing.index"
 
+def find_home_dir(ask=True):
+    """Find and return Fritzing home directory. """
+    if ask:
+        dir = raw_input('Please provide Fritzing home dir: ')
+    set_home_dir(dir)
+    return dir
+
 def get_home_dir():
     """Return path to the directory with Fritzing distribution."""
     global _home_dir
