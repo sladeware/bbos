@@ -18,7 +18,7 @@ taken from
 proposed by Remy Blank."""
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
-__author__ "<oleks.sviridenko@gmail.com> Alexander Sviridenko"
+__author__ = "<oleks.sviridenko@gmail.com> Alexander Sviridenko"
 
 import os
 import os.path
