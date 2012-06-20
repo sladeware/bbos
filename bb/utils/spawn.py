@@ -13,6 +13,7 @@
 # limitations under the License.
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "<oleks.sviridenko@gmail.com> Alexander Sviridenko"
 
 import os
 import sys
@@ -51,7 +52,8 @@ def spawn(cmd, search_path=True, verbose=False, dry_run=False):
     the command will not actually be run.
 
     Raise :class:`ExecutionError` if running the program fails in any way; just
-    return on success."""
+    return on success.
+    """
     if not type(cmd) is types.ListType:
         raise types.TypeError("'cmd' must be a list")
     # Fix cmd first
@@ -108,12 +110,10 @@ def _spawn_posix(cmd, search_path=True, verbose=False, dry_run=False):
                     continue
                 raise ExecutionError("command '%s' failed: %s"
                                             % (cmd[0], exc[-1]))
-
             if not verbose:
                 os.close(child_stdin)
                 os.close(child_stdout)
                 os.close(child_stderr)
-
             if os.WIFSIGNALED(status):
                 raise ExecutionError(
                     "command '%s' terminated by signal %d" 
@@ -132,4 +132,4 @@ def _spawn_posix(cmd, search_path=True, verbose=False, dry_run=False):
                 raise ExecutionError(
                     "unknown error executing '%s': termination status %d" 
                     % (cmd[0], status))
-# _spawn_posix()
+

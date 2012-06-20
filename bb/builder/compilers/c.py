@@ -1,20 +1,38 @@
 #!/usr/bin/env python
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-"""This module provides support for C-like compilers."""
+"""This module provides support for C-like compilers.
+"""
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 
+#_______________________________________________________________________________
+
+import os
+import os.path
 import re
 import sys
 import string
-import os
-import os.path
+import time
 from types import *
 
 from bb.builder.compilers.compiler import Compiler
 from bb.builder.errors import *
 from bb.utils.host_os.path import mkpath
 from bb.utils.spawn import which, ExecutionError
+
+#_______________________________________________________________________________
 
 class Linker(object):
     def __init__(self):
@@ -487,10 +505,13 @@ class CCompiler(Compiler):
                 src, ext = build[obj]
             except KeyError:
                 continue
-            print "Compiling:", src
+            sys.stdout.flush()
+            sys.stdout.write("Compiling: %s\r" % src)
+            time.sleep(0.010)
             # Note: we pass a copy of sources, options, etc. since we
             # need to privent their modification
             self._compile(obj, src, ext, list(cc_options), extra_postopts, pp_options)
+        print
         return objects
 
     def _compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts):

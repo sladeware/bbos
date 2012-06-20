@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "<oleks.sviridenko@gmail.com> Alexander Sviridenko"
 
 import os
 import time
@@ -77,20 +78,25 @@ if __name__ == "__main__":
         linker = compiler.get_linker()
         linker.add_opts(["-Wl,-T" + script_fname])
 
-        image.build()
+        image.build(verbose=True)
         cogid_to_addr_mapping[image_id] = start_addr
         start_addr += propler.Image.get_file_size(image.get_output_filename())
         cogid_to_filename_mapping[image_id] = image.get_output_filename()
 
-    config = propler.QuickStartBoardConfig()
+    board_config = propler.QuickStartBoardConfig()
 
-    print "Uploading bootloader"
-    uploader = propler.upload_bootloader('/dev/ttyUSB0', config)
-    # Very important! Let bootloader to settle!
-    time.sleep(7)
+    upload_bootloader = False
+
+    if upload_bootloader:
+        print "Uploading bootloader"
+        uploader = propler.upload_bootloader("/dev/ttyUSB0", board_config)
+        if not uploader:
+            exit(0)
+        # Very important! Let bootloader to settle!
+        time.sleep(7)
 
     print "Uploading images"
     # We can also use uploader.serial.port instead of direct selection
-    propler.multicog_spi_upload(cogid_to_filename_mapping,
-                                '/dev/ttyUSB0')
-    propler.terminal_mode()
+    if propler.multicog_spi_upload(cogid_to_filename_mapping,
+                                   "/dev/ttyUSB0", force=True): #uploader.serial.port
+        propler.terminal_mode()

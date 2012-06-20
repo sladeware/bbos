@@ -78,6 +78,7 @@ class HardwareAgent(object):
 
     For example on which core of which processor and on what
     board.
+
     """
 
     def __init__(self, core=None):
@@ -147,19 +148,21 @@ class Mapping(InstanceTracking):
     This class also inhertis :class:`bb.utils.instance.InstanceTracking` class
     in order to track all created instances."""
 
-    DEFAULT_OS_CLASS=None
+    OS_CLASS=None
     """This constant defines operating system class that will be used by
     default by the mapping. By default mapping will use
     :class:`bb.os.kernel.OS` class."""
 
-    DEFAULT_NAME_FORMAT="M%d"
+    NAME_FORMAT="M%d"
     """Default name format is using in order to automatically generate
     mapping name. Usually mappings of the same class have the same nature and
     so no reason to invent a new name for each mapping. By default the 
     format has view ``M%d`` and based on the number of mappings in the
-    application (see :func:`bb.app.application.Application.get_num_mappings`)."""
+    application (see :func:`bb.app.application.Application.get_num_mappings`).
 
-    DEFAULT_HARDWARE_AGENT_CLASS=HardwareAgent
+    """
+
+    HARDWARE_AGENT_CLASS=HardwareAgent
     """Hardware agent class that is the bridge between hardware and process."""
 
     def __init__(self, name=None, name_format=None,
@@ -170,7 +173,7 @@ class Mapping(InstanceTracking):
         InstanceTracking.__init__(self)
         # Define mapping name format
         self.__name_format = name_format
-        self.set_name_format(self.DEFAULT_NAME_FORMAT)
+        self.set_name_format(self.NAME_FORMAT)
         if name_format:
             self.set_name_format(name_format)
         self.__name = None
@@ -185,11 +188,11 @@ class Mapping(InstanceTracking):
             self.set_build_params(build_params)
         # Hardware agent
         if not hardware_agent_class:
-            hardware_agent_class = self.DEFAULT_HARDWARE_AGENT_CLASS
+            hardware_agent_class = self.HARDWARE_AGENT_CLASS
         self.__hardware_agent = hardware_agent_class()
         # Operating system
         self.__os_class = None
-        self.set_os_class(self.DEFAULT_OS_CLASS)
+        self.set_os_class(self.OS_CLASS)
         if os_class:
             self.set_os_class(os_class)
 
@@ -242,7 +245,7 @@ class Mapping(InstanceTracking):
 
         .. note::
 
-           The name must be unique withing an application.
+           The name must be unique within an application.
         """
         self.__name = name
 
