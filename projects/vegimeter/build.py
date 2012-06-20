@@ -78,7 +78,7 @@ if __name__ == "__main__":
         linker = compiler.get_linker()
         linker.add_opts(["-Wl,-T" + script_fname])
 
-        image.build()
+        image.build(verbose=True)
         cogid_to_addr_mapping[image_id] = start_addr
         start_addr += propler.Image.get_file_size(image.get_output_filename())
         cogid_to_filename_mapping[image_id] = image.get_output_filename()
