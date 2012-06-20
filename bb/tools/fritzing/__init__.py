@@ -65,9 +65,12 @@ _index_filename = "fritzing.index"
 
 def find_home_dir(ask=True):
     """Find and return Fritzing home directory. """
-    if ask:
-        dir = raw_input('Please provide Fritzing home dir: ')
-    set_home_dir(dir)
+    home_dir = None
+    if 'FRITZING_HOME' in os.environ:
+        home_dir = os.environ['FRITZING_HOME']
+    if not home_dir and ask:
+        home_dir = raw_input('Please provide Fritzing home dir: ')
+    set_home_dir(home_dir)
     return dir
 
 def get_home_dir():
@@ -228,8 +231,6 @@ def index_parts(search_pathes=None, force=False):
     total = len(all_part_files)
     for pfile in all_part_files:
         counter += 1
-        #frmt = "%"+ str(len(str(total))) +"d/%d\r"
-        #sys.stdout.write("Indexing parts" + frmt % (counter, total))
         done = float(counter) / float(total)
         sys.stdout.write("Indexing [{0:50s}] {1:.1f}%".format('#' * int(done * 50), done * 100))
         sys.stdout.write("\r")
@@ -243,15 +244,57 @@ def index_parts(search_pathes=None, force=False):
                 _part_filenames_by_id[old_module_id] = pfile
                 continue
         ph = PartHandler(pfile)
-        _parts_index[pfile] = (checksum, ph.module_id)
-        _part_handlers_by_id[ph.module_id] = ph
-        _part_filenames_by_id[ph.module_id] = pfile
+        _parts_index[pfile] = (checksum, ph.get_module_id())
+        _part_handlers_by_id[ph.get_module_id()] = ph
+        _part_filenames_by_id[ph.get_module_id()] = pfile
         has_updates = True
+    # Do some magic, some parts has to be recreated
+    __fix_parts()
     print # empty line
     # Rewrite index file only if it has some updates
     if has_updates:
         __write_index()
-    # Update
+
+def __fix_parts():
+    global _parts_index
+    global _part_handlers_by_id
+    global _part_filenames_by_id
+    # XXX: at some point the following parts may not be found.
+    # They will be added by force.
+    magic_part_ids = ["ModuleID", "RulerModuleID", "BreadboardModuleID",
+                      "TinyBreadboardModuleID", "RectanglePCBModuleID",
+                      "TwoLayerRectanglePCBModuleID", "EllipsePCBModuleID",
+                      "TwoLayerEllipsePCBModuleID", "NoteModuleID",
+                      "WireModuleID", "JumperModuleID", "GroundPlaneModuleID",
+                      "GroundModuleID", "PowerModuleID", "JustPowerModuleID",
+                      "ResistorModuleID", "LogoTextModuleID", "LogoImageModuleID",
+                      "Copper1LogoTextModuleID", "Copper1LogoImageModuleID",
+                      "Copper0LogoTextModuleID", "Copper0LogoImageModuleID",
+                      "BoardLogoImageModuleID", "OneLayerBoardLogoImageModuleID",
+                      "HoleModuleID", "ViaModuleID", "PadModuleID",
+                      "Copper0PadModuleID", "CapacitorModuleID", "CrystalModuleID",
+                      "ZenerDiodeModuleID", "ThermistorModuleID",
+                      "PotentiometerModuleID", "InductorModuleID", "LEDModuleID",
+                      "LEDSuperfluxModuleID", "ColorLEDModuleID",
+                      "PerfboardModuleID", "StripboardModuleID", "__spacer__",
+                      "SchematicFrameModuleID", "BlockerModuleID",
+                      "Copper0BlockerModuleID", "Copper1BlockerModuleID"]
+    for magic_part_id in magic_part_ids:
+        if magic_part_id in _part_handlers_by_id:
+            continue
+        ph = PartHandler()
+        ph.set_module_id(magic_part_id)
+        #_parts_index[pfile] = (0, ph.get_module_id())
+        _part_handlers_by_id[ph.get_module_id()] = ph
+        _part_filenames_by_id[ph.get_module_id()] = None
+        # Special cases
+        if magic_part_id is 'WireModuleID':
+            wire = ph.get_object()
+            p1 = primitives.Pin()
+            p1.set_designator("connector0")
+            p2 = primitives.Pin()
+            p2.set_designator("connector1")
+            wire.connect(p1, p2)
 
 def reindex_parts():
     """Perform complete reindexing. The :func:`get_index_filename` will be
@@ -313,8 +356,6 @@ def parse(filename):
         raise Exception("Do not know how to open %s" % fname)
     return handler.get_object()
 
-#_______________________________________________________________________________
-
 class Handler(object):
     def __init__(self, obj=None):
         self._fname = None
@@ -322,7 +363,13 @@ class Handler(object):
         self._root = None
         self._object = obj
 
+    def set_object(self, obj):
+        """Set controled object and return it back."""
+        self._object = obj
+        return self.get_object()
+
     def get_object(self):
+        """Return controled object."""
         return self._object
 
 class SketchHandler(Handler):
@@ -340,6 +387,7 @@ class SketchHandler(Handler):
 
     def __init__(self, filename=None):
         Handler.__init__(self)
+        self._fname = None
         self._object = Device()
         self._instance_handlers_table = dict()
         if filename:
@@ -418,8 +466,8 @@ class SketchHandler(Handler):
             else:
                 src_connector = part.find_elements(primitives.Pin).find_element(id_)
             if not src_connector:
-                raise Exception("Can not find pin '%s' of '%s'" %
-                                (id_, part.get_designator()))
+                raise Exception("File '%s'. Can not find pin '%s' of '%s'" %
+                                (self._fname, id_, part.get_designator()))
             connects_elements = connector_element.getElementsByTagName("connects")
             if not connects_elements:
                 continue
@@ -429,7 +477,7 @@ class SketchHandler(Handler):
                 dst_handler = self.find_instance_handler_by_index(dst_part_index)
                 dst_part = dst_handler.get_object()
                 if isinstance(dst_part, primitives.Wire):
-                    pin = dst_part.find_pin(connection_element.getAttribute("connectorId"))
+                    pin = dst_part.find_pin(connection_element.getAttribute('connectorId'))
                     if not pin:
                         raise Exception("Cannot find pin")
                     src_connector.connect_to(pin)
@@ -449,7 +497,7 @@ class PinHandler(Handler):
     """Learn more about connectors from `Fritzing part format
     <http://fritzing.org/developer/fritzing-part-format/>`_.
     """
-    METADATA_PROPERTIES = ("description",)
+    METADATA_PROPERTIES = ('description',)
 
     def __init__(self):
         self._object = primitives.Pin()
@@ -490,17 +538,21 @@ class InstanceHandler(Handler):
         <instance moduleIdRef="..." modelIndex="..." path="...">
         </instance>
 
-        It may include ``<title>...</title>`` which will be translated as
+        It may includes ``<title>...</title>`` which will be translated as
         reference designator.
         """
         if not element.getAttribute("moduleIdRef"):
             raise Exception("Instance does not have 'moduleIdRef' attribute")
-        part_handler = load_part_handler_by_id( \
-            element.getAttribute("moduleIdRef"))
+        part_handler = None
+        id_ = element.getAttribute("moduleIdRef")
+        try:
+            part_handler = load_part_handler_by_id(id_)
+        except Exception, e:
+            pass
         if not part_handler:
             # The path attribute has the following view: :path
             # Do we need to take only the last path?
-            part_fname = instance.getAttribute('path').split(":").pop()
+            part_fname = element.getAttribute('path').split(":").pop()
             if not os.path.exists(part_fname):
                 # In some way this path is absolute, we need to make it as
                 # local for fritzing home directory
@@ -509,14 +561,16 @@ class InstanceHandler(Handler):
                 part_fname = os.path.abspath( \
                     os.path.join(get_search_pathes()[0], part_fname))
             if not os.path.exists(part_fname):
-                raise IOError("No such part: '%s'" % part_fname)
+                print 'Part with ID "%s" can not be found' % id_
+                print 'Potensial location is "%s"' % part_fname
+                raise IOError('No such part')
             part_handler = PartHandler(fname=part_fname)
         self._object = part_handler.get_object().clone()
-        if not element.hasAttribute("modelIndex"):
-            raise Exception("Instance does not have modelIndex attribute.")
-        self.model_index = element.getAttribute("modelIndex")
+        if not element.hasAttribute('modelIndex'):
+            raise Exception('Instance does not have "modelIndex" attribute.')
+        self.model_index = element.getAttribute('modelIndex')
         # Part reference designator
-        elements = element.getElementsByTagName("title")
+        elements = element.getElementsByTagName('title')
         if elements:
             self._object.set_designator(get_text(elements[0].childNodes))
 
@@ -543,29 +597,29 @@ class PartHandler(Handler):
     part's SVG files. It also specifies a part's connectors and internal buses.
     """
 
-    ROOT_TAG_NAME = "module"
-    CONNECTORS_TAG_NAME = "connectors"
-    CONNECTOR_TAG_NAME = "connector"
+    ROOT_TAG_NAME = 'module'
+    CONNECTORS_TAG_NAME = 'connectors'
+    CONNECTOR_TAG_NAME = 'connector'
 
-    FILE_EXT = "fzp"
+    FILE_EXT = 'fzp'
     """Metadata file extension referred as an FZP."""
-    ZFILE_EXT = "fzpz"
+    ZFILE_EXT = 'fzpz'
     """Extension for a zipped metadata file."""
 
     METADATA_PROPERTIES = (
-        "version",
-        "author",
-        ("title", "name"),
-        ("label", "reference_format"),
-        "date",
-        "description",
+        'version',
+        'author',
+        ('title', 'name'),
+        ('label', 'reference_format'),
+        'date',
+        'description',
     )
 
     def __init__(self, filename=None, device=None):
         Handler.__init__(self)
         self._object = device or Device()
         self._model_index = None
-        self._module_id = None
+        self.__module_id = None
         if filename:
             self.open(filename)
 
@@ -577,18 +631,24 @@ class PartHandler(Handler):
     def model_index(self, new_model_index):
         self._model_index = new_model_index
 
-    @property
-    def module_id(self):
-        return self._module_id
+    def get_module_id(self):
+        return self.__module_id
 
-    @module_id.setter
-    def module_id(self, new_module_id):
-        self._module_id = new_module_id
+    def set_module_id(self, module_id):
+        self.__module_id = module_id
+        # Try to find object from our primitives and devices
+        self.__convert_object()
+        self._object.id = module_id
+
+    def __convert_object(self):
+        if self.get_module_id() == "WireModuleID":
+            self.set_object(primitives.Wire())
 
     def open(self, fname):
         """Open and read fritzing part file, which can be zipped file
-        :const:`PartHandler.ZFILE_EXT` or just
-        :const:`PartHandler.FILE_EXT` file."""
+        :const:`PartHandler.ZFILE_EXT` or just :const:`PartHandler.FILE_EXT`
+        file.
+        """
         self._fname = fname
         self._doc = None
         self._buf = None
@@ -621,7 +681,7 @@ class PartHandler(Handler):
             </module>
         """
         if not self._buf:
-            raise Exception("The buffer is empty. Nothing to read.")
+            raise Exception('The buffer is empty. Nothing to read.')
         self._doc = xml.dom.minidom.parseString(self._buf)
         # Read root element
         self._root = self._doc.documentElement
@@ -631,11 +691,7 @@ class PartHandler(Handler):
         if not self._root.hasChildNodes():
             raise Exception("Root tag has no child nodes.")
         # Update part identifier
-        self._object.id = self.module_id = self._root.getAttribute("moduleId")
-
-        if self.module_id == "WireModuleID":
-            self._object = primitives.Wire()
-
+        self.set_module_id(self._root.getAttribute("moduleId"))
         # Put attributes such as author, description, date, label, etc. as
         # properties of the metadata instance for this part
         for src in self.METADATA_PROPERTIES:

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 __copyright__ = "Copyright (c) 2011-2012 Sladeware LLC"
+__author__ = "<oleks.sviridenko@gmail.com> Alexander Sviridenko"
 
 import os # this is host-os support module, do not mix with bb.os
 import sys

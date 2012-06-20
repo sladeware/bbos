@@ -299,6 +299,8 @@ class Pin(ElectronicPrimitive):
 
     def connect_to(self, pin):
         """Connect source pin to destination pin."""
+        if not isinstance(pin, Pin):
+            raise Exception("'%s' must be a Pin" % pin)
         G.add_edge(self, pin)
         G.add_edge(pin, self)
         if not self.is_connected_to(pin):
