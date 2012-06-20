@@ -49,13 +49,19 @@ from bb.hardware import verify_device, Device
 #_______________________________________________________________________________
 
 class OS(object):
-    """This class describes BB operating system. The :class:`Mapping` uses this
-    class to create :class:`OS` instance. Once operating system is created, the
-    mapping will call :func:`OS.main` entry point and then :func:`OS.start` to
-    run the system."""
+    """This class describes BB operating system.
+
+    The :class:`Mapping` uses this class to create :class:`OS` instance. Once
+    operating system is created, the mapping will call :func:`OS.main` entry
+    point and then :func:`OS.start` to run the system.
+
+    """
 
     class Object(Application.Object):
-        """The root main class for BBOS kernel and other operating system parts."""
+        """The root main class for BBOS kernel and other operating system
+        parts.
+
+        """
         def __init__(self):
             Application.Object.__init__(self)
 
@@ -76,18 +82,114 @@ class OS(object):
                 return self.__name
 
     def __init__(self, **kargs):
-        self.kernel = Kernel()
+        self.kernel = kernel_factory()
 
     def main(self):
         pass
 
     def start(self):
         """This method implements OS's activity. You may override this method in
-        subclass."""
+        subclass.
+        
+        """
         self.kernel.start()
 
 #_______________________________________________________________________________
-# Kernel extension management
+
+class Kernel(OS.Object, Traceable):
+    """The heart of BB operating system. In order to connect with application
+    inherits OS.Object class.
+
+    """
+
+    class Extension(object):
+        """This is base class for kernel extensions."""
+        pass
+
+    def __init__(self, *args, **kargs):
+        OS.Object.__init__(self)
+        print self.banner()
+        print "Initialize kernel"
+        # XXX: WTF?! It's very strange, but we need to do the following hack in
+        # order to get __extensions attribute
+        self.__extensions = getattr(self, "__extensions")
+        # Initialize all kernel extensions one by one
+        for extension in self.__extensions:
+            print "Initialize extension '%s'" % extension.__name__
+            extension.__init__(self)
+
+    def get_mapping(self):
+        mapping = Application.get_running_instance().get_active_mapping()
+        return mapping
+
+    def echo(self, data):
+        if not isinstance(data, types.StringType):
+            data = str(data)
+        print data
+
+    @OS.Object.simulation_method
+    def test(self):
+        print "Test kernel"
+        if not self.get_num_threads():
+            raise Kernel.Exception("At least one thread has to be added")
+        # Test the system for unknown devices
+        if self.get_unknown_devices():
+            self.warning("Unknown devices: %s" % ", ".join([str(device) for device
+                                                in self.get_unknown_devices()]))
+
+    @OS.Object.simulation_method
+    def start(self):
+        self.test()
+        print "Start kernel"
+        try:
+            if self.has_scheduler():
+                while True:
+                    self.get_scheduler().move()
+                    self.switch_thread()
+        except KeyboardInterrupt, e:
+            self.stop()
+        except SystemExit, e:
+            self.stop()
+
+    @OS.Object.simulation_method
+    def stop(self):
+        """Shutdown everything and perform a clean system stop."""
+        print "Kernel stopped"
+        sys.exit(0)
+
+    def warning(self, text):
+        lineno = inspect.getouterframes(inspect.currentframe())[2][2]
+        fname = inspect.getmodule(inspect.stack()[2][0]).__file__
+        print "%s:%d:WARNING: %s" % (fname, lineno, text)        
+
+    @OS.Object.simulation_method
+    def panic(self, text):
+        """Halt the system.
+
+        Display a message, then perform cleanups with stop. Concerning
+        the application this allows to stop a single process, while
+        all other processes are running."""
+        lineno = inspect.getouterframes(inspect.currentframe())[2][2]
+        fname = inspect.getmodule(inspect.stack()[2][0]).__file__
+        print "%s:%d:PANIC: %s" % (fname, lineno, text)
+        # XXX we do not call stop() method here to do no stop the system twice.
+        # exit() function will raise SystemExit exception, which will actually
+        # call kernel's stop. See start() method for more information.
+        self.stop()
+
+    @OS.Object.simulation_method
+    def banner(self):
+        """Return nice BB OS banner."""
+        return "BBOS Kernel v0.2.0." + \
+            re.search('(\d+)', re.escape(__version__)).group(1) + ""
+
+def get_running_kernel():
+    """Just another useful wrapper. Return the currently running kernel
+    object."""
+    # XXX On this moment if no kernels are running, the None value will
+    # be returned. Maybe we need to make an exception?
+    return Traceable.find_running_instance(Kernel)
+
 
 # Contains kernel extensions in form: extension name, extension class.
 # See kernel_extension() function to learn how to create a kernel extension.
@@ -97,23 +199,94 @@ _KERNEL_EXTENSIONS = dict()
 # See kernel_extension() function to learn how to add an extension to this list.
 _DEFAULT_KERNEL_EXTENSIONS = list()
 
-class KernelExtension(object):
-    """This is base class for kernel extensions."""
-
 def kernel_extension(name, default=True):
-    """This function is used as decorator and maps extension name to
-    extension class."""
+    """This function is used as decorator and maps extension's name to
+    extension's class. The extension can be also marked as `default` and thus
+    be used by default."""
     verify_string(name)
     verify_bool(default)
     def catch_kernel_extension(cls):
-        if not issubclass(cls, KernelExtension):
+        if not issubclass(cls, Kernel.Extension):
             raise TypeError("Kernel extension %s must be subclass "
-                            "of KernelExtension." % cls)
+                            "of Kernel.Extension." % cls)
         _KERNEL_EXTENSIONS[name] = cls
         if default:
             _DEFAULT_KERNEL_EXTENSIONS.append(name)
         return cls
     return catch_kernel_extension
+
+#_______________________________________________________________________________
+
+@kernel_extension("module_management", True)
+class ModuleManagement(Kernel.Extension):
+    """This kernel extension aims to control module management."""
+
+    def __init__(self):
+        self.__modules = dict()
+
+    def load_module(self, path, args=None):
+        """Load module `path` to the running kernel and pass arguments `args` to
+        its initialization method."""
+        if path in self.__modules:
+            return self.__modules[path]
+        # The module wasn't loaded before. Do the import.
+        self.echo("Loading module '%s'" % path)
+        name = path.rsplit('.', 1).pop()
+        try:
+            py_module = __import__(path, globals(), locals(), [name], -1)
+        except ImportError, e:
+            self.panic(e)
+        # Start loading a new module
+        klass = getattr(py_module, name, None)
+        if not klass or not issubclass(klass, Module):
+            self.panic("Cannot load '%s'. '%s' control module class can not be found." %
+                       (path, name))
+        bb_module = klass(args)
+        bb_module.on_load()
+        # Register module and call on_load method
+        self.__modules[path] = bb_module
+        # XXX: do we need to remove py_module? The the comment below.
+        # Once the module was importer to the system it has to be removed
+        # so all other kernels will be able to import this module. The
+        # module instance will be saved in kernel's context.
+        del sys.modules[path]
+        return bb_module
+
+    def find_module(self, name):
+        """Find module's object by its name. Return None if module was
+        not identified.
+
+        """
+        name = verify_string(name)
+        try:
+            return self.__modules[name]
+        except KeyError:
+            return None
+
+    def get_modules(self):
+        """Return complete list of loaded modules."""
+        return self.__modules.values()
+
+    def unload_module(self, name):
+        """Unload module `name`."""
+        raise NotImplemented
+
+class Module(object):
+    """Module is meta-operating system specific object that aims to extend
+    kernel functionallity."""
+
+    def __init__(self, args=None):
+        self.args = args
+
+    def on_load(self):
+        """Abstract method. This method is called by kernel once module is
+        loaded."""
+        pass
+
+    def on_unload(self):
+        """Abstract method. This method is called by kernel when module has
+        to be unloaded."""
+        pass
 
 #_______________________________________________________________________________
 # Threading? BBOS has another meaning for thread.
@@ -242,7 +415,7 @@ class Thread(OS.Object):
         object passed to the object's constructor as the target argument."""
         runner = self.get_runner()
         if not runner:
-            raise KernelException("Runner wasn't defined")
+            raise Kernel.Exception("Runner wasn't defined")
         runner()
 
     # The following methods provide support for pickle. This will allow user to
@@ -403,15 +576,14 @@ class Messenger(Thread):
         handler(message)
 
 @kernel_extension("thread_management", True)
-class ThreadManagement(KernelExtension):
+class ThreadManagement(Kernel.Extension):
     """This class represents thread management that is used as kernel
     extension."""
 
     Thread=Thread
 
     def __init__(self, threads=list(), scheduler=StaticScheduler()):
-        KernelExtension.__init__(self)
-        print "Initialize thread management"
+        Kernel.Extension.__init__(self)
         self.__threads = dict()
         self.__scheduler = None
         # Select scheduler first if defined before any thread will be added
@@ -461,7 +633,7 @@ class ThreadManagement(KernelExtension):
         Note: this method is available in all modes, so be carefull to
         make changes."""
         if not len(args) and not len(kargs):
-            raise KernelException("Nothing to process")
+            raise Kernel.Exception("Nothing to process")
         if len(args) == 1:
             thread = self.select_thread(args[0])
             if thread:
@@ -613,21 +785,20 @@ class Port(object):
         return len(self.__messages)
 
 @kernel_extension("itc", True)
-class ITC(KernelExtension):
+class ITC(Kernel.Extension):
     """Inter-Thread Communication (ITC)."""
 
     def __init__(self):
-        KernelExtension.__init__(self)
-        print "Initialize ITC"
+        Kernel.Extension.__init__(self)
         self.__commands = []
         self.__ports = {}
 
     def add_port(self, port):
         """Add a new port to the system."""
         if not isinstance(port, Port):
-            raise KernelException("Port %s!")
+            raise Kernel.Exception("Port %s!")
         if self.select_port(port.get_name()):
-            raise KernelException("Port '%s' has been already added"
+            raise Kernel.Exception("Port '%s' has been already added"
                               % port.get_name())
         print "Add port '%s' of %d messages" % (port.get_name(), port.get_capacity())
         self.__ports[port.get_name()] = port
@@ -950,7 +1121,7 @@ class DeviceManager(OS.Object):
         return "Device manager of %s" % self.get_device().get_name()
 
 @kernel_extension("hardware_management", True)
-class HardwareManagement(KernelExtension):
+class HardwareManagement(Kernel.Extension):
     """This class represents kernel extension that provides hardware
     management. More precisely it provides an interface for device and
     driver management and their interruction.
@@ -970,8 +1141,7 @@ class HardwareManagement(KernelExtension):
     """
 
     def __init__(self):
-        KernelExtension.__init__(self)
-        print "Initialize hardware management extension"
+        Kernel.Extension.__init__(self)
         self.__device_managers = dict()
         self.__driver_managers = dict()
         # Now use mapping to register outside devices via hardware interface
@@ -999,8 +1169,8 @@ class HardwareManagement(KernelExtension):
         of :func:`register_driver` and the device will be bind to it by using
         :func:`bind_device_to_driver`."""
         if self.is_registered_device(device):
-            raise KernelException("Device '%s' was already registered." %
-                                  device.get_designator())
+            raise Kernel.Exception("Device '%s' was already registered." %
+                                   device.get_designator())
         manager = DeviceManager(device)
         self.__device_managers[device.get_designator()] = manager
 
@@ -1135,12 +1305,12 @@ class HardwareManagement(KernelExtension):
         """
         verify_device(device)
         if not self.is_registered_device(device):
-            KernelException("In order to bind device to driver, device has to" \
-                                " be registered by using register_device().")
+            Kernel.Exception("In order to bind device to driver, device has to" \
+                                 " be registered by using register_device().")
         verify_driver(driver)
         if not self.is_registered_driver(driver):
-            KernelException("In order to bind device to driver, driver has to" \
-                                " be registered by using register_driver().")
+            Kernel.Exception("In order to bind device to driver, driver has to" \
+                                 " be registered by using register_driver().")
         manager = self.find_driver_manager(driver)
         manager.add_device(device)
         print "Bind device '%s' to driver '%s'" % (str(device), str(driver))
@@ -1153,150 +1323,16 @@ class HardwareManagement(KernelExtension):
 #_______________________________________________________________________________
 
 @kernel_extension("imc", False)
-class IMC(KernelExtension):
+class IMC(Kernel.Extension):
     def __init__(self):
-        KernelExtension.__init__(self)
-        print "Initialize IMC"
+        Kernel.Extension.__init__(self)
 
 #_______________________________________________________________________________
 
-class System(OS.Object, Traceable):
-    """The heart of BB operating system. In order to connect with application
-    inherits OS.Object class."""
-    def __init__(self, *args, **kargs):
-        OS.Object.__init__(self)
-        print self.banner()
-        print "Initialize kernel"
-        self.__modules = {}
-        # XXX: WTF?! It's very strange, but we need to do the following hack in
-        # order to get __extensions attribute
-        self.__extensions = getattr(self, "__extensions")
-        # Initialize all kernel extensions one by one
-        for extension in self.__extensions:
-            extension.__init__(self)
-
-    def get_mapping(self):
-        mapping = Application.get_running_instance().get_active_mapping()
-        return mapping
-
-    def echo(self, data):
-        if not isinstance(data, types.StringType):
-            data = str(data)
-        print data
-
-    @OS.Object.simulation_method
-    def test(self):
-        print "Test kernel"
-        if not self.get_num_threads():
-            raise KernelException("At least one thread has to be added")
-        # Test the system for unknown devices
-        if self.get_unknown_devices():
-            self.warning("Unknown devices: %s" % ", ".join([str(device) for device
-                                                in self.get_unknown_devices()]))
-
-    @OS.Object.simulation_method
-    def start(self):
-        self.test()
-        print "Start kernel"
-        try:
-            if self.has_scheduler():
-                while True:
-                    self.get_scheduler().move()
-                    self.switch_thread()
-        except KeyboardInterrupt, e:
-            self.stop()
-        except SystemExit, e:
-            self.stop()
-
-    @OS.Object.simulation_method
-    def stop(self):
-        """Shutdown everything and perform a clean system stop."""
-        print "Kernel stopped"
-        sys.exit(0)
-
-    def warning(self, text):
-        lineno = inspect.getouterframes(inspect.currentframe())[2][2]
-        fname = inspect.getmodule(inspect.stack()[2][0]).__file__
-        print "%s:%d:WARNING: %s" % (fname, lineno, text)        
-
-    @OS.Object.simulation_method
-    def panic(self, text):
-        """Halt the system.
-
-        Display a message, then perform cleanups with stop. Concerning
-        the application this allows to stop a single process, while
-        all other processes are running."""
-        lineno = inspect.getouterframes(inspect.currentframe())[2][2]
-        fname = inspect.getmodule(inspect.stack()[2][0]).__file__
-        print "%s:%d:PANIC: %s" % (fname, lineno, text)
-        # XXX we do not call stop() method here to do no stop the system twice.
-        # exit() function will raise SystemExit exception, which will actually
-        # call kernel's stop. See start() method for more information.
-        self.stop()
-
-    @OS.Object.simulation_method
-    def banner(self):
-        """Return nice BB OS banner."""
-        return "BBOS Kernel v0.2.0." + \
-            re.search('(\d+)', re.escape(__version__)).group(1) + ""
-
-    # Module Management
-    # This set of methods a meta-operating system specific. Such routines
-    # are not supported in target embedded systems.
-
-    def load_module(self, name):
-        """Load module to the running kernel. This method connects module's
-        environment and kernel's environment."""
-        if name in self.__modules:
-            return self.__modules[name]
-        # The module wasn't loaded before. Do the import.
-        self.echo("Load module '%s'" % name)
-        try:
-            module = __import__(name, globals(), locals(),
-                                [name.rsplit('.', 1).pop()], -1)
-        except ImportError, e:
-            self.panic(e)
-        self.__modules[name] = module
-        # Start loading a new module
-        on_load = getattr(module, 'on_load', None)
-        if not on_load:
-            self.panic("Can not load module '%s'. Method 'on_load' was not found."
-                       % name)
-        on_load()
-        # Once the module was importer to the system it has to be removed
-        # so all other kernels will be able to import this module. The
-        # module instance will be saved in kernel's context.
-        del sys.modules[name]
-        return module
-
-    def find_module(self, name):
-        """Find module's object by its name. Return None if module was
-        not identified.
-        """
-        name = verify_string(name)
-        try:
-            return self.__modules[name]
-        except KeyError:
-            return None
-
-    def get_modules(self):
-        """Return complete list of loaded modules."""
-        return self.__modules.values()
-
-    def unload_module(self, name):
-        raise NotImplemented
-
-def get_running_kernel():
-    """Just another useful wrapper. Return the currently running kernel
-    object."""
-    # XXX On this moment if no kernels are running, the None value will
-    # be returned. Maybe we need to make an exception?
-    return Traceable.find_running_instance(Kernel)
-
-def Kernel(**selected_extensions):
-    """This kernel factory creates and returns :class:`Kernel` class with all
-    required extensions. `selected_extensions` contains extensions that have to
-    be included (if they have ``True`` value) or excluded (if they have
+def kernel_factory(**selected_extensions):
+    """This kernel factory creates and returns :class:`Kernel` based class with
+    all required extensions. `selected_extensions` contains extensions that have
+    to be included (if they have ``True`` value) or excluded (if they have
     ``False`` value) from list of extensions that will extend kernel
     functionality."""
     use_extensions = _DEFAULT_KERNEL_EXTENSIONS
@@ -1319,6 +1355,6 @@ def Kernel(**selected_extensions):
     # represent these extensions
     extensions = tuple([_KERNEL_EXTENSIONS[extension] for extension in
                         use_extensions])
-    kernel_cls = type("Kernel", (System, ) + extensions,
+    kernel_cls = type("Kernel", (Kernel, ) + extensions,
                   {'__extensions': extensions})
     return kernel_cls()

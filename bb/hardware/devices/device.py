@@ -13,16 +13,13 @@
 # limitations under the License.
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
-
-#_______________________________________________________________________________
+__author__ = "<oleks.sviridenko@gmail.com> Alexander Sviridenko"
 
 import types
 
-from bb.hardware.primitives import *
+from bb.hardware import primitives
 
-#_______________________________________________________________________________
-
-class Device(ElectronicPrimitive):
+class Device(primitives.ElectronicPrimitive):
     """This class is sub-class of
     :class:`bb.hardware.primitives.ElectronicPrimitive` and represents a
     physical device. Device is any type of electrical component. It
@@ -58,7 +55,8 @@ class Device(ElectronicPrimitive):
             or ``None`` if there is no such object.
 
             The by argument can be represented by a function, string, class or
-            number. Omitting the by argument causes all object to be matched."""
+            number. Omitting the by argument causes all object to be matched.
+            """
             if type(by) == types.TypeType:
                 for element in self.__source:
                     if isinstance(element, by):
@@ -72,7 +70,8 @@ class Device(ElectronicPrimitive):
         def find_element(self, by):
             """If there is more than one child matching the search, the first
             one is returned. In that case, :func:`Device.find_elements` should
-            be used."""
+            be used.
+            """
             elements = self.find_elements(by)
             if len(elements):
                 return elements[0]
@@ -83,15 +82,14 @@ class Device(ElectronicPrimitive):
     element_register = dict()
 
     def __init__(self):
-        ElectronicPrimitive.__init__(self)
+        primitives.ElectronicPrimitive.__init__(self)
 
     @property
     def G(self):
         """Return graph `G` that represents a structure of this device. All
         the device elements will be nodes of this graph.
         """
-        global G
-        return G
+        return primitives.G
 
     def register_driver(self, driver):
         pass
@@ -188,7 +186,6 @@ class Device(ElectronicPrimitive):
         """Connect two elements: this device and `element`. The connection
         between two elements is represented by edge on the graph :attr:`G`.
         """
-        global G
         self.G.add_edge(self, element)
 
     def disconnect_elements(self, src, dest):
@@ -196,8 +193,8 @@ class Device(ElectronicPrimitive):
 
     def clone(self):
         """Clone this device instance."""
-        clone = ElectronicPrimitive.clone(self)
-        for origin_pin in self.find_elements(Pin):
+        clone = primitives.ElectronicPrimitive.clone(self)
+        for origin_pin in self.find_elements(primitives.Pin):
             pin = origin_pin.clone()
             clone.add_element(pin)
         return clone

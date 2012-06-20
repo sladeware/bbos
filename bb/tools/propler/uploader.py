@@ -1,4 +1,16 @@
 #!/usr/bin/env python
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """The basic idea of code uploader for Parallax Propeller chip was
 taken from
@@ -6,8 +18,7 @@ taken from
 proposed by Remy Blank."""
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
-
-#_____________________________________________________________________
+__author__ = "<oleks.sviridenko@gmail.com> Alexander Sviridenko"
 
 import os
 import os.path
@@ -32,8 +43,6 @@ from bb.tools.propler.chips import *
 from bb.tools.propler.bitwise_op import *
 from bb.tools.propler.boards import *
 
-#_____________________________________________________________________
-
 DEFAULT_SERIAL_PORTS = {
     "posix": "/dev/ttyUSB0",
     "nt": "COM1",
@@ -48,7 +57,10 @@ DEFAULT_SERIAL_PORTS = {
     ======== ================
 """
 
-class UploadingError(Exception):
+class UploaderException(Exception):
+    pass
+
+class UploadingError(UploaderException):
     """Base uploading error."""
     pass
 
@@ -61,23 +73,18 @@ MARKER = 0xFFFFFE
 HOME_DIR = os.path.dirname(os.path.realpath(__file__))
 
 class SPIUploaderInterface(object):
-    """Base class for uploaders. Learn more about transmission protocol from
-    discussion
-    `"serial boot loader" <http://forums.parallax.com/showthread.php?96822-serial-boot-loader&p=670593#post670593>`_."""
+    """Base class for SPI uploaders. Learn more about transmission protocol from
+    discussion of
+    `"serial boot loader" <http://forums.parallax.com/showthread.php?96822-serial-boot-loader&p=670593#post670593>`_.
+    """
 
     # Processor constants
     LFSR_REQUEST_LEN = 250
     LFSR_REPLY_LEN = 250
-    LFSR_SEED = ord("P")
+    LFSR_SEED = ord("P") # P is for Propeller
 
-    def __init__(self, port=None, baudrate=None, timeout=0, config=None):
-        if not config:
-            config = CustomBoardConfig()
-        self.__config = config
-        # Set baudrate from board configurations if it wasn't provided
-        # by user
-        if not baudrate:
-            baudrate = config.get_baudrate()
+    def __init__(self, port=None, baudrate=9600, timeout=0, config=None):
+        self.__config = None
         # Setup serial
         if not port:
             sys.stdout.write("Please select port: ")
@@ -85,8 +92,18 @@ class SPIUploaderInterface(object):
         self.__serial = serial.Serial(baudrate=baudrate, timeout=timeout)
         self.__serial.port = port
         self.__serial.stopbits = 1
+        #self.__serial.nonblocking() # configure for nonblocking operation
+        if not config:
+            config = CustomBoardConfig()
+        self.set_config(config)
+
+    def set_config(self, config):
+        """Configure uploader with help of :class:`Config`."""
+        self.serial.baudrate = config.get_baudrate()
+        self.__config = config
 
     def get_config(self):
+        """Return used :class:`Config`."""
         return self.__config
 
     def bin_to_eeprom(self, image):
@@ -104,12 +121,14 @@ class SPIUploaderInterface(object):
 
     @property
     def serial(self):
-        """Return instance of :class:`serial.Serial` that controls
-        serial port."""
+        """Return instance of :class:`serial.Serial` that controls serial port.
+        """
         return self.__serial
 
     def __calibrate(self):
-        self.send_byte(0xF9)
+        """Send calibration pulse."""
+        if self.send_byte(0xF9) != 1:
+            raise Exception("The calibration byte wasn't written.")
 
     def receive_bit(self, echo, timeout):
         """Receive response from hardware via echoed byte."""
@@ -122,47 +141,73 @@ class SPIUploaderInterface(object):
             if c:
                 if c in (chr(0xFE), chr(0xFF)):
                     return ord(c) & 0x01
-                else:
-                    raise Exception("Bad reply")
+                #else:
+                #    raise Exception("Bad reply")
         raise Exception("Timeout error")
 
-    def connect(self, config=None):
-        """Find propeller on port using sync-up sequence. Return
-        ``False`` on error."""
+    def __connect(self, config=None):
+        """Actual connect implementation."""
         if config:
-            self.serial.baudrate = config.get_baudrate()
+            self.set_config(config)
+        #self.disconnect()
         self.serial.close()
         if not self.serial.isOpen():
             self.serial.open()
         self.reset()
+        print "Send the calibration pulse"
         self.__calibrate()
         seq = []
         for (i, value) in zip(range(self.LFSR_REQUEST_LEN + self.LFSR_REPLY_LEN),
                               lfsr(self.LFSR_SEED)):
             seq.append(value)
+        print "Send the magic propeller LFSR byte stream"
         self.serial.write("".join(chr(each | 0xFE) for each in seq[0:self.LFSR_REQUEST_LEN]))
-        # send gobs of 0xF9 for id sync-up - these clock out the LSFR
-        # bits and the id
+        # send gobs of 0xF9 for id sync-up - these clock out the LSFR bits and the id
         self.serial.write(chr(0xF9) * (self.LFSR_REPLY_LEN + 8))
-        # wait for response so we know we have a Propeller
-        for i in range(self.LFSR_REQUEST_LEN,
-                       self.LFSR_REQUEST_LEN + self.LFSR_REPLY_LEN):
-            if self.receive_bit(False, 0.100) != seq[i]:
+        # wait for response so we know we have a Propeller.
+        # count passed bits to provide more useful information for dubuging
+        n = self.LFSR_REPLY_LEN
+        ok = 0
+        for i in range(self.LFSR_REQUEST_LEN, self.LFSR_REQUEST_LEN + n):
+            bit = self.receive_bit(False, 0.100) # 0.110?
+            if bit != seq[i]:
+                print "%d/%d: %d <> %d" % (ok, n, bit, seq[i])
                 raise Exception("No hardware found")
+            ok += 1
         version = 0
         for i in range(8):
             version = ((version >> 1) & 0x7F) | ((self.receive_bit(False, 0.050) << 7))
         print "Connecting to propeller v%d on '%s'" % (version, self.__serial.port)
+        # Update chip version for board config
+        if self.get_config():
+            self.get_config().set_chip_version(version)
         if version:
             return True
         self.disconnect()
         return False
 
+    def connect(self, config=None, attempts=2):
+        """Find propeller device on port using sync-up sequence. Return
+        ``False`` on error.
+        """
+        result = False
+        while attempts:
+            try:
+                result = self.__connect(config)
+            except Exception, e:
+                print e
+            if result:
+                break
+            attempts -= 1
+            time.sleep(1)
+        return result
+
     def reset(self):
         """Reset propeller chip."""
         self.serial.flushOutput()
+        # TODO: mac os
         self.serial.setDTR(1)
-        time.sleep(0.025)
+        time.sleep(0.025) # 0.010?
         self.serial.setDTR(0)
         time.sleep(0.090)
         self.serial.flushInput()
@@ -171,22 +216,30 @@ class SPIUploaderInterface(object):
         self.__serial.write(data)
 
     def send_byte(self, byte, timeout=None):
+        """Send a `byte` to the serial with sepcified `timeout`. Return number
+        of bytes written.
+        """
         if not type(byte) is types.StringType:
             byte = chr(byte)
-        self.__serial.write(byte)
+        n = self.__serial.write(byte)
         if timeout:
             time.sleep(timeout)
+        return n
 
-    def receive(self, nbytes=1, timeout=-1):
+    def receive(self, n=1, timeout=-1):
+        """Try to receive `n` bytes with specified `timeout`. Return number of
+        bytes that was successfully received.
+        """
         # Save previous value of read timeout
         old_timeout = self.__serial.timeout
         if timeout is None or timeout > 0:
             self.__serial.timeout = timeout
-        nbytes = self.__serial.read(nbytes)
+        n = self.__serial.read(n)
         self.__serial.timeout = old_timeout
-        return nbytes
+        return n
 
     def disconnect(self):
+        """Disconnect from device. Close serial port connection."""
         print "Disconnecting"
         self.serial.close()
 
@@ -213,7 +266,8 @@ class BootloaderCommands:
         }
 
 class SPIUploader(SPIUploaderInterface):
-    """Standard one cog uploader."""
+    """Standard one-cog uploader.
+    """
 
     def __init__(self, *args, **kargs):
         SPIUploaderInterface.__init__(self, *args, **kargs)
@@ -224,6 +278,7 @@ class SPIUploader(SPIUploaderInterface):
 
     @classmethod
     def verify_image(cls, image, eeprom=False):
+        """Verify `image`. Check its checksum."""
         if len(image) % 4 != 0:
             raise Exception("Invalid image size: must be a multiple of 4")
         checksum = reduce(lambda a, b: a + b, (ord(each) for each in image))
@@ -475,6 +530,13 @@ class MulticogSPIUploader(SPIUploaderInterface):
             logging.error("LRC-checksum didn't match.")
             raise UploadingError()
 
+import signal
+
+def ctrlc(sig, frame):
+    raise KeyboardInterrupt("CTRL-C!")
+
+signal.signal(signal.SIGINT, ctrlc)
+
 def multicog_spi_upload(cogid_to_filename_mapping, serial_port,
                         run=True, eeprom=False,
                         force=False, bootloader_settle_delay=5):
@@ -507,10 +569,11 @@ def multicog_spi_upload(cogid_to_filename_mapping, serial_port,
     print "  %53s | %20d |" % (" ", total_size)
     print "                                                        +----------------------+"
     # Create uploader instance and pass mapping of images
-    try:
-        while True:
+    ok = False
+    uploader = MulticogSPIUploader(port=serial_port)
+    while True:
+        try:
             try:
-                uploader = MulticogSPIUploader(port=serial_port)
                 # Use standard connection in order to define whether
                 # we have propeller device to work with
                 uploader.connect()
@@ -519,28 +582,33 @@ def multicog_spi_upload(cogid_to_filename_mapping, serial_port,
                 uploader.reset()
                 time.sleep(bootloader_settle_delay)
                 uploader.upload(cogid_to_filename_mapping, run, eeprom)
-            except (KeyboardInterrupt, SystemExit):
+                ok = True
+            except KeyboardInterrupt:
                 print # prevent overlapping with uploader's printing
                 print "Process has been interrupted"
+                raise
             except Exception, e:
-                print
+                print # prevent overlapping with uploader's printing
                 print e
                 if force:
                     continue
                 else:
                     break
-            break
-    except (KeyboardInterrupt, SystemExit):
-        print # prevent overlapping with uploader's printing
-        print "Process has been interrupted"
+        except (KeyboardInterrupt, SystemExit):
+            print # prevent overlapping with uploader's printing
+            print "Process has been interrupted"
+        break
     uploader.disconnect()
+    return ok
 
 #_____________________________________________________________________
 
 def upload_bootloader(port="/dev/ttyUSB0", config=None, rebuild=False):
-    """Upload bootloader `MULTICOG_BOOTLOADER_BINARY_FILENAME` by using
-    :class:`SPIUploader`."""
-
+    """Upload special bootloader `MULTICOG_BOOTLOADER_BINARY_FILENAME` by using
+    :class:`SPIUploader`.
+    """
+    if not port:
+        port = raw_input("Please select port: ")
     catalina_board_configs = {
         QuickStartBoardConfig : "CUSTOM",
         DemoBoardConfig : "DEMO"
@@ -561,7 +629,8 @@ def upload_bootloader(port="/dev/ttyUSB0", config=None, rebuild=False):
     # Fix binary name, since '.binary' will be added automatically
     #bootloader_binary += ".binary"
     uploader = SPIUploader(port=port)
-    uploader.connect()
+    if not uploader.connect():
+        return None
     uploader.upload_file(bootloader_binary, eeprom=True)
     uploader.disconnect()
     return uploader

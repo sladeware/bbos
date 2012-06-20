@@ -20,15 +20,11 @@ Each of the eight 32-bit cores (called a cog) has a CPU which has access to 512
 """
 
 __copyright__ = "Copyright (c) 2011-2012 Sladeware LLC"
+__author__ = "<oleks.sviridenko@gmail.com> Alexander Sviridenko"
 
-#_______________________________________________________________________________
-
-from bb.hardware.devices import Pin
 from bb.hardware.devices.processors import Processor
 from bb.hardware.devices.memory import RAM
 from bb.utils.type_check import verify_list
-
-#_______________________________________________________________________________
 
 class PropellerP8X32A(Processor):
     """Parallax Propeller P8X32A processor.

@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
-
-#_______________________________________________________________________________
+__author__ = "<oleks.sviridenko@gmail.com> Alexander Sviridenko"
 
 from bb.hardware.devices.device import *
-
-#_______________________________________________________________________________
 
 # XXX: The following code is temporary frozen.
 def find_pkg_files(pkg, root=None, skip_names=[], recursive=True):
