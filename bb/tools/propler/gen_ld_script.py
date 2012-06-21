@@ -2,6 +2,8 @@
 
 """Generate proper script for GNU linker (ld)."""
 
+__author__ = "<oleks.sviridenko@gmail.com> Alexander Sviridenko"
+
 from string import Template
 import os.path
 
