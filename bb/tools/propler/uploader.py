@@ -601,8 +601,6 @@ def multicog_spi_upload(cogid_to_filename_mapping, serial_port,
     uploader.disconnect()
     return ok
 
-#_____________________________________________________________________
-
 def upload_bootloader(port="/dev/ttyUSB0", config=None, rebuild=False):
     """Upload special bootloader `MULTICOG_BOOTLOADER_BINARY_FILENAME` by using
     :class:`SPIUploader`.

@@ -98,5 +98,5 @@ if __name__ == "__main__":
     print "Uploading images"
     # We can also use uploader.serial.port instead of direct selection
     if propler.multicog_spi_upload(cogid_to_filename_mapping,
-                                   "/dev/ttyUSB0", force=True): #uploader.serial.port
+                                   "/dev/ttyUSB0", force=False): #uploader.serial.port
         propler.terminal_mode()
