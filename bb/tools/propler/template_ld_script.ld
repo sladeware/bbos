@@ -3,8 +3,8 @@ OUTPUT_ARCH(propeller)
 
 MEMORY
 {
-  hub     : ORIGIN =  ${HUB_START_ADDRESS}, LENGTH = 32K /*  ${HUB_LEN} 32K  */
-  cog	    : ORIGIN = 0, LENGTH = 1984 /* 496*4 */
+  hub     : ORIGIN = ${HUB_START_ADDRESS}, LENGTH = 32K /* ${HUB_LEN} 32K  */
+  cog	  : ORIGIN = 0, LENGTH = 1984 /* 496*4 */
   /* coguser is just an alias for cog, but for overlays */
   coguser : ORIGIN = 0, LENGTH = 1984 /* 496*4 */
   ram     : ORIGIN = 0x20000000, LENGTH = 256M
@@ -29,7 +29,7 @@ SECTIONS
   } >hub
 
   /* the LMM kernel that is loaded into the cog */
-  .lmmkernel  :
+  .lmmkernel :
   {
     *(.lmmkernel)
     *(.kernel)
@@ -49,12 +49,12 @@ SECTIONS
   } >hub AT>hub
 
   /* the final cleanup code (including destructors) */
-  .fini  :
+  .fini :
   {
     *(.fini*)
   } >hub AT>hub
 
-  .hub  :
+  .hub :
   {
     *(.hubstart)
     *(.hubtext*)
@@ -65,6 +65,8 @@ SECTIONS
     *(.rodata)  /* We need to include .rodata here if gcc is used */
     *(.rodata*) /* with -fdata-sections.  */
     *(.gnu.linkonce.d*)
+    PROVIDE(__C_LOCK = .);
+    LONG(0);
   } >hub AT>hub
   /*${TEXT_DYNAMIC+${DYNAMIC}}*/
 
@@ -94,10 +96,14 @@ SECTIONS
 
   .heap :
   {
-    LONG(0)
+    . += 4;
   } >hub AT>hub
-
   ___heap_start = ADDR(.heap) ;
+  .hub_heap : 
+  {
+    . += 4;
+  } >hub AT>hub
+  ___hub_heap_start = ADDR(.hub_heap);
 
   __load_start_kernel = LOADADDR (.lmmkernel) ;
   ___CTOR_LIST__ = ADDR(.ctors) ;
@@ -213,5 +219,8 @@ SECTIONS
   PROVIDE(vcfg = VCFG) ;
   PROVIDE(vscl = VSCL) ;
   PROVIDE(__hub_end = ADDR(.hub) + SIZEOF(.hub)) ;
+
+  /* default initial stack pointer */
+  PROVIDE(__stack_end = 0x8000) ;
 }
 
