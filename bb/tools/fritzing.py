@@ -211,9 +211,11 @@ def index_parts(search_pathes=None, force=False):
                     search_pathes.append(path)
     # Read old index file if such already exists
     if os.path.exists(get_index_filename()):
-        index_fh = open(get_index_filename())
-        _parts_index = json.loads(''.join(index_fh.readlines()))
-        index_fh.close()
+        try:
+            index_fh = open(get_index_filename())
+            _parts_index = json.loads(''.join(index_fh.readlines()))
+        finally:
+            index_fh.close()
     all_part_files = list()
     # Scan all search pathes one by one and extract part files
     for search_path in search_pathes:
@@ -562,7 +564,7 @@ class InstanceHandler(Handler):
                     os.path.join(get_search_pathes()[0], part_fname))
             if not os.path.exists(part_fname):
                 print 'Part with ID "%s" can not be found' % id_
-                print 'Potensial location is "%s"' % part_fname
+                print 'Potential location is "%s"' % part_fname
                 raise IOError('No such part')
             part_handler = PartHandler(fname=part_fname)
         self._object = part_handler.get_object().clone()
