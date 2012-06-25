@@ -45,12 +45,14 @@ import zipfile
 
 from bb.hardware import primitives
 from bb.hardware.devices import Device
-from bb.lib.crypto.md5 import md5sum
+from bb.lib.crypto import md5
 from bb.utils.type_check import verify_list, verify_string, is_string, \
     is_tuple, is_list
 
+# TODO(team): The tool has to be tread-safe. On this moment it doesn't.
+
 # XML support primitives
-def get_text(nodes):
+def extract_text_from_nodes(nodes):
     rc = []
     for node in nodes:
         if node.nodeType == node.TEXT_NODE:
@@ -72,7 +74,7 @@ with open(_LOG_FILENAME, 'w'):
 _log_hdlr = logging.FileHandler(_LOG_FILENAME)
 _log_formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 _log_hdlr.setFormatter(_log_formatter)
-_logger.addHandler(_log_hdlr) 
+_logger.addHandler(_log_hdlr)
 _logger.setLevel(logging.DEBUG)
 
 def find_home_dir(ask=True):
@@ -166,8 +168,8 @@ def find_part_files(pathes, recursive=False):
                 if name.startswith("."): # improve this
                     continue
                 pathes.append(os.path.join(path, name))
-        elif os.path.isfile(path) and (path.endswith(PartHandler.FILE_EXT) \
-                                           or path.endswith(PartHandler.ZFILE_EXT)):
+        elif os.path.isfile(path) and (path.endswith(PartHandler.FILE_EXT)
+                                       or path.endswith(PartHandler.ZFILE_EXT)):
             files.append(os.path.abspath(path))
     return files
 
@@ -221,8 +223,8 @@ def index_parts(search_pathes=None, force=False):
             search_pathes.remove(get_home_dir())
             magic_pathes.append(get_home_dir())
         if not get_user_dir():
-            print "WARNING: user specific directory can not be defined.", \
-                "Please set it manually by using bb.tools.fritzing.set_user_dir()"
+            _logger.warning('User specific directory can not be defined.' \
+                                'Please set it manually by using bb.tools.fritzing.set_user_dir()')
         else:
             search_pathes.remove(get_user_dir())
             magic_pathes.append(get_home_dir())
@@ -232,11 +234,12 @@ def index_parts(search_pathes=None, force=False):
                 for group in ('core', 'user', 'obsolete', 'contrib'):
                     path = os.path.join(magic_path, parts_location, group)
                     if not os.path.exists(path):
+                        _logger.warning('Magic path "%s" does not exist' % path)
                         continue
                     search_pathes.append(path)
     # Read old index file if such already exists
     if os.path.exists(get_index_filename()):
-        _logger.info("Read old index file")
+        _logger.info('Read old index file "%s"' % get_index_filename())
         try:
             index_fh = open(get_index_filename())
             _parts_index = json.loads(''.join(index_fh.readlines()))
@@ -246,7 +249,7 @@ def index_parts(search_pathes=None, force=False):
     # Scan all search pathes one by one and extract part files
     for search_path in search_pathes:
         new_part_files = find_part_files(search_path, recursive=True)
-        _logger.info('Scaning "%s": %d parts', search_path, len(new_part_files))
+        _logger.info('Scanning "%s": %d parts', search_path, len(new_part_files))
         all_part_files.extend(new_part_files)
     _logger.info('%d parts has been found' % len(all_part_files))
     # Look up for broken files and remove them
@@ -261,36 +264,39 @@ def index_parts(search_pathes=None, force=False):
     for pfile in all_part_files:
         counter += 1
         done = float(counter) / float(total)
-        sys.stdout.write("Indexing [{0:50s}] {1:.1f}%".format('#' * int(done * 50), done * 100))
+        sys.stdout.write(
+            "Indexing [{0:50s}] {1:.1f}%".format('#' * int(done * 50),
+                                                 done * 100))
         sys.stdout.write("\r")
         sys.stdout.flush()
         # Make check sum for this file
-        checksum = md5sum(pfile)
+        checksum = md5.md5sum(pfile)
         if pfile in _parts_index:
             (old_checksum, old_module_id) = _parts_index[pfile]
             if old_checksum == checksum:
                 _part_handlers_by_id[old_module_id] = None
                 _part_filenames_by_id[old_module_id] = pfile
                 continue
+        _logger.info('Create PartHandler object for "%s"' % pfile)
         ph = PartHandler(pfile)
         _parts_index[pfile] = (checksum, ph.get_module_id())
         _part_handlers_by_id[ph.get_module_id()] = ph
         _part_filenames_by_id[ph.get_module_id()] = pfile
         has_updates = True
     # Do some magic, some parts has to be recreated
-    __fix_parts()
+    __fix_basic_parts()
     print # empty line
     # Rewrite index file only if it has some updates
     if has_updates:
         __write_index()
 
-def __fix_parts():
+def __fix_basic_parts():
     global _parts_index
     global _part_handlers_by_id
     global _part_filenames_by_id
     # XXX: at some point the following parts may not be found.
     # They will be added by force.
-    magic_part_ids = ["ModuleID", "RulerModuleID", "BreadboardModuleID",
+    basic_part_ids = ["ModuleID", "RulerModuleID", "BreadboardModuleID",
                       "TinyBreadboardModuleID", "RectanglePCBModuleID",
                       "TwoLayerRectanglePCBModuleID", "EllipsePCBModuleID",
                       "TwoLayerEllipsePCBModuleID", "NoteModuleID",
@@ -308,16 +314,16 @@ def __fix_parts():
                       "PerfboardModuleID", "StripboardModuleID", "__spacer__",
                       "SchematicFrameModuleID", "BlockerModuleID",
                       "Copper0BlockerModuleID", "Copper1BlockerModuleID"]
-    for magic_part_id in magic_part_ids:
-        if magic_part_id in _part_handlers_by_id:
+    for basic_part_id in basic_part_ids:
+        if basic_part_id in _part_handlers_by_id:
             continue
         ph = PartHandler()
-        ph.set_module_id(magic_part_id)
+        ph.set_module_id(basic_part_id)
         #_parts_index[pfile] = (0, ph.get_module_id())
         _part_handlers_by_id[ph.get_module_id()] = ph
         _part_filenames_by_id[ph.get_module_id()] = None
         # Special cases
-        if magic_part_id is 'WireModuleID':
+        if basic_part_id is 'WireModuleID':
             wire = ph.get_object()
             p1 = primitives.Pin()
             p1.set_designator("connector0")
@@ -370,7 +376,7 @@ def parse(filename):
     file extension.
     """
     if not os.path.exists(filename):
-        raise IOError("No such file: '%s'" % filename)
+        raise IOError('No such file: "%s"' % filename)
     index_parts()
     if filename.endswith(SketchHandler.FILE_EXT):
         # OK, we're going to work with sketch, we need to index
@@ -405,14 +411,14 @@ class SketchHandler(Handler):
     """This handler handles `Fritzing sketch file
     <http://fritzing.org/developer/fritzing-sketch-file-format/>`_."""
 
-    ROOT_TAG_NAME = "module"
-    TITLE_TAG_NAME = "title"
-    INSTANCE_TAG_NAME = "instance"
-    SCHEMATIC_VIEW_TAG_NAME = "schematicView"
-    PCB_VIEW_TAG_NAME = "pcbView"
-    ICON_VIEW_TAG_NAME = "iconView"
+    ROOT_TAG_NAME = 'module'
+    TITLE_TAG_NAME = 'title'
+    INSTANCE_TAG_NAME = 'instance'
+    SCHEMATIC_VIEW_TAG_NAME = 'schematicView'
+    PCB_VIEW_TAG_NAME = 'pcbView'
+    ICON_VIEW_TAG_NAME = 'iconView'
 
-    FILE_EXT = "fz"
+    FILE_EXT = 'fz'
 
     def __init__(self, filename=None):
         Handler.__init__(self)
@@ -426,7 +432,7 @@ class SketchHandler(Handler):
         self._fname = fname
         self._buf = None
         if not os.path.exists(fname):
-            raise IOError("No such file: '%s'" % fname)
+            raise IOError('No such file: "%s"' % fname)
         if fname.endswith(self.FILE_EXT):
             self._stream = open(fname, "r")
         self.read()
@@ -470,9 +476,9 @@ class SketchHandler(Handler):
 
     def __process_instance(self, instance):
         handler = self.find_instance_handler_by_index( \
-            instance.getAttribute("modelIndex"))
+            instance.getAttribute('modelIndex'))
         part = handler.get_object()
-        views_elements = instance.getElementsByTagName("views")
+        views_elements = instance.getElementsByTagName('views')
         if not views_elements:
             raise Exception("It has no view!")
         # We are looking for schematic view (see SCHEMATIC_VIEW_TAG_NAME)
@@ -552,7 +558,7 @@ class PinHandler(Handler):
             elements = connector_element.getElementsByTagName(property_)
             if not elements:
                 continue
-            text = get_text(elements[0].childNodes)
+            text = extract_text_from_nodes(elements[0].childNodes)
             self._object.set_property(property_, text)
 
 class InstanceHandler(Handler):
@@ -602,7 +608,8 @@ class InstanceHandler(Handler):
         # Part reference designator
         elements = element.getElementsByTagName('title')
         if elements:
-            self._object.set_designator(get_text(elements[0].childNodes))
+            self._object.set_designator(
+                extract_text_from_nodes(elements[0].childNodes))
 
     @property
     def model_index(self):
@@ -733,7 +740,7 @@ class PartHandler(Handler):
             elements = self._root.getElementsByTagName(src)
             if not elements:
                 continue
-            text = get_text(elements[0].childNodes)
+            text = extract_text_from_nodes(elements[0].childNodes)
             self._object.set_property(dst, text)
         self.__read_properties()
         self.__read_tags()
@@ -749,11 +756,13 @@ class PartHandler(Handler):
         tags_element = tags_elements.item(0)
         property_ = self._object.set_property("keywords", list())
         for tag_element in tags_element.getElementsByTagName("tag"):
-            property_.value.append(get_text(tag_element.childNodes))
+            property_.value.append(extract_text_from_nodes(
+                    tag_element.childNodes))
 
     def __read_connectors(self):
         """Read connectors: <connectors>...</connectors>."""
-        connectors_elements = self._root.getElementsByTagName(self.CONNECTORS_TAG_NAME)
+        connectors_elements = self._root.getElementsByTagName(
+            self.CONNECTORS_TAG_NAME)
         if not connectors_elements:
             # Some parts does not have connectors (e.g. note)
             return
@@ -782,5 +791,9 @@ class PartHandler(Handler):
         properties = self._root.getElementsByTagName("properties").item(0)
         for property_ in properties.getElementsByTagName("property"):
             name = property_.getAttribute("name")
-            text = get_text(property_.childNodes)
-            self._object.set_property(name, get_text(property_.childNodes))
+            text = extract_text_from_nodes(property_.childNodes)
+            self._object.set_property(name, extract_text_from_nodes(
+                    property_.childNodes))
+
+if __name__ == '__main__':
+    pass
