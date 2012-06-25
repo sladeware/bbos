@@ -1,36 +1,28 @@
-.. _index:
+.. _distutils-index:
 
-Bionic Bunny |version| Documentation
-====================================
+###############################
+Bionic Bunny meta platform
+###############################
 
-Welcome! This is the documentation for Bionic Bunny |version|, last updated |today|.
+Welcome! This is the documentation for Bionic Bunny meta platform |version|, last updated |today|.
 
 :Authors:
    Slade Maurer <slade@computer.org>,
    Alexander Sviridenko <d2rk@firejet.org>
 :Version: |version|
+:Date: |today|
 
-Parts of the documentation
---------------------------
-
+Guide
+-----
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 3
 
-   overview/index.rst
-   using/index.rst
-   meta/index.rst
+   guide/index.rst 
 
-Indices and tables
-------------------
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
-Meta information
-----------------
-
+API Reference
+-----------------------
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
-   copyright.rst
+   api/index.rst
+
