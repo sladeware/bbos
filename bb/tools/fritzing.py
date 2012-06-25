@@ -13,36 +13,35 @@
 # limitations under the License.
 
 """This module provides compatibility with `Fritzing <http://fritzing.org>`_.
-Fritzing is an
-open source software initiative to support designers and artists ready
-to move from physical prototyping to actual product. It was developed
-at the University of Applied Sciences of Potsdam.
 
-The Fritzing EDA is represented by :mod:`bb.tools.fritzing` package.
+Firt of all you need to specify Fritzing home directory once Fritzing was
+installed. You can do with with help of :func:`set_home_dir` or set
+``FRITZING_HOME`` environment variable.
 
 At the very first time, once you will try to interract with parts, Fritzing will
 use :func:`bb.tools.fritzing.index_parts` to automatically index all parts
 located on your machine at search pathes (see
 :func:`bb.tools.fritzing.get_search_pathes()`). All the indexed parts will be
-stored at index file. This file has
-`JSON (JavaScript Object Notation) format <http://en.wikipedia.org/wiki/JSON>`_
-and its name can be obtained by :func:`bb.tools.fritzing.get_index_filename`.
+stored at index file. This file has `JSON (JavaScript Object Notation) format
+<http://en.wikipedia.org/wiki/JSON>`_ and its name can be obtained by
+:func:`bb.tools.fritzing.get_index_filename`.
 """
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __author__ = "<oleks.sviridenko@gmail.com> Alexander Sviridenko"
 
 import copy
-import re
+import json
+import logging
 import os
 import os.path
+import re
 import sys
+import string
+import types
 import xml.dom
 import xml.dom.minidom
 import zipfile
-import string
-import types
-import json
 
 from bb.hardware import primitives
 from bb.hardware.devices import Device
@@ -58,17 +57,37 @@ def get_text(nodes):
             rc.append(node.data)
     return ''.join(rc)
 
+# List private module variables
 _home_dir = None
 _user_dir = None
 _search_pathes = list()
-_index_filename = "fritzing.index"
+_index_filename = '.fritzing.index'
+_log_filename = 'fritzing.log'
+
+_logger = logging.getLogger('bb.tools.fritzing')
+_LOG_FILENAME = 'fritzing.log'
+# Open and clean log file for a new session
+with open(_LOG_FILENAME, 'w'):
+    pass
+_log_hdlr = logging.FileHandler(_LOG_FILENAME)
+_log_formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+_log_hdlr.setFormatter(_log_formatter)
+_logger.addHandler(_log_hdlr) 
+_logger.setLevel(logging.DEBUG)
 
 def find_home_dir(ask=True):
-    """Find and return Fritzing home directory. """
+    """Find and return Fritzing home directory if it was not yet
+    provided. Otherwise you can set it with help of :func:`set_home_dir`.
+
+    .. note::
+       You can also set environment variable ``FRITZING_HOME``.
+    """
+    if get_home_dir():
+        return
     home_dir = None
     if 'FRITZING_HOME' in os.environ:
         home_dir = os.environ['FRITZING_HOME']
-    if not home_dir and ask:
+    elif not home_dir and ask:
         home_dir = raw_input('Please provide Fritzing home dir: ')
     set_home_dir(home_dir)
     return dir
@@ -79,7 +98,7 @@ def get_home_dir():
     return _home_dir
 
 def set_home_dir(path):
-    """Set fritzing home directory."""
+    """Set Fritzing home directory."""
     global _home_dir
     if not path or not os.path.exists(path):
         raise IOError("Directory '%s' does not exist" % path)
@@ -90,7 +109,7 @@ def get_default_user_dir():
     operating system (``os.name``).
     """
     default_dirs = {
-        "posix": "%s/.config/Fritzing" % os.environ["HOME"],
+        'posix': '%s/.config/Fritzing' % os.environ['HOME'],
     }
     return default_dirs.get(os.name, None)
 
@@ -99,17 +118,20 @@ def get_user_dir():
     differs depending on operating system, and might even be hidden by default
     (see :func:`get_default_user_dir`).
     """
+    global _user_dir
     return _user_dir or get_default_user_dir()
 
 def set_user_dir(path):
     """Set fritzing user directory."""
     if not path or not os.path.exists(path):
-        raise IOError("Path '%s' does not exist" % path)
+        raise IOError('Path "%s" doesnot exist' % path)
     _user_dir = path
 
 def add_search_path(path):
-    """Add a new path to Fritzing search pathes.
-    """
+    """Add a new path to Fritzing search pathes."""
+    global _search_pathes
+    if not os.path.exists(path):
+        raise IOError('Path "%s" doesnot exist' % path);
     _search_pathes.append(path)
 
 def add_search_pathes(pathes):
@@ -153,10 +175,12 @@ def set_index_filename(filename):
     """Set the name of the index file that will be used by Fritzing. If file
     does not exist it will be created.
     """
+    global _index_filename
     _index_filename = filename
 
 def get_index_filename():
     """Return the name of index file."""
+    global _index_filename
     return _index_filename
 
 _parts_index = dict()
@@ -178,20 +202,21 @@ def index_parts(search_pathes=None, force=False):
     global _parts_index
     global _part_handlers_by_id
     global _part_filenames_by_id
+    # Skip if we already have an index
     if len(_parts_index):
         return
     # Use environment search pathes if search_pathes list was not defined
     if not search_pathes:
         search_pathes = get_search_pathes()
-        # Check default environment pathes such as user
-        # specific directory and home directory. Print warning
-        # message if they does not exist.
-        # We also need to remove these directories from search
-        # pathes. They has to be processed in a special way.
+        # Check default environment pathes such as user specific directory and
+        # home directory. Print warning message if they does not exist. We also
+        # need to remove these directories from search pathes. They has to be
+        # processed in a special way.
         magic_pathes = list()
         if not get_home_dir():
-            raise Exception("WARNING: home directory can not be defined.", \
-                "Please set it manually by using bb.tools.fritzing.set_home_dir().")
+            _logger.error('Home directory can not be defined.' \
+                              'Please set it manually by using bb.tools.fritzing.set_home_dir().')
+            raise Exception('Home directory can not be defined.')
         else:
             search_pathes.remove(get_home_dir())
             magic_pathes.append(get_home_dir())
@@ -203,14 +228,15 @@ def index_parts(search_pathes=None, force=False):
             magic_pathes.append(get_home_dir())
         # Scan magic pathes and extend existed search pathes.
         for magic_path in magic_pathes:
-            for parts_location in ("parts", "resources/parts"):
-                for group in ("core", "user", "obsolete", "contrib"):
+            for parts_location in ('parts', 'resources/parts'):
+                for group in ('core', 'user', 'obsolete', 'contrib'):
                     path = os.path.join(magic_path, parts_location, group)
                     if not os.path.exists(path):
                         continue
                     search_pathes.append(path)
     # Read old index file if such already exists
     if os.path.exists(get_index_filename()):
+        _logger.info("Read old index file")
         try:
             index_fh = open(get_index_filename())
             _parts_index = json.loads(''.join(index_fh.readlines()))
@@ -219,12 +245,13 @@ def index_parts(search_pathes=None, force=False):
     all_part_files = list()
     # Scan all search pathes one by one and extract part files
     for search_path in search_pathes:
-        sys.stdout.write("Scaning %s... " % search_path)
         new_part_files = find_part_files(search_path, recursive=True)
-        print "%d" % len(new_part_files)
+        _logger.info('Scaning "%s": %d parts', search_path, len(new_part_files))
         all_part_files.extend(new_part_files)
+    _logger.info('%d parts has been found' % len(all_part_files))
     # Look up for broken files and remove them
     broken_files = set(_parts_index.keys()) - set(all_part_files)
+    _logger.info('%d parts has been broken' % len(broken_files))
     for filename in broken_files:
         del _parts_index[filename]
     # Start working...
@@ -335,12 +362,12 @@ def fix_filename(filename):
     raise IOError("Can not fix file: '%s'" % filename)
 
 def parse(filename):
-    """Create an xml parser and use it to parse a document. Return
+    """Create an XML parser and use it to parse a document. Return
     :class:`bb.hardware.devices.device.Device` object. The document name is
     passed in as `filename`.
 
-    The document type (sketch or part) will be defined automatically
-    by using file extension.
+    The document type (sketch or part) will be defined automatically by using
+    file extension.
     """
     if not os.path.exists(filename):
         raise IOError("No such file: '%s'" % filename)
@@ -409,9 +436,9 @@ class SketchHandler(Handler):
         return self._instance_handlers_table.get(id_, None)
 
     def register_instance_handler(self, instance_handler):
-        """Register :class:`bb.hardware.devices.device.Device` that
-        belongs to :class:`InstanceHandler` by the handler of this
-        sketch."""
+        """Register :class:`bb.hardware.devices.device.Device` that belongs to
+        :class:`InstanceHandler` by the handler of this sketch.
+        """
         part = instance_handler.get_object()
         self._instance_handlers_table[instance_handler.model_index] = \
             instance_handler
@@ -421,7 +448,8 @@ class SketchHandler(Handler):
         """Read sketch::
 
         <module fritzingVersion="..." moduleId="...">
-        </module>"""
+        </module>
+        """
         if stream:
             self._stream = stream
         self._buf = self._stream.read()
@@ -563,9 +591,9 @@ class InstanceHandler(Handler):
                 part_fname = os.path.abspath( \
                     os.path.join(get_search_pathes()[0], part_fname))
             if not os.path.exists(part_fname):
-                print 'Part with ID "%s" can not be found' % id_
-                print 'Potential location is "%s"' % part_fname
-                raise IOError('No such part')
+                _logger.error('Part with ID "%s" can not be found' % id_)
+                _logger.error('Potential location is "%s"' % part_fname)
+                raise IOError('Part "%s" was not found' % id_)
             part_handler = PartHandler(fname=part_fname)
         self._object = part_handler.get_object().clone()
         if not element.hasAttribute('modelIndex'):
@@ -713,7 +741,8 @@ class PartHandler(Handler):
 
     def __read_tags(self):
         """Read tags: <tags><tag> ... </tag> ... </tags>. The
-        tags are translated as keywords."""
+        tags are translated as keywords.
+        """
         tags_elements = self._root.getElementsByTagName("tags")
         if not tags_elements:
             return
@@ -748,10 +777,10 @@ class PartHandler(Handler):
 
         <properties>
           <property name="...">...</property>
-        </properties>"""
+        </properties>
+        """
         properties = self._root.getElementsByTagName("properties").item(0)
         for property_ in properties.getElementsByTagName("property"):
             name = property_.getAttribute("name")
             text = get_text(property_.childNodes)
             self._object.set_property(name, get_text(property_.childNodes))
-
