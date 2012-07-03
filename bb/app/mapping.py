@@ -25,7 +25,7 @@ by compile time mapping to system integrators that need to incorporate new
 software features as applications inevitably grow in complexity.
 
 Suppose you would like to create a new army of robots. Each robot will have
-name of format ``ROBOT%d`` and will be powered by operating system ``RobotOS``. 
+name of format ``ROBOT%d`` and will be powered by operating system ``RobotOS``.
 Several ways to define a new :class:`Mapping` that will control our robot::
 
     class Robot(Mapping):
@@ -60,16 +60,12 @@ description::
 """
 
 __copyright__ = "Copyright (c) 2011-2012 Sladeware LLC"
+__author__ = "Alexander Sviridenko"
 
-#_______________________________________________________________________________
-
-#from bb.os.kernel import OS
 from bb.hardware import Device
 from bb.hardware.devices.boards import Board
 from bb.hardware.devices.processors import Processor
 from bb.utils.instance import InstanceTracking
-
-#_______________________________________________________________________________
 
 class HardwareAgent(object):
     """This class represents an agent that provides an interface between a
@@ -99,8 +95,11 @@ class HardwareAgent(object):
         if not processor:
             return None
         board = None
-        nb = processor.G.neighbors(processor)
-        board = nb[0]
+        for neighbour in processor.get_neighbours():
+            if isinstance(neighbour, Board):
+                board = neighbour
+        if not board:
+            raise
         return board
 
     def is_processor_defined(self):
@@ -133,8 +132,6 @@ class HardwareAgent(object):
         :class:`bb.hardware.devices.processors.processor.Processor.Core`
         instance."""
         return self.__core
-
-#_______________________________________________________________________________
 
 class Mapping(InstanceTracking):
     """:class:`Mapping` describes a particular CPU core and the particular

@@ -23,14 +23,11 @@ The following example shows how to define a processor with a single core on it::
 """
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
-
-#_______________________________________________________________________________
+__author__ = "<oleks.sviridenko@gmail.com> Oleksandr Sviridenko"
 
 from bb.hardware.primitives import ElectronicPrimitive
 from bb.hardware.devices import Device
 from bb.utils.type_check import is_sequence, validate
-
-#_______________________________________________________________________________
 
 class Processor(Device):
     """Base class used for creating a processor, that is derived from
@@ -69,17 +66,10 @@ class Processor(Device):
             ElectronicPrimitive.__init__(self)
             self.__processor = None
             self.__mapping = None
-            self.__id = None
-            if id_:
+            if not id_ is None:
                 self.set_id(id_)
             if mapping:
                 self.set_mapping(mapping)
-
-        def set_id(self, id_):
-            self.__id = id_
-
-        def get_id(self):
-            return self.__id
 
         def get_processor(self):
             """Return :class:`Processor` instance that owns this

@@ -173,7 +173,6 @@ class Application(object):
     by mappings. By default if `devices` were not pass, one will be created and
     marked as active root device. Atherwise the last device in the list will be
     active.
-
     """
 
     class Object(object):
@@ -183,7 +182,6 @@ class Application(object):
         Just for internal use for each object the global mode value will
         be copied and saved as the special attribute. Thus the object will be
         able to recognise environment's mode in which it was initially started.
-
         """
 
         def __init__(self):
@@ -307,7 +305,7 @@ class Application(object):
         :func:`set_mappings_execution_interval`).
 
         .. note::
-    
+
            The only one application can be executed per session.
         """
         print "Start application"

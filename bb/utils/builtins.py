@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "<oleks.sviridenko@gmail.com> Oleksandr Sviridenko"
 
 #______________________________________________________________________________
 # Compatibility with Python 2.2, 2.3, and 2.4
@@ -11,17 +12,19 @@ __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 # starting to go beyond what can be filled in this way, but here's
 # the compatibility code still since it doesn't hurt:
 
-try: bool, True, False ## Introduced in 2.3
+try:
+    bool, True, False ## Introduced in 2.3
 except NameError:
     class bool(int):
-        "Simple implementation of Booleans, as in PEP 285"
+        """Simple implementation of Booleans, as in PEP 285."""
         def __init__(self, val): self.val = val
         def __int__(self): return self.val
         def __repr__(self): return ('False', 'True')[self.val]
 
     True, False = bool(1), bool(0)
 
-try: sum ## Introduced in 2.3
+try:
+    sum ## Introduced in 2.3
 except NameError:
     def sum(seq, start=0):
         """Sum the elements of seq.
@@ -30,7 +33,8 @@ except NameError:
         """
         return reduce(operator.add, seq, start)
 
-try: enumerate ## Introduced in 2.3
+try:
+    enumerate ## Introduced in 2.3
 except NameError:
     def enumerate(collection):
         """Return an iterator that enumerates pairs of (i, c[i]). PEP 279.
@@ -45,7 +49,8 @@ except NameError:
             i += 1
 
 
-try: reversed ## Introduced in 2.4
+try:
+    reversed ## Introduced in 2.4
 except NameError:
     def reversed(seq):
         """Iterate over x in reverse order.
@@ -59,8 +64,8 @@ except NameError:
             i -= 1
             yield seq[i]
 
-
-try: sorted ## Introduced in 2.4
+try:
+    sorted ## Introduced in 2.4
 except NameError:
     def sorted(seq, cmp=None, key=None, reverse=False):
         """Copy seq and sort and return it.
@@ -90,7 +95,6 @@ except NameError:
     except (NameError, ImportError):
         class BaseSet:
             "set type (see http://docs.python.org/lib/types-set.html)"
-
 
             def __init__(self, elements=[]):
                 self.dict = {}
@@ -221,14 +225,15 @@ def caller(n=1):
     """
     import inspect
     return inspect.getouterframes(inspect.currentframe())[n][3]
-    
+
 _PROPERTIES_BY_CLASS = dict()
 
 def property(f):
     """Redefine built-in property function that return a property
     attribute for new-style classes (classes that derive from
     object). Properties defined with help of this decorator can be
-    extracted by using get_properties()."""
+    extracted by using get_properties().
+    """
     import __builtin__
     cls_name = caller(2)
     if cls_name not in _PROPERTIES_BY_CLASS:
@@ -237,8 +242,8 @@ def property(f):
     return __builtin__.property(f)
 
 def get_properties(obj):
-    """Return a list of names of property attributes defined with help
-    of property() decorator. For example:
+    """Return a list of names of property attributes defined with help of
+    property() decorator. For example::
 
     class Metadata(object):
         def __init__(self):
@@ -254,7 +259,8 @@ def get_properties(obj):
             return self._author
 
     If then metadata is an instance of Metadata, then
-    get_properties(metadata) will return ["name", "author"]."""
+    get_properties(metadata) will return ['name', 'author'].
+    """
     import types
     cls_name = None
     if isinstance(obj, object):
@@ -264,4 +270,3 @@ def get_properties(obj):
     if cls_name not in _PROPERTIES_BY_CLASS:
         return None
     return _PROPERTIES_BY_CLASS[cls_name].keys()
-    

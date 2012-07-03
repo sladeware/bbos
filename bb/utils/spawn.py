@@ -34,10 +34,10 @@ def which(program):
     return None
 
 class PlatformError(Exception):
-    """"""
+    """Platform error."""
 
 class ExecutionError(Exception):
-    """"""
+    """Execution error."""
 
 def spawn(cmd, search_path=True, verbose=False, dry_run=False):
     """Run another program, specified as a command list 'cmd', in a new
@@ -116,7 +116,7 @@ def _spawn_posix(cmd, search_path=True, verbose=False, dry_run=False):
                 os.close(child_stderr)
             if os.WIFSIGNALED(status):
                 raise ExecutionError(
-                    "command '%s' terminated by signal %d" 
+                    "command '%s' terminated by signal %d"
                     % (cmd[0], os.WTERMSIG(status)))
             elif os.WIFEXITED(status):
                 exit_status = os.WEXITSTATUS(status)

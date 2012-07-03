@@ -48,16 +48,22 @@ class PropellerP8X32A(Processor):
         capabilities to know what the other cogs are doing.
         """
 
+        def __init__(self, *args, **kwargs):
+            Processor.Core.__init__(self, *args, **kwargs)
+
         def __str__(self):
-            return "Cog#%d" % self.get_id()
+            return "Cog%d" % self.get_id()
 
     Cog = Core
 
     def __init__(self, mappings=[]):
         verify_list(mappings)
-        cores = [self.Core() for _ in range(8)]
-        for mapping in mappings:
-            cores.append(self.Core(mapping))
+        cores = list()
+        if mappings:
+            for i in range(len(mappings)):
+                cores.append(self.Cog(i, mappings[i]))
+        else:
+            cores = [self.Core(_) for _ in range(8)]
         Processor.__init__(self, 8, cores)
         self.add_property(self.Property("name", "PROPELLER_P8X32"))
         # Define Hub RAM Memory unit (in bytes)

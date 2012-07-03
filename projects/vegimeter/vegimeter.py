@@ -13,6 +13,7 @@
 # limitations under the License.
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "<oleks.sviridenko@gmail.com> Oleksandr Sviridenko"
 
 import time
 import random
@@ -21,8 +22,9 @@ from bb import OS, Mapping
 from bb.hardware.devices.boards import Board
 
 from device import vegimeter_device
-
-#_______________________________________________________________________________
+if not vegimeter_device:
+    print "vegimeter device wasn't defined"
+    exit(0)
 
 class UI(OS):
     shmem = None
@@ -42,8 +44,6 @@ class UI(OS):
         # Zero buttons state
         self.shmem.shmem_write(10, 0)
 
-#_______________________________________________________________________________
-
 class ButtonDriver(OS):
     shmem = None # shared memory library
 
@@ -58,8 +58,6 @@ class ButtonDriver(OS):
         self.shmem.shmem_write(10, random.randint(1, 8))
         time.sleep(2)
 
-#_______________________________________________________________________________
-
 ui = Mapping(name="UI", os_class=UI)
 button_driver = Mapping(name="BUTTON_DRIVER", os_class=ButtonDriver)
 
@@ -69,6 +67,9 @@ MAP_COGID_MAPPING = {
     }
 
 board = vegimeter_device.find_element("QSP1")
+if not board:
+    print "Board <QSP1> cannot be found!"
+    exit(0)
 processor = board.find_element("PRCR1")
 
 for cogid, mapping in MAP_COGID_MAPPING.items():
@@ -77,4 +78,3 @@ for cogid, mapping in MAP_COGID_MAPPING.items():
         print "Cannot assign mapping %s to the cog %d" % (mapping, cogid)
         exit(0)
     cog.set_mapping(mapping)
-

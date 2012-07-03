@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This module contains basic hardware primitives, such as pin, bus, wire, etc.
+"""This module contains basic hardware electric primitives, such as pin, bus,
+wire, etc.
 """
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __author__ = "<oleks.sviridenko@gmail.com> Alexander Sviridenko"
-__all__ = ['Primitive', 'ElectronicPrimitive', 'Pin', 'Wire', 'Bus', 'Note',
-           'G']
+__all__ = ['Primitive', 'ElectronicPrimitive', 'Pin', 'Wire', 'Bus', 'Note']
 
 import copy
 
@@ -28,8 +28,6 @@ class Graph(networkx.Graph):
 
     def __init__(self, nodes=[]):
         networkx.Graph.__init__(self)
-
-G = Graph()
 
 class Primitive(object):
     """This class is basic for any primitive.
@@ -56,19 +54,21 @@ class Primitive(object):
     """This designator format will be used by all the primitives that will
     inherit this class. By default primitives will have such designators:
     ``P0``, ``P1``, ..., etc. The format can be changed later by using
-    :func:`set_designator_format` method."""
-    
+    :func:`set_designator_format` method.
+    """
+
     PROPERTIES=dict()
     """Dictionary of default properties used by all the primitives that will
-    inherit this class."""
+    inherit this class.
+    """
 
     SHORT_DESCRIPTION="Just another primitive"
     """This constant keeps a short description of the primitive. The main idea
     to use it with :func:`__str__` method::
-    
+
         my_primitive = Primitive(short_description="My prititive")
         print str(my_primitive)
-        
+
     Prints ``My primitive``.
     """
 
@@ -112,8 +112,6 @@ class Primitive(object):
         self.set_short_description(self.SHORT_DESCRIPTION)
         if short_description:
             self.set_short_description(short_description)
-        global G
-        G.add_node(self)
 
     def set_short_description(self, text):
         self.__short_description = text
@@ -122,12 +120,11 @@ class Primitive(object):
         return self.__short_description
 
     def clone(self):
-        """Creates and returns a copy of this object. The default
-        implementation returns a so-called "shallow" copy: It creates
-        a new instance of the same class and then copies the field
-        values (including object references) from this instance to the
-        new instance. A "deep" copy, in contrast, would also
-        recursively clone nested objects.
+        """Creates and returns a copy of this object. The default implementation
+        returns a so-called "shallow" copy: It creates a new instance of the
+        same class and then copies the field values (including object
+        references) from this instance to the new instance. A "deep" copy, in
+        contrast, would also recursively clone nested objects.
         """
         clone = self.__class__()
         for k, v in self.__dict__.iteritems():
@@ -135,20 +132,21 @@ class Primitive(object):
         return clone
 
     def get_designator_format(self):
-        """Defines the format string to be used with the part
-        designator. A reference designator unambiguously identifies a
-        component in an electrical schematic (circuit diagram) or on a
-        printed circuit board (PCB). The reference designator usually
-        consists of one or two letters followed by a number, e.g. R13,
-        C1002."""
+        """Defines the format string to be used with the part designator. A
+        reference designator unambiguously identifies a component in an
+        electrical schematic (circuit diagram) or on a printed circuit board
+        (PCB). The reference designator usually consists of one or two letters
+        followed by a number, e.g. R13, C1002.
+        """
         return self.__designator_format
 
     def generate_designator(self, counter=0):
         """Generate a new designator and set it as the current one by using
         :func:`set_designator`. Return new designator.
-        
-        Usually generator uses designator format and
-        `counter` that represents the number of relatives."""
+
+        Usually generator uses designator format and `counter` that represents
+        the number of relatives.
+        """
         designator = self.get_designator_format() % counter
         self.set_designator(designator)
         return designator
@@ -159,25 +157,23 @@ class Primitive(object):
 
     def get_designator(self):
         """Return designator value.
-        
-        Designator is the name of a part on a printed circuit by
-        convention beginning with one or two letters followed by a
-        numeric value. The letter designates the class of component;
-        eg. "Q" is commonly used as a prefix for transistors.
 
-        It is very important to clearly understand the importance of
-        the reference designator and the rules for assigning reference
-        designators. An alphanumeric reference designator is used to
-        uniquely identify each part. A given circuit might have ten
-        1.0k resistors used in different locations. Each of these
-        resistors is given a unique reference designator, for example,
-        Rl, R5, and R7. In addition to the schematic, the reference
-        designators also appear on the PCB legend silkscreen, assembly
-        drawing, and bill of materials. Manufacturing uses the
-        reference designators to determine where to stuff parts on the
-        board. Field service uses them to identify and replace failed
-        parts.
-        
+        Designator is the name of a part on a printed circuit by convention
+        beginning with one or two letters followed by a numeric value. The
+        letter designates the class of component; eg. "Q" is commonly used as a
+        prefix for transistors.
+
+        It is very important to clearly understand the importance of the
+        reference designator and the rules for assigning reference
+        designators. An alphanumeric reference designator is used to uniquely
+        identify each part. A given circuit might have ten 1.0k resistors used
+        in different locations. Each of these resistors is given a unique
+        reference designator, for example, Rl, R5, and R7. In addition to the
+        schematic, the reference designators also appear on the PCB legend
+        silkscreen, assembly drawing, and bill of materials. Manufacturing uses
+        the reference designators to determine where to stuff parts on the
+        board. Field service uses them to identify and replace failed parts.
+
         See also :func:`generate_designator`.
         """
         return self.__designator
@@ -187,12 +183,10 @@ class Primitive(object):
         # TODO(team): designator should be unique within its graph
         self.__designator = text
 
-    @property
-    def id(self):
+    def get_id(self):
         return self.__id
 
-    @id.setter
-    def id(self, value):
+    def set_id(self, value):
         self.__id = value
 
     @property
@@ -260,20 +254,18 @@ class Primitive(object):
 
 
 class ElectronicPrimitive(Primitive):
-    """This class represents basic electrical design primitive.
-    """
-
-#_______________________________________________________________________________
+    """This class represents basic electrical design primitive."""
 
 class Pin(ElectronicPrimitive):
     """A pin is an electrical design primitive derived from
     :class:`ElectronicPrimitive` class. Pins give a part its
     electrical properties and define connection points on the part for
     directing signals in and out.
-    
+
     Each pin has electrical type. Electrical type represents the type of
     electrical connection the pin makes. This can be used to detect electrical
-    wiring errors in your schematic."""
+    wiring errors in your schematic.
+    """
 
     class ElectricalTypes:
         """Class of possible electrical types."""
@@ -292,7 +284,8 @@ class Pin(ElectronicPrimitive):
 
     def set_electrical_type(self, type_):
         """Set electrical type. See :class:`Pin.ElectricalTypes` to find support
-        types."""
+        types.
+        """
         if not getattr(Pin.ElectricalTypes, type_):
             raise
         self.__electrical_type = type_
@@ -310,14 +303,13 @@ class Pin(ElectronicPrimitive):
     def is_connected_to(self, pin):
         return id(pin) in self.__connections
 
-#_______________________________________________________________________________
-
 class Note(Primitive):
     """A note is a design primitive (non-electrical), derived from class
     :class:`Primitive`. It is used to
     add informational or instructional text to a specific area within
     a schematic, in a similar vain to that of commenting a program's
-    source code. Mostly used by GUI."""
+    source code. Mostly used by GUI.
+    """
     def __init__(self):
         Primitive.__init__(self)
         self.__text = ""
@@ -330,15 +322,14 @@ class Note(Primitive):
     def text(self, text):
         self.__text = text
 
-#_______________________________________________________________________________
-
 class Wire(ElectronicPrimitive):
     """A wire is an electrical design primitive derived from
     :class:`ElectronicPrimitive`. It is an object that forms an electrical
     connection between points on a schematic and is analogous to a physical
     wire.
 
-    The pins can be set separately."""
+    The pins can be set separately.
+    """
 
     # TODO(team): provide right pins naming. Not first pin and second pin.
     # Maybe source pin and destination pin?
@@ -389,8 +380,7 @@ class Wire(ElectronicPrimitive):
         #    clone.connect(self.get_first_pin().clone(), self.get_second_pin().clone())
         return clone
 
-#_______________________________________________________________________________
-
 class Bus(ElectronicPrimitive):
     """A bus is an electrical design primitive. It is an object that represents
-    a multi-wire connection."""
+    a multi-wire connection.
+    """

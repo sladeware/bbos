@@ -15,9 +15,13 @@
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __author__ = "<oleks.sviridenko@gmail.com> Alexander Sviridenko"
 
+import bb
+
 import types
 
 from bb.hardware import primitives
+
+_G = primitives.Graph()
 
 class Device(primitives.ElectronicPrimitive):
     """This class is sub-class of
@@ -26,7 +30,7 @@ class Device(primitives.ElectronicPrimitive):
     will have functions and properties unique to its type. Each device
     can contain one or more parts that are packaged together (e.g. a
     74HCT32).
-    
+
     When the device is used under operating system, it manages it with help of
     :class:`bb.os.kernel.DeviceManager` and controles it with help of
     :class:`bb.os.kernel.Driver`. It is always better to define driver that will
@@ -77,19 +81,23 @@ class Device(primitives.ElectronicPrimitive):
                 return elements[0]
             return None
 
-    # Device register keeps complete list of all devices so the instance
-    # of device can not be managed by different device managers.
-    element_register = dict()
-
     def __init__(self):
+        global _G
         primitives.ElectronicPrimitive.__init__(self)
+        self.__g = primitives.Graph()
+        _G.add_node(self)
+
+    def get_neighbours(self):
+        global _G
+        neighbours = _G.neighbors(self)
+        return neighbours
 
     @property
     def G(self):
         """Return graph `G` that represents a structure of this device. All
         the device elements will be nodes of this graph.
         """
-        return primitives.G
+        return self.__g
 
     def register_driver(self, driver):
         pass
@@ -99,11 +107,12 @@ class Device(primitives.ElectronicPrimitive):
 
     def get_driver(self, version=None):
         """Return :class:`bb.os.kernel.Driver` class that will be used as driver
-        to control this device. By default returns :const:`DRIVER_CLASS`."""
+        to control this device. By default returns :const:`DRIVER_CLASS`.
+        """
         return self.DRIVER_CLASS
 
     def is_connected_to_element(self, element):
-        """Return whether or not the device is **directly** connected to 
+        """Return whether or not the device is **directly** connected to
         `element`.
         """
         return self.G.has_edge(self, element)
@@ -116,12 +125,6 @@ class Device(primitives.ElectronicPrimitive):
           An element instance can only belong to one device instance.
           Otherwise you will get an exception.
         """
-        #if self.has_element(element):
-        #    return element
-        #if id(element) in Device.element_register:
-        #    raise Exception("The element '%s' already belongs to '%s'" \
-        #                        % (element, Device.element_register[id(element)]))
-        #Device.element_register[id(element)] = self
         # Assume designator
         if element.get_property_value("name"):
             if self.find_element(element.get_designator()):
@@ -160,8 +163,7 @@ class Device(primitives.ElectronicPrimitive):
           This list will not include **all** the elements, but only neighbors of
           particular device on the graph.
         """
-        elements = self.G.neighbors(self)
-        return elements
+        return self.G.nodes()
 
     def find_element(self, by):
         """If there is more than one child matching the search, the first
@@ -186,6 +188,8 @@ class Device(primitives.ElectronicPrimitive):
         """Connect two elements: this device and `element`. The connection
         between two elements is represented by edge on the graph :attr:`G`.
         """
+        global _G
+        _G.add_edge(self, element)
         self.G.add_edge(self, element)
 
     def disconnect_elements(self, src, dest):

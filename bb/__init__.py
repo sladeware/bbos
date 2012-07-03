@@ -13,6 +13,7 @@
 # limitations under the License.
 
 __copyright__ = "Copyright (c) 2011-2012 Sladeware LLC"
+__author__ = "<oleks.sviridenko@gmail.com> Oleksandr Sviridenko"
 
 import bb.config
 
