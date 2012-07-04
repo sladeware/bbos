@@ -13,9 +13,9 @@
 # limitations under the License.
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "<oleks.sviridenko@gmail.com> Oleksandr Sviridenko"
 
-"""The Bionic Bunny Operating System is a microkernel for microprocessors. 
+"""The Bionic Bunny Operating System is a microkernel for microprocessors.
 """
 
 from bb.os.kernel import *
-

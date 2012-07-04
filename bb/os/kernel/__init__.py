@@ -23,8 +23,7 @@ decorator.
 
 __version__ = "$Rev: 401 $"
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
-
-#_______________________________________________________________________________
+__author__ = "<oleks.sviridenko@gmail.com> Oleksandr Sviridenko"
 
 import sys
 import signal
@@ -46,21 +45,17 @@ from bb.app.application import Traceable, Application
 from bb.mm.mempool import MemPool, mwrite
 from bb.hardware import verify_device, Device
 
-#_______________________________________________________________________________
-
 class OS(object):
     """This class describes BB operating system.
 
     The :class:`Mapping` uses this class to create :class:`OS` instance. Once
     operating system is created, the mapping will call :func:`OS.main` entry
     point and then :func:`OS.start` to run the system.
-
     """
 
     class Object(Application.Object):
         """The root main class for BBOS kernel and other operating system
         parts.
-
         """
         def __init__(self):
             Application.Object.__init__(self)
@@ -90,16 +85,12 @@ class OS(object):
     def start(self):
         """This method implements OS's activity. You may override this method in
         subclass.
-        
         """
         self.kernel.start()
-
-#_______________________________________________________________________________
 
 class Kernel(OS.Object, Traceable):
     """The heart of BB operating system. In order to connect with application
     inherits OS.Object class.
-
     """
 
     class Extension(object):
@@ -160,7 +151,7 @@ class Kernel(OS.Object, Traceable):
     def warning(self, text):
         lineno = inspect.getouterframes(inspect.currentframe())[2][2]
         fname = inspect.getmodule(inspect.stack()[2][0]).__file__
-        print "%s:%d:WARNING: %s" % (fname, lineno, text)        
+        print "%s:%d:WARNING: %s" % (fname, lineno, text)
 
     @OS.Object.simulation_method
     def panic(self, text):
@@ -202,7 +193,8 @@ _DEFAULT_KERNEL_EXTENSIONS = list()
 def kernel_extension(name, default=True):
     """This function is used as decorator and maps extension's name to
     extension's class. The extension can be also marked as `default` and thus
-    be used by default."""
+    be used by default.
+    """
     verify_string(name)
     verify_bool(default)
     def catch_kernel_extension(cls):
@@ -215,8 +207,6 @@ def kernel_extension(name, default=True):
         return cls
     return catch_kernel_extension
 
-#_______________________________________________________________________________
-
 @kernel_extension("module_management", True)
 class ModuleManagement(Kernel.Extension):
     """This kernel extension aims to control module management."""
@@ -226,7 +216,8 @@ class ModuleManagement(Kernel.Extension):
 
     def load_module(self, path, args=None):
         """Load module `path` to the running kernel and pass arguments `args` to
-        its initialization method."""
+        its initialization method.
+        """
         if path in self.__modules:
             return self.__modules[path]
         # The module wasn't loaded before. Do the import.
@@ -255,7 +246,6 @@ class ModuleManagement(Kernel.Extension):
     def find_module(self, name):
         """Find module's object by its name. Return None if module was
         not identified.
-
         """
         name = verify_string(name)
         try:
@@ -273,23 +263,23 @@ class ModuleManagement(Kernel.Extension):
 
 class Module(object):
     """Module is meta-operating system specific object that aims to extend
-    kernel functionallity."""
+    kernel functionallity.
+    """
 
     def __init__(self, args=None):
         self.args = args
 
     def on_load(self):
         """Abstract method. This method is called by kernel once module is
-        loaded."""
+        loaded.
+        """
         pass
 
     def on_unload(self):
         """Abstract method. This method is called by kernel when module has
-        to be unloaded."""
+        to be unloaded.
+        """
         pass
-
-#_______________________________________________________________________________
-# Threading? BBOS has another meaning for thread.
 
 class Thread(OS.Object):
     """The thread is an atomic unit action within the BB
@@ -328,7 +318,8 @@ class Thread(OS.Object):
         threads. By default is None.
 
         target is callable object to be invoked by the start() method.
-        Default is None, meaning nothing is called."""
+        Default is None, meaning nothing is called.
+        """
         OS.Object.__init__(self)
         self.__name = None
         if name:
@@ -397,7 +388,7 @@ class Thread(OS.Object):
             print thread.get_runner_name()
 
         As result we will have string ``hello_world``.
-        
+
         By default if runner was not defined, returns ``None``.
         """
         if self.get_runner():
@@ -406,22 +397,25 @@ class Thread(OS.Object):
 
     def start(self):
         """Start the thread's activity. It arranges for the object's run()
-        method."""
+        method.
+        """
         self.run()
 
     def run(self):
         """This method represents thread's activity. You may override this
         method in a subclass. The standard run() method invokes the callable
-        object passed to the object's constructor as the target argument."""
+        object passed to the object's constructor as the target argument.
+        """
         runner = self.get_runner()
         if not runner:
             raise Kernel.Exception("Runner wasn't defined")
         runner()
 
-    # The following methods provide support for pickle. This will allow user to
-    # pickle Thread instance. Priously I was trying to use this to be able copy
-    # thread instance to the file and then load it. On this moment we do not use
-    # this feature. I'm still keeping it here while it's not disturb me.
+    # TODO(team): The following methods provide support for pickle which is
+    # already obsolete. This will allow user to pickle Thread instance. Priously
+    # I was trying to use this to be able copy thread instance to the file and
+    # then load it. On this moment we do not use this feature. I'm still keeping
+    # it here while it's not disturb me.
 
     def __getstate__(self):
       corrected_dict = self.__dict__.copy() # copy the dict since we change it
@@ -435,7 +429,8 @@ class Thread(OS.Object):
 
     def __str__(self):
         """Returns a string containing a concise, human-readable
-        description of this object."""
+        description of this object.
+        """
         return "Thread %d" % self.get_name()
 
 class Idle(Thread):
@@ -694,9 +689,6 @@ def get_running_thread():
     else:
         raise NotImplemented()
 
-#_______________________________________________________________________________
-# Communication
-
 class Message(object):
     """A message passed between threads."""
     def __init__(self, command=None, data=None, sender=None):
@@ -748,7 +740,8 @@ class Port(object):
 
     def set_name(self, name):
         """Set a new name to the port and return this name back. The name
-        has to be represented by a string."""
+        has to be represented by a string.
+        """
         self.__name = verify_string(name)
         return name
 
@@ -910,13 +903,9 @@ class ITC(Kernel.Extension):
         self.__commands.append(command)
         return command
 
-#_______________________________________________________________________________
-# Very interesting part -- hardware. Devices and device managers, drivers and
-# driver managers, etc.
-
 class Driver(OS.Object, OS.Object.Metadata):
-    """A BB device driver controls a hardware primitive or device,
-    represented by :class:`bb.hardware.devices.device.Device`. Interaction with drivers is
+    """A BB device driver controls a hardware primitive or device, represented
+    by :class:`bb.hardware.devices.device.Device`. Interaction with drivers is
     done through :class:`DriverManager`, which can be obtained via
     :func:`HardwareManagement.find_driver_manager`.
 
@@ -966,12 +955,14 @@ class Driver(OS.Object, OS.Object.Metadata):
 
     def get_messenger(self):
         """Returns the :class:`Messenger` that controls driver activity. By
-        default returns ``None`` if messenger wasn't specified."""
+        default returns ``None`` if messenger wasn't specified.
+        """
         return self.__messenger
 
     def __default_action_handlers_map(self):
         """Set default action handlers from
-        Driver.ACTION_HANDLERS_MAP_PER_CLASS if such were defined."""
+        Driver.ACTION_HANDLERS_MAP_PER_CLASS if such were defined.
+        """
         cls_name = self.__class__.__name__
         # Whether we have predefined action handlers
         if not cls_name in Driver.ACTION_HANDLERS_MAP_PER_CLASS:
@@ -983,7 +974,8 @@ class Driver(OS.Object, OS.Object.Metadata):
     def action_handler(dec_cls, action):
         """A special decorator to reduce a few unnecessary steps to
         add a new action handler. See :func:`add_action_handler` for more
-        details."""
+        details.
+        """
         verify_string(action)
         target_cls_name = caller(2)
         if not target_cls_name in table:
@@ -1006,7 +998,8 @@ class Driver(OS.Object, OS.Object.Metadata):
 
     def is_supported_action(self, action):
         """Whether appropriate handler was defined for a given
-        action."""
+        action.
+        """
         return action in self.get_supported_actions()
 
     def get_supported_actions(self):
@@ -1014,20 +1007,23 @@ class Driver(OS.Object, OS.Object.Metadata):
 
     def find_action_handler(self, action):
         """Returns action handler if there is a handler for action,
-        or ``None`` if there is no such handler."""
+        or ``None`` if there is no such handler.
+        """
         if not self.is_supported_action(action):
             return None
         handler = self.__action_handlers_map[action]
         return handler
 
     def attach_device(self, device):
-        """Called by hardware manager to query the existence of a
-        specific device and whether this driver can control it."""
+        """Called by hardware manager to query the existence of a specific
+        device and whether this driver can control it.
+        """
         raise NotImplementedError("Please, implement this!")
 
     def detach_device(self, device):
-        """Called by hardware manager when the device is removed in
-        order to free it from driver's (system) control."""
+        """Called by hardware manager when the device is removed in order to
+        free it from driver's (system) control.
+        """
         raise NotImplementedError("Please, implement this!")
 
 def verify_driver(driver):
@@ -1039,9 +1035,10 @@ class DriverManager(object):
     """This class represents an interface to interract with :class:`Driver`
     objects inside of the system.
 
-    It is system responsibility to create and work with this
-    manager. However developer may use the manager in order to define
-    all device controled by particular driver."""
+    It is system responsibility to create and work with this manager. However
+    developer may use the manager in order to define all device controled by
+    particular driver.
+    """
 
     def __init__(self, driver):
         self.__driver = None
@@ -1050,7 +1047,8 @@ class DriverManager(object):
 
     def __set_driver(self, driver):
         """Private method used to select a driver that has to be managed by
-        this manager."""
+        this manager.
+        """
         #verify_driver(driver)
         self.__driver = driver
 
@@ -1112,12 +1110,14 @@ class DeviceManager(OS.Object):
 
     def get_driver(self):
         """Return :class:`Driver` instance that manages this device. By default
-        return ``None`` value if driver was not selected."""
+        return ``None`` value if driver was not selected.
+        """
         return self.__driver
 
     def __str__(self):
         """Return a string containing a concise, human-readable description of
-        this object."""
+        this object.
+        """
         return "Device manager of %s" % self.get_device().get_name()
 
 @kernel_extension("hardware_management", True)
@@ -1132,11 +1132,11 @@ class HardwareManagement(Kernel.Extension):
         from bb.os.drivers.propeller_p8x32 import PropellerP8X32Driver
         driver = PropellerP8X32Driver()
         kernel.register_driver(driver)
-        
+
         from bb.hardware.devices.processors.propeller_p8x32 import PropellerP8X32A
         device = PropellerP8X32A()
         kernel.register_device(device)
-        
+
         kernel.bind_device_to_driver(device, driver)
     """
 
@@ -1163,11 +1163,12 @@ class HardwareManagement(Kernel.Extension):
         :class:`DeviceManager` instance that will control it. Device is
         registering by its designator
         (see :func:`bb.hardware.primitives.primitive.Primitive.get_designator`).
-        
+
         The system will also try to identify driver that will helps to control
         this device. Once the driver was found, it will be registered with help
         of :func:`register_driver` and the device will be bind to it by using
-        :func:`bind_device_to_driver`."""
+        :func:`bind_device_to_driver`.
+        """
         if self.is_registered_device(device):
             raise Kernel.Exception("Device '%s' was already registered." %
                                    device.get_designator())
@@ -1191,8 +1192,9 @@ class HardwareManagement(Kernel.Extension):
         controls.
 
         This example returns a device of kernel named ``SERIAL_DEV_0``::
-        
-            device = kernel.find_device("SERIAL_DEV_0")"""
+
+            device = kernel.find_device("SERIAL_DEV_0")
+        """
         manager = self.find_device_manager(name)
         if not manager:
             return None
@@ -1211,7 +1213,8 @@ class HardwareManagement(Kernel.Extension):
 
     def get_devices(self):
         """Return complete list of all devices that were successfully
-        registered by :func:`register_device` method."""
+        registered by :func:`register_device` method.
+        """
         devices = list()
         for manager in self.get_device_managers():
             devices.append(manager.get_device())
@@ -1219,7 +1222,8 @@ class HardwareManagement(Kernel.Extension):
 
     def get_unknown_devices(self):
         """Return list of unknown devices. The device is called unknown when
-        the system does not know the driver that can control it."""
+        the system does not know the driver that can control it.
+        """
         unknown_devices = []
         for manager in self.get_device_managers():
             if not manager.get_driver():
@@ -1227,16 +1231,15 @@ class HardwareManagement(Kernel.Extension):
         return unknown_devices
 
     def control_device(self, name, action, *args):
-        """Device control is the most common function used for device
-        control, fulfilling such tasks as accessing devices, getting
-        information, sending orders, and exchanging data. This method
-        calls an action for a specified device driver, causing the
-        corresponding device to perform the corresponding operation.
+        """Device control is the most common function used for device control,
+        fulfilling such tasks as accessing devices, getting information, sending
+        orders, and exchanging data. This method calls an action for a specified
+        device driver, causing the corresponding device to perform the
+        corresponding operation.
 
-        The device has to be register by using
-        :func:`register_device` method and then it has to be
-        associated with a driver that will control this device. For
-        example, this can be done by using
+        The device has to be register by using :func:`register_device` method
+        and then it has to be associated with a driver that will control this
+        device. For example, this can be done by using
         :func:`bind_device_to_driver` method.
         """
         # Try to find target device
@@ -1251,14 +1254,15 @@ class HardwareManagement(Kernel.Extension):
 
     def register_driver(self, driver):
         """Register driver so it can be used to control devices.
-        
-        Once a driver has been registered, the :class:`DriverManager` object
-        will be created in order to manage driver's activity within
-        the system. Thus the system does not keep :class:`Driver` instance
-        directly but with help of :class:`DriverManager`.
 
-        An appropriate driver manager can be obtained by passing
-        driver name to :func:`find_driver_manager` method."""
+        Once a driver has been registered, the :class:`DriverManager` object
+        will be created in order to manage driver's activity within the
+        system. Thus the system does not keep :class:`Driver` instance directly
+        but with help of :class:`DriverManager`.
+
+        An appropriate driver manager can be obtained by passing driver name to
+        :func:`find_driver_manager` method.
+        """
         manager = DriverManager(driver)
         self.__driver_managers[driver.NAME] = manager
 
@@ -1275,7 +1279,8 @@ class HardwareManagement(Kernel.Extension):
 
     def is_registered_driver(self, name):
         """Takes driver `name` and defines whether or not the driver was
-        registered."""
+        registered.
+        """
         return not not self.find_driver_manager(name)
 
     def get_driver_managers(self):
@@ -1294,12 +1299,11 @@ class HardwareManagement(Kernel.Extension):
 
     def bind_device_to_driver(self, device, driver):
         """Bind :class:`bb.hardware.devices.device.Device` to the proper
-        :class:`Driver`. Driver binding is the
-        process of associating a device with a device driver that can
-        control it. In case when system can not bind a device to the
-        proper device driver this can be done by hand with help of
-        this method.
-        
+        :class:`Driver`. Driver binding is the process of associating a device
+        with a device driver that can control it. In case when system can not
+        bind a device to the proper device driver this can be done by hand with
+        help of this method.
+
         As an opptosite method to unbind device from driver see
         :func:`unbind_device_from_driver`.
         """
@@ -1320,21 +1324,18 @@ class HardwareManagement(Kernel.Extension):
         :class:`Driver`."""
         driver.manager.remove_device(device)
 
-#_______________________________________________________________________________
-
 @kernel_extension("imc", False)
 class IMC(Kernel.Extension):
     def __init__(self):
         Kernel.Extension.__init__(self)
-
-#_______________________________________________________________________________
 
 def kernel_factory(**selected_extensions):
     """This kernel factory creates and returns :class:`Kernel` based class with
     all required extensions. `selected_extensions` contains extensions that have
     to be included (if they have ``True`` value) or excluded (if they have
     ``False`` value) from list of extensions that will extend kernel
-    functionality."""
+    functionality.
+    """
     use_extensions = _DEFAULT_KERNEL_EXTENSIONS
     # Verify and update the list of extensions to be used
     for extension, is_required in selected_extensions.items():
