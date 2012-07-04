@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Validation tools for generic object structures."""
+
 __copyright__ = "Copyright (c) 2011-2012 Sladeware LLC"
+__author__ = "<oleks.sviridenko@gmail.com> Oleksandr Sviridenko"
 
-"""Validation tools for generic object structures.
-"""
-
-from types import *
+import types
 
 def validate(**_params_):
     def check_types(_func_, _params_ = _params_):
@@ -26,10 +26,10 @@ def validate(**_params_):
             kw.update(zip(arg_names, args))
             for name, type in _params_.iteritems():
                 param = kw[name]
-                if isinstance(type, TypeType):
+                if isinstance(type, types.TypeType):
                     assert param is None or isinstance(param, type),\
                         "Parameter '%s' should be type '%s'" % (name, type.__name__)
-                elif isinstance(type, FunctionType):
+                elif isinstance(type, types.FunctionType):
                    assert type(param), "Parameter '%s' didn't pass %s" % (name, type.__name__)
                 else:
                     assert "!"
@@ -39,32 +39,32 @@ def validate(**_params_):
 
 def is_int(var):
     """Return ``True`` if the specified object is an integer."""
-    return type(var) is IntType
+    return type(var) is types.IntType
 
 def is_long(var):
     """Return true if the specified object is a long integer."""
-    return type(var) is LongType
+    return type(var) is types.LongType
 
 def is_boolean(var):
     """Return true if the specified object is a boolean."""
-    return type(var) is BooleanType
+    return type(var) is types.BooleanType
 
 is_bool = is_boolean
 
 def is_string(var):
     """Return true if the specified object is a string."""
-    return type(var) is StringType
+    return type(var) is types.StringType
 
 def is_list(var):
     """Return true if the specified variable is a list."""
-    return type(var) is ListType
+    return type(var) is types.ListType
 
 def is_tuple(var):
-    return type(var) is TupleType
+    return type(var) is types.TupleType
 
 def is_dict(var):
     """Return true if the specified variable is a dictionary."""
-    return type(var) is DictType
+    return type(var) is types.DictType
 
 def is_number(x):
     "Is x a number? We say it is if it has a __int__ method."
