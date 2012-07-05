@@ -15,6 +15,7 @@
 """Build-time and life-time Kernel errors."""
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "<oleks.sviridenko@gmail.com> Oleksandr Sviridenko"
 
 class KernelException(Exception):
     """The root kernel exception."""

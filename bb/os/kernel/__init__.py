@@ -37,8 +37,8 @@ import time
 
 import bb
 from bb.utils.builtins import caller
-from bb.utils.type_check import verify_list, verify_string, verify_bool
-from bb.os.kernel.errors import *
+from bb.utils import type_check
+from bb.os.kernel import errors
 from bb.os.kernel.schedulers import *
 from bb.app import appmanager
 from bb.app.application import Traceable, Application
@@ -195,8 +195,8 @@ def kernel_extension(name, default=True):
     extension's class. The extension can be also marked as `default` and thus
     be used by default.
     """
-    verify_string(name)
-    verify_bool(default)
+    type_check.verify_string(name)
+    type_check.verify_bool(default)
     def catch_kernel_extension(cls):
         if not issubclass(cls, Kernel.Extension):
             raise TypeError("Kernel extension %s must be subclass "
@@ -247,7 +247,7 @@ class ModuleManagement(Kernel.Extension):
         """Find module's object by its name. Return None if module was
         not identified.
         """
-        name = verify_string(name)
+        name = type_check.verify_string(name)
         try:
             return self.__modules[name]
         except KeyError:
@@ -366,7 +366,7 @@ class Thread(OS.Object):
 
     def set_name(self, name):
         """Set the given name as thread's name."""
-        self.__name = verify_string(name)
+        self.__name = type_check.verify_string(name)
 
     def get_name(self):
         return self.__name
@@ -607,7 +607,7 @@ class ThreadManagement(Kernel.Extension):
             if thread.get_name() in self.__threads:
                 return thread
         else:
-            raise KernelTypeException('Thread "%s" must be bb.os.kernel.Thread '
+            raise errors.KernelTypeException('Thread "%s" must be bb.os.kernel.Thread '
                                   'sub-class' % thread)
         return None
 
@@ -649,7 +649,7 @@ class ThreadManagement(Kernel.Extension):
 
     def add_threads(self, *threads):
         """Add a list of thread to the kernel."""
-        verify_list(threads)
+        type_check.verify_list(threads)
         for thread in threads:
             self.add_thread(thread)
 
@@ -664,7 +664,7 @@ class ThreadManagement(Kernel.Extension):
     def set_scheduler(self, scheduler):
         """Select scheduler."""
         if not isinstance(scheduler, Scheduler):
-            raise KernelTypeException("Scheduler '%s' must be bb.os.kernel.Scheduler "
+            raise errors.KernelTypeException("Scheduler '%s' must be bb.os.kernel.Scheduler "
                                   "sub-class" % scheduler)
         print "Select scheduler '%s'" % scheduler.__class__.__name__
         self.__scheduler = scheduler
@@ -706,7 +706,7 @@ class Message(object):
         return self.__owner
 
     def set_command(self, command):
-         self.__command = verify_string(command)
+         self.__command = type_check.verify_string(command)
 
     def get_command(self):
         return self.__command
@@ -723,7 +723,7 @@ class Message(object):
     def set_data(self, data):
         self.__data = data
 
-verify_message_command = verify_string
+verify_message_command = type_check.verify_string
 
 class Port(object):
     """Protected messaging pool for communication between threads."""
@@ -742,7 +742,7 @@ class Port(object):
         """Set a new name to the port and return this name back. The name
         has to be represented by a string.
         """
-        self.__name = verify_string(name)
+        self.__name = type_check.verify_string(name)
         return name
 
     def get_name(self):
@@ -764,7 +764,7 @@ class Port(object):
 
     def push_message(self, message):
         if not isinstance(message, Message):
-            raise KernelTypeException('Message "%s" must be %s '
+            raise errors.KernelTypeException('Message "%s" must be %s '
                                   'sub-class' % (message, Message))
         self.__messages.append(message)
 
@@ -804,7 +804,7 @@ class ITC(Kernel.Extension):
         """Select port by name and return its instance. The name must be
         represented by a string. If port can not be selected, return None."""
         if not type(name) is types.StringType:
-            raise KernelTypeException()
+            raise errors.KernelTypeException()
         if name in self.__ports:
             return self.__ports[name]
         return None
@@ -838,7 +838,7 @@ class ITC(Kernel.Extension):
     def send_message(self, name, message):
         """Send a message to receiver from sender."""
         if not isinstance(message, Message):
-            raise KernelTypeException("Message '%s' must be %s sub-class"
+            raise errors.KernelTypeException("Message '%s' must be %s sub-class"
                                   % (message, Message))
         #receiver = self.select_thread(name)
         #if not receiver:
@@ -893,7 +893,7 @@ class ITC(Kernel.Extension):
         if type(command) is types.StringType:
             return command in self.__commands
         if type(command) != types.TypeType or not issubclass(command, Command):
-            raise KernelTypeException('Command "%s" must be bb.os.kernel.Command '
+            raise errors.KernelTypeException('Command "%s" must be bb.os.kernel.Command '
                                   'sub-class' % command)
         return command.get_name() in self.__commands
 
@@ -976,7 +976,7 @@ class Driver(OS.Object, OS.Object.Metadata):
         add a new action handler. See :func:`add_action_handler` for more
         details.
         """
-        verify_string(action)
+        type_check.verify_string(action)
         target_cls_name = caller(2)
         if not target_cls_name in table:
             Driver.ACTION_HANDLERS_MAP_PER_CLASS[target_cls_name] = dict()
@@ -1274,7 +1274,7 @@ class HardwareManagement(Kernel.Extension):
 
     def find_driver_manager(self, name):
         """Find driver manager."""
-        verify_string(name)
+        type_check.verify_string(name)
         return self.__driver_managers[name]
 
     def is_registered_driver(self, name):

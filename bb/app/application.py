@@ -15,18 +15,19 @@
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __author__ = "<oleks.sviridenko@gmail.com> Alexander Sviridenko"
 
-import types
-import threading
 import multiprocessing
-import subprocess
+import multiprocessing.managers
 import inspect
-import re
 import optparse
-import sys
 import os
+import re
 import signal
+import subprocess
+import sys
+import threading
 import tempfile
 import time
+import types
 import random
 
 from bb.app.mapping import Mapping, verify_mapping
@@ -213,7 +214,6 @@ class Application(object):
         # (mappings). A manager is strictly internal object, which controls a
         # server oricess which manages shared objects. Other processes can
         # access the shared objects by using proxies.
-        import multiprocessing.managers
         self.__manager = multiprocessing.Manager()
         # All the processes will be stored at shared dict object. Thus each
         # process will be able to define the mapping by pid.
