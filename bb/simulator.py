@@ -195,15 +195,23 @@ class Config(object):
 
 config = Config()
 
+_application = None
+
 # All the processes will be stored at shared dict object. Thus each
 # process will be able to define the mapping by pid.
 processes = list()
 
-def stop(application):
-    """Stop application."""
+def set_application(application):
+    global _application
+    _application = application
+
+def stop():
+    """Stop running application."""
     # Very important! We need to terminate all the children in order to close
     # all open pipes. Otherwise we will get "IOError: [Errno 32]: Broken
     # pipe". So look up for workers first and terminate them.
+    if not Application.running_instance:
+        raise
     print "\nStopping application"
     for process in processes:
         if process.is_alive():
@@ -211,7 +219,7 @@ def stop(application):
             process.kill()
     Application.running_instance = None
 
-def start(application):
+def start(application=None):
     """Launch the application. Application will randomly execute mappings
     one by one with specified delay (see
     :func:`set_mappings_execution_interval`).
@@ -221,21 +229,27 @@ def start(application):
        The only one application can be executed per session.
     """
     global processes
+    global _application
 
-    print "Start application", application
-    Application.running_instance = application
-    if not application.get_num_mappings():
+    if application:
+        set_application(application)
+    if not _application:
+        raise
+
+    print "Start application", _application
+    Application.running_instance = _application
+    if not _application.get_num_mappings():
         raise Exception("Nothing to run. Please, add at least one mapping "
                         "to this application.")
     # First of all, build an execution order of mappings
-    execution_order = range(application.get_num_mappings())
+    execution_order = range(_application.get_num_mappings())
     random.shuffle(execution_order)
     # Execute mappings one by one by using execution order. Track keyboard
     # interrupts and system exit.
     try:
         for i in execution_order:
             # Take a random mapping
-            mapping = application.get_mappings()[i]
+            mapping = _application.get_mappings()[i]
             if not mapping.get_os_class():
                 raise Exception("Cannot create OS instance.")
             process = Process(mapping)
@@ -244,11 +258,11 @@ def start(application):
             print "Start process %d" % process.get_pid()
             # Check for delay. Sleep for some time before the
             # next mapping will be executed.
-            time.sleep(application.get_mappings_execution_interval())
+            time.sleep(_application.get_mappings_execution_interval())
         # Wait for each process
         for process in processes:
             process.join()
     except KeyboardInterrupt, e:
-        stop(application)
+        stop()
     except SystemExit, e:
-        stop(application)
+        stop()
