@@ -146,16 +146,16 @@ class Mapping(InstanceTracking):
     in order to track all created instances."""
 
     OS_CLASS=None
-    """This constant defines operating system class that will be used by
-    default by the mapping. By default mapping will use
-    :class:`bb.os.kernel.OS` class."""
+    """This constant defines operating system class that will be used by default
+    by the mapping. By default mapping will use :class:`bb.os.kernel.OS` class.
+    """
 
     NAME_FORMAT="M%d"
-    """Default name format is using in order to automatically generate
-    mapping name. Usually mappings of the same class have the same nature and
-    so no reason to invent a new name for each mapping. By default the 
-    format has view ``M%d`` and based on the number of mappings in the
-    application (see :func:`bb.app.application.Application.get_num_mappings`).
+    """Default name format is using in order to automatically generate mapping
+    name. Usually mappings of the same class have the same nature and so no
+    reason to invent a new name for each mapping. By default the format has view
+    ``M%d`` and based on the number of mappings in the application (see
+    :func:`bb.app.application.Application.get_num_mappings`).
 
     """
 
@@ -203,7 +203,8 @@ class Mapping(InstanceTracking):
 
     def set_os_class(self, os_class):
         """Set `os_class` derived from :class:`bb.os.kernel.OS` class as
-        operating system class that will be instantiated by this mapping."""
+        operating system class that will be instantiated by this mapping.
+        """
         self.__os_class = os_class
 
     def get_os_class(self):
@@ -217,7 +218,8 @@ class Mapping(InstanceTracking):
 
     def get_hardware_agent(self):
         """Return hardware agent instance. The agent should be derived from
-        :class:`HardwareAgent` class."""
+        :class:`HardwareAgent` class.
+        """
         return self.__hardware_agent
 
     def set_name_format(self, frmt):
@@ -247,6 +249,7 @@ class Mapping(InstanceTracking):
         self.__name = name
 
     def get_name(self):
+        """Return name."""
         return self.__name
 
     def __str__(self):

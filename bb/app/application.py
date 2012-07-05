@@ -18,17 +18,9 @@ __author__ = "<oleks.sviridenko@gmail.com> Alexander Sviridenko"
 import multiprocessing
 import multiprocessing.managers
 import inspect
-import optparse
-import os
 import re
-import signal
-import subprocess
 import sys
-import threading
-import tempfile
-import time
 import types
-import random
 
 from bb.app.mapping import Mapping, verify_mapping
 from bb.app.network import Network
@@ -45,117 +37,6 @@ def get_mode():
 
 def is_simulation_mode():
     return 'bb.simulator' in sys.modules
-
-class _OutputStream:
-    PREFIX_FORMAT = "[%s] "
-
-    def __init__(self, stream):
-        self.stream = stream
-
-    def write(self, data):
-        """See number of processes within an application. Do not show process
-        identifier if we have less than two processes.
-        """
-        prefix = ''
-        from bb import simulator
-        if not simulator.config.get_option("multiterminal"):
-            # We do not use here get_num_processes() since we may have an
-            # execution delay between processes. Thus we will use max possible
-            # number of processes, which is number of mappings.
-            if Application.get_running_instance().get_num_mappings() > 1:
-                mapping = Application.get_running_instance().get_active_mapping()
-                prefix = self.PREFIX_FORMAT % mapping.get_name()
-            if data != "\n":
-                # Print prefix only if we have some data
-                self.stream.write(prefix)
-        self.stream.write(data)
-
-    def __getattr__(self, attr):
-        return getattr(self.stream, attr)
-
-class _UnbufferedOutputStream(_OutputStream):
-    """This class is a subclass of _OutputStream and handles unbuffered output
-    stream. It just does flush() after each write().
-    """
-
-    def __init__(self, stream):
-        self.stream = stream
-
-    def write(self, data):
-        _OutputStream.write(self, data)
-        self.stream.flush()
-
-    def __getattr__(self, attr):
-        return getattr(self.stream, attr)
-
-class Process(multiprocessing.Process):
-    """The process is a one to one mapping, which describes a particular CPU
-    core and the particular kernel on it. It represents the life of that kernel:
-    from its initialization to the point that it stops executing.
-
-    The process is a subclass of :class:`multiprocessing.Process`.
-    """
-
-    def __init__(self, mapping):
-        self.__mapping = mapping
-
-        def bootstrapper():
-            os_class = mapping.get_os_class()
-            os = os_class(**mapping.get_build_params())
-            os.main()
-            os.kernel.start()
-            return os
-
-        multiprocessing.Process.__init__(self, target=bootstrapper)
-        from bb import simulator
-        if simulator.config.get_option("multiterminal"):
-            self.tmpdir = tempfile.mkdtemp()
-            self.fname = os.path.join(self.tmpdir, str(id(self)))
-            self.fh = open(self.fname, "w")
-
-    def get_mapping(self):
-        """Return :class:`bb.app.application.Process` instance that runs under
-        this process.
-        """
-        return self.__mapping
-
-    def get_pid(self):
-        """Return process PID."""
-        return self.pid
-
-    def start(self):
-        """Start the process."""
-        from bb import simulator
-        # Save a reference to the current stdout
-        old_stdout = sys.stdout
-        if simulator.config.get_option("multiterminal"):
-            # hm, gnome-terminal -x ?
-            term_cmd = ["xterm",
-                        "-T", "Mapping '%s'" % self.__mapping.name,
-                        "-e", "tail",
-                        "-f", self.fname]
-            self.term = subprocess.Popen(term_cmd)
-            sys.stdout = _UnbufferedOutputStream(self.fh)
-            # Need a small delay
-            time.sleep(1)
-        else:
-            sys.stdout = _OutputStream(sys.stdout)
-        # Now the stdout has been redirected. Call initial start().
-        multiprocessing.Process.start(self)
-        # Normalize stdout stream
-        sys.stdout = old_stdout
-        if simulator.config.get_option("multiterminal"):
-            print "Redirect %d output to %d terminal" % (self.pid, self.term.pid)
-
-    def kill(self):
-        """Kill this process. See also :func:`os.kill`."""
-        from bb import simulator
-        if simulator.config.get_option("multiterminal"):
-            self.term.terminate()
-            self.fh.close()
-            os.remove(self.fname)
-            os.rmdir(self.tmpdir)
-        os.kill(self.pid, signal.SIGTERM)
 
 class Application(object):
     """This class describes BB application. An application is defined by a BB
@@ -202,14 +83,15 @@ class Application(object):
                         return target(self, *args, **kargs)
             return simulate
 
-    # Only one running instance
+    # Only one running instance is allowed
     running_instance = None
 
     def __init__(self, mappings=[], mappings_execution_interval=0, devices=[]):
-        verify_list(mappings)
+        self.__mappings = list()
         self.__network = Network(mappings)
         self.__mappings_execution_interval = 0
-        self.set_mappings_execution_interval(mappings_execution_interval)
+        self.__devices = dict()
+        self.__active_device = None
         # The manager provides a way to share data between different processes
         # (mappings). A manager is strictly internal object, which controls a
         # server oricess which manages shared objects. Other processes can
@@ -219,9 +101,10 @@ class Application(object):
         # process will be able to define the mapping by pid.
         #self.__processes = self.__manager.dict()
         self.__processes = list()
+        # Initialization
+        self.add_mappings(mappings)
+        self.set_mappings_execution_interval(mappings_execution_interval)
         # Initialize device control management
-        self.__devices = dict()
-        self.__active_device = None
         if not devices:
             devices.append(Device())
         self.add_devices(devices)
@@ -251,6 +134,7 @@ class Application(object):
         """Add a list of :class:`bb.app.mapping.Mapping` instances to the
         network.
         """
+        verify_list(mappings)
         self.network.add_nodes(mappings)
 
     def remove_mapping(self, mapping):
@@ -298,59 +182,6 @@ class Application(object):
     def get_running_instance(klass):
         """Return currently running :class:`Application` instance."""
         return klass.running_instance
-
-    def start(self):
-        """Launch the application. Application will randomly execute mappings
-        one by one with specified delay (see
-        :func:`set_mappings_execution_interval`).
-
-        .. note::
-
-           The only one application can be executed per session.
-        """
-        print "Start application"
-        Application.running_instance = self
-        if not self.get_num_mappings():
-            raise Exception("Nothing to run. Please, add at least one mapping "
-                            "to this application.")
-        # First of all, build an execution order of mappings
-        execution_order = range(self.get_num_mappings())
-        random.shuffle(execution_order)
-        # Execute mappings one by one by using execution order. Track keyboard
-        # interrupts and system exit.
-        try:
-            for i in execution_order:
-                # Take a random mapping
-                mapping = self.get_mappings()[i]
-                if not mapping.get_os_class():
-                    raise Exception("Cannot create OS instance.")
-                process = Process(mapping)
-                self.__processes.append(process)
-                process.start()
-                print "Start process %d" % process.get_pid()
-                # Check for delay. Sleep for some time before the
-                # next mapping will be executed.
-                time.sleep(self.get_mappings_execution_interval())
-            # Wait for each process
-            for process in self.__processes:
-                process.join()
-        except KeyboardInterrupt, e:
-            self.stop()
-        except SystemExit, e:
-            self.stop()
-
-    def stop(self):
-        """Stop application."""
-        # Very important! We need to terminate all the children in order to
-        # close all open pipes. Otherwise we will get
-        # "IOError: [Errno 32]: Broken pipe". So look up for workers first
-        # and terminate them.
-        print "\nStopping application"
-        for process in self.__processes:
-            if process.is_alive():
-                print "Kill process %d" % process.pid
-                process.kill()
-        Application.running_instance = None
 
     def add_device(self, device):
         """Add :class:`bb.hardware.devices.device.Device` instance to the list

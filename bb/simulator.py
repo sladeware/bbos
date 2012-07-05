@@ -1,9 +1,145 @@
 #!/usr/bin/env python
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-__copyright__ = "Copyright (c) 2011 Sladeware LLC"
+from __future__ import absolute_import
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "<oleks.sviridenko@gmail.com> Alexander Sviridenko"
 
+import multiprocessing
 import optparse
+import os
+import random
+import signal
+import subprocess
 import sys
+import tempfile
+import time
+
+from bb.app import Application
+from bb.app.mapping import Mapping, verify_mapping
+
+class _OutputStream:
+    PREFIX_FORMAT = "[%s] "
+
+    def __init__(self, stream):
+        self.stream = stream
+
+    def write(self, data):
+        """See number of processes within an application. Do not show process
+        identifier if we have less than two processes.
+        """
+        global config
+        prefix = ''
+        if not config.get_option("multiterminal"):
+            # We do not use here get_num_processes() since we may have an
+            # execution delay between processes. Thus we will use max possible
+            # number of processes, which is number of mappings.
+            if Application.get_running_instance().get_num_mappings() > 1:
+                mapping = Application.get_running_instance().get_active_mapping()
+                prefix = self.PREFIX_FORMAT % mapping.get_name()
+            if data != "\n":
+                # Print prefix only if we have some data
+                self.stream.write(prefix)
+        self.stream.write(data)
+
+    def __getattr__(self, attr):
+        return getattr(self.stream, attr)
+
+class _UnbufferedOutputStream(_OutputStream):
+    """This class is a subclass of _OutputStream and handles unbuffered output
+    stream. It just does flush() after each write().
+    """
+
+    def __init__(self, stream):
+        self.stream = stream
+
+    def write(self, data):
+        _OutputStream.write(self, data)
+        self.stream.flush()
+
+    def __getattr__(self, attr):
+        return getattr(self.stream, attr)
+
+class Process(multiprocessing.Process):
+    """The process is a one to one mapping, which describes a particular CPU
+    core and the particular kernel on it. It represents the life of that kernel:
+    from its initialization to the point that it stops executing.
+
+    The process is a subclass of :class:`multiprocessing.Process`.
+    """
+
+    def __init__(self, mapping):
+        global config
+
+        self.__mapping = mapping
+
+        def bootstrapper():
+            os_class = mapping.get_os_class()
+            os = os_class(**mapping.get_build_params())
+            os.main()
+            os.kernel.start()
+            return os
+
+        multiprocessing.Process.__init__(self, target=bootstrapper)
+        if config.get_option("multiterminal"):
+            self.tmpdir = tempfile.mkdtemp()
+            self.fname = os.path.join(self.tmpdir, str(id(self)))
+            self.fh = open(self.fname, "w")
+
+    def get_mapping(self):
+        """Return :class:`bb.app.application.Process` instance that runs under
+        this process.
+        """
+        return self.__mapping
+
+    def get_pid(self):
+        """Return process PID."""
+        return self.pid
+
+    def start(self):
+        """Start the process."""
+        global config
+        # Save a reference to the current stdout
+        old_stdout = sys.stdout
+        if config.get_option("multiterminal"):
+            # hm, gnome-terminal -x ?
+            term_cmd = ["xterm",
+                        "-T", "Mapping '%s'" % self.__mapping.get_name(),
+                        "-e", "tail",
+                        "-f", self.fname]
+            self.term = subprocess.Popen(term_cmd)
+            sys.stdout = _UnbufferedOutputStream(self.fh)
+            # Need a small delay
+            time.sleep(1)
+        else:
+            sys.stdout = _OutputStream(sys.stdout)
+        # Now the stdout has been redirected. Call initial start().
+        multiprocessing.Process.start(self)
+        # Normalize stdout stream
+        sys.stdout = old_stdout
+        if config.get_option("multiterminal"):
+            print "Redirect %d output to %d terminal" % (self.pid, self.term.pid)
+
+    def kill(self):
+        """Kill this process. See also :func:`os.kill`."""
+        global config
+        if config.get_option("multiterminal"):
+            self.term.terminate()
+            self.fh.close()
+            os.remove(self.fname)
+            os.rmdir(self.tmpdir)
+        os.kill(self.pid, signal.SIGTERM)
 
 class Config(object):
     """Class to wrap simulator functionality.
@@ -58,3 +194,61 @@ class Config(object):
         return parser
 
 config = Config()
+
+# All the processes will be stored at shared dict object. Thus each
+# process will be able to define the mapping by pid.
+processes = list()
+
+def stop(application):
+    """Stop application."""
+    # Very important! We need to terminate all the children in order to close
+    # all open pipes. Otherwise we will get "IOError: [Errno 32]: Broken
+    # pipe". So look up for workers first and terminate them.
+    print "\nStopping application"
+    for process in processes:
+        if process.is_alive():
+            print "Kill process %d" % process.pid
+            process.kill()
+    Application.running_instance = None
+
+def start(application):
+    """Launch the application. Application will randomly execute mappings
+    one by one with specified delay (see
+    :func:`set_mappings_execution_interval`).
+
+    .. note::
+
+       The only one application can be executed per session.
+    """
+    global processes
+
+    print "Start application", application
+    Application.running_instance = application
+    if not application.get_num_mappings():
+        raise Exception("Nothing to run. Please, add at least one mapping "
+                        "to this application.")
+    # First of all, build an execution order of mappings
+    execution_order = range(application.get_num_mappings())
+    random.shuffle(execution_order)
+    # Execute mappings one by one by using execution order. Track keyboard
+    # interrupts and system exit.
+    try:
+        for i in execution_order:
+            # Take a random mapping
+            mapping = application.get_mappings()[i]
+            if not mapping.get_os_class():
+                raise Exception("Cannot create OS instance.")
+            process = Process(mapping)
+            processes.append(process)
+            process.start()
+            print "Start process %d" % process.get_pid()
+            # Check for delay. Sleep for some time before the
+            # next mapping will be executed.
+            time.sleep(application.get_mappings_execution_interval())
+        # Wait for each process
+        for process in processes:
+            process.join()
+    except KeyboardInterrupt, e:
+        stop(application)
+    except SystemExit, e:
+        stop(application)
