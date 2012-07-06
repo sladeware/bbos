@@ -30,7 +30,7 @@ from bb.app import Application
 from bb.app.mapping import Mapping, verify_mapping
 
 class _OutputStream:
-    PREFIX_FORMAT = "[%s] "
+    PREFIX_FORMAT = '[%s] '
 
     def __init__(self, stream):
         self.stream = stream
@@ -39,16 +39,16 @@ class _OutputStream:
         """See number of processes within an application. Do not show process
         identifier if we have less than two processes.
         """
-        global config
+        global _config
         prefix = ''
-        if not config.get_option("multiterminal"):
+        if not _config.get_option('multiterminal'):
             # We do not use here get_num_processes() since we may have an
             # execution delay between processes. Thus we will use max possible
             # number of processes, which is number of mappings.
             if Application.get_running_instance().get_num_mappings() > 1:
                 mapping = Application.get_running_instance().get_active_mapping()
                 prefix = self.PREFIX_FORMAT % mapping.get_name()
-            if data != "\n":
+            if data != '\n':
                 # Print prefix only if we have some data
                 self.stream.write(prefix)
         self.stream.write(data)
@@ -80,9 +80,7 @@ class Process(multiprocessing.Process):
     """
 
     def __init__(self, mapping):
-        global config
-
-        self.__mapping = mapping
+        global _config
 
         def bootstrapper():
             os_class = mapping.get_os_class()
@@ -91,8 +89,9 @@ class Process(multiprocessing.Process):
             os.kernel.start()
             return os
 
+        self.__mapping = mapping
         multiprocessing.Process.__init__(self, target=bootstrapper)
-        if config.get_option("multiterminal"):
+        if _config.get_option("multiterminal"):
             self.tmpdir = tempfile.mkdtemp()
             self.fname = os.path.join(self.tmpdir, str(id(self)))
             self.fh = open(self.fname, "w")
@@ -109,10 +108,10 @@ class Process(multiprocessing.Process):
 
     def start(self):
         """Start the process."""
-        global config
+        global _config
         # Save a reference to the current stdout
         old_stdout = sys.stdout
-        if config.get_option("multiterminal"):
+        if _config.get_option("multiterminal"):
             # hm, gnome-terminal -x ?
             term_cmd = ["xterm",
                         "-T", "Mapping '%s'" % self.__mapping.get_name(),
@@ -128,20 +127,20 @@ class Process(multiprocessing.Process):
         multiprocessing.Process.start(self)
         # Normalize stdout stream
         sys.stdout = old_stdout
-        if config.get_option("multiterminal"):
-            print "Redirect %d output to %d terminal" % (self.pid, self.term.pid)
+        if _config.get_option('multiterminal'):
+            print 'Redirect %d output to %d terminal' % (self.pid, self.term.pid)
 
     def kill(self):
         """Kill this process. See also :func:`os.kill`."""
-        global config
-        if config.get_option("multiterminal"):
+        global _config
+        if _config.get_option('multiterminal'):
             self.term.terminate()
             self.fh.close()
             os.remove(self.fname)
             os.rmdir(self.tmpdir)
         os.kill(self.pid, signal.SIGTERM)
 
-class Config(object):
+class _Config(object):
     """Class to wrap simulator functionality.
 
     Attributes:
@@ -193,27 +192,33 @@ class Config(object):
                               "Supports Linux.")
         return parser
 
-config = Config()
+_config = _Config()
 
+# Captured application instance handled by simulator
 _application = None
 
 # All the processes will be stored at shared dict object. Thus each
 # process will be able to define the mapping by pid.
-processes = list()
+_processes = list()
+
+def config():
+    return _config
 
 def set_application(application):
     global _application
+    # TODO(team): verify application object
     _application = application
 
 def stop():
     """Stop running application."""
-    # Very important! We need to terminate all the children in order to close
-    # all open pipes. Otherwise we will get "IOError: [Errno 32]: Broken
-    # pipe". So look up for workers first and terminate them.
+    global _processes
     if not Application.running_instance:
         raise
     print "\nStopping application"
-    for process in processes:
+    # Very important! We need to terminate all the children in order to close
+    # all open pipes. Otherwise we will get "IOError: [Errno 32]: Broken
+    # pipe". So look up for workers first and terminate them.
+    for process in _processes:
         if process.is_alive():
             print "Kill process %d" % process.pid
             process.kill()
@@ -228,7 +233,7 @@ def start(application=None):
 
        The only one application can be executed per session.
     """
-    global processes
+    global _processes
     global _application
 
     if application:
@@ -253,14 +258,14 @@ def start(application=None):
             if not mapping.get_os_class():
                 raise Exception("Cannot create OS instance.")
             process = Process(mapping)
-            processes.append(process)
+            _processes.append(process)
             process.start()
             print "Start process %d" % process.get_pid()
             # Check for delay. Sleep for some time before the
             # next mapping will be executed.
             time.sleep(_application.get_mappings_execution_interval())
         # Wait for each process
-        for process in processes:
+        for process in _processes:
             process.join()
     except KeyboardInterrupt, e:
         stop()

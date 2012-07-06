@@ -22,21 +22,11 @@ import re
 import sys
 import types
 
+import bb
 from bb.app.mapping import Mapping, verify_mapping
 from bb.app.network import Network
 from bb.hardware import Device
 from bb.utils.type_check import verify_list, verify_int, verify_string
-
-SIMULATION_MODE = 'SIMULATION'
-DEV_MODE = 'DEVELOPMENT'
-
-def get_mode():
-    if is_simulation_mode():
-        return SIMULATION_MODE
-    return DEV_MODE
-
-def is_simulation_mode():
-    return 'bb.simulator' in sys.modules
 
 class Application(object):
     """This class describes BB application. An application is defined by a BB
@@ -67,19 +57,19 @@ class Application(object):
         """
 
         def __init__(self):
-            self.mode = None
+            self.__mode = None
 
         @classmethod
         def simulation_method(cls, target):
-            """Mark method as method only for simulation purposes."""
+            """Mark method as method available only for simulation purposes."""
             def simulate(self, *args, **kargs):
-                if not self.mode:
-                    self.mode = get_mode()
-                    if self.mode is SIMULATION_MODE:
+                if not self.__mode:
+                    self.__mode = bb.get_mode()
+                    if self.__mode is bb.SIMULATION_MODE:
                         return target(self, *args, **kargs)
-                    self.mode = None
+                    self.__mode = None
                 else:
-                    if self.mode == SIMULATION_MODE:
+                    if self.__mode == bb.SIMULATION_MODE:
                         return target(self, *args, **kargs)
             return simulate
 
