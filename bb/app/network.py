@@ -13,19 +13,17 @@
 # limitations under the License.
 
 __copyright__ = "Copyright (c) 2011-2012 Sladeware LLC"
-
-#_______________________________________________________________________________
+__author__ = "<oleks.sviridenko@gmail.com> Alexander Sviridenko"
 
 from bb.utils.type_check import verify_list, verify_int, verify_string, is_tuple
 from bb.app.mapping import Mapping, verify_mapping
 from bb.lib.graph import networkx
 
-#_______________________________________________________________________________
-
 class Network(networkx.MultiDiGraph):
     """The internal graph of static network topology representation used to
-    generate routing decision trees at build time. The routing decisions will
-    be generated as static control blocks at build time."""
+    generate routing decision trees at build time. The routing decisions will be
+    generated as static control blocks at build time.
+    """
 
     class Edge(object):
         """This class represents an edge between two nodes in a graph, where
@@ -36,7 +34,7 @@ class Network(networkx.MultiDiGraph):
         The edge also describes sending device and receiving device. Sending
         device is device used by `sender` to send the data trough this edge to
         `receiver`.
-        
+
         A sending device initiates the transmission of data, instructions, and
         information while a receiving device accepts the items transmitted.
         """
@@ -56,13 +54,12 @@ class Network(networkx.MultiDiGraph):
             self.__attributes = attributes
 
         def get_nodes(self):
-            """Return the sender and receiver nodes that this edge connects.
-            """
+            """Return the `sender` and `receiver` nodes that this edge
+            connects."""
             return (self.get_sender(), self.get_receiver())
 
         def get_sender(self):
-            """Return sender.
-            """
+            """Return sender."""
             return self.__sender
 
         def get_sending_device(self):
@@ -70,6 +67,7 @@ class Network(networkx.MultiDiGraph):
             raise NotImplemented()
 
         def set_sending_device(self, device):
+            """Set sending :class:`bb.hardware.devices.device.Device`."""
             raise NotImplemented()
 
         def verify_sending_device(self, device):
@@ -82,9 +80,11 @@ class Network(networkx.MultiDiGraph):
             return self.__receiver
 
         def get_receiving_device(self):
+            """Return receiving :class:`bb.hardware.devices.device.Device`."""
             raise NotImplemented()
 
         def set_receiving_device(self, device):
+            """Set receiving :class:`bb.hardware.devices.device.Device`."""
             raise NotImplemented()
 
         def verify_receiving_device(self, device):
@@ -168,8 +168,10 @@ class Network(networkx.MultiDiGraph):
         """
 
         # Analyse incomming arguments
-        if is_tuple(sender): (sender, sending_device) = sender
-        if is_tuple(receiver): (receiver, receiving_device) = receiver
+        if is_tuple(sender):
+            (sender, sending_device) = sender
+        if is_tuple(receiver):
+            (receiver, receiving_device) = receiver
         # Setup dictionary of attributes
         if attr_dict is None:
             attr_dict = attrs
@@ -217,13 +219,12 @@ Network.get_edges_iter = networkx.MultiDiGraph.edges_iter
 # Aliases
 Network.connect = Network.add_edge
 
-#_______________________________________________________________________________
-
 class NetworkXEdge(Network.Edge, tuple):
     """Since edges are not specified as NetworkX object, this class provides
     simple interface for manipulations with an edge within NetworkX library.
 
-    NetworkX uses a simple tuple for edge representation."""
+    NetworkX uses a simple tuple for edge representation.
+    """
 
     # Because tuples are immutable, we need to override __new__
     def __new__(cls, *args):
@@ -235,7 +236,7 @@ class NetworkXEdge(Network.Edge, tuple):
         if len(args) > 2: self.__key = args[2]
         attributes = {}
         if len(args) > 3: attributes = args[3]
-        Edge.__init__(self, sender, receiver, attributes)
+        Network.Edge.__init__(self, sender, receiver, attributes)
 
     def get_key(self):
         return self.__key

@@ -14,10 +14,13 @@ class Breadboard(Device):
     experimenting with circuit design.
     """
 
-    DEFAULT_DESIGNATOR_FORMAT="PROTOBOARD_%d"
+    DESIGNATOR_FORMAT="PROTOBOARD_%d"
 
     def __init__(self):
         Device.__init__(self)
+
+    def __str__(self):
+        return "Protoboard <%s>" % self.get_designator()
 
 # Make Protoboard to be an alias of Breadboard
 Protoboard = Breadboard

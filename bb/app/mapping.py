@@ -60,7 +60,7 @@ description::
 """
 
 __copyright__ = "Copyright (c) 2011-2012 Sladeware LLC"
-__author__ = "Alexander Sviridenko"
+__author__ = "<oleks.sviridenko@gmail.com> Alexander Sviridenko"
 
 from bb.hardware import Device
 from bb.hardware.devices.boards import Board
@@ -74,7 +74,6 @@ class HardwareAgent(object):
 
     For example on which core of which processor and on what
     board.
-
     """
 
     def __init__(self, core=None):
@@ -99,18 +98,21 @@ class HardwareAgent(object):
             if isinstance(neighbour, Board):
                 board = neighbour
         if not board:
-            raise
+            print "No board"
+            return None
         return board
 
     def is_processor_defined(self):
         """Whether or not a processor was defined. Return ``True`` value if the
-        :class:`bb.hardware.devices.processors.processor.Processor` instance
-        can be obtained by using specified core. Otherwise return ``False``."""
+        :class:`bb.hardware.devices.processors.processor.Processor` instance can
+        be obtained by using specified core. Otherwise return ``False``.
+        """
         return not not self.get_processor()
 
     def get_processor(self):
         """Return :class:`bb.hardware.devices.processors.processor.Processor`
-        instance."""
+        instance.
+        """
         if not self.get_core():
             return None
         return self.get_core().get_processor()
@@ -143,7 +145,8 @@ class Mapping(InstanceTracking):
         robot = Mapping("Robot", os_class=RobotOS)
 
     This class also inhertis :class:`bb.utils.instance.InstanceTracking` class
-    in order to track all created instances."""
+    in order to track all created instances.
+    """
 
     OS_CLASS=None
     """This constant defines operating system class that will be used by default
@@ -156,7 +159,6 @@ class Mapping(InstanceTracking):
     reason to invent a new name for each mapping. By default the format has view
     ``M%d`` and based on the number of mappings in the application (see
     :func:`bb.app.application.Application.get_num_mappings`).
-
     """
 
     HARDWARE_AGENT_CLASS=HardwareAgent
@@ -257,7 +259,8 @@ class Mapping(InstanceTracking):
 
 def mapping_factory(*args, **kargs):
     """:class:`Mapping` factory. Return new class derived from
-    :class:`Mapping` class."""
+    :class:`Mapping` class.
+    """
     class MappingContainer(Mapping):
         def __init__(self):
             Mapping.__init__(self, *args, **kargs)

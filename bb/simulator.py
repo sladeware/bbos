@@ -256,7 +256,7 @@ def start(application=None):
             # Take a random mapping
             mapping = _application.get_mappings()[i]
             if not mapping.get_os_class():
-                raise Exception("Cannot create OS instance.")
+                raise Exception('Cannot create OS instance for "%s".' % mapping)
             process = Process(mapping)
             _processes.append(process)
             process.start()

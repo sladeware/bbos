@@ -15,10 +15,9 @@
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __author__ = "<oleks.sviridenko@gmail.com> Alexander Sviridenko"
 
-import bb
-
 import types
 
+import bb
 from bb.hardware import primitives
 
 _G = primitives.Graph()
@@ -26,10 +25,9 @@ _G = primitives.Graph()
 class Device(primitives.ElectronicPrimitive):
     """This class is sub-class of
     :class:`bb.hardware.primitives.ElectronicPrimitive` and represents a
-    physical device. Device is any type of electrical component. It
-    will have functions and properties unique to its type. Each device
-    can contain one or more parts that are packaged together (e.g. a
-    74HCT32).
+    physical device. Device is any type of electrical component. It will have
+    functions and properties unique to its type. Each device can contain one or
+    more parts that are packaged together (e.g. a 74HCT32).
 
     When the device is used under operating system, it manages it with help of
     :class:`bb.os.kernel.DeviceManager` and controles it with help of
@@ -116,6 +114,10 @@ class Device(primitives.ElectronicPrimitive):
         `element`.
         """
         return self.G.has_edge(self, element)
+
+    def add_elements(self, elements):
+        for element in elements:
+            self.add_element(element)
 
     def add_element(self, element):
         """Add `element` to device.

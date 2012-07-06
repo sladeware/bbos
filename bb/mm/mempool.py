@@ -2,15 +2,12 @@
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 
-#_______________________________________________________________________________
-
-import sys, inspect
+import sys
+import inspect
 
 from bb.app import Application
 
 __all__ = ["MemPool"]
-
-#_______________________________________________________________________________
 
 class Pointer(object):
   def __init__(self):
@@ -91,12 +88,13 @@ def mwrite(pointer, value):
 
 class MemPool(Application.Object):
     """Memory pool is fast memory allocator with constant time access to dynamic
-    allocation for fixed-size chunks of memory."""
+    allocation for fixed-size chunks of memory.
+    """
 
     def __init__(self, num_chunks=0, chunk_size=0):
         Application.Object.__init__(self)
-        assert (chunk_size > 0), "Chunk size must be greater than zero"
-        assert (num_chunks > 0), "Number of chunks must be greater that zero"
+        assert (chunk_size > 0), 'Chunk size must be greater than zero'
+        assert (num_chunks > 0), 'Number of chunks must be greater that zero'
         self.__chunk_size = chunk_size
         self.__num_chunks = num_chunks
         self.__pointers = {}
@@ -106,21 +104,26 @@ class MemPool(Application.Object):
         return self.__num_chunks
 
     def malloc(self):
-        if self.count_free_chunks() >= self.get_num_chunks():
+        """Allocate a memory partition. Return ``None`` if memory cannot be
+        allocated at some point.
+        """
+        if self.get_num_free_chunks() >= self.get_num_chunks():
             return None
         pointer = malloc(self.get_chunk_size())
         self.__pointers[id(pointer)] = None
         return pointer
 
     def is_from(self, pointer):
-        """Returns True if chunk was allocated from this pool. Returns False if
-        chunk was allocated from some other pool."""
+        """Return ``True`` if chunk was allocated from this pool. Return
+        ``False`` if chunk was allocated from some other pool.
+        """
         if id(pointer) in self.__pointers:
             return True
         return False
 
-    def count_free_chunks(self):
-        return self.get_num_chunks() - len(self.__pointers)
+    def get_num_free_chunks(self):
+        """Return number of free chunks of memory."""
+        return (self.get_num_chunks() - len(self.__pointers))
 
     def get_chunk_size(self):
         return self.__chunk_size
@@ -133,16 +136,16 @@ class MemPool(Application.Object):
         free(pointer)
 
 if __name__ == '__main__':
-  #string = malloc()
-  #mwrite(string, 'Hello') # equalet of *string = 'Hello'
-  #mwrite(string, 'Ji')
-  ##free(string)
+    # string = malloc()
+    # mwrite(string, 'Hello') # equalet of *string = 'Hello'
+    # mwrite(string, 'Ji')
+    # free(string)
     pool = MemPool(2, 3)
     string1 = pool.malloc()
     string2 = pool.malloc()
     string3 = pool.malloc()
     mwrite(string1, 'Hi')
-  #string.set('Hello')
+    # string.set('Hello')
     pool.free(string1)
     pool.free(string2)
     pool.free(string3)

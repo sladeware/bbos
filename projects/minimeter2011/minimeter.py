@@ -2,6 +2,8 @@
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 
+import time
+
 from bb.app import appmanager
 from bb.app import Application, Mapping
 from bb.os import OS, Kernel, Thread, Port
@@ -10,16 +12,16 @@ from bb.hardware.devices.boards import PropellerDemoBoard
 from bb.hardware.devices.net.wireless.xbee import XBee
 from bb.hardware.devices.leds import LED
 
-import time
-
 class MinimeterOS(OS):
     """This class describes operating system that controls a single minimeter
-    device."""
+    device.
+
+    Setting verbose to ``False`` produces database records that contain the
+    stats only and not all of the data collected during the recording
+    interval. Defaults to ``True``.
+    """
 
     def __init__(self, verbose=True):
-        """Setting verbose to False produces database records that contain
-        the stats only and not all of the data collected during the recording
-        interval. Defaults to True."""
         OS.__init__(self)
         self.init_complete = False
         self.pir_motion_sensor_init_complete = False
@@ -130,9 +132,10 @@ class MinimeterOS(OS):
 
     def __collect_sensor_data(self):
         """Read sensor data and store it in linked list for post-processing.
-           Data is collected over the interval we waited by the sensors and
-           their drivers. We simply poll the drivers to determine max
-           values during the waiting interval."""
+        Data is collected over the interval we waited by the sensors and their
+        drivers. We simply poll the drivers to determine max values during the
+        waiting interval.
+        """
         # Collect a Hygrometer sample and store it (max humidity)
         print "collecting hygrometer data"
         data = 1234 + self.iteration_counter # TODO: Get data from driver
@@ -159,7 +162,7 @@ class MinimeterOS(OS):
         self.__add_sensor_data(data, self.SensorInfo.TEMPERATURE_ID)
 
     def __create_record(self):
-        """Create a record from the statistics generated on the sensor data"""
+        """Create a record from the statistics generated on the sensor data."""
         print "creating the database record"
         self.record = self.record_mempool.malloc()
         if self.record:
@@ -190,7 +193,7 @@ class MinimeterOS(OS):
             mwrite(self.record, array)
 
     def __post_processing(self):
-        """Compute statistics from sensor data and create a database record"""
+        """Compute statistics from sensor data and create a database record."""
         print "post processing"
 
         # Iterate over all data sampled during the last interval
@@ -239,9 +242,9 @@ class MinimeterOS(OS):
             self.iteration_counter = 0
 
     def initializer(self):
-        """The purpose of this runner is to initialize the minimeter: open
-        PIR motion detector sensor, mic, XBEE wireless module, light level
-        sensor, hygrometer, temp sensor."""
+        """The purpose of this runner is to initialize the minimeter: open PIR
+        motion detector sensor, mic, XBEE wireless module, light level sensor,
+        hygrometer, temp sensor."""
         # Check the initialization flag first. Skip initialization part if it
         # was already complete.
         if self.init_complete:
@@ -366,20 +369,21 @@ class MinimeterOS(OS):
 class MinimeterDevice(PropellerDemoBoard):
     """This class describes minimeter device.
 
-    Let us use for the first time  Propeller Demo Board as the board for
+    Let us use for the first time Propeller Demo Board as the board for
     minimeter. On the next step we can create a special board by using Board
-    class."""
+    class.
+    """
     def __init__(self, minimeter):
-        #PropellerDemoBoard.__init__(self, [minimeter])
+        PropellerDemoBoard.__init__(self, [minimeter])
         #self.add_device(XBee())
-        #self.add_device(LED(color=LED.GREEN))
-        #self.add_device(LED(color=LED.RED))
-        #self.add_device(LED(color=LED.YELLOW))
-        pass
+        # Add LEDs
+        self.add_elements([LED(color=LED.GREEN), LED(color=LED.RED),
+                           LED(color=LED.YELLOW)])
 
 class Minimeter(Mapping):
     """This class aims to describe minimeter device. The name of each device has
-    the following template: M<ID>."""
+    the following template: M<ID>.
+    """
     def __init__(self, id, build_params=None):
         Mapping.__init__(self, name="M%d" % id, os_class=MinimeterOS,
                          build_params=build_params)
@@ -390,6 +394,7 @@ if __name__ == "__main__":
     minimeter = Minimeter(1)
     print "Demo minimeter device consists of the following parts:"
     counter = 0
-    for device in minimeter.hardware.get_board().get_devices():
+    print minimeter.hardware.get_board()
+    for device in minimeter.hardware.get_board().get_elements():
         counter += 1
         print "%d. %s" % (counter, str(device))
