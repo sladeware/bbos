@@ -16,9 +16,3 @@ __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __author__ = "<oleks.sviridenko@gmail.com> Alexander Sviridenko"
 
 from bb.app import appmanager
-
-import vegimeter
-
-mappings = [vegimeter.ui, vegimeter.button_driver]
-vegetable_plant_guard = appmanager.new_application(mappings)
-vegetable_plant_guard.add_device(vegimeter.vegimeter_device)

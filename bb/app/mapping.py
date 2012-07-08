@@ -76,10 +76,20 @@ class HardwareAgent(object):
     board.
     """
 
-    def __init__(self, core=None):
-        self.__core = None
-        if core:
-            self.set_core(core)
+    def __init__(self, processor=None):
+        self.__processor = None
+        self.__is_simulation_mode = False
+        if processor:
+            if not isinstance(processor, Processor):
+                raise TypeError("Processor must be %s sub-class" %
+                                Processor.__class__.__name__)
+            self.set_processor(processor)
+
+    def set_simulation_mode(self):
+        self.__is_simulation_mode = True
+
+    def is_simulation_mode(self):
+        return self.__is_simulation_mode
 
     def is_board_defined(self):
         """Return whether or not the agent can identify the board."""
@@ -113,27 +123,25 @@ class HardwareAgent(object):
         """Return :class:`bb.hardware.devices.processors.processor.Processor`
         instance.
         """
-        if not self.get_core():
-            return None
-        return self.get_core().get_processor()
+        return self.__processor
+
+    def set_processor(self, processor):
+        """Set :class:`bb.hardware.devices.processors.processor.Processor`
+        instance."""
+        if not isinstance(processor, Processor):
+            raise TypeError("Processor must be %s sub-class" %
+                            Processor.__class__.__name__)
+        self.__processor = processor
 
     def is_core_defined(self):
         """Whether or not a core was defined."""
         return not not self.get_core()
 
-    def set_core(self, core):
-        """Set :class:`bb.hardware.devices.processors.processor.Processor.Core`
-        instance."""
-        if not isinstance(core, Processor.Core):
-            raise TypeError("Core must be %s sub-class" %
-                            Processor.Core.__class__.__name__)
-        self.__core = core
-
     def get_core(self):
         """Return
         :class:`bb.hardware.devices.processors.processor.Processor.Core`
         instance."""
-        return self.__core
+        return None
 
 class Mapping(InstanceTracking):
     """:class:`Mapping` describes a particular CPU core and the particular
@@ -148,11 +156,6 @@ class Mapping(InstanceTracking):
     in order to track all created instances.
     """
 
-    OS_CLASS=None
-    """This constant defines operating system class that will be used by default
-    by the mapping. By default mapping will use :class:`bb.os.kernel.OS` class.
-    """
-
     NAME_FORMAT="M%d"
     """Default name format is using in order to automatically generate mapping
     name. Usually mappings of the same class have the same nature and so no
@@ -164,12 +167,11 @@ class Mapping(InstanceTracking):
     HARDWARE_AGENT_CLASS=HardwareAgent
     """Hardware agent class that is the bridge between hardware and process."""
 
-    def __init__(self, name=None, name_format=None,
-                 os_class=None,
-                 hardware_agent_class=None,
+    def __init__(self, name=None, name_format=None, hardware_agent_class=None,
                  build_params=None):
         # Initialize sub-classes
         InstanceTracking.__init__(self)
+        self.__threads = list()
         # Define mapping name format
         self.__name_format = name_format
         self.set_name_format(self.NAME_FORMAT)
@@ -189,11 +191,17 @@ class Mapping(InstanceTracking):
         if not hardware_agent_class:
             hardware_agent_class = self.HARDWARE_AGENT_CLASS
         self.__hardware_agent = hardware_agent_class()
-        # Operating system
-        self.__os_class = None
-        self.set_os_class(self.OS_CLASS)
-        if os_class:
-            self.set_os_class(os_class)
+
+    def add_thread(self, thread):
+        self.__threads.append(thread)
+        return thread
+
+    def add_threads(self, threads):
+        for thread in threads:
+            self.add_thread(thread)
+
+    def get_threads(self):
+        return self.__threads
 
     def set_build_params(self, build_params):
         """Set `build_params` as built-time parameters."""
@@ -202,16 +210,6 @@ class Mapping(InstanceTracking):
     def get_build_params(self):
         """Return dictionary of build params."""
         return self.__build_params
-
-    def set_os_class(self, os_class):
-        """Set `os_class` derived from :class:`bb.os.kernel.OS` class as
-        operating system class that will be instantiated by this mapping.
-        """
-        self.__os_class = os_class
-
-    def get_os_class(self):
-        """Return operating system class that will control the future system."""
-        return self.__os_class
 
     @property
     def hardware(self):

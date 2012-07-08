@@ -62,14 +62,11 @@ class Processor(Device):
         passed via `mapping`, that allows operating system to all ather devices.
         """
 
-        def __init__(self, id_=None, mapping=None):
+        def __init__(self, id_=None):
             ElectronicPrimitive.__init__(self)
             self.__processor = None
-            self.__mapping = None
             if not id_ is None:
                 self.set_id(id_)
-            if mapping:
-                self.set_mapping(mapping)
 
         def get_processor(self):
             """Return :class:`Processor` instance that owns this
@@ -83,30 +80,33 @@ class Processor(Device):
             """
             self.__processor = processor
 
-        def set_mapping(self, mapping):
-            """Connects :class:`Processor.Core` with `mapping`. Once they are
-            connected, the mapping can see the core and other devices through
-            :class:`bb.app.mapping.HardwareAgent` if such were defined.
-            """
-            from bb.app import Mapping, verify_mapping
-            self.__mapping = verify_mapping(mapping)
-            mapping.hardware.set_core(self)
-
-        def get_mapping(self):
-            """Returns :class:`bb.app.mapping.Mapping` associated with this
-            core. By default returns ``None``.
-            """
-            return self.__mapping
-
     @validate(num_cores=int)
     def __init__(self, num_cores=0, cores=None):
         Device.__init__(self)
+        self.__mapping = None
+        #if mapping:
+        #    self.set_mapping(mapping)
         if num_cores < 1:
             raise Exception("Number of cores must be greater than zero.")
         self.__num_cores = num_cores
         self.__cores = [None] * num_cores
         if cores:
             self.set_cores(cores)
+
+    def set_mapping(self, mapping):
+        """Connects :class:`Processor.Core` with `mapping`. Once they are
+        connected, the mapping can see the core and other devices through
+        :class:`bb.app.mapping.HardwareAgent` if such were defined.
+        """
+        from bb.app import Mapping, verify_mapping
+        self.__mapping = verify_mapping(mapping)
+        mapping.hardware.set_processor(self)
+
+    def get_mapping(self):
+        """Returns :class:`bb.app.mapping.Mapping` associated with this
+        core. By default returns ``None``.
+        """
+        return self.__mapping
 
     @validate(cores=is_sequence)
     def set_cores(self, cores):
@@ -181,16 +181,6 @@ class Processor(Device):
     def get_num_cores(self):
         """Return number of cores."""
         return self.__num_cores
-
-    def get_mappings(self):
-        """Returns a list of mappings managed by this processor. Each
-        mapping is taken from appropriate core."""
-        mappings = list()
-        for core in self.get_cores():
-            if not core:
-              continue
-            mappings.append(core.get_mapping())
-        return mappings
 
 def verify_processor(processor):
     if not isinstance(processor, Processor):

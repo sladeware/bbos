@@ -59,19 +59,22 @@ class Application(object):
         def __init__(self):
             self.__mode = None
 
-        @classmethod
-        def simulation_method(cls, target):
-            """Mark method as method available only for simulation purposes."""
-            def simulate(self, *args, **kargs):
-                if not self.__mode:
-                    self.__mode = bb.get_mode()
-                    if self.__mode is bb.SIMULATION_MODE:
-                        return target(self, *args, **kargs)
-                    self.__mode = None
-                else:
-                    if self.__mode == bb.SIMULATION_MODE:
-                        return target(self, *args, **kargs)
-            return simulate
+        # TODO(team): the following code has to be revised after the last
+        # conversation with Slade
+        #
+        #@classmethod
+        #def simulation_method(cls, target):
+        #    """Mark method as method available only for simulation purposes."""
+        #    def simulate(self, *args, **kargs):
+        #        if not self.__mode:
+        #            self.__mode = bb.get_mode()
+        #            if self.__mode is bb.SIMULATION_MODE:
+        #                return target(self, *args, **kargs)
+        #            self.__mode = None
+        #        else:
+        #            if self.__mode == bb.SIMULATION_MODE:
+        #                return target(self, *args, **kargs)
+        #    return simulate
 
     # Only one running instance is allowed
     running_instance = None
@@ -258,4 +261,3 @@ class Traceable(object):
                 klass.__table[tid][the_klass.__name__].append((self, counter))
             return ret
         return dummy
-

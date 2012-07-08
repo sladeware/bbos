@@ -37,6 +37,10 @@ class Config(object):
         if self.options.help:
             self._print_help_and_exit()
 
+    def get_option(self, name, default=None):
+        value = getattr(self.options, name, default)
+        return value
+
     def _print_help_and_exit(self, exit_code=2):
         self.optparser.print_help()
         sys.exit(exit_code)
@@ -57,4 +61,8 @@ class Config(object):
                           help='Allow to use loaders for binary autoloading.')
         parser.add_option('--dry-run', action='store_true', dest='dry_run',
                           help='Show only messages that would be printed in a real run.')
+        parser.add_option("--multiterminal", action="store_true",
+                          dest="multiterminal",
+                          help="Open each new running OS in a new terminal. "\
+                              "Supports Linux.")
         return parser

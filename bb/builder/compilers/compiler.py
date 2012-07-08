@@ -59,8 +59,9 @@ class ProgramHandler(object):
         return self.__executables.get(name, None)
 
     def check_executables(self):
-        """Check compiler executables. All of them has to exist. Print
-        warning if some executable was specified but not defined."""
+        """Check compiler executables. All of them has to exist. Print warning
+        if some executable was specified but not defined.
+        """
         if not self.__executables:
             return
         for (name, cmd) in self.__executables.items():

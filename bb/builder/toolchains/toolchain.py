@@ -16,23 +16,82 @@ __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __author__ = "<oleks.sviridenko@gmail.com> Oleksandr Sviridenko"
 
 import os
+import os.path
 import platform
 import types
+import inspect
+import sys
 
 from bb import builder
+from bb.builder import toolchain_manager
 from bb.builder import compilers
 from bb.builder import loaders
 from bb.builder import errors
 
-class Project(object):
-    """Class representing a project."""
-    def __init__(self, name, sources=[], version=None,
-                 verbose=False,
-                 compiler=None, loader=None):
-        self.__name = name
-        self.__version = version
+@toolchain_manager.toolchain
+class Toolchain(object):
+    """Class representing a toolchain."""
+
+    class Package(object):
+        FILES = ()
+
+        def __init__(self, toolchain, obj):
+            self.__files = []
+            if self.FILES:
+                self.add_files(self.FILES)
+            self.__object = obj
+            self.__toolchain = toolchain
+
+        def get_object(self):
+            return self.__object
+
+        def add_files(self, files):
+            for file in files:
+                self.add_file(file)
+
+        def add_file(self, file):
+            if not os.path.exists(file):
+                package_file = inspect.getsourcefile(self.__class__)
+                package_dirname = os.path.dirname(package_file)
+                alternative_file = os.path.join(package_dirname, file)
+                if not os.path.exists(alternative_file):
+                    print "WARNING: file '%s' cannot be found" % file
+                    return
+                file = alternative_file
+            self.__files.append(file)
+
+        def get_toolchain(self):
+            return self.__toolchain
+
+        def on_unpack(self):
+            """This event will be called each time the extension will be added
+            to the project. Initially it's called from project.add_source() or
+            project.add_extension().
+            """
+            self.get_toolchain().add_sources(self.__files)
+
+        def on_remove(self):
+            """This event will be called each time the extension will be removed
+            from the toolchain. Initially it's called from
+            :func:`Toolchain.remove_source` or :func:`Toolchain.remove_package`.
+            """
+            raise NotImplementedError
+
+        def on_build(self):
+            """Called each time before the project is going to be built."""
+            raise NotImplementedError
+
+        def on_load(self):
+            """Called each time before the project os going to be load."""
+            raise NotImplementedError
+
+    storage = dict()
+
+    def __init__(self, sources=[], version=None, verbose=False, compiler=None,
+                 loader=None):
         self.verbose = verbose
         self.sources = []
+        self.__packages = list()
         self.compiler = compiler
         self.loader = loader
         # A mapping object representing the string environment.
@@ -44,14 +103,28 @@ class Project(object):
         # ! The sources must be added at the end of initialization
         self.add_sources(sources)
 
-    def set_name(self, name):
-        self.__name = name
+    @classmethod
+    def pack(this_class, object_class, package_class=None):
+        """As decorator."""
+        def store(key, value):
+            this_class.storage[key] = value
+        if package_class:
+            store(object_class, package_class)
+            return
+        # As decorator
+        def catcher(package_class):
+            store(object_class, package_class)
+            return package_class
+        return catcher
 
-    def get_name(self):
-        return self.__name or "UNKNOWN"
-
-    def get_version(self):
-        return self.__version or "0.0.0"
+    @classmethod
+    def get_package_class(this_class, target):
+        object_class = None
+        if type(target) == types.TypeType:
+            object_class = target
+        else:
+            object_class = target.__class__
+        return this_class.storage.get(object_class, None)
 
     def add_source(self, source):
         """Add a source to the project. In the case when source is a
@@ -63,9 +136,31 @@ class Project(object):
             source = os.path.abspath(source)
             if not os.path.exists(source):
                 raise Exception("Source doesn't exist: %s" % source)
+            print "Adding source '%s'" % source
             self.sources.append(source)
-        else:
-            raise TypeError("unknown source type: %s" % type(source))
+            return
+        elif isinstance(source, object):
+            package = self.__get_package_by_object(source)
+            if package:
+                self.unpack_package(package)
+                return
+        print "WARNING: unknown source type '%s' of '%s'" % (type(source), source)
+
+    def __get_package_by_object(self, obj):
+        package_class = self.get_package_class(obj)
+        if not package_class:
+            #raise TypeError('cannot define package for the source %s' % source)
+            return None
+        package = package_class(self, obj)
+        return package
+
+    def unpack_package(self, package):
+        self.__packages.append(package)
+        print "Unpacking package '%s'..." % package.__class__.__name__
+        try:
+            package.on_unpack()
+        except NotImplementedError:
+            pass
 
     def add_sources(self, sources):
         """Add and process a list sources at once."""
@@ -120,7 +215,7 @@ class Project(object):
             self.verbose = verbose
         if sources:
             self.add_sources(sources)
-        print "Building '%s'" % self.get_name()
+        print 'Building...'
         if self.verbose:
             self.compiler.verbose = self.verbose
         if output_dir:

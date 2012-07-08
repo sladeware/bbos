@@ -13,68 +13,55 @@
 # limitations under the License.
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
-__author__ = "<oleks.sviridenko@gmail.com> Oleksandr Sviridenko"
 
 import time
 import random
 
 from bb import OS, Mapping
+from bb.builder.toolchains import propgcc
+from bb.os.kernel import Thread
 from bb.hardware.devices.boards import Board
 
 from device import vegimeter_device
+
 if not vegimeter_device:
     print "vegimeter device wasn't defined"
     exit(0)
 
-class UI(OS):
-    shmem = None
+class UI(Thread):
+    NAME = "UI"
+    RUNNER = "ui_runner"
 
-    def main(self):
-        self.shmem = self.kernel.load_module(
-            "bb.os.drivers.processors.propeller_p8x32.shmem")
-        self.kernel.add_thread(self.kernel.Thread("UI_ID", self.ui_runner))
+@propgcc.PropGCCToolchain.pack(UI)
+class UICPackage(propgcc.PropGCCToolchain.Package):
+    FILES = ('ui.c',)
 
-    def ui_runner(self):
-        vegimeter_buttons = int(self.shmem.shmem_read(10, 1)[0])
-        if vegimeter_buttons:
-            for i in range(8):
-                if vegimeter_buttons & 1:
-                    print "Button pressed: %d" % i
-                vegimeter_buttons >>= 1
-        # Zero buttons state
-        self.shmem.shmem_write(10, 0)
+    def on_unpack(self):
+        propgcc.PropGCCToolchain.Package.on_unpack(self)
+        compiler = self.get_toolchain().compiler
+        compiler.define_macro("BB_CONFIG_OS_H", '"ui_config.h"')
+        compiler.add_include_dir(".")
 
-class ButtonDriver(OS):
-    shmem = None # shared memory library
+class ButtonDriver(Thread):
+    NAME = "BUTTON_DRIVER"
+    RUNNER = "button_driver_runner"
 
-    def main(self):
-        self.shmem = self.kernel.load_module(
-            "bb.os.drivers.processors.propeller_p8x32.shmem")
-        self.kernel.add_thread(self.kernel.Thread("BUTTON_DRIVER",
-                                                  self.button_driver_runner))
+@propgcc.PropGCCToolchain.pack(ButtonDriver)
+class ButtonDriverPackage(propgcc.PropGCCToolchain.Package):
+    FILES = ('button_driver.c',)
 
-    def button_driver_runner(self):
-        random.seed()
-        self.shmem.shmem_write(10, random.randint(1, 8))
-        time.sleep(2)
+    def on_unpack(self):
+        propgcc.PropGCCToolchain.Package.on_unpack(self)
+        compiler = self.get_toolchain().compiler
+        compiler.define_macro("BB_CONFIG_OS_H", '"button_driver_config.h"')
+        compiler.add_include_dir(".")
 
-ui = Mapping(name="UI", os_class=UI)
-button_driver = Mapping(name="BUTTON_DRIVER", os_class=ButtonDriver)
-
-MAP_COGID_MAPPING = {
-    3: ui,
-    5: button_driver,
-    }
+vegimeter = Mapping("Vegimeter")
+vegimeter.add_threads([UI(), ButtonDriver()])
 
 board = vegimeter_device.find_element("QSP1")
 if not board:
     print "Board <QSP1> cannot be found!"
     exit(0)
 processor = board.find_element("PRCR1")
-
-for cogid, mapping in MAP_COGID_MAPPING.items():
-    cog = processor.get_cog(cogid)
-    if not cog:
-        print "Cannot assign mapping %s to the cog %d" % (mapping, cogid)
-        exit(0)
-    cog.set_mapping(mapping)
+processor.set_mapping(vegimeter)

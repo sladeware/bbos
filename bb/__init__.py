@@ -23,14 +23,3 @@ from bb.app import Mapping, mapping_factory
 from bb.os import OS
 
 BBOS = OS
-
-SIMULATION_MODE = 'SIMULATION'
-DEV_MODE = 'DEVELOPMENT'
-
-def get_mode():
-    if is_simulation_mode():
-        return SIMULATION_MODE
-    return DEV_MODE
-
-def is_simulation_mode():
-    return 'bb.simulator' in sys.modules

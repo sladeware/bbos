@@ -16,8 +16,7 @@
 """
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
-
-#_______________________________________________________________________________
+__author__ = "<oleks.sviridenko@gmail.com> Alexander Sviridenko"
 
 import os
 import os.path
@@ -163,15 +162,14 @@ class CCompiler(Compiler):
         self.__extra_postopts = list()
         self.__linker = None
 
-    # ------------------------- Linker ---------------------------
-
     def get_linker(self):
         """Returns linker object."""
         return self.__linker
 
     def set_linker(self, linker):
         """Set and return linker object that will be used by compiler
-        in linking process."""
+        in linking process.
+        """
         self.__linker = linker
         return self.__linker
 
@@ -188,8 +186,6 @@ class CCompiler(Compiler):
     def set_linker_opts(self, opts):
         """Set linker options. See add_linker_opt()."""
         self.__linker_opts = opts
-
-    # -----------------------
 
     def set_object_extension(self, ext):
         self.__object_extension = ext
@@ -208,7 +204,8 @@ class CCompiler(Compiler):
 
     def bind_ext_to_language(self, extension, language):
         """Maps the given filename `extension` to the specified content
-        `language`."""
+        `language`.
+        """
         self.__language_by_ext_mapping[extension] = language
 
     def set_ext_to_language_mapping(self, mapping):
@@ -505,13 +502,17 @@ class CCompiler(Compiler):
                 src, ext = build[obj]
             except KeyError:
                 continue
-            sys.stdout.flush()
-            sys.stdout.write("Compiling: %s\r" % src)
-            time.sleep(0.010)
+            if self.dry_run:
+                print "Compiling:", src
+            else:
+                sys.stdout.flush()
+                sys.stdout.write("Compiling: %s\r" % src)
+                time.sleep(0.010)
             # Note: we pass a copy of sources, options, etc. since we
             # need to privent their modification
             self._compile(obj, src, ext, list(cc_options), extra_postopts, pp_options)
-        print
+        if not self.dry_run:
+            print
         return objects
 
     def _compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts):

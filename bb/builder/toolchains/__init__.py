@@ -1,18 +1,15 @@
 #!/usr/bin/env python
 
-"""Projects:
+"""Toolchains:
 
-  ================  =======================================
-  Project           Class
-  ================  =======================================
-  Basic project     :class:`bb.builder.projects.project.Project`
-  C project         :class:`bb.builder.projects.c.CProject`
-  Catalina project  :class:`bb.builder.projects.catalina.CatalinaProject`
-  ================  =======================================
+  ===================  =======================================
+  Toolchain            Class
+  ===================  =======================================
+  Basic toolchain      :class:`bb.builder.toolchains.toolchain.Toolchain`
+  Basic C toolchain    :class:`bb.builder.toolchains.c.CToolchain`
+  Catalina toolchain   :class:`bb.builder.toolchains.catalina.CatalinaToolchain`
+  PropGCC toolchain    :class:`bb.builder.toolchains.propgcc.PropGCCToolchain`
+  ===================  =======================================
 """
 
-__copyright__ = "Copyright (c) 2011 Sladeware LLC"
-
-from bb.builder.projects.project import Project
-from bb.builder.projects.c import CProject
-from bb.builder.projects.catalina import CatalinaProject
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
