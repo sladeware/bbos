@@ -21,7 +21,6 @@ extensions. The extension can be created with help of :func:`kernel_extension`
 decorator.
 """
 
-__version__ = "$Rev: 401 $"
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __author__ = "<oleks.sviridenko@gmail.com> Oleksandr Sviridenko"
 
@@ -85,8 +84,11 @@ class OS(object):
             self.kernel.add_threads(threads)
 
 @simulator.SimulationToolchain.pack(OS)
-class OSSimulation(simulator.SimulationToolchain.Package):
+class OSSimulationPackage(simulator.SimulationToolchain.Package):
     FILES = ("__init__sim.py",)
+
+    def on_unpack(self):
+        pass
 
 @propgcc.PropGCCToolchain.pack(OS)
 class OSPackage(propgcc.PropGCCToolchain.Package):

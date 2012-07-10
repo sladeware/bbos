@@ -230,6 +230,7 @@ def build(application=None, toolchain_class=None):
                     toolchain_class = simulator.SimulationToolchain
                 if not toolchain_class:
                     raise NotImplemented()
+                print "Toolchain", toolchain_class.__name__
                 toolchain = toolchain_class(sources=[os_class])
                 toolchain.build(verbose=True)
             # Check for delay. Sleep for some time before the

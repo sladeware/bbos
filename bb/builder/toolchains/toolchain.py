@@ -28,9 +28,8 @@ from bb.builder import compilers
 from bb.builder import loaders
 from bb.builder import errors
 
-@toolchain_manager.toolchain
 class Toolchain(object):
-    """Class representing a toolchain."""
+    """This class represents a toolchain."""
 
     class Package(object):
         FILES = ()
@@ -48,6 +47,9 @@ class Toolchain(object):
         def add_files(self, files):
             for file in files:
                 self.add_file(file)
+
+        def get_files(self):
+            return self.__files
 
         def add_file(self, file):
             if not os.path.exists(file):
@@ -68,7 +70,8 @@ class Toolchain(object):
             to the project. Initially it's called from project.add_source() or
             project.add_extension().
             """
-            self.get_toolchain().add_sources(self.__files)
+            files = self.get_files()
+            self.get_toolchain().add_sources(files)
 
         def on_remove(self):
             """This event will be called each time the extension will be removed
@@ -100,14 +103,18 @@ class Toolchain(object):
             'HOST_PROCESSOR': platform.processor(),
             'HOST_ARCH': platform.machine(),
             }
-        # ! The sources must be added at the end of initialization
+        # NOTE: the sources must be added at the end of initialization
         self.add_sources(sources)
 
     @classmethod
     def pack(this_class, object_class, package_class=None):
-        """As decorator."""
+        """Packing means creating package for an object. Can be also
+        used as decorator.
+        """
         def store(key, value):
-            this_class.storage[key] = value
+            if not Toolchain.storage.get(this_class, None):
+                Toolchain.storage[this_class] = dict()
+            Toolchain.storage[this_class][key] = value
         if package_class:
             store(object_class, package_class)
             return
@@ -118,13 +125,15 @@ class Toolchain(object):
         return catcher
 
     @classmethod
-    def get_package_class(this_class, target):
+    def get_package_class(toolchain_class, object_instance_or_class):
         object_class = None
-        if type(target) == types.TypeType:
-            object_class = target
+        if type(object_instance_or_class) == types.TypeType:
+            object_class = object_instance_or_class
         else:
-            object_class = target.__class__
-        return this_class.storage.get(object_class, None)
+            object_class = object_instance_or_class.__class__
+        if not Toolchain.storage.get(toolchain_class, None):
+            return None
+        return Toolchain.storage[toolchain_class].get(object_class, None)
 
     def add_source(self, source):
         """Add a source to the project. In the case when source is a
@@ -156,7 +165,7 @@ class Toolchain(object):
 
     def unpack_package(self, package):
         self.__packages.append(package)
-        print "Unpacking package '%s'..." % package.__class__.__name__
+        print "Unpacking package '%s'..." % (package.__class__.__name__,)
         try:
             package.on_unpack()
         except NotImplementedError:
@@ -203,9 +212,7 @@ class Toolchain(object):
             raise errors.UnknownLoader
         self.loader = loader
 
-    def build(self, sources=[], output_dir=None,
-              verbose=None,
-              dry_run=None,
+    def build(self, sources=[], output_dir=None, verbose=None, dry_run=None,
               *arg_list, **arg_dict):
         """Start building process."""
         # Control verbose
@@ -215,19 +222,23 @@ class Toolchain(object):
             self.verbose = verbose
         if sources:
             self.add_sources(sources)
-        print 'Building...'
-        if self.verbose:
-            self.compiler.verbose = self.verbose
         if output_dir:
             self.compiler.set_output_dir(output_dir)
         # Control dry run mode
         if not dry_run:
             dry_run = builder.get_config().options.dry_run
-        if dry_run is not None:
-            self.compiler.dry_run = dry_run
-        self.compiler.check_executables()
+
+        print 'Building...'
+        if self.compiler:
+            self.compiler.check_executables()
+            if dry_run is not None:
+                self.compiler.dry_run = dry_run
+            if self.verbose:
+                self.compiler.verbose = self.verbose
         # Run specific build process
-        assert len(self.get_fixed_sources()), "Nothing to build"
+        if not len(self.get_fixed_sources()):
+            print "Nothing to build"
+            return
         self._build(sources=self.get_fixed_sources(), *arg_list, **arg_dict)
 
     def _build(self, *arg_list, **arg_dict):
