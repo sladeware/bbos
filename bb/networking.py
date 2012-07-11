@@ -13,10 +13,10 @@
 # limitations under the License.
 
 __copyright__ = "Copyright (c) 2011-2012 Sladeware LLC"
-__author__ = "<oleks.sviridenko@gmail.com> Alexander Sviridenko"
+__author__ = "Alexander Sviridenko <oleks.sviridenko@gmail.com>"
 
 from bb.utils.type_check import verify_list, verify_int, verify_string, is_tuple
-from bb.app.mapping import Mapping, verify_mapping
+from bb.app.mapping import Mapping
 from bb.lib.graph import networkx
 
 class Network(networkx.MultiDiGraph):

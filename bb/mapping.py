@@ -23,62 +23,23 @@ that must run on a new or updated hardware platform, thus requiring
 re-tuning of the application. Equally important is the flexibility afforded
 by compile time mapping to system integrators that need to incorporate new
 software features as applications inevitably grow in complexity.
-
-Suppose you would like to create a new army of robots. Each robot will have
-name of format ``ROBOT%d`` and will be powered by operating system ``RobotOS``.
-Several ways to define a new :class:`Mapping` that will control our robot::
-
-    class Robot(Mapping):
-        NAME_FORMAT="ROBOT%d"
-        OS_CLASS=RobotOS
-
-or with help of :func:`mapping_factory` factory::
-
-    robot_class = mapping_factory(name_format="ROBOT%d", os_class=RobotOS)
-
-Once the class has been created we can create our first robot::
-
-    robot1 = robot_class()
-
-Once the mapping is created it has to bind to hardware. The role of bridge
-between :class:`Mapping` and hardware plays :class:`HardwareAgent`. Let us
-assume that our robot device described by ``device``, which has a board with
-designator ``BRD1`` and processor ``PRCR1`` on it. Now we need to find the
-:class:`bb.hardware.devices.processors.processor.Processor.Core` and connect it
-to the :class:`Mapping`::
-
-    board = device.find_element("BRD1")
-    processor = board.find_element("PRCR1")
-    core = processor.get_core() # get core #0
-    core.set_mapping(robot1)
-
-Now we can explore hardware, for example print the processor's short
-description::
-
-    print robot1.hardware.get_processor()
-
 """
 
 __copyright__ = "Copyright (c) 2011-2012 Sladeware LLC"
-__author__ = "<oleks.sviridenko@gmail.com> Alexander Sviridenko"
+__author__ = "Alexander Sviridenko <oleks.sviridenko@gmail.com>"
 
 from bb.hardware import Device
 from bb.hardware.devices.boards import Board
 from bb.hardware.devices.processors import Processor
-from bb.utils.instance import InstanceTracking
 
-class HardwareAgent(object):
-    """This class represents an agent that provides an interface between a
-    single mapping and hardware abstraction. Only the agent knows where the
-    mapping lives.
-
-    For example on which core of which processor and on what
-    board.
+class HardwareConnector(object):
+    """This class represents a connector that provides an interface between a
+    single mapping and hardware abstraction.
     """
 
     def __init__(self, processor=None):
-        self.__processor = None
-        self.__is_simulation_mode = False
+        self._processor = None
+        self._is_simulation_mode = False
         if processor:
             if not isinstance(processor, Processor):
                 raise TypeError("Processor must be %s sub-class" %
@@ -86,10 +47,10 @@ class HardwareAgent(object):
             self.set_processor(processor)
 
     def set_simulation_mode(self):
-        self.__is_simulation_mode = True
+        self._is_simulation_mode = True
 
     def is_simulation_mode(self):
-        return self.__is_simulation_mode
+        return self._is_simulation_mode
 
     def is_board_defined(self):
         """Return whether or not the agent can identify the board."""
@@ -123,7 +84,7 @@ class HardwareAgent(object):
         """Return :class:`bb.hardware.devices.processors.processor.Processor`
         instance.
         """
-        return self.__processor
+        return self._processor
 
     def set_processor(self, processor):
         """Set :class:`bb.hardware.devices.processors.processor.Processor`
@@ -131,103 +92,29 @@ class HardwareAgent(object):
         if not isinstance(processor, Processor):
             raise TypeError("Processor must be %s sub-class" %
                             Processor.__class__.__name__)
-        self.__processor = processor
+        self._processor = processor
 
-    def is_core_defined(self):
-        """Whether or not a core was defined."""
-        return not not self.get_core()
 
-    def get_core(self):
-        """Return
-        :class:`bb.hardware.devices.processors.processor.Processor.Core`
-        instance."""
-        return None
+class Autonaming(object):
+    NAME_FORMAT="O%d"
 
-class Mapping(InstanceTracking):
-    """:class:`Mapping` describes a particular CPU core and the particular
-    operating system kernel on it. It represents the life of that kernel: from
-    its initialization to the point that it stops executing.
-
-    The following example shows a simple way to use mapping::
-
-        robot = Mapping("Robot", os_class=RobotOS)
-
-    This class also inhertis :class:`bb.utils.instance.InstanceTracking` class
-    in order to track all created instances.
-    """
-
-    NAME_FORMAT="M%d"
-    """Default name format is using in order to automatically generate mapping
-    name. Usually mappings of the same class have the same nature and so no
-    reason to invent a new name for each mapping. By default the format has view
-    ``M%d`` and based on the number of mappings in the application (see
-    :func:`bb.app.application.Application.get_num_mappings`).
-    """
-
-    HARDWARE_AGENT_CLASS=HardwareAgent
-    """Hardware agent class that is the bridge between hardware and process."""
-
-    def __init__(self, name=None, name_format=None, hardware_agent_class=None,
-                 build_params=None):
-        # Initialize sub-classes
-        InstanceTracking.__init__(self)
-        self.__threads = list()
-        # Define mapping name format
-        self.__name_format = name_format
+    def __init__(self, name=None, name_format=None):
+        self._name = None
+        self._name_format = None
         self.set_name_format(self.NAME_FORMAT)
         if name_format:
             self.set_name_format(name_format)
-        self.__name = None
-        # Define mapping name or generate it
         if name:
             self.set_name(name)
         else:
             self.gen_name()
-        # Build params
-        self.__build_params = dict()
-        if build_params:
-            self.set_build_params(build_params)
-        # Hardware agent
-        if not hardware_agent_class:
-            hardware_agent_class = self.HARDWARE_AGENT_CLASS
-        self.__hardware_agent = hardware_agent_class()
-
-    def add_thread(self, thread):
-        self.__threads.append(thread)
-        return thread
-
-    def add_threads(self, threads):
-        for thread in threads:
-            self.add_thread(thread)
-
-    def get_threads(self):
-        return self.__threads
-
-    def set_build_params(self, build_params):
-        """Set `build_params` as built-time parameters."""
-        self.__build_params = build_params
-
-    def get_build_params(self):
-        """Return dictionary of build params."""
-        return self.__build_params
-
-    @property
-    def hardware(self):
-        """An alias for :func:`get_hardware_agent`."""
-        return self.get_hardware_agent()
-
-    def get_hardware_agent(self):
-        """Return hardware agent instance. The agent should be derived from
-        :class:`HardwareAgent` class.
-        """
-        return self.__hardware_agent
 
     def set_name_format(self, frmt):
-        self.__name_format = frmt
+        self._name_format = frmt
 
     def get_name_format(self):
         """Return name format."""
-        return self.__name_format
+        return self._name_format
 
     def gen_name(self):
         """Generate unique name for this mapping. Generator uses name format
@@ -244,29 +131,63 @@ class Mapping(InstanceTracking):
 
         .. note::
 
-           The name must be unique within an application.
+           The name must be unique within an application network.
         """
-        self.__name = name
+        self._name = name
 
     def get_name(self):
         """Return name."""
-        return self.__name
+        return self._name
+
+class Mapping(object):
+    """:class:`Mapping` describes a particular CPU and the particular
+    microkernels on it. It represents the life of that microkernel:
+    from its initialization to the point that it stops executing.
+    """
+
+    NAME_FORMAT = "M%d"
+    """Default name format is using in order to automatically generate mapping
+    name. Usually mappings of the same class have the same nature and so no
+    reason to invent a new name for each mapping. By default the format has view
+    ``M%d`` and based on the number of mappings in the application (see
+    :func:`bb.app.Application.get_num_mappings`).
+    """
+
+    HARDWARE_CONNECTOR_CLASS = HardwareConnector
+    """Hardware connector class that is the bridge between hardware and process."""
+
+    def __init__(self, name=None, name_format=None, hardware_connector_class=None,
+                 build_params=None):
+        InstanceTracking.__init__(self)
+        Autonaming.__init__(name, name_format)
+        self._threads = list()
+        self._hardware_connector = None
+        if not hardware_connector_class:
+            hardware_connector_class = self.HARDWARE_CONNECTOR_CLASS
+        self._hardware_connector = hardware_connector_class()
+
+    def register_thread(self, thread):
+        self._threads.append(thread)
+        return thread
+
+    def register_threads(self, threads):
+        for thread in threads:
+            self.register_thread(thread)
+
+    def get_threads(self):
+        return self._threads
+
+    @property
+    def hardware(self):
+        """An alias for :func:`get_hardware_connector`."""
+        return self.get_hardware_connector()
+
+    def get_hardware_connector(self):
+        """Return hardware agent instance. The agent should be derived from
+        :class:`HardwareAgent` class.
+        """
+        return self.__hardware_connector
 
     def __str__(self):
         return "Mapping %s" % self.get_name()
 
-def mapping_factory(*args, **kargs):
-    """:class:`Mapping` factory. Return new class derived from
-    :class:`Mapping` class.
-    """
-    class MappingContainer(Mapping):
-        def __init__(self):
-            Mapping.__init__(self, *args, **kargs)
-    return MappingContainer
-
-def verify_mapping(mapping):
-    if not isinstance(mapping, Mapping):
-        raise TypeError("Unknown mapping '%s'. "
-                        "Not a subclass of bb.mapping.Mapping class" %
-                        (mapping))
-    return mapping

@@ -23,8 +23,7 @@ import sys
 import types
 
 import bb
-from bb.app.mapping import Mapping, verify_mapping
-from bb.app.network import Network
+from bb import networking
 from bb.hardware import Device
 from bb.utils.type_check import verify_list, verify_int, verify_string
 
@@ -48,69 +47,25 @@ class Application(object):
     """
 
     class Object(object):
-        """This class handles application object activity in order to provide
-        management of different modes.
-
-        Just for internal use for each object the global mode value will
-        be copied and saved as the special attribute. Thus the object will be
-        able to recognise environment's mode in which it was initially started.
-        """
 
         def __init__(self):
-            self.__mode = None
+            pass
 
-        # TODO(team): the following code has to be revised after the last
-        # conversation with Slade
-        #
-        #@classmethod
-        #def simulation_method(cls, target):
-        #    """Mark method as method available only for simulation purposes."""
-        #    def simulate(self, *args, **kargs):
-        #        if not self.__mode:
-        #            self.__mode = bb.get_mode()
-        #            if self.__mode is bb.SIMULATION_MODE:
-        #                return target(self, *args, **kargs)
-        #            self.__mode = None
-        #        else:
-        #            if self.__mode == bb.SIMULATION_MODE:
-        #                return target(self, *args, **kargs)
-        #    return simulate
-
-    # Only one running instance is allowed
-    running_instance = None
-
-    def __init__(self, mappings=[], mappings_execution_interval=0, devices=[]):
-        self.__mappings = list()
-        self.__network = Network(mappings)
-        self.__mappings_execution_interval = 0
-        self.__devices = dict()
-        self.__active_device = None
-        # The manager provides a way to share data between different processes
-        # (mappings). A manager is strictly internal object, which controls a
-        # server oricess which manages shared objects. Other processes can
-        # access the shared objects by using proxies.
-        self.__manager = multiprocessing.Manager()
-        # All the processes will be stored at shared dict object. Thus each
-        # process will be able to define the mapping by pid.
-        #self.__processes = self.__manager.dict()
-        self.__processes = list()
-        # Initialization
+    def __init__(self, mappings=[], devices=[]):
+        self._mappings = list()
+        self._network = networking.Network(mappings)
+        self._devices = dict()
         self.add_mappings(mappings)
-        self.set_mappings_execution_interval(mappings_execution_interval)
-        # Initialize device control management
         if not devices:
             devices.append(Device())
         self.add_devices(devices)
-        # Register this application instance
-        #from bb.app import appmanager
-        #appmanager.register_application(self)
 
     def get_network(self):
-        """Return :class:`bb.app.network.Network` instance that represents a
+        """Return :class:`bb.networking.Network` instance that represents a
         network of all :class:`bb.app.mapping.Mapping` instances under this
         application.
         """
-        return self.__network
+        return self._network
 
     @property
     def network(self):
@@ -145,52 +100,13 @@ class Application(object):
         """
         return self.network.get_nodes()
 
-    def set_mappings_execution_interval(self, value):
-        """Set a new value for mappings execution interval."""
-        verify_int(value)
-        if value < 0:
-            raise Exception('Mappings execution interval value can not be less '
-                            'than zero: %d' % value)
-        self.__mappings_execution_interval = value
-
-    def get_mappings_execution_interval(self):
-        """Return time interval (delay) between mappings execution. See also
-        :func:`set_mappings_execution_interval`.
-        """
-        return self.__mappings_execution_interval
-
-    def get_active_mapping(self):
-        """Return currently running :class:`bb.app.mapping.Mapping` instance."""
-        process = multiprocessing.current_process()
-        #print >>sys.stderr, self.__processes
-        #if not process in self.__processes:
-        #    raise Exception("Cannot identify %d" % process.pid)
-        return process.get_mapping()
-
-    def get_num_processes(self):
-        """Return number of running processes."""
-        return len(self.__processes)
-
-    @classmethod
-    def get_running_instance(klass):
-        """Return currently running :class:`Application` instance."""
-        return klass.running_instance
-
     def add_device(self, device):
         """Add :class:`bb.hardware.devices.device.Device` instance to the list
         of devices controled by this application. Return device instance for
         further work. The device will be marked as `active` device.
         """
-        self.__devices[id(device)] = device
-        self.set_active_device(device)
+        self._devices[id(device)] = device
         return device
-
-    def set_active_device(self, device):
-        """Set device, that is already controled by this application, as active
-        device, so all the hardware operations and manipulation will apply to
-        this device instance.
-        """
-        self.__active_device = device
 
     def add_devices(self, devices):
         """Add a set of devices. See :func:`add_device`."""
@@ -199,65 +115,4 @@ class Application(object):
 
     def remove_device(self, device):
         """Return device."""
-        del self.__devices[id(device)]
-
-    def get_active_device(self, device):
-        """Return active device."""
-        return self.__active_device
-
-class Traceable(object):
-    """The Traceable interface allows you to track Object activity within an
-    application.
-    """
-    __table = {}
-
-    def __new__(klass, *args, **kargs):
-        for _, method in inspect.getmembers(klass, inspect.ismethod):
-            # Avoid recursion. Do not wrap special methods such as: __new__,
-            # __init__, __str__, __repr__, etc.
-            if re.match('^__(.+?)__$', method.__name__):
-                continue
-            # On this moment we will also avoid classmethod's.
-            if method.im_self is not None:
-                continue
-            setattr(klass, method.__name__, Traceable.__wrap(method))
-        return super(Traceable, klass).__new__(klass, *args, **kargs)
-
-    @classmethod
-    def find_running_instance(klass, the_klass):
-        tid = multiprocessing.current_process().ident #threading.current_thread().ident
-        if not tid in klass.__table:
-            return None
-        if not the_klass.__name__ in klass.__table[tid]:
-            return None
-        self, counter = klass.__table[tid][the_klass.__name__][-1]
-        return self
-
-    @classmethod
-    def __wrap(klass, method):
-        def dummy(self, *args, **kargs):
-            tid = multiprocessing.current_process().ident #threading.current_thread().ident
-            the_klass = self.__class__
-            # Whether the current thread was registered
-            if not tid in klass.__table:
-                klass.__table[tid] = {}
-            if not the_klass.__name__ in klass.__table[tid]:
-                klass.__table[tid][the_klass.__name__] = []
-            if not len(klass.__table[tid][the_klass.__name__]):
-                klass.__table[tid][the_klass.__name__] = [(self, 1)]
-            else:
-                last_self, counter = klass.__table[tid][the_klass.__name__].pop()
-                if last_self is self:
-                    counter += 1
-                else:
-                    klass.__table[tid][the_klass.__name__].append((last_self, counter))
-                    last_self = self
-                klass.__table[tid][the_klass.__name__].append((last_self, counter))
-            # Pass an arguments to the target method and catch return value
-            ret = method(self, *args, **kargs)
-            self, counter = klass.__table[tid][the_klass.__name__].pop()
-            counter -= 1
-            if counter:
-                klass.__table[tid][the_klass.__name__].append((self, counter))
-            return ret
-        return dummy
+        del self._devices[id(device)]
