@@ -15,17 +15,9 @@
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __author__ = "<oleks.sviridenko@gmail.com> Alexander Sviridenko"
 
-import multiprocessing
-import multiprocessing.managers
-import inspect
-import re
-import sys
-import types
-
 import bb
-from bb import networking
+#from bb.modeling import networking
 from bb.hardware import Device
-from bb.utils.type_check import verify_list, verify_int, verify_string
 
 class Application(object):
     """This class describes BB application. An application is defined by a BB
@@ -53,66 +45,44 @@ class Application(object):
 
     def __init__(self, mappings=[], devices=[]):
         self._mappings = list()
-        self._network = networking.Network(mappings)
+        #self._network = networking.Network(mappings)
         self._devices = dict()
-        self.add_mappings(mappings)
+        self.register_mappings(mappings)
         if not devices:
             devices.append(Device())
-        self.add_devices(devices)
+        self.register_devices(devices)
 
     def get_network(self):
-        """Return :class:`bb.networking.Network` instance that represents a
-        network of all :class:`bb.app.mapping.Mapping` instances under this
-        application.
-        """
         return self._network
 
     @property
     def network(self):
         return self.get_network()
 
-    def add_mapping(self, mapping):
-        """Add :class:`bb.app.mapping.Mapping` instance to the network. Return
-        added mapping.
-        """
+    def register_mapping(self, mapping):
         self.network.add_node(mapping)
         return mapping
 
-    def add_mappings(self, mappings):
-        """Add a list of :class:`bb.app.mapping.Mapping` instances to the
-        network.
-        """
+    def register_mappings(self, mappings):
         verify_list(mappings)
         self.network.add_nodes(mappings)
 
-    def remove_mapping(self, mapping):
-        """Remove :class:`bb.app.mapping.Mapping` instance from the network."""
+    def unregister_mapping(self, mapping):
         self.network.remove_node(mapping)
 
     def get_num_mappings(self):
-        """Analyse network and return number of mappings."""
         return len(self.get_mappings())
 
     def get_mappings(self):
-        """Return list of :class:`bb.app.mapping.Mapping` instances that
-        belong to this application. This can be also done by analysing
-        application network (see also :func:`get_network`).
-        """
         return self.network.get_nodes()
 
-    def add_device(self, device):
-        """Add :class:`bb.hardware.devices.device.Device` instance to the list
-        of devices controled by this application. Return device instance for
-        further work. The device will be marked as `active` device.
-        """
+    def register_device(self, device):
         self._devices[id(device)] = device
         return device
 
-    def add_devices(self, devices):
-        """Add a set of devices. See :func:`add_device`."""
+    def register_devices(self, devices):
         for device in devices:
-            self.add_device(device)
+            self.register_device(device)
 
-    def remove_device(self, device):
-        """Return device."""
+    def unregister_device(self, device):
         del self._devices[id(device)]

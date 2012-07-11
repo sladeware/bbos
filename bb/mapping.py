@@ -28,8 +28,6 @@ software features as applications inevitably grow in complexity.
 __copyright__ = "Copyright (c) 2011-2012 Sladeware LLC"
 __author__ = "Alexander Sviridenko <oleks.sviridenko@gmail.com>"
 
-from bb.hardware import Device
-from bb.hardware.devices.boards import Board
 from bb.hardware.devices.processors import Processor
 
 class HardwareConnector(object):
@@ -51,27 +49,6 @@ class HardwareConnector(object):
 
     def is_simulation_mode(self):
         return self._is_simulation_mode
-
-    def is_board_defined(self):
-        """Return whether or not the agent can identify the board."""
-        return not not self.get_board()
-
-    def get_board(self):
-        """Return :class:`bb.hardware.devices.boards.board.Board` instance on
-        which :class:`bb.hardware.devices.processors.processor.Processor` is
-        located.
-        """
-        processor = self.get_processor()
-        if not processor:
-            return None
-        board = None
-        for neighbour in processor.get_neighbours():
-            if isinstance(neighbour, Board):
-                board = neighbour
-        if not board:
-            print "No board"
-            return None
-        return board
 
     def is_processor_defined(self):
         """Whether or not a processor was defined. Return ``True`` value if the
