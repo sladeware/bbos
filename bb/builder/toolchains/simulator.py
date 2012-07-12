@@ -17,6 +17,8 @@
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __author__ = "Alexander Sviridenko <oleks.sviridenko@gmail.com>"
 
+import multiprocessing
+
 from bb.builder import toolchain_manager
 from bb.builder.toolchains.toolchain import Toolchain
 
@@ -137,9 +139,10 @@ class SimulationToolchain(Toolchain):
     """This toolchain provides simulation support."""
 
     def __init__(self):
+        Toolchain.__init__(self)
         # All the processes will be stored at shared dict object. Thus
         # each process will be able to define the mapping by pid.
-        self.__processes = list()
+        self._processes = list()
 
     def get_active_mapping(self):
         """Return currently running :class:`bb.app.mapping.Mapping` instance."""
@@ -154,6 +157,7 @@ class SimulationToolchain(Toolchain):
         return len(self.__processes)
     
     def build(self, *args, **kargs):
+        Toolchain.build(self, args, kargs)
         print "Start simulation"
                 #process = Process(mapping, os_class)
                 #_processes.append(process)
