@@ -2,10 +2,10 @@
 
 import imp
 import multiprocessing
-import os
 import sys
 import warnings
 
+from bb.config import host_os
 from bb.build.toolchains.toolchain import Toolchain
 
 # TODO: do not ignore every single warning
@@ -54,7 +54,7 @@ class _UnbufferedOutputStream(_OutputStream):
         return getattr(self.stream, attr)
 
 class Process(multiprocessing.Process):
-    def __init__(self, sim_os_class, os):
+    def __init__(self, ):
 
         def bootstrapper():
             sim_os = sim_os_class(os)
@@ -78,8 +78,8 @@ class Process(multiprocessing.Process):
         sys.stdout = old_stdout
 
     def kill(self):
-        """Kill this process. See also :func:`os.kill`."""
-        os.kill(self.pid, signal.SIGTERM)
+        """Kill this process. See also :func:`host_os.kill`."""
+        host_os.kill(self.pid, signal.SIGTERM)
 
 class Simulator(Toolchain):
     def __init__(self, *args, **kargs):
@@ -93,40 +93,13 @@ class Simulator(Toolchain):
         return len(self._processes)
 
     def _build(self, *args, **kargs):
-        # Find os class
-        buildtime_os = kargs.get("os", None)
-        if not buildtime_os:
-            print "os instance wasn't pass"
-            return
         # Load files
-        # TODO: check os_class from mapping
-        buildtime_os_class = 'OS'
-        runtime_os_class = None
-        for source in self.get_sources():
-            package_name = self._get_package_name_by_file_name(source)
-            if source.startswith(os.environ['BB_APPLICATION_HOME']):
-                package_name = source[len(os.environ['BB_APPLICATION_HOME']):]
-                package_name, _ = os.path.splitext(package_name)
-                package_name = package_name.replace(os.sep, '.')
-                package_name = "bb.runtime.application" + package_name
-            print 'Import "%s" as "%s"' % (source, package_name)
-            mod = None
-            try:
-                mod = __import__(package_name, globals(), locals(), [], -1)
-            except ImportError, e:
-                try:
-                    mod = imp.load_source(package_name, source)
-                except RuntimeWarning, e:
-                    pass
-            if not mod:
-                raise ImportError("Module cannot be load")
-            # TODO: fix this. See TODO on above.
-            if not runtime_os_class and getattr(mod, buildtime_os_class, None):
-                runtime_os_class = getattr(mod, buildtime_os_class)
-        if not runtime_os_class:
-            print "Cannot build this mapping. OS class '%s' cannot be found." % buildtime_os_class
-            return
-        self._start_simulation(runtime_os_class, buildtime_os)
+        #import py_compile
+        #print py_compile.main(self.get_sources())
+        import subprocess
+        print ["python",] + self.get_sources()
+        subprocess.call(["python",] + self.get_sources())
+
 
     def _start_simulation(self, runtime_os_class, buildtime_os):
         print "Start simulation"
@@ -138,11 +111,11 @@ class Simulator(Toolchain):
 
     def _get_package_name_by_file_name(self, file_name):
         package_name = None
-        for home in (os.environ['BB_HOME'], os.environ['BB_PACKAGE_HOME']):
+        for home in (host_os.environ['BB_HOME'], host_os.environ['BB_PACKAGE_HOME']):
             if file_name.startswith(home):
                 package_name = file_name[len(home):]
-                package_name = package_name.strip(os.sep)
-                package_name, _ = os.path.splitext(package_name)
-                package_name = package_name.replace(os.sep, '.')
+                package_name = package_name.strip(host_os.sep)
+                package_name, _ = host_os.path.splitext(package_name)
+                package_name = package_name.replace(host_os.sep, '.')
                 return package_name
         raise Exception()
