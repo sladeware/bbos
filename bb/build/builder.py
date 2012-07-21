@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 
 import math
+import logging
 
 import bb
 from bb.build import packager
+
+logging.basicConfig(level=logging.DEBUG)
 
 _application = None
 _dependency_injectors = dict()
@@ -24,22 +27,22 @@ def build(application=None):
         set_application(application)
     application = get_application()
     if not application:
-        print "Application must be provided"
+        logging.error("Application must be provided")
         return
     if not application.get_num_mappings():
-        print "Nothing to build. Please, add at least one mapping "\
-            "to this application."
+        logging.error("Nothing to build. Please, add at least one mapping "\
+            "to this application.")
         return
-    print "Build application"
+    logging.debug("Build application")
     for mapping in application.get_mappings():
         _build_mapping(mapping)
 
 def _build_mapping(mapping):
     if not isinstance(mapping, bb.Mapping):
         raise Exception("Must be bb.Mapping")
-    print "Build mapping", mapping.get_name()
+    logging.debug("Build mapping %s", mapping.get_name())
     if not mapping.get_num_threads():
-        print "Mapping", mapping.get_name(), "doesn't have threads"
+        logging.error("Mapping", mapping.get_name(), "doesn't have threads")
         return
     print "*", "number of threads", "=", mapping.get_num_threads()
     processor = mapping.get_processor()
@@ -66,36 +69,39 @@ def _build_mapping(mapping):
     for i in range(len(threads_per_core)):
         core_id = active_cores[i]
         core = cores[core_id]
-        os = os_class(threads=threads_per_core[core_id])
-        print "Assemble OS"
-        objects = assemble(os)
-        toolchain_class = _define_toolchain_class(objects)
-        print "Use toolchain:", toolchain_class
-        toolchain = toolchain_class()
-        print "Build packages"
-        packages = list()
-        for obj in objects:
-            package = packager.get_package(obj, toolchain_class)
-            package.context['object'] = objects[i]
-            package.context['toolchain'] = toolchain
-            try:
-                package.on_unpack()
-            except NotImplementedError, e:
-                pass
-            toolchain.add_sources(package.get_files())
-            packages.append(package)
-        for package in packages:
-            try:
-                package.on_build()
-            except Exception, e:
-                pass
-        toolchain.build(os=os)
+        _build_os(os_class, threads_per_core[core_id])
+
+def _build_os(os_class, threads):
+    print "Build OS"
+    os = os_class(threads)
+    objects = assemble(os)
+    toolchain_class = _select_toolchain_class(objects)
+    print "Use toolchain:", toolchain_class
+    toolchain = toolchain_class()
+    print "Build packages"
+    packages = list()
+    for obj in objects:
+        package = packager.get_package(obj, toolchain_class)
+        package.context['object'] = obj
+        package.context['toolchain'] = toolchain
+        try:
+            package.on_unpack()
+        except NotImplementedError, e:
+            pass
+        toolchain.add_sources(package.get_files())
+        packages.append(package)
+    for package in packages:
+        try:
+            package.on_build()
+        except Exception, e:
+            pass
+    toolchain.build()
 
 def default_thread_distribution(threads, cores):
     step = int(math.ceil(float(len(threads)) / float(len(cores))))
     return [threads[x : x + step] for x in xrange(0, len(threads), step)]
 
-def _define_toolchain_class(objects):
+def _select_toolchain_class(objects):
     available_toolchains = set(packager.get_supported_toolchains(objects[0]))
     for obj in objects:
         supported_toolchains = set(packager.get_supported_toolchains(obj))
