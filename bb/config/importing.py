@@ -8,14 +8,23 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 
 _import_build = False
-_builds = list()
+_unloaded_builds = list()
 
-def do_import_build():
-    global _import_build, _builds
+def disable_import_build():
+    global _import_build
+    _import_build = False
+
+def is_import_build_enabled():
+    global _import_build
+    return _import_build
+
+def enable_import_build():
+    global _import_build
+    global _unloaded_builds
     _import_build = True
-    if not len(_builds):
+    if not len(_unloaded_builds):
         return
-    for build in _builds:
+    for build in _unloaded_builds:
         BBImporter.load_package(build)
 
 class BBImporter(object):
@@ -88,9 +97,9 @@ class BBImporter(object):
         return mod_path
 
     def load_module(self, fullname):
-        global _import_build, _builds
+        global _builds
         if fullname in sys.modules:
-            if _import_build:
+            if is_import_build_enabled():
                 self.load_package(fullname)
             return sys.modules[fullname]
         mod = None
@@ -110,7 +119,7 @@ class BBImporter(object):
             mod.__package__ = fullname
         else:
             mod.__package__ = fullname.rpartition('.')[0]
-        if _import_build:
+        if is_import_build_enabled():
             self.load_package(fullname)
         else:
             _builds.append(fullname)
