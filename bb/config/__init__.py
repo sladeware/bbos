@@ -17,7 +17,8 @@ import inspect
 import sys
 import platform
 
-import bb.config.py_import # override standard __import__
+import bb.config.importing # override standard __import__
+import bb.config.builtins
 
 # Compatibility with Python 2.5 through 2.7.
 assert (2,5) <= sys.version_info < (3,), """\

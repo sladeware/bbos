@@ -1,22 +1,21 @@
 #!/usr/bin/env python
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 class Thread(object):
-    NAME = None
-    RUNNER = None
-
-    def __init__(self, thread):
+    def __init__(self):
         self._name = None
         self._runner = None
-        #if name:
-        #    self.set_name(name)
-        #elif hasattr(self, "NAME"):
-        #    self.set_name(getattr(self, "NAME"))
-        #if not self.get_name():
-        #    raise Exception("Name wasn't provided")
-        #if runner:
-        #    self.set_runner(runner)
-        #elif hasattr(self, "RUNNER"):
-        #    self._runner = self.RUNNER
 
     def set_runner(self, runner):
         self._runner = runner

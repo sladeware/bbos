@@ -7,7 +7,7 @@ import warnings
 
 import bb
 from bb.config import host_os
-from bb.tools.toolchains.toolchain import Toolchain
+from bb.lib.build.toolchains.toolchain import Toolchain
 
 # TODO: do not ignore every single warning
 #warnings.simplefilter("ignore")

@@ -12,41 +12,49 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""This module describes BB application. An application is defined by a BB model
+and is comprised of a set of processes running on a particular system topology
+to perform work meeting the application's requirements. Each process correnspond
+to the appropriate :class:`bb.mapping.Mapping` instance from `mappings`.
+
+It combines all of the build systems of all of the defined processes. Therefore
+the application includes the models of processes, their communication, hardware
+description, simulation and build specifications. At the same time the processes
+inside of an application can be segmented into `clusters`, or a group of CPUs.
+
+The application also controls the hardware or devices that will be managed
+by mappings.
+"""
+
 import bb
 from bb import networking
 from bb.lib.utils import typecheck
 
-class Application(object):
-    def __init__(self, mappings=[]):
-        self._network = networking.Network()
-        if mappings:
-            self.register_mappings(mappings)
+_mappings = []
+_network = networking.Network()
 
-    @property
-    def network(self):
-        return self.get_network()
+def get_network():
+  global _network
+  return _network
 
-    def get_network(self):
-        return self._network
+def register_mappings(mappings):
+  if not typecheck.is_list(mappings):
+    raise TypeError("Must be list")
+  for mapping in mappings:
+    register_mapping(mapping)
 
-    def register_mappings(self, mappings):
-        if not typecheck.is_list(mappings):
-            raise TypeError("Must be list")
-        for mapping in mappings:
-            self.register_mapping(mapping)
+def get_mappings():
+  return get_network().get_nodes()
 
-    def get_mappings(self):
-        return self.network.get_nodes()
+def get_num_mappings():
+  return len(get_mappings())
 
-    def get_num_mappings(self):
-        return len(self.get_mappings())
+def is_registered_mapping(mapping):
+  if not isinstance(mapping, bb.Mapping):
+    raise TypeError("Must be bb.Mapping")
+  return get_network().has_node(mapping)
 
-    def is_registered_mapping(self, mapping):
-        if not isinstance(mapping, bb.Mapping):
-            raise TypeError("Must be bb.Mapping")
-        return self.network.has_node(mapping)
-
-    def register_mapping(self, mapping):
-        if self.is_registered_mapping(mapping):
-            return False
-        self.network.add_node(mapping)
+def register_mapping(mapping):
+  if is_registered_mapping(mapping):
+    return False
+  get_network().add_node(mapping)

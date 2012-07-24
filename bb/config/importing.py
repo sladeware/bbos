@@ -97,21 +97,19 @@ class BBImporter(object):
         return mod_path
 
     def load_module(self, fullname):
-        global _builds
+        global _unloaded_builds
+
         if fullname in sys.modules:
             if is_import_build_enabled():
                 self.load_package(fullname)
             return sys.modules[fullname]
         mod = None
-        if fullname.startswith('bb.buildtime'):
-            mod = self.load_buildtime_module(fullname)
-        else:
-            mod_path = self.get_mod_path(fullname)
-            if not mod_path:
-                return None
-            fh, path, descr = imp.find_module(mod_path)
-            sys.modules.setdefault(fullname, imp.new_module(fullname))
-            mod = imp.load_module(fullname, fh, path, descr)
+        mod_path = self.get_mod_path(fullname)
+        if not mod_path:
+            return None
+        fh, path, descr = imp.find_module(mod_path)
+        sys.modules.setdefault(fullname, imp.new_module(fullname))
+        mod = imp.load_module(fullname, fh, path, descr)
         mod.__loader__ = self
         mod.__file__ = "<%s>" % self.__class__.__name__
         if self.is_package(fullname):
@@ -122,7 +120,7 @@ class BBImporter(object):
         if is_import_build_enabled():
             self.load_package(fullname)
         else:
-            _builds.append(fullname)
+            _unloaded_builds.append(fullname)
         return mod
 
 sys.meta_path = [BBImporter()]
