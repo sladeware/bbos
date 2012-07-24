@@ -5,11 +5,12 @@ import multiprocessing
 import sys
 import warnings
 
+import bb
 from bb.config import host_os
-from bb.build.toolchains.toolchain import Toolchain
+from bb.tools.toolchains.toolchain import Toolchain
 
 # TODO: do not ignore every single warning
-warnings.simplefilter("ignore")
+#warnings.simplefilter("ignore")
 
 class _OutputStream:
     PREFIX_FORMAT = '[%s] '
@@ -81,7 +82,7 @@ class Process(multiprocessing.Process):
         """Kill this process. See also :func:`host_os.kill`."""
         host_os.kill(self.pid, signal.SIGTERM)
 
-class Simulator(Toolchain):
+class SimulationToolchain(Toolchain):
     def __init__(self, *args, **kargs):
         Toolchain.__init__(self, *args, **kargs)
         # All the processes will be stored at shared dict object. Thus

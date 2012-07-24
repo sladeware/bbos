@@ -1,4 +1,4 @@
 #!/usr/bin/env python
 
-from bb.build.toolchains.toolchain import Toolchain
-from bb.build.toolchains.simulator import Simulator
+from bb.tools.toolchains.toolchain import Toolchain
+from bb.tools.toolchains.simulator import SimulationToolchain

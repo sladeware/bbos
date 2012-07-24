@@ -1,23 +1,39 @@
 #!/usr/bin/env python
 
-import os.path
-import platform
-
+import bb
+from bb.config import host_os
 from bb.lib.utils import typecheck
 
-class Toolchain(object):
+class EventManager(object):
+    def __init__(self):
+        self._event_listeners = list()
+
+    def add_event_listener(self, event_listener):
+        self._event_listeners.append(event_listener)
+
+    @classmethod
+    def event(klass, event):
+        def _(self, *args, **kargs):
+            for listener in self._event_listeners:
+                action = getattr(listener, "on_" + event.__name__, None)
+                if action:
+                    action()
+            return event(self, *args, **kargs)
+        return _
+
+class Toolchain(EventManager):
+    class EventListener(object):
+        def on_build(self):
+            pass
+
     def __init__(self, sources=[], verbose=False, compiler=None, loader=None):
+        EventManager.__init__(self)
         if not typecheck.is_list(sources):
             raise Exception("Must be list")
         self._verbose = verbose
         self._sources = []
         self._compiler = None
         self._loader = None
-        self._env = {
-            'HOST_OS': platform.system(), # NOTE: what about os.name?
-            'HOST_PROCESSOR': platform.processor(),
-            'HOST_ARCH': platform.machine(),
-            }
         if compiler:
             self.set_compiler(compiler)
         if loader:
@@ -42,8 +58,8 @@ class Toolchain(object):
         if not source:
             raise Exception("WTF!")
         if typecheck.is_string(source):
-            source = os.path.abspath(source)
-            if not os.path.exists(source):
+            source = host_os.path.abspath(source)
+            if not host_os.path.exists(source):
                 raise Exception("Source doesn't exist: %s" % source)
             print "Adding source '%s'" % source
             self._sources.append(source)
@@ -65,6 +81,7 @@ class Toolchain(object):
     def loader(self):
         return self.get_loader()
 
+    @EventManager.event
     def build(self, sources=[], output_dir=None, verbose=None, dry_run=None,
               *arg_list, **arg_dict):
         """Start building process."""
