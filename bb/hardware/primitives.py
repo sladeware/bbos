@@ -29,9 +29,9 @@ class Primitive(object):
   :func:`generate_designator`. However it can be changed manually by using
   :func:`set_designator` method.
 
-  A primitive may also have properties where each property is represented
-  by :class:`Primitive.Property`. For example, if you would like to add
-  weight of your primitive ``my_primitive``, you can do this as follows::
+  A primitive may also have properties where each property is represented by
+  :class:`Primitive.Property`. For example, if you would like to add weight of
+  your primitive ``my_primitive``, you can do this as follows::
 
     my_primitive.add_property(Primitive.Property("weight", 87))
 
@@ -41,9 +41,9 @@ class Primitive(object):
   """
 
   DESIGNATOR_FORMAT="P%d"
-  """This designator format will be used by all the primitives that will
-  inherit this class. By default primitives will have such designators:
-  ``P0``, ``P1``, ..., etc. The format can be changed later by using
+  """This designator format will be used by all the primitives that will inherit
+  this class. By default primitives will have such designators: ``P0``, ``P1``,
+  ..., etc. The format can be changed later by using
   :func:`set_designator_format` method.
   """
 

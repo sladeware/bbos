@@ -18,7 +18,7 @@ with base class bb.Thread:
 
   from bb import builder
 
-  builder.rule('bb.Thread', cases={
+  builder.rule('bb.Thread', {
     'simulator' : {
       'srcs' : ("f1.py", "f2.py", "f3.py"),
       'lstn' : ("l1"),
@@ -34,7 +34,7 @@ helloworld.py:
   from bb import builder
   from bb.buildtime.application import helloworld
 
-  builder.rule(helloworld.printer, cases={
+  builder.rule(helloworld.printer, {
     'simulator' : {
       'srcs' : ("printer.py",)
     }
@@ -49,6 +49,7 @@ import inspect
 import math
 import fnmatch
 import imp
+import types
 
 import bb
 from bb import application as bbapp
@@ -81,9 +82,31 @@ class Rule(object):
     return self._cases.keys()
 
   def apply(self, target, toolchain):
-    args = self._cases.get(toolchain.__class__.__name__, None)
+    owner, args = self._cases.get(toolchain.__class__.__name__, None)
     if 'srcs' in args:
-      toolchain.add_sources(args['srcs'])
+      self._fix_srcs(args, owner, target)
+      for src in args['srcs']:
+        toolchain.add_source(src)
+
+  def _fix_srcs(self, args, owner, target):
+    build_script_file = inspect.getsourcefile(owner)
+    build_script_dirname = host_os.path.dirname(build_script_file)
+    if 'srcs' in args:
+      if typecheck.is_tuple(args['srcs']):
+        args['srcs'] = list(args['srcs'])
+      for i in range(len(args['srcs'])):
+        src = args['srcs'][i]
+        if typecheck.is_function(src):
+          src = src(target)
+          args['srcs'][i] = src
+        if not typecheck.is_string(src):
+          raise TypeError("unknown source type: %s" % src)
+        if not host_os.path.exists(src):
+          alternative_src = host_os.path.join(build_script_dirname, src)
+          if not host_os.path.exists(alternative_src):
+            print "WARNING: file '%s' cannot be found" % src
+            return
+          args['srcs'][i] = alternative_src
 
   def add_build_cases(self, owner, cases):
     if not typecheck.is_dict(cases):
@@ -98,43 +121,33 @@ class Rule(object):
   def add_build_case(self, owner, name, args):
     if not toolchain_manager.is_supported_toolchain(name):
       raise Exception("Toolchain '%s' is not supported." % name)
-    self._fix_args(args, owner)
-    self._cases[name] = args
-
-  def _fix_args(self, args, owner):
-    build_script_file = inspect.getsourcefile(owner)
-    build_script_dirname = host_os.path.dirname(build_script_file)
-    if 'srcs' in args:
-      if typecheck.is_tuple(args['srcs']):
-        args['srcs'] = list(args['srcs'])
-      for i in range(len(args['srcs'])):
-        src = args['srcs'][i]
-        if not host_os.path.exists(src):
-          alternative_src = host_os.path.join(build_script_dirname, src)
-          if not host_os.path.exists(alternative_src):
-            print "WARNING: file '%s' cannot be found" % src
-            return
-          args['srcs'][i] = alternative_src
+    self._cases[name] = (owner, args)
 
 class Listener(object):
   pass
 
-def _get_rule_by_target(target):
+def _get_rule_by_target(target, class_only=False):
+  """What if target is derived from a several target classes?"""
   global _class_rules
   global _instance_rules
-  if typecheck.is_string(target):
+  if type(target) == types.TypeType:
     return _class_rules.get(target, None)
-  elif isinstance(target, object):
-    return _instance_rules.get(target, None)
-  else:
+  if not isinstance(target, object):
     raise TypeError("Unknown target type")
+  if not class_only:
+    rule = _instance_rules.get(target, None)
+    if rule:
+      return rule
+  for target_class, rule in _class_rules.items():
+    if isinstance(target, target_class):
+      return rule
+  return None
 
 def rule(targets, cases):
   owner = bb.config.builtins.caller(2)
   if not typecheck.is_list(targets) or not typecheck.is_tuple(targets):
     targets = (targets,)
   for target in targets:
-    #print target
     _add_rule(target, cases, owner)
 
 def _get_class_rules():
@@ -151,11 +164,15 @@ def _get_rules():
 def _add_rule(target, cases, owner):
   global _class_rules
   global _instance_rules
+  if typecheck.is_string(target):
+    target = eval(target)
+  elif not isinstance(target, object):
+    raise TypeError("Target must be class name or instance")
   rule = _get_rule_by_target(target)
   if not rule:
     rule = Rule()
   rule.add_build_cases(owner, cases)
-  if typecheck.is_string(target):
+  if type(target) == types.TypeType:
     _class_rules[target] = rule
   elif isinstance(target, object):
     _instance_rules[target] = rule
@@ -171,8 +188,7 @@ def _add_target(target):
   global _targets
   if not isinstance(target, object):
     raise TypeError("Must be object instance")
-  rule = _get_rule_by_target(target) \
-      or _get_rule_by_target(target.__class__.__name__)
+  rule = _get_rule_by_target(target)
   if not rule:
     print "WARNING: Don't have a rule for target", target
     return
@@ -203,7 +219,6 @@ def _analyse_application():
   for mapping in mappings:
     if not isinstance(mapping, bb.Mapping):
       raise Exception("Must be Mapping")
-    _add_target(mapping)
     print "Analyse mapping '%s'" % mapping.get_name()
     if not mapping.get_num_threads():
       logging.error("Mapping", mapping.get_name(), "doesn't have threads")
@@ -251,8 +266,12 @@ def _init():
 def _apply_rules():
   global _class_rules
   global _instance_rules
-  for target, rule in _class_rules.items():
-    rule.apply(target, _get_toolchain())
+  #for target, rule in _class_rules.items():
+  #  rule.apply(target, _get_toolchain())
+  for target in _get_targets():
+    for match_target_class, rule in _class_rules.items():
+      if isinstance(target, match_target_class):
+        rule.apply(target, _get_toolchain())
   for target, rule in _instance_rules.items():
     rule.apply(target, _get_toolchain())
 

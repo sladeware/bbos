@@ -3,6 +3,6 @@
 import bb.runtime.os.os as bbos
 
 if __name__ == '__main__':
-    bbos.init()
-    bbos.main()
-    bbos.start()
+  bbos.init()
+  bbos.main()
+  bbos.start()

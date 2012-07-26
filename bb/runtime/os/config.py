@@ -2,6 +2,11 @@
 
 # import main platform config, MUST be first
 import bb.runtime.config as bb_config
+from bb.runtime.autogen import bbos_config_autogen
+
+if not bbos_config_autogen:
+  print "bbos_config_autogen cannot be imported"
+  exit(1)
 
 if not getattr(bb_config, "BB_CONFIG_DEBUG", None):
     setattr(bb_config, "BB_CONFIG_DEBUG", 1)
