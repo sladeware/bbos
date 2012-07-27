@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
+
 import types
 
 from bb.lib.utils.spawn import which, ExecutionError
@@ -9,7 +12,7 @@ class ProgramHandler(object):
   """Default executables."""
 
   def __init__(self):
-    self.__executables = dict()
+    self._executables = dict()
     self.set_executables(self.DEFAULT_EXECUTABLES)
 
   def set_executables(self, *args, **kargs):
@@ -47,23 +50,23 @@ class ProgramHandler(object):
     to perform some compilation stage.
     """
     if isinstance(value, str):
-      self.__executables[key] = split_quoted(value)
+      self._executables[key] = split_quoted(value)
     else:
-      self.__executables[key] = value
+      self._executables[key] = value
 
   def get_executable(self, name):
     """Return executable by its `name`. If it does not exist
     return ``None``.
     """
-    return self.__executables.get(name, None)
+    return self._executables.get(name, None)
 
   def check_executables(self):
     """Check compiler executables. All of them has to exist. Print warning
     if some executable was specified but not defined.
     """
-    if not self.__executables:
+    if not self._executables:
       return
-    for (name, cmd) in self.__executables.items():
+    for (name, cmd) in self._executables.items():
       if not cmd:
         print "WARNING: undefined executable '%s'" % name
         continue

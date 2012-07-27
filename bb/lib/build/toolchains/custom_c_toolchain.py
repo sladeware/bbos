@@ -20,23 +20,21 @@ from bb.lib.build.toolchains.toolchain import Toolchain
 
 class CustomCToolchain(Toolchain):
   """C toolchain for C-like compilers."""
-  def __init__(self, sources=[], verbose=0, compiler=None,
-               loader=None):
+  def __init__(self, sources=[], verbose=0, compiler=None, loader=None):
     Toolchain.__init__(self, sources, verbose, compiler, loader)
 
   def get_output_filename(self):
     """Return output file name."""
     return self.compiler.get_output_filename()
 
-  def _build(self, sources, include_dirs=[], macros=[], libraries=[],
+  def _build(self, include_dirs=[], macros=[], libraries=[],
              library_dirs=[], dry_run=False):
-    self.output_filepath = os.path.join(self.compiler.get_output_dir(), \
-                                          self.compiler.get_output_filename())
-    built_objects = self.compiler.compile(sources,
-                                          include_dirs=include_dirs,
+    sources = self.get_sources()
+    self.output_filepath = os.path.join(self.compiler.get_output_dir(),
+                                        self.compiler.get_output_filename())
+    built_objects = self.compiler.compile(sources, include_dirs=include_dirs,
                                           macros=macros)
-    self.compiler.link(built_objects, self.output_filepath,
-                       libraries=libraries,
+    self.compiler.link(built_objects, self.output_filepath, libraries=libraries,
                        library_dirs=library_dirs)
 
   def load(self):

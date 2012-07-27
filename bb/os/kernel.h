@@ -18,8 +18,8 @@
 #define __BB_OS_KERNEL_H
 
 #include <bb/os/config.h>
-#include <bb/os/kernel/mm.h> // memory management
-#include <bb/os/kernel/error_codes.h>
+//#include <bb/os/kernel/mm.h> // memory management
+//#include <bb/os/kernel/error_codes.h>
 
 #include <assert.h>
 

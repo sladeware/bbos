@@ -13,25 +13,25 @@
 # limitations under the License.
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
-__author__ = "<oleks.sviridenko@gmail.com> Alexander Sviridenko"
+__author__ = "Oleksander Sviridenko"
 
 import os
 import sys
 import types
 
 def which(program):
-    def is_exe(fpath):
-        return os.path.exists(fpath) and os.access(fpath, os.X_OK)
-    fpath, fname = os.path.split(program)
-    if fpath:
-        if is_exe(program):
-            return program
-    else:
-        for path in os.environ["PATH"].split(os.pathsep):
-            exe_file = os.path.join(path, program)
-            if is_exe(exe_file):
-                return exe_file
-    return None
+  def is_exe(fpath):
+    return os.path.exists(fpath) and os.access(fpath, os.X_OK)
+  fpath, fname = os.path.split(program)
+  if fpath:
+    if is_exe(program):
+      return program
+  else:
+    for path in os.environ["PATH"].split(os.pathsep):
+      exe_file = os.path.join(path, program)
+      if is_exe(exe_file):
+        return exe_file
+  return None
 
 class PlatformError(Exception):
     """Platform error."""
@@ -124,12 +124,11 @@ def _spawn_posix(cmd, search_path=True, verbose=False, dry_run=False):
                     return # hey, it succeeded!
                 else:
                     raise ExecutionError(
-                        "command '%s' failed with exit status %d" 
+                        "command '%s' failed with exit status %d"
                         % (cmd[0], exit_status))
             elif os.WIFSTOPPED(status):
                 continue
             else:
                 raise ExecutionError(
-                    "unknown error executing '%s': termination status %d" 
+                    "unknown error executing '%s': termination status %d"
                     % (cmd[0], status))
-

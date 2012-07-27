@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
+
 import imp
 import sys
 import os
@@ -20,7 +23,8 @@ def import_build_scripts():
       build_scripts.append(host_os.path.join(root, filename))
   logging.debug("Found %d build script(s)" % len(build_scripts))
   for _ in range(len(build_scripts)):
-    imp.load_source("bs%d" % _, build_scripts[_])
+    fullname = BBImporter.get_fullname_by_path(build_scripts[_])
+    imp.load_source(fullname, build_scripts[_])
 
 class BBImporter(object):
   """Read more about import hooks here
@@ -28,6 +32,17 @@ class BBImporter(object):
   <http://docs.python.org/py3k/library/importlib.html>,
   <http://docs.python.org/library/imp.html>.
   """
+
+  @classmethod
+  def get_fullname_by_path(self, path):
+    fullname = None
+    for search_path in sys.path:
+      if path.startswith(search_path):
+        mod_location = path[len(search_path) + 1:]
+        parts = mod_location.split(host_os.sep)
+        parts[-1] = parts[-1].split('.')[0] # remove extension
+        fullname = '.'.join(parts)
+    return fullname
 
   def __init__(self, *args, **kargs):
     self._mod = None

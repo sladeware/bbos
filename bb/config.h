@@ -56,6 +56,6 @@
 #include <bb/config/stdlib/stdint.h> // MUST be second
 
 // Include some magic tricks
-#include <bb/utils/tricks.h>
+#include <bb/lib/utils/tricks.h>
 
 #endif // __BB_CONFIG_H

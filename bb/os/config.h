@@ -23,9 +23,9 @@
 #include <bb/config.h>
 
 // Include main OS configuration file defined by user.
-#include BB_CONFIG_OS_H // MUST be second
+#include <bb/os/config_autogen.h> // MUST be second
+#include BB_CONFIG_OS_H
 
-#include <bb/os/version.h>
 #include <bb/os/types.h>
 
 // Include some standard libraries from config compatibility.

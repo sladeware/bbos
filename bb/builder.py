@@ -55,6 +55,7 @@ from bb import application as bbapp
 from bb.config import host_os
 from bb.lib.utils import typecheck
 from bb.lib.build import toolchain_manager
+from bb.lib.build.compilers import CustomCCompiler
 
 _targets = []
 _class_rules = {}
@@ -91,6 +92,7 @@ class Rule(object):
     build_script_file = inspect.getsourcefile(owner)
     build_script_dirname = host_os.path.dirname(build_script_file)
     if 'srcs' in args:
+      garbage_indices = list()
       if typecheck.is_tuple(args['srcs']):
         args['srcs'] = list(args['srcs'])
       for i in range(len(args['srcs'])):
@@ -98,6 +100,10 @@ class Rule(object):
         if typecheck.is_function(src):
           src = src(target)
           args['srcs'][i] = src
+        # If source is None, skip it
+        if not src:
+          garbage_indices.append(i)
+          continue
         if not typecheck.is_string(src):
           raise TypeError("unknown source type: %s" % src)
         if not host_os.path.exists(src):
@@ -106,6 +112,8 @@ class Rule(object):
             print "WARNING: file '%s' cannot be found" % src
             return
           args['srcs'][i] = alternative_src
+      for i in reversed(range(len(garbage_indices))):
+        args['srcs'].pop(garbage_indices[i])
 
   def add_build_cases(self, owner, cases):
     if not typecheck.is_dict(cases):
@@ -244,7 +252,7 @@ def _analyse_application():
       _add_targets(os.microkernel.get_threads())
 
 def _print_header(title):
-  print "[", title, "]"
+  print "=>", title
 
 def _init():
   _print_header('Initialization')
@@ -252,8 +260,6 @@ def _init():
 def _apply_rules():
   global _class_rules
   global _instance_rules
-  #for target, rule in _class_rules.items():
-  #  rule.apply(target, _get_toolchain())
   for target in _get_targets():
     for match_target_class, rule in _class_rules.items():
       if isinstance(target, match_target_class):
@@ -270,8 +276,16 @@ def build():
     exit(1)
   _print_header("Building")
   _select_toolchain()
+  _setup_toolchain()
   _apply_rules()
   _toolchain.build()
+
+def _setup_toolchain():
+  global _toolchain
+  compiler = _toolchain.get_compiler()
+  if isinstance(compiler, CustomCCompiler):
+    compiler.add_include_dir(bb.env['BB_PACKAGE_HOME'])
+    compiler.add_include_dir(bb.env['BB_APPLICATION_HOME'])
 
 def _select_toolchain():
   first_rule = _get_rules()[0]

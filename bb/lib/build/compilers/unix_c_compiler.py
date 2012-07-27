@@ -4,6 +4,7 @@ __author__ = "Oleksandr Sviridenko"
 
 from bb.lib.build.compilers.custom_c_compiler import CustomCCompiler
 from bb.lib.build.compilers.gcc import LD
+from bb.lib.utils import spawn
 
 class UnixCCompiler(CustomCCompiler):
   """This class is subclass of
@@ -60,10 +61,10 @@ class UnixCCompiler(CustomCCompiler):
   def _compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts):
     compiler = self.get_executable('compiler')
     try:
-      spawn(compiler + cc_args + [src, '-o', obj] + extra_postargs,
-            verbose=self.verbose, dry_run=self.dry_run)
-    except ExecutionError, msg:
-      raise CompileError(msg)
+      spawn.spawn(compiler + cc_args + [src, '-o', obj] + extra_postargs,
+                  verbose=self.verbose, dry_run=self.dry_run)
+    except spawn.ExecutionError, msg:
+      raise Exception(msg) # CompileError
 
   def _link(self, objects, output_dir=None, libraries=None, library_dirs=None,
               debug=False, extra_preargs=None, extra_postargs=None,

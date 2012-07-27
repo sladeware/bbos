@@ -103,20 +103,13 @@ bbos_kernel_enable_all_threads()
     }
 }
 
-void
-bbos_idle_runner()
-{
-}
-
 /**
  * Start the kernel.
  */
 void
 bbos_kernel_start()
 {
-  //bbos_printf("Start kernel\n");
-  bbos_kernel_init_thread(BBOS_IDLE, bbos_idle_runner, 0);
-  bbos_kernel_enable_thread(BBOS_IDLE);
+  bbos_printf("Start kernel\n");
   bbos_kernel_loop();
 }
 

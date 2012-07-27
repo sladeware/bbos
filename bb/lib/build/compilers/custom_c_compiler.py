@@ -1,5 +1,15 @@
 #!/usr/bin/env python
 
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
+
+import sys
+import time
+
+from bb.config import host_os
+from bb.lib.utils.host_os.path import mkpath
+
+from bb.lib.utils import typecheck
 from bb.lib.build.compilers.compiler import Compiler
 
 class Linker(object):
@@ -28,7 +38,7 @@ class Linker(object):
     return self._output_dir
 
   def set_output_dir(self, output_dir):
-    if not output_dir or type(output_dir) is not types.StringType:
+    if not output_dir or not typecheck.is_string(output_dir):
       raise types.TypeError("'output_dir' must be a string or None")
     else:
       self._output_dir = output_dir
@@ -36,35 +46,32 @@ class Linker(object):
   def link(self, objects, output_filename, *list_args, **dict_args):
     # Adopt output file name to output directory
     if self.get_output_dir() is not None:
-      self.set_output_filename(os.path.join(self.get_output_dir(), \
-                                                      output_filename))
-    print "Linking executable:", \
-        os.path.relpath(output_filename, self.output_dir)
+      self.set_output_filename(host_os.path.join(self.get_output_dir(),
+                                                 output_filename))
+    print "Linking executable:", host_os.path.relpath(output_filename,
+                                                      self.output_dir)
     self._link(objects, *list_args, **dict_args)
 
 class CustomCCompiler(Compiler):
-  """Abstract base class to define the interface of the standard C
-  compiler that must be implemented by real compiler class.
+  """Abstract base class to define the interface of the standard C compiler that
+  must be implemented by real compiler class.
 
-  The basic idea behind a compiler abstraction class is that each
-  instance can be used for all the compiler/link steps in building a
-  single project. Thus, we have an attributes common to all of those
-  compile and link steps -- include directories, macros to define,
-  libraries to link against, etc. -- are attributes to the compiler
-  instance.
+  The basic idea behind a compiler abstraction class is that each instance can
+  be used for all the compiler/link steps in building a single project. Thus, we
+  have an attributes common to all of those compile and link steps -- include
+  directories, macros to define, libraries to link against, etc. -- are
+  attributes to the compiler instance.
 
-  Flags are `verbose` (show verbose output), `dry_run`
-  (don't actually execute the steps) and `force` (rebuild everything,
-  regardless of dependencies). All of these flags default to ``0``
-  (off).
+  Flags are `verbose` (show verbose output), `dry_run` (don't actually execute
+  the steps) and `force` (rebuild everything, regardless of dependencies). All
+  of these flags default to ``0`` (off).
 
-  C compiler uses language precedence order to identify the
-  language, when deciding what language to use when mixing source
-  types. For example, if some extension has two files with ``.c``
-  extension, and one with ``.cpp``, it is still linked as
-  ``c++``. The order can be changed by using
-  :func:`CCompiler.set_language_precedence_order`. By default it
-  equals to :const:`CCompiler.DEFAULT_LANGUAGE_PRECEDENCE_ORDER`.
+  C compiler uses language precedence order to identify the language, when
+  deciding what language to use when mixing source types. For example, if some
+  extension has two files with ``.c`` extension, and one with ``.cpp``, it is
+  still linked as ``c++``. The order can be changed by using
+  :func:`CCompiler.set_language_precedence_order`. By default it equals to
+  :const:`CCompiler.DEFAULT_LANGUAGE_PRECEDENCE_ORDER`.
 
   Learn more about GCC options:
   http://gcc.gnu.org/onlinedocs/gcc/Option-Summary.html
@@ -100,7 +107,7 @@ class CustomCCompiler(Compiler):
   =========  ========
   """
 
-  def __init__(self, verbose=False, dry_run=False):
+  def __init__(self, verbose=0, dry_run=False):
     Compiler.__init__(self, verbose, dry_run)
     # A list of macro definitions (we are using list since the order is
     # important). A macro definition is a 2-tuple (name, value), where
@@ -123,8 +130,7 @@ class CustomCCompiler(Compiler):
     self._language_by_ext_mapping = dict()
     self.set_ext_to_language_mapping(self.DEFAULT_EXT_TO_LANGUAGE_MAPPING)
     self._language_precedence_order = list()
-    self.set_language_precedence_order(\
-      self.DEFAULT_LANGUAGE_PRECEDENCE_ORDER)
+    self.set_language_precedence_order(self.DEFAULT_LANGUAGE_PRECEDENCE_ORDER)
     self._extra_preopts = list()
     self._extra_postopts = list()
     self._linker = None
@@ -151,7 +157,7 @@ class CustomCCompiler(Compiler):
     parameters are not given.
     """
     if osname is None:
-      osname = os.name
+      osname = host_os.name
     if platform is None:
       platform = sys.platform
     for pattern, compiler in DEFAULT_CCOMPILERS:
@@ -196,24 +202,24 @@ class CustomCCompiler(Compiler):
 
   def get_object_extension(self):
     """Return object file extension."""
-    return self.__object_extension
+    return self._object_extension
 
   def set_object_extension(self, extension):
     """The `extension` argument is case-insensitive and can be
     specified with or without a leading dot.
     """
-    self.__object_extension = extension
+    self._object_extension = extension
 
   def set_language_precedence_order(self, order):
     """Set language precedence order. This order will be used by
-    :func:`CCompiler.identify_language` to identify language name. See
-    also :const:`CCompiler.DEFAULT_LANGUAGE_PRECEDENCE_ORDER`.
+    :func:`CCompiler.identify_language` to identify language name. See also
+    :const:`CCompiler.DEFAULT_LANGUAGE_PRECEDENCE_ORDER`.
     """
-    self.__language_precedence_order = order
+    self._language_precedence_order = order
 
   def get_language_precedence_order(self):
     """Return language precedence order."""
-    return self.__language_precedence_order
+    return self._language_precedence_order
 
   def _find_macro(self, name):
     """Return position of the macro 'name' in the list of macros."""
@@ -228,7 +234,7 @@ class CustomCCompiler(Compiler):
     """Add a list of dirs 'dirs' to the list of directories that will be
     searched for header files. See :func:`CCompiler.add_include_dir`.
     """
-    if type(dirs) is ListType:
+    if typecheck.is_list(dirs):
       for dir in dirs:
         self.add_include_dir(dir)
     raise TypeError
@@ -237,31 +243,28 @@ class CustomCCompiler(Compiler):
     return self.include_dirs
 
   def add_include_dir(self, dir):
-    """Add `dir` to the list of directories that will be searched for
-    header files. The compiler is instructed to search directories in
-    the order in which they are supplied by successive calls to
-    'add_include_dir()'.
+    """Add `dir` to the list of directories that will be searched for header
+    files. The compiler is instructed to search directories in the order in
+    which they are supplied by successive calls to 'add_include_dir()'.
     """
     self.include_dirs.append(dir)
 
   def add_library(self, library_name):
-    """Add `library_name` to the list of libraries that will be included in
-    all links driven by this compiler object. Note that `library_name`
-    should *not* be the name of a file containing a library, but the
-    name of the library itself: the actual filename will be inferred by
-    the linker, the compiler, or the compiler class (depending on the
-    platform).
+    """Add `library_name` to the list of libraries that will be included in all
+    links driven by this compiler object. Note that `library_name` should *not*
+    be the name of a file containing a library, but the name of the library
+    itself: the actual filename will be inferred by the linker, the compiler, or
+    the compiler class (depending on the platform).
 
-    The linker will be instructed to link against libraries in the
-    order they were supplied to 'add_library()' and/or
-    'set_libraries()'. It is perfectly valid to duplicate library
-    names; the linker will be instructed to link against libraries as
-    many times as they are mentioned.
+    The linker will be instructed to link against libraries in the order they
+    were supplied to 'add_library()' and/or 'set_libraries()'. It is perfectly
+    valid to duplicate library names; the linker will be instructed to link
+    against libraries as many times as they are mentioned.
     """
     self.libraries.append(library_name)
 
   def add_libraries(self, libraries):
-    if libraries and type(libraries) in (ListType, TupleType):
+    if libraries and typecheck.is_sequence(libraries):
       for library in list(libraries):
         self.add_library(library)
       libraries = list (libraries) + (self.libraries or [])
@@ -269,16 +272,15 @@ class CustomCCompiler(Compiler):
       raise TypeError("'libraries' (if supplied) must be a list of strings")
 
   def add_library_dir(self, library_dir):
-    """Add `library_dir` to the list of directories that will be
-    searched for libraries specified to
-    :func:`CCompiler.add_library` and
-    :func:`CCompiler.set_libraries`. The linker will be instructed
-    to search for libraries in the order they are supplied to
-    'add_library_dir()' and/or 'set_library_dirs()'."""
+    """Add `library_dir` to the list of directories that will be searched for
+    libraries specified to :func:`CCompiler.add_library` and
+    :func:`CCompiler.set_libraries`. The linker will be instructed to search for
+    libraries in the order they are supplied to 'add_library_dir()' and/or
+    'set_library_dirs()'."""
     self.library_dirs.append(library_dir)
 
   def add_library_dirs(self, library_dirs):
-    if library_dirs and type(library_dirs) in (ListType, TupleType):
+    if library_dirs and typecheck.is_sequence(library_dirc):
       for library_dir in list(library_dirs):
         self.add_library_dir(library_dir)
     else:
@@ -295,7 +297,7 @@ class CustomCCompiler(Compiler):
 
   def add_link_objects(self, objects):
     """See :func:`CCompiler.add_link_object`."""
-    if type(objects) not in (ListType, TupleType):
+    if typecheck.is_sequence(objects):
       raise TypeError("'objects' must be a list or tuple of strings")
     for obj in list(objects):
       self.add_link_object(obj)
@@ -329,12 +331,12 @@ class CustomCCompiler(Compiler):
     language_map, and :func:`CCompiler.get_language_precedence_order`
     to do the job.
     """
-    if type(sources) is not ListType:
+    if not typecheck.is_list(sources):
       sources = [sources]
     lang = None
     index = len(self.language_order)
     for source in sources:
-      base, ext = os.path.splitext(source)
+      base, ext = host_os.path.splitext(source)
       extlang = self.language_map.get(ext)
       try:
         extindex = self.language_order.index(extlang)
@@ -404,7 +406,7 @@ class CustomCCompiler(Compiler):
     """
     options = []
     for macro in macros:
-      if not (type(macro) is TupleType and 1 <= len(macro) <= 2):
+      if not (typecheck.is_tuple(macro) and 1 <= len(macro) <= 2):
         raise TypeError("bad macro definition " + repr(macro) + ": " +
                         "each element of 'macros' list must be a 1- or 2-tuple")
       if len (macro) == 1: # undefine this macro
@@ -459,27 +461,27 @@ class CustomCCompiler(Compiler):
       output_dir = ""
     obj_filenames = []
     for src_filename in src_filenames:
-      base, ext = os.path.splitext(src_filename)
-      base = os.path.splitdrive(base)[1]
-      base = base[os.path.isabs(base):]
+      base, ext = host_os.path.splitext(src_filename)
+      base = host_os.path.splitdrive(base)[1]
+      base = base[host_os.path.isabs(base):]
       if ext not in self.get_source_extensions():
         raise UnknownFileError("unknown file type '%s' (from '%s')" \
                                  % (ext, src_filename))
-      obj_filenames.append(os.path.join(output_dir, \
-                                          base + self.get_object_extension()))
+      obj_filenames.append(
+        host_os.path.join(output_dir, base + self.get_object_extension()))
     return obj_filenames
 
   def set_extra_preopts(self, extra_preopts):
-    self.__extra_preopts = extra_preopts
+    self._extra_preopts = extra_preopts
 
   def get_extra_preopts(self):
-    return self.__extra_preopts
+    return self._extra_preopts
 
   def set_extra_postopts(self, extra_postopts):
-    self.__extra_postopts = extra_postopts
+    self._extra_postopts = extra_postopts
 
   def get_extra_postopts(self):
-    return self.__extra_postopts
+    return self._extra_postopts
 
   def compile(self, sources, output_dir=None, macros=None, include_dirs=None,
               debug=0, extra_preopts=None, extra_postopts=None, depends=None):
@@ -517,18 +519,18 @@ class CustomCCompiler(Compiler):
     """Process arguments and decide which source files to compile."""
     if output_dir is None:
       outputdir = self.output_dir
-    elif type(output_dir) is not StringType:
+    elif not typecheck.is_string(output_dir):
       raise TypeError("'output_dir' must be a string or None")
 
     if macros is None:
       macros = self.macros
-    elif type(macros) is ListType:
+    elif typecheck.is_list(macros):
       macros = macros + (self.macros or [])
     else:
       raise TypeError("'macros' (if supplied) must be a list of tuples")
     if include_dirs is None:
       include_dirs = self.include_dirs
-    elif type(include_dirs) in (ListType, TupleType):
+    elif typecheck.is_sequence(include_dirs):
       include_dirs = list(include_dirs) + (self.include_dirs or [])
     else:
       raise TypeError("'include_dirs' (if supplied) must be a list of strings")
@@ -542,8 +544,8 @@ class CustomCCompiler(Compiler):
     for i in range(len(sources)):
       src = sources[i]
       obj = objects[i]
-      ext = os.path.splitext(src)[1]
-      mkpath(os.path.dirname(obj), 0777)
+      ext = host_os.path.splitext(src)[1]
+      mkpath(host_os.path.dirname(obj), 0777)
       build[obj] = (src, ext)
     return macros, objects, extra, pp_options, build
 
@@ -551,10 +553,10 @@ class CustomCCompiler(Compiler):
     """Start linking process."""
     # Adopt output file name to output directory
     if self.get_output_dir() is not None:
-      self.set_output_filename(os.path.join(self.get_output_dir(), \
-                                                      output_filename))
+      self.set_output_filename(host_os.path.join(self.get_output_dir(), \
+                                                   output_filename))
     print "Linking executable:", \
-        os.path.relpath(output_filename, self.output_dir)
+        host_os.path.relpath(output_filename, self.output_dir)
     self._link(objects, *list_args, **dict_args)
 
   def _link(self, objects, output_filename, output_dir=None, debug=False,
@@ -562,11 +564,10 @@ class CustomCCompiler(Compiler):
     raise NotImplementedError
 
   def _setup_link(self, objects, output_dir, libraries, library_dirs):
-    """Typecheck and fix up some of the arguments supplied to the
-    class of link methods.  Specifically: ensure that all arguments are
-    lists, and augment them with their permanent versions
-    (eg. 'self.libraries' augments 'libraries').  Return a tuple with
-    fixed versions of all arguments.
+    """Typecheck and fix up some of the arguments supplied to the class of link
+    methods.  Specifically: ensure that all arguments are lists, and augment
+    them with their permanent versions (eg. 'self.libraries' augments
+    'libraries'). Return a tuple with fixed versions of all arguments.
     """
     if type (objects) not in (ListType, TupleType):
       raise TypeError("'objects' must be a list or tuple of strings")
@@ -577,7 +578,7 @@ class CustomCCompiler(Compiler):
       raise TypeError("'output_dir' must be a string or None")
     if libraries is None:
       libraries = self.libraries
-    elif type(libraries) in (ListType, TupleType):
+    elif typecheck.is_sequence(libraries):
       libraries = list(libraries) + (self.libraries or [])
     else:
       raise TypeError("'libraries' (if supplied) must be a list of strings")

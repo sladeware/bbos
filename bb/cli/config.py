@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright (c) 2012 Sladeware LLC"
-__author__ = "Oleksandr Sviridenko"
+__author__ = "<oleks.sviridenko@gmail.com> Oleksandr Sviridenko"
 
 import optparse
 import imp
@@ -9,71 +8,67 @@ import logging
 import sys
 import traceback
 
-sys.path.pop(0)
-
 import bb
 from bb.config import host_os
 import bb.config.importing as bbimport
-
-logging.basicConfig(level=logging.DEBUG)
 
 config = None
 actions = dict()
 
 class Action(object):
-    def __init__(self, function, usage, short_desc, long_desc='',
-                 error_desc=None, options=lambda obj, parser: None,
-                 uses_basepath=True, hidden=False):
-        self.function = function
-        self.usage = usage
-        self.short_desc = short_desc
-        self.long_desc = long_desc
-        self.error_desc = error_desc
-        self.options = options
-        self.uses_basepath = uses_basepath
-        self.hidden = hidden
+  def __init__(self, function, usage, short_desc, long_desc='',
+               error_desc=None, options=lambda obj, parser: None,
+               uses_basepath=True, hidden=False):
+    self.function = function
+    self.usage = usage
+    self.short_desc = short_desc
+    self.long_desc = long_desc
+    self.error_desc = error_desc
+    self.options = options
+    self.uses_basepath = uses_basepath
+    self.hidden = hidden
 
-    def __call__(self):
-        return self.function()
+  def __call__(self):
+    return self.function()
 
-    def get_action_descriptions(klass):
-        """Returns a formatted string containing the short_descs for all actions."""
-        action_names = klass.action_register.keys()
-        action_names.sort()
-        desc = ''
-        for action_name in action_names:
-            if not klass.action_register[action_name].hidden:
-                desc += '  %s: %s\n' % (action_name,
-                                        klass.action_register[action_name].short_desc)
-        return desc
+  def get_action_descriptions(klass):
+    """Returns a formatted string containing the short_descs for all actions."""
+    action_names = klass.action_register.keys()
+    action_names.sort()
+    desc = ''
+    for action_name in action_names:
+      if not klass.action_register[action_name].hidden:
+        desc += '  %s: %s\n' % (action_name,
+                                klass.action_register[action_name].short_desc)
+    return desc
 
 def get_actions():
-    global actions
-    return actions.values()
+  global actions
+  return actions.values()
 
 def get_action_names():
-    global actions
-    return actions.keys()
+  global actions
+  return actions.keys()
 
 def register_action(name, action):
-    global actions
-    actions[name] = action
+  global actions
+  actions[name] = action
 
 def is_supported_action(name):
-    return name in get_action_names()
+  return name in get_action_names()
 
 def get_action(name):
-    global actions
-    return actions[name]
+  global actions
+  return actions[name]
 
 def action(usage, short_desc, uses_basepath=False,
            options=lambda obj, parser: None):
-    def _(function):
-        action = Action(function, usage, short_desc, uses_basepath,
-                        options=options)
-        register_action(function.__name__, action)
-        return function
-    return _
+  def _(function):
+    action = Action(function, usage, short_desc, uses_basepath,
+                    options=options)
+    register_action(function.__name__, action)
+    return function
+  return _
 
 class Actions:
     @action(
@@ -107,6 +102,12 @@ class Actions:
         optparser.add_option('--list-toolchains', dest='list_toolchains',
                              action='store_true',
                              help='List supported toolchains.')
+        optparser.add_option('--dry-run', dest='dry_run',
+                             action='store_true',
+                             help='Dry run mode.')
+        optparser.add_option('--dry-run', action='store_true', dest='dry_run',
+                             help='Show only messages that would be printed in a real run.')
+
     @action(
         usage='%prog build',
         options=_perform_build_options,
@@ -130,7 +131,7 @@ class Actions:
             print '_' * 70
 
 class Config(object):
-    """Class to wrap build-script functionality.
+    """Class to wrap bb-script functionality.
 
     Attributes:
     optparser: An instnace of :class:`optparse.OptionParser`
@@ -210,19 +211,9 @@ class Config(object):
                           help='Show the help message and exit.')
         parser.add_option('-v', '--verbose', action='store_true', dest='verbose',
                           help='Be verbose')
-        #parser.add_option('--dry-run', action='store_true', dest='dry_run',
-        #                  help='Show only messages that would be printed in a real run.')
         #parser.add_option("--multiterminal", action="store_true",
         #                  dest="multiterminal",
         #                  help="Open each new running OS in a new terminal. "\
-        #                      "Supports Linux.")
+        #                      "(only Linux)")
         return parser
 
-config = Config()
-config.parse_command_line()
-action = config.action
-try:
-    action()
-except Exception, e:
-    print e
-    exit(1)
