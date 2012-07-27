@@ -47,7 +47,6 @@ helloworld.py:
 
 import inspect
 import math
-import fnmatch
 import imp
 import types
 
@@ -198,16 +197,6 @@ def _get_targets():
   global _targets
   return _targets
 
-def _import_build_scripts():
-  root = host_os.path.join(bb.env['BB_PACKAGE_HOME'], 'bb')
-  build_scripts = []
-  for root, dirnames, filenames in host_os.walk(root):
-    for filename in fnmatch.filter(filenames, '*_build.py'):
-      build_scripts.append(host_os.path.join(root, filename))
-  print "Found %d build script(s)" % len(build_scripts)
-  for _ in range(len(build_scripts)):
-    imp.load_source("bs%d" % _, build_scripts[_])
-
 # TODO: move the function
 def default_thread_distribution(threads, cores):
   step = int(math.ceil(float(len(threads)) / float(len(cores))))
@@ -255,13 +244,10 @@ def _analyse_application():
       _add_targets(os.microkernel.get_threads())
 
 def _print_header(title):
-  print '-' * 70
-  print title
-  print '-' * 70
+  print "[", title, "]"
 
 def _init():
   _print_header('Initialization')
-  _import_build_scripts()
 
 def _apply_rules():
   global _class_rules

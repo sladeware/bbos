@@ -3,6 +3,7 @@
 import bb
 from bb.config import host_os
 from bb.lib.utils import typecheck
+from bb.lib.build.compilers import Compiler
 
 class EventManager(object):
   def __init__(self):
@@ -65,6 +66,12 @@ class Toolchain(EventManager):
             return
         raise TypeError("unknown source type '%s' of '%s'"
                         % (type(source), source))
+
+    def set_compiler(self, compiler):
+      if not isinstance(compiler, Compiler):
+        raise errors.UnknownCompiler
+      self._compiler = compiler
+      return compiler
 
     def get_compiler(self):
         return self._compiler

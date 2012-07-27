@@ -7,7 +7,6 @@ import inspect
 
 import bb.runtime
 import bb.runtime.os.config as bbos_config
-from bb.runtime.os.config import bb_config
 
 __all__ = ["bb_kernel_init", "bb_kernel_start", "bb_kernel_test",
            "bb_kernel_echo", "bb_kernel_register_thread", "bb_kernel_stop",
@@ -16,9 +15,11 @@ __all__ = ["bb_kernel_init", "bb_kernel_start", "bb_kernel_test",
 _threads = list()
 
 def init():
+  global _threads
   echo(banner())
   echo("Initialize microkernel")
-  echo("Supported number of threads: %d" % bb_config.BB_NR_THREADS)
+  echo("Supported number of threads: %d" % bbos_config.BBOS_NR_THREADS)
+  _threads = [None] * bbos_config.BBOS_NR_THREADS
 
 def start():
   test()
@@ -26,7 +27,7 @@ def start():
 
 def test():
   echo("Test microkernel")
-  if not bb_config.BB_NR_THREADS:
+  if not bbos_config.BBOS_NR_THREADS:
     panic("At least one thread has to be added")
 
 def echo(data):
@@ -36,7 +37,8 @@ def echo(data):
 
 def register_thread(tid, runner):
   global _threads
-  echo('Register thread "%d"' % tid)
+  assert tid < bbos_config, "[TID=%d] > [BBOS_NR_THREADS=%d]" % (tid, bbos_config.BBOS_NR_THREADS)
+  echo('Register thread [%s=%d]' % (tid.__name__, tid))
   _threads[tid] = runner
 
 def stop():

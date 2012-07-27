@@ -1,23 +1,25 @@
 #!/usr/bin/env python
 
+import logging
+
 # import main platform config, MUST be first
 import bb.runtime.config as bb_config
-from bb.runtime.autogen import bbos_config_autogen
 
-if not bbos_config_autogen:
-  print "bbos_config_autogen cannot be imported"
-  exit(1)
+BBOS_CONFIG_NR_THREADS = 0
 
-if not getattr(bb_config, "BB_CONFIG_DEBUG", None):
-    setattr(bb_config, "BB_CONFIG_DEBUG", 1)
+import bb.runtime.os.config_autogen
 
-"""
-if cpp.ifndef("BB_CONFIG_DEBUG"):
-    cpp.define("BB_CONFIG_DEBUG", True)
+#try:
+#  from bb.config_autogen import *
+#except ImportError, e:
+#  logging.error("bbos_config_autogen cannot be imported."
+#                "Maybe you forgot to generate it.")
+#  exit(1)
 
-if cpp.ifndef("BB_CONFIG_NR_THREADS"):
-    cpp.error("Please define BB_CONFIG_NR_THREADS in BB_CONFIG_OS_FILE")
-elif BB_CONFIG_NR_THREADS < 1:
-    cpp.error("System requires atleast one thread")
-"""
-#BB_NR_THREADS = BB_CONFIG_NR_THREADS
+if BBOS_CONFIG_NR_THREADS is None:
+  logging.error("Please define BBOS_CONFIG_NR_THREADS in BBOS_CONFIG_FILE")
+  exit(0)
+elif BBOS_CONFIG_NR_THREADS < 1:
+  logging.error("System requires atleast one thread: BBOS_CONFIG_NR_THREADS=0")
+  exit(0)
+BBOS_NR_THREADS = BBOS_CONFIG_NR_THREADS

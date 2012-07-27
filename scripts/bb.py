@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
+
 import optparse
 import imp
 import logging
@@ -117,14 +120,14 @@ class Actions:
             print "Build script '%s' doesn't exist" % build_script_path
         print "Run build script: %s" % build_script_path
         try:
-            bbimport.enable_import_build()
+            bbimport.import_build_scripts()
             imp.load_source('bb.buildtime.application.build', build_script_path)
         except:
-            print '-' * 70
+            print '=' * 70
             print "Exception in build script"
-            print '-' * 70
+            print '=' * 70
             traceback.print_exc(file=sys.stdout)
-            print '-' * 70
+            print '_' * 70
 
 class Config(object):
     """Class to wrap build-script functionality.

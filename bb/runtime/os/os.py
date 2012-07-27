@@ -1,13 +1,16 @@
 #!/usr/bin/env python
 
-import bb.runtime.os.microkernel as bb_kernel
-from bb.runtime.autogen import bb_os_autogen
+import sys
+
+import bb.runtime.os.config as bbos_config
+import bb.runtime.os.microkernel as bbos_kernel
+import bb.runtime.os.os_autogen
 
 def init():
-  bb_kernel.init()
+  bbos_kernel.init()
 
 def main():
-  bb_autogen.thread_registration()
+  thread_registration()
 
 def start():
-  bb_kernel.start()
+  bbos_kernel.start()
