@@ -23,6 +23,13 @@
 
 #include <assert.h>
 
+// Kernel error codes
+enum {
+  BBOS_SUCCESS = 0,
+  BBOS_PORT_IS_FULL,
+  BBOS_FAILURE
+};
+
 #define bbos_kernel_assert(expr) assert(expr)
 
 // List of kernel threads.

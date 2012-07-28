@@ -13,6 +13,8 @@ from bb.lib.utils import typecheck
 from bb.lib.build.compilers.compiler import Compiler
 
 class Linker(object):
+  """Base linker class."""
+
   def __init__(self):
     self._output_dir = ""
     self._output_filename = ""
@@ -498,10 +500,10 @@ class CustomCCompiler(Compiler):
       except KeyError:
         continue
       if self.dry_run:
-        print "Compiling:", src
+        print "Compiling '%s'" % src
       else:
         sys.stdout.flush()
-        sys.stdout.write("Compiling: %s\r" % src)
+        sys.stdout.write("Compiling '%s'\r" % src)
         time.sleep(0.010)
         # Note: we pass a copy of sources, options, etc. since we
         # need to privent their modification
@@ -552,11 +554,14 @@ class CustomCCompiler(Compiler):
   def link(self, objects, output_filename, *list_args, **dict_args):
     """Start linking process."""
     # Adopt output file name to output directory
+    if not output_filename:
+      raise Exception("output_filename must be provided")
     if self.get_output_dir() is not None:
-      self.set_output_filename(host_os.path.join(self.get_output_dir(), \
-                                                   output_filename))
-    print "Linking executable:", \
-        host_os.path.relpath(output_filename, self.output_dir)
+      output_filename = host_os.path.join(self.get_output_dir(),
+                                          output_filename)
+      self.set_output_filename(output_filename)
+    print "Linking executable '%s'" % host_os.path.relpath(output_filename,
+                                                           self.output_dir)
     self._link(objects, *list_args, **dict_args)
 
   def _link(self, objects, output_filename, output_dir=None, debug=False,
@@ -569,7 +574,7 @@ class CustomCCompiler(Compiler):
     them with their permanent versions (eg. 'self.libraries' augments
     'libraries'). Return a tuple with fixed versions of all arguments.
     """
-    if type (objects) not in (ListType, TupleType):
+    if not typecheck.is_sequence(objects):
       raise TypeError("'objects' must be a list or tuple of strings")
     objects = list(objects)
     if output_dir is None:
@@ -584,8 +589,8 @@ class CustomCCompiler(Compiler):
       raise TypeError("'libraries' (if supplied) must be a list of strings")
     if library_dirs is None:
       library_dirs = self.library_dirs
-    elif type (library_dirs) in (ListType, TupleType):
-      library_dirs = list (library_dirs) + (self.library_dirs or [])
+    elif typecheck.is_sequence(library_dirs):
+      library_dirs = list(library_dirs) + (self.library_dirs or [])
     else:
       raise TypeError("'library_dirs' (if supplied) must be a list of strings")
     return objects, output_dir, libraries, library_dirs

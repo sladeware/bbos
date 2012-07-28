@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __author__ = "Oleksandr Sviridenko"
 
 from bb.lib.build.compilers.custom_c_compiler import CustomCCompiler
 from bb.lib.build.compilers.gcc import LD
 from bb.lib.utils import spawn
+from bb.lib.utils.host_os.path import mkpath
+from bb.config import host_os
 
 class UnixCCompiler(CustomCCompiler):
   """This class is subclass of
@@ -78,7 +81,7 @@ class UnixCCompiler(CustomCCompiler):
     if extra_postargs:
       ld_options.extend(extra_postargs)
     ld_options += (objects + lib_options + ['-o', self.get_output_filename()])
-    mkpath(os.path.dirname(self.get_output_filename()))
+    mkpath(host_os.path.dirname(self.get_output_filename()))
     try:
       linker = self.get_executable("linker_exe")
       if target_lang == "c++" and self.get_executable("compiler_cxx"):
@@ -88,7 +91,7 @@ class UnixCCompiler(CustomCCompiler):
         # normal and C++ compiler have the same environment
         # settings.
         i = 0
-        if os.path.basename(linker[0]) == "env":
+        if host_os.path.basename(linker[0]) == "env":
           i = 1
           while '=' in linker[i]:
             i = i + 1

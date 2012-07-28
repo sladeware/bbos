@@ -28,7 +28,7 @@ class CustomCToolchain(Toolchain):
     return self.compiler.get_output_filename()
 
   def _build(self, include_dirs=[], macros=[], libraries=[],
-             library_dirs=[], dry_run=False):
+             library_dirs=[], dry_run=None):
     sources = self.get_sources()
     self.output_filepath = os.path.join(self.compiler.get_output_dir(),
                                         self.compiler.get_output_filename())

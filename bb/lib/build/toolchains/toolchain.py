@@ -37,6 +37,7 @@ class Toolchain(EventManager):
     self._sources = []
     self._compiler = None
     self._loader = None
+    self._dry_run = False
     if compiler:
       self.set_compiler(compiler)
     if loader:
@@ -44,6 +45,18 @@ class Toolchain(EventManager):
     # NOTE: the sources must be added at the end of initialization
     if sources:
       self.add_sources(sources)
+
+  def enable_dry_run_mode(self):
+    self._dry_run = True
+
+  def disable_dry_run_mode(self):
+    self._dry_run = False
+
+  def set_dry_run_mode(self, value):
+    self._dry_run = value
+
+  def is_dry_run_mode_enabled(self):
+    return self._dry_run
 
   def add_sources(self, sources):
     if not typecheck.is_sequence(sources):
@@ -91,7 +104,7 @@ class Toolchain(EventManager):
     return self.get_loader()
 
   #@EventManager.event
-  def build(self, sources=[], output_dir=None, verbose=0, dry_run=False,
+  def build(self, sources=[], output_dir=None, verbose=0, dry_run=None,
             *args, **kvargs):
     """Start building process."""
     # Control verbose
@@ -104,13 +117,12 @@ class Toolchain(EventManager):
     if output_dir:
       self.compiler.set_output_dir(output_dir)
     # Control dry run mode
-    if not dry_run:
-      dry_run = False
+    if not dry_run is None:
+      self.set_dry_run_mode(dry_run)
     print 'Building...'
     if self.compiler:
       self.compiler.check_executables()
-      if dry_run is not None:
-        self.compiler.dry_run = dry_run
+      self.compiler.dry_run = self.is_dry_run_mode_enabled()
       if self.verbose:
         self.compiler.verbose = self.verbose
     # Run specific build process
