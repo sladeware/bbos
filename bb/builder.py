@@ -248,8 +248,8 @@ def _analyse_application():
       os = os_class(threads_per_core[core_id])
       _add_target(os)
       print "Assemble OS"
-      _add_target(os.microkernel)
-      _add_targets(os.microkernel.get_threads())
+      _add_target(os.kernel)
+      _add_targets(os.kernel.get_threads())
 
 def _print_header(title):
   print "=>", title

@@ -17,9 +17,9 @@ def gen_config_header(os):
   file_path = host_os.path.join(autogen_dir_path, "os", "config_autogen.h")
   fh = open(file_path, "w")
   fh.write(autogen_header)
-  fh.write("#define BBOS_CONFIG_NR_THREADS %d\n" % os.microkernel.get_num_threads())
-  for i in range(len(os.microkernel.get_threads())):
-    thread = os.microkernel.get_threads()[i]
+  fh.write("#define BBOS_CONFIG_NR_THREADS %d\n" % os.kernel.get_num_threads())
+  for i in range(len(os.kernel.get_threads())):
+    thread = os.kernel.get_threads()[i]
     fh.write("#define %s %d\n" % (thread.get_name(), i))
     fh.write("#define %s_RUNNER %s\n" % (thread.get_name(), thread.get_runner()))
   fh.close()

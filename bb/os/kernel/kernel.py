@@ -16,13 +16,13 @@
 cases simply a core of a microcontroller. Threads run within a kernel using a
 customizable time sharing scheduler algorithm.
 
-The kernel is represented by :class:`bb.os.microkernel.Microkernel`.
+The kernel is represented by :class:`bb.os.kernel.Kernel`.
 """
 
 import bb
 from bb.lib.utils import typecheck
 
-class Microkernel(object):
+class Kernel(object):
   def __init__(self):
     self._threads = dict()
     self._scheduler = None

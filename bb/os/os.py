@@ -15,17 +15,17 @@
 """The Bionic Bunny Operating System is a microkernel for microprocessors."""
 
 from bb.config import host_os
-from bb.os.microkernel import Microkernel
+from bb.os.kernel import Kernel
 
 class OS(object):
   def __init__(self, threads=[]):
-    self._microkernel = Microkernel()
+    self._kernel = Kernel()
     if threads:
-      self._microkernel.register_threads(threads)
+      self._kernel.register_threads(threads)
 
   @property
-  def microkernel(self):
-    return self.get_microkernel()
+  def kernel(self):
+    return self.get_kernel()
 
-  def get_microkernel(self):
-    return self._microkernel
+  def get_kernel(self):
+    return self._kernel
