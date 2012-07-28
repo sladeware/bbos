@@ -35,7 +35,7 @@
 #if !defined(BB_CONFIG_PLATFORM_H)
 # include "bb/config/platform.h"
 #endif // !defined(BB_CONFIG_PLATFORM_H)
-// If platform config header file was defined then include it now ot
+// If platform config header file was defined then include it now or
 // provide an error.
 #ifdef BB_CONFIG_PLATFORM_H
 # include BB_CONFIG_PLATFORM_H

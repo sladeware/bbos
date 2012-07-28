@@ -290,9 +290,10 @@ def build():
 
 def _setup_toolchain():
   global _toolchain
-  _toolchain.enable_dry_run_mode()
+  #_toolchain.enable_dry_run_mode()
   _toolchain.compiler.set_output_filename('test')
   compiler = _toolchain.get_compiler()
+  compiler.define_macro("__linux__")
   if isinstance(compiler, CustomCCompiler):
     compiler.add_include_dir(bb.env['BB_PACKAGE_HOME'])
     compiler.add_include_dir(bb.env['BB_APPLICATION_HOME'])

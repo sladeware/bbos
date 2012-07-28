@@ -355,7 +355,7 @@ class CustomCCompiler(Compiler):
     """
     raise NotImplemented
 
-  def get_library_option (self, lib):
+  def get_library_option(self, lib):
     """Return the compiler option to add 'dir' to the list of libraries
     linked into the shared library or executable.
     """

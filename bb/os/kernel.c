@@ -47,7 +47,7 @@ bbos_kernel_panic(const int8_t* fmt, ...)
   va_end(args);
   printf("Panic: %s\n", buf);
 #endif
-  exit(0);
+  //exit(0);
 }
 
 /**
@@ -76,7 +76,7 @@ bbos_kernel_init()
   /* ITC */
 #ifdef BBOS_KERNEL_ITC
   bbos_kernel_init_itc();
-#endif /* BBOS_KERNEL_ITC */
+#endif // BBOS_KERNEL_ITC
 }
 
 // The main loop can be overload by static scheduler in BBOS_H file.
@@ -117,5 +117,5 @@ void
 bbos_kernel_stop()
 {
   //bbos_printf("Stop kernel\n");
-  exit(0);
+  //exit(0);
 }

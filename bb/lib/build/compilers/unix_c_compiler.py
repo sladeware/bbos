@@ -59,6 +59,9 @@ class UnixCCompiler(CustomCCompiler):
 
   def __init__(self, verbose=None, dry_run=False):
     CustomCCompiler.__init__(self, verbose, dry_run)
+    for name, executable in UnixCCompiler.DEFAULT_EXECUTABLES.items():
+      if not self.get_executable(name):
+        self.set_executable(name, executable)
     self.set_linker(LD())
 
   def _compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts):
@@ -84,22 +87,24 @@ class UnixCCompiler(CustomCCompiler):
     mkpath(host_os.path.dirname(self.get_output_filename()))
     try:
       linker = self.get_executable("linker_exe")
+      # TODO: fix this
+      target_lang = "c++"
       if target_lang == "c++" and self.get_executable("compiler_cxx"):
-        # skip over environment variable settings if /usr/bin/env
-        # is used to set up the linker's environment.
-        # This is needed on OSX. Note: this assumes that the
-        # normal and C++ compiler have the same environment
+        # skip over environment variable settings if /usr/bin/env is used to set
+        # up the linker's environment. This is needed on OSX. Note: this
+        # assumes that the normal and C++ compiler have the same environment
         # settings.
         i = 0
         if host_os.path.basename(linker[0]) == "env":
           i = 1
           while '=' in linker[i]:
             i = i + 1
-        linker[i] = self.compiler_cxx[i]
-        spawn(linker + ld_options, verbose=self.verbose, \
+        # TODO: resolve this
+        #linker[i] = self.get_executable('compiler_cxx')[i]
+        spawn.spawn(linker + ld_options, verbose=self.verbose, \
                 dry_run=self.dry_run)
-    except BuilderExecutionError, msg:
-      raise LinkError, msg
+    except Exception, msg:
+      raise Exception, msg
 
   def get_library_option(self, lib):
     return "-l" + lib

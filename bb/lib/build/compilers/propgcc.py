@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
+
 from bb.lib.utils import typecheck
 from bb.lib.build.compilers.unix_c_compiler import UnixCCompiler
 
