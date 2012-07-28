@@ -19,7 +19,6 @@
 
 #include <bb/os/config.h>
 //#include <bb/os/kernel/mm.h> // memory management
-//#include <bb/os/kernel/error_codes.h>
 
 #include <assert.h>
 
@@ -29,6 +28,22 @@ enum {
   BBOS_PORT_IS_FULL,
   BBOS_FAILURE
 };
+
+// Scheduler selection logic. If scheduler wasn't selected, FCFS scheduler will
+// be taken.
+#define BBOS_DEFAULT_SCHED_H "bb/os/kernel/schedulers/fcfsscheduler.h"
+// Try to define scheduler's header file by special keywords
+#ifndef BBOS_CONFIG_SCHED_H
+#  if defined(BBOS_CONFIG_USE_FCFS_SCHED)
+#    define BBOS_CONFIG_SCHED_H "bb/os/kernel/schedulers/fcfsscheduler.h"
+#  elif defined(BBOS_CONFIG_USE_STATIC_SCHED)
+#    define BBOS_CONFIG_SCHED_H "bb/os/kernel/schedulers/staticscheduler.h"
+#  endif
+#endif // BBOS_CONFIG_SCHED_H
+// Select default scheduler header BBOS_DEFAULT_SCHED_H
+#ifndef BBOS_CONFIG_SCHED_H
+#  define BBOS_CONFIG_SCHED_H BBOS_DEFAULT_SCHED_H
+#endif // BBOS_CONFIG_SCHED_H
 
 #define bbos_kernel_assert(expr) assert(expr)
 

@@ -210,7 +210,23 @@ def default_thread_distribution(threads, cores):
   step = int(math.ceil(float(len(threads)) / float(len(cores))))
   return [threads[x : x + step] for x in xrange(0, len(threads), step)]
 
-def _analyse_application():
+def _print_header(title):
+  print "=>", title
+
+def _init():
+  _print_header('Initialization')
+
+def _apply_rules():
+  global _class_rules
+  global _instance_rules
+  for target in _get_targets():
+    for match_target_class, rule in _class_rules.items():
+      if isinstance(target, match_target_class):
+        rule.apply(target, _get_toolchain())
+  for target, rule in _instance_rules.items():
+    rule.apply(target, _get_toolchain())
+
+def _os_generator():
   _print_header('Analyse application')
   mappings = bbapp.get_mappings()
   for mapping in mappings:
@@ -243,42 +259,34 @@ def _analyse_application():
       print "\t", str(processor.get_core(i)), ":", [str(_) for _ in threads_per_core[i]]
     os_class = mapping.get_os_class()
     for i in range(len(threads_per_core)):
+      print "Generate OS"
       core_id = active_cores[i]
       core = cores[core_id]
-      os = os_class(threads_per_core[core_id])
+      os = os_class(processor=mapping.get_processor(),
+                    threads=threads_per_core[core_id])
       _add_target(os)
-      print "Assemble OS"
       _add_target(os.kernel)
       _add_targets(os.kernel.get_threads())
-
-def _print_header(title):
-  print "=>", title
-
-def _init():
-  _print_header('Initialization')
-
-def _apply_rules():
-  global _class_rules
-  global _instance_rules
-  for target in _get_targets():
-    for match_target_class, rule in _class_rules.items():
-      if isinstance(target, match_target_class):
-        rule.apply(target, _get_toolchain())
-  for target, rule in _instance_rules.items():
-    rule.apply(target, _get_toolchain())
+      _add_target(os.processor)
+      yield
 
 def build():
   _init()
-  _analyse_application()
-  print len(_get_targets()), "target(s) to build"
-  if not len(_get_targets()):
-    print "Nothing to build"
-    exit(1)
-  _print_header("Building")
-  _select_toolchain()
-  _setup_toolchain()
-  _apply_rules()
-  _toolchain.build()
+  gen = _os_generator()
+  try:
+    while True:
+      gen.next()
+      print len(_get_targets()), "target(s) to build"
+      if not len(_get_targets()):
+        print "Nothing to build"
+        exit(1)
+      _print_header("Building")
+      _select_toolchain()
+      _setup_toolchain()
+      _apply_rules()
+      _toolchain.build()
+  except StopIteration, e:
+    pass
 
 def _setup_toolchain():
   global _toolchain

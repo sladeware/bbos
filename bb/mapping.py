@@ -77,12 +77,22 @@ class Mapping(object):
     return self._is_simulation_mode
 
   def get_processor(self):
+    """Return :class:`bb.hardware.devices.processors.processor.Processor`
+    instance.
+    """
     return self._processor
 
   def set_processor(self, processor):
     if not isinstance(processor, Processor):
       raise TypeError("Requires Processor class.")
     self._processor = processor
+
+  def is_processor_defined(self):
+    """Whether or not a processor was defined. Return ``True`` value if the
+    :class:`bb.hardware.devices.processors.processor.Processor` instance can be
+    obtained by using specified core. Otherwise return ``False``.
+    """
+    return not not self.get_processor()
 
   def set_os_class(self, os_class):
     if not issubclass(os_class, bb.os.OS):

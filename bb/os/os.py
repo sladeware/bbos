@@ -17,11 +17,20 @@
 from bb.config import host_os
 from bb.os.kernel import Kernel
 
+
 class OS(object):
-  def __init__(self, threads=[]):
+  def __init__(self, processor, threads=[]):
+    self._processor = processor
     self._kernel = Kernel()
     if threads:
       self._kernel.register_threads(threads)
+
+  @property
+  def processor(self):
+    return self._processor
+
+  def get_processor(self):
+    return self._processor
 
   @property
   def kernel(self):
