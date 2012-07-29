@@ -12,6 +12,7 @@ def update_bbos_config_h(processor):
 
 builder.rule('bb.hardware.devices.processors.propeller_p8x32.PropellerP8X32A', {
     'PropellerToolchain' : {
-      'srcs': (update_bbos_config_h,)
+      'srcs': (update_bbos_config_h,
+               "propeller_p8x32/cog.c", "propeller_p8x32/delay.c")
       }
 })

@@ -383,7 +383,7 @@ sio_init()
     {
       cogsafe_lock = cogsafe_lock - 1;
     }
-#endif /* SIO_COGSAFE_PRINTING */ 
+#endif /* SIO_COGSAFE_PRINTING */
 }
 
 /*
