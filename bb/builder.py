@@ -267,6 +267,7 @@ def _os_generator():
       _add_target(os)
       _add_target(os.kernel)
       _add_targets(os.kernel.get_threads())
+      _add_target(os.kernel.get_scheduler())
       _add_target(os.processor)
       yield
 

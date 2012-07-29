@@ -29,21 +29,22 @@ enum {
   BBOS_FAILURE
 };
 
-// Scheduler selection logic. If scheduler wasn't selected, FCFS scheduler will
-// be taken.
-#define BBOS_DEFAULT_SCHED_H "bb/os/kernel/schedulers/fcfsscheduler.h"
+// Scheduler selection logic.
+// If scheduler wasn't selected, static scheduling will be taken.
+#define BBOS_DEFAULT_SCHED_H "bb/os/kernel/schedulers/staticscheduler.h"
 // Try to define scheduler's header file by special keywords
 #ifndef BBOS_CONFIG_SCHED_H
-#  if defined(BBOS_CONFIG_USE_FCFS_SCHED)
-#    define BBOS_CONFIG_SCHED_H "bb/os/kernel/schedulers/fcfsscheduler.h"
-#  elif defined(BBOS_CONFIG_USE_STATIC_SCHED)
-#    define BBOS_CONFIG_SCHED_H "bb/os/kernel/schedulers/staticscheduler.h"
-#  endif
+#if defined(BBOS_CONFIG_USE_FCFS_SCHED)
+#define BBOS_CONFIG_SCHED_H "bb/os/kernel/schedulers/fcfsscheduler.h"
+#elif defined(BBOS_CONFIG_USE_STATIC_SCHED)
+#define BBOS_CONFIG_SCHED_H "bb/os/kernel/schedulers/staticscheduler.h"
+#endif
 #endif // BBOS_CONFIG_SCHED_H
 // Select default scheduler header BBOS_DEFAULT_SCHED_H
 #ifndef BBOS_CONFIG_SCHED_H
-#  define BBOS_CONFIG_SCHED_H BBOS_DEFAULT_SCHED_H
+#define BBOS_CONFIG_SCHED_H BBOS_DEFAULT_SCHED_H
 #endif // BBOS_CONFIG_SCHED_H
+#include BBOS_CONFIG_SCHED_H
 
 #define bbos_kernel_assert(expr) assert(expr)
 
@@ -66,9 +67,9 @@ extern bbos_thread_t bbos_kernel_threads[BBOS_NR_THREADS];
 #define bbos_message_get_command(message) \
   message->command
 
-////////////////////////////////
-// Control and manage threads //
-////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+// Thread management                                                          //
+////////////////////////////////////////////////////////////////////////////////
 
 // Get thread by its identifier. Please use this primitive insead of
 // direct access bbos_kernel_threads array.
@@ -133,18 +134,22 @@ PROTOTYPE(void bbos_thread_run, (bbos_thread_id_t tid));
 #define bbos_thread_get_runner(tid)             \
   bbos_kernel_get_thread(tid).runner
 
-////////////////////////////////
-// Inter-Thread Communication //
-////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+// Inter-Thread Communication                                                 //
+////////////////////////////////////////////////////////////////////////////////
 
 // ITC will be provided only if number of ports is greater than zero.
 #if BBOS_NR_PORTS > 0
 #include <bb/os/kernel/itc.h>
 #endif // BBOS_NR_PORTS > 0
 
-///////////////////////
-// System Management //
-///////////////////////
+////////////////////////////////////////////////////////////////////////////////
+// System Management                                                          //
+////////////////////////////////////////////////////////////////////////////////
+
+#ifndef bbos_printf
+#define bbos_printf printf
+#endif // bbos_printf
 
 // Switch execution context. Start next thread selected by scheduler.
 #define bbos_kernel_switch_context()                                 \

@@ -16,11 +16,13 @@ from bb.config import host_os
 logging.basicConfig(level=logging.DEBUG)
 
 def import_build_scripts():
-  root = host_os.path.join(bb.env['BB_PACKAGE_HOME'], 'bb')
+  search_pathes = (host_os.path.join(bb.env['BB_PACKAGE_HOME'], 'bb'),
+                   host_os.path.join(bb.env['BB_APPLICATION_HOME']))
   build_scripts = []
-  for root, dirnames, filenames in host_os.walk(root):
-    for filename in fnmatch.filter(filenames, '*_build.py'):
-      build_scripts.append(host_os.path.join(root, filename))
+  for search_path in search_pathes:
+    for root, dirnames, filenames in host_os.walk(search_path):
+      for filename in fnmatch.filter(filenames, '*_build.py'):
+        build_scripts.append(host_os.path.join(root, filename))
   logging.debug("Found %d build script(s)" % len(build_scripts))
   for _ in range(len(build_scripts)):
     fullname = BBImporter.get_fullname_by_path(build_scripts[_])
@@ -49,8 +51,8 @@ class BBImporter(object):
 
   def find_module(self, fullname, path=None):
     # Control only bb. modules
-    if fullname == 'bb' or fullname.startswith('bb.'):
-      return self
+    #if fullname == 'bb' or fullname.startswith('bb.'):
+    #  return self
     return None
 
   @classmethod

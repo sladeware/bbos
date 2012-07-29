@@ -73,7 +73,7 @@ bbos_kernel_init()
   /* Initialize scheduler */
   //bbos_printf("Initialize scheduler '" BBOS_SCHED_NAME "'\n");
   bbos_sched_init();
-  /* ITC */
+  // Inter-thread communication
 #ifdef BBOS_KERNEL_ITC
   bbos_kernel_init_itc();
 #endif // BBOS_KERNEL_ITC
@@ -81,10 +81,11 @@ bbos_kernel_init()
 
 // The main loop can be overload by static scheduler in BBOS_H file.
 #ifndef BBOS_CONFIG_KERNEL_LOOP
+#define BBOS_CONFIG_KERNEL_LOOP bbos_kernel_loop
 static void
 bbos_kernel_loop()
 {
-  /* Do the main loop */
+  // Do the main loop
   while (TRUE)
     {
       bbos_sched_move();
@@ -92,6 +93,7 @@ bbos_kernel_loop()
     }
 }
 #endif // bbos_kernel_loop
+#define BBOS_KERNEL_LOOP BBOS_CONFIG_KERNEL_LOOP
 
 void
 bbos_kernel_enable_all_threads()
@@ -110,7 +112,7 @@ void
 bbos_kernel_start()
 {
   bbos_printf("Start kernel\n");
-  bbos_kernel_loop();
+  BBOS_KERNEL_LOOP();
 }
 
 void

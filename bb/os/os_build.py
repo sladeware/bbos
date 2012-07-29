@@ -9,11 +9,23 @@ autogen_header = """
 // WARNING: this file was automatically generated.
 // Do not edit it by hand unless you know what you're doing.
 //////////////////////////////////////////////////////////////////////
+
 """
 
 autogen_dir_path = host_os.path.join(bb.env["BB_HOME"], "bb")
 
-def gen_config_header(os):
+def gen_main_c(os):
+  file_path = host_os.path.join(autogen_dir_path, "os", "main_autogen.c")
+  fh = open(file_path, "w")
+  fh.write(autogen_header)
+  fh.write("#include <bb/os.h>\n\n")
+  fh.write("int main() {\n")
+  fh.write("  bbos();\n")
+  fh.write("  return 0;\n")
+  fh.write("}\n")
+  return file_path
+
+def gen_config_h(os):
   file_path = host_os.path.join(autogen_dir_path, "os", "config_autogen.h")
   fh = open(file_path, "w")
   fh.write(autogen_header)
@@ -26,6 +38,6 @@ def gen_config_header(os):
 
 builder.rule('bb.os.os.OS', {
     'PropellerToolchain' : {
-      'srcs': ('kernel.c', gen_config_header)
+      'srcs': ('../os.c', 'kernel.c', gen_main_c, gen_config_h)
       }
 })

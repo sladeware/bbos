@@ -17,55 +17,56 @@
 // Author: Oleksandr Sviridenko
 
 #ifndef __BB_OS_CONFIG_H
-#  define __BB_OS_CONFIG_H
+#define __BB_OS_CONFIG_H
 
 // Include main platform config, MUST be first.
-#  include <bb/config.h>
+#include <bb/config.h>
 
 // Include main OS configuration file defined by user.
-#  include <bb/os/config_autogen.h> // MUST be second
-#  include BB_CONFIG_OS_H
+#include <bb/os/config_autogen.h> // MUST be second
+#include BB_CONFIG_OS_H
 
-#  include <bb/os/types.h>
+#include <bb/os/version.h>
+#include <bb/os/types.h>
 
 // Include some standard libraries from config compatibility.
-#  include <bb/config/stdlib/stdio.h>
-#  include <bb/config/stdlib/stddef.h>
+#include <bb/config/stdlib/stdio.h>
+#include <bb/config/stdlib/stddef.h>
 
 // By default BBOS_CONFIG_DEBUG macro equals to the ANSI standrad NDEBUG macro
 // value.
-#  ifndef BBOS_CONFIG_DEBUG
-#    define BBOS_CONFIG_DEBUG NDEBUG
-#  endif
+#ifndef BBOS_CONFIG_DEBUG
+#define BBOS_CONFIG_DEBUG NDEBUG
+#endif
 
-// Check number of threads.
-#  ifndef BBOS_CONFIG_NR_THREADS
-#   error Please define BBOS_CONFIG_NR_THREADS in BB_CONFIG_OS_H
-#  endif
-#  if BBOS_CONFIG_NR_THREADS < 1
-#   error System requires atleast one thread
-#  endif // BBOS_CONFIG_NR_THREADS
+// Check number of threads
+#ifndef BBOS_CONFIG_NR_THREADS
+#error Please define BBOS_CONFIG_NR_THREADS in BB_CONFIG_OS_H
+#endif
+#if BBOS_CONFIG_NR_THREADS < 1
+#error System requires atleast one thread
+#endif // BBOS_CONFIG_NR_THREADS
 
 // System threads
-#  define BBOS_NR_SYSTEM_THREADS 0
+#define BBOS_NR_SYSTEM_THREADS 0
 
 // Set final number of threads
-#  define BBOS_NR_THREADS (BBOS_CONFIG_NR_THREADS + BBOS_NR_SYSTEM_THREADS)
+#define BBOS_NR_THREADS (BBOS_CONFIG_NR_THREADS + BBOS_NR_SYSTEM_THREADS)
 
 // By default the number of ports in zero. In this case port interface wont be
 // supported.
-#  ifndef BBOS_CONFIG_NR_PORTS
-#   define BBOS_CONFIG_NR_PORTS 0
-#  endif
-#  define BBOS_NR_PORTS BBOS_CONFIG_NR_PORTS
+#ifndef BBOS_CONFIG_NR_PORTS
+#define BBOS_CONFIG_NR_PORTS 0
+#endif
+#define BBOS_NR_PORTS BBOS_CONFIG_NR_PORTS
 
 ////////////////////////////////////////////////////////////////////////////////
 //  Hardware                                                                  //
 ////////////////////////////////////////////////////////////////////////////////
 
-#  ifndef BBOS_CONFIG_PROCESSOR
-#    error Processor name has to be provided.
-#  endif
+#ifndef BBOS_CONFIG_PROCESSOR
+#error Processor name has to be provided.
+#endif
 
 // This macro builds path for the proper driver header file.
 #define BBOS_DRIVER_FILE(relative_file) \

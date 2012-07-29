@@ -19,13 +19,33 @@ customizable time sharing scheduler algorithm.
 The kernel is represented by :class:`bb.os.kernel.Kernel`.
 """
 
+__copyright__ = 'Copyyright (c) 2012 Sladeware LLC'
+__author__ = 'Oleksandr Sviridenko'
+
 import bb
 from bb.lib.utils import typecheck
+from bb.os.kernel.schedulers import Scheduler, StaticScheduler
 
 class Kernel(object):
-  def __init__(self):
+  """The heart of BB operating system."""
+
+  def __init__(self, scheduler=StaticScheduler()):
     self._threads = dict()
+    # Select scheduler first if defined before any thread will be added
+    # By default, if scheduler was not defined will be used static
+    # scheduling policy.
     self._scheduler = None
+    self.set_scheduler(scheduler)
+
+  def set_scheduler(self, scheduler):
+    """Select scheduler."""
+    if not isinstance(scheduler, Scheduler):
+      raise Exception("Scheduler '%s' must be bb.os.kernel.Scheduler "
+                      "sub-class" % scheduler)
+    self._scheduler = scheduler
+
+  def get_scheduler(self):
+    return self._scheduler
 
   def get_threads(self):
     return self._threads.values()

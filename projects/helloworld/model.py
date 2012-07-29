@@ -4,7 +4,7 @@ import bb
 from bb import application
 from bb.hardware.devices.processors import PropellerP8X32A_Q44
 
-printer = bb.Thread("PRINTER", "do_print")
+printer = bb.Thread("PRINTER", "printer_runner")
 
 processor = PropellerP8X32A_Q44()
 my_computer = processor
