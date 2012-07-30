@@ -12,8 +12,8 @@ from bb.cli import CLI
 from bb.config import host_os
 import bb.config.importing as bbimport
 
-@CLI.command(usage='%prog help <action>',
-             short_desc='Print help for a specific action.',
+@CLI.command(usage='%prog help <command>',
+             short_desc='Print help for a specific command',
              uses_basepath=False)
 def help(command_name=None):
   """Prints help for a specific command.
@@ -25,18 +25,18 @@ def help(command_name=None):
   question. Exits the program after printing the help message.
   """
   if not command_name:
-    if len(CLI.config.args) > 1:
+    if len(CLI.config.args) >= 1:
       CLI.config.args = [' '.join(CLI.config.args)]
     if len(CLI.config.args) != 1 or \
           not CLI.is_supported_command(CLI.config.args[0]):
       CLI.config.optparser.error('Expected a single command argument. '
                                  ' Must be one of:\n' +
                                  CLI.get_command_descriptions())
-      action_name = CLI.config.args[0]
+    command_name = CLI.config.args[0]
   command = CLI.get_command(command_name)
-  CLI.config.optparser, unused_options = CLI.command._make_specific_parser(command)
-  print CLI.config.optparser
-  CLI.config._print_help_and_exit(exit_code=0)
+  optparser, unused_options = CLI.config._make_specific_parser(command)
+  optparser.print_help()
+  sys.exit(0)
 
 def _perform_build_options(config, optparser):
   optparser.add_option('--list-toolchains',
@@ -54,7 +54,7 @@ def _perform_build_options(config, optparser):
 
 @CLI.command(usage='%prog build',
              options=_perform_build_options,
-             short_desc='Build.',
+             short_desc='Build an application',
              uses_basepath=False)
 def build():
   build_script_filename = "build.py"

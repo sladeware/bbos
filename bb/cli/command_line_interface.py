@@ -60,13 +60,18 @@ class CommandLineInterface(object):
   @classmethod
   def get_command_descriptions(klass):
     """Returns a formatted string containing the short_descs for all commands."""
-    command_names = klass.commands.keys()
-    command_names.sort()
+    cmd_names = klass.commands.keys()
+    cmd_names.sort()
     desc = ''
-    for command_name in command_names:
-      if not klass.commands[command_name].hidden:
-        desc += '  %s: %s\n' % (command_name,
-                                klass.commands[command_name].short_desc)
+    max_cmd_name_len = 0
+    for cmd_name in cmd_names:
+      if len(cmd_name) > max_cmd_name_len:
+        max_cmd_name_len = len(cmd_name)
+    cmd_desc_frmt = '  %{0}s  %s\n'.format(max_cmd_name_len)
+    for cmd_name in cmd_names:
+      if not klass.commands[cmd_name].hidden:
+        desc += cmd_desc_frmt % (cmd_name,
+                                klass.commands[cmd_name].short_desc)
     return desc
 
   @classmethod

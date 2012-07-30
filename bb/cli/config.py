@@ -34,10 +34,10 @@ class Config(object):
         self.error_fh = error_fh
         self.args = dict()
         self.options = optparse.Values()
-        self.optparser = self._get_optparser()
+        self.optparser = self._get_default_optparser()
         self.command = None
-        for command in CLI.get_commands():
-            command.options(self, self.optparser)
+        #for command in CLI.get_commands():
+        #    command.options(self, self.optparser)
 
     def parse_command_line(self, argv=sys.argv):
         self.options, self.args = self.optparser.parse_args(argv[1:])
@@ -51,8 +51,6 @@ class Config(object):
                                  (command_name, ))
         self.command = CLI.get_command(command_name)
         self.optparser, self.options = self._make_specific_parser(self.command)
-        if self.options.help:
-            self._print_help_and_exit()
 
     def get_option(self, name, default=None):
         value = getattr(self.options, name, default)
@@ -60,6 +58,11 @@ class Config(object):
 
     def _print_help_and_exit(self, exit_code=2):
         self.optparser.print_help()
+        print
+        print "Commands:"
+        print CLI.get_command_descriptions()
+        print "See 'bionicbunny help <command>' for more information on a" \
+            "specific command."
         sys.exit(exit_code)
 
     def _make_specific_parser(self, command):
@@ -80,14 +83,8 @@ class Config(object):
         options, unused_args = parser.parse_args(self.argv[1:])
         return parser, options
 
-    def _get_optparser(self):
-        class Formatter(optparse.IndentedHelpFormatter):
-            def format_description(self, description):
-                return description, '\n'
-
-        parser = self.optparser_class(usage='%prog [options] <command> [options]',
-                                      formatter=Formatter(),
-                                      conflict_handler='resolve')
+    def _get_default_optparser(self):
+        parser = self._get_optparser()
         parser.add_option('-h', '--help', action='store_true', dest='help',
                           help='Show the help message and exit.')
         parser.add_option('-v', '--verbose', action='store_true', dest='verbose',
@@ -96,6 +93,16 @@ class Config(object):
         #                  dest="multiterminal",
         #                  help="Open each new running OS in a new terminal. "\
         #                      "(only Linux)")
+        return parser
+
+    def _get_optparser(self):
+        class Formatter(optparse.IndentedHelpFormatter):
+            def format_description(self, description):
+                return description + '\n'
+
+        parser = self.optparser_class(usage='%prog [options] <command> [<args>]',
+                                      formatter=Formatter(),
+                                      conflict_handler='resolve')
         return parser
 
 CLI.config = Config()
