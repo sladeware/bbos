@@ -12,10 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import bb.config
+import unittest
 
-from bb import os
-from bb.thread import Thread
-from bb.port import Port
-from bb.mapping import Mapping
-from bb.cli import CommandLineInterface, CLI
+from bb import Port
+
+class PortTest(unittest.TestCase):
+  def setUp(self):
+    pass
+
+  def testPortName(self):
+    p1 = Port("P1", 1)
+    self.assertEqual(p1.get_name(), "P1")
+
+  def testPortCapacity(self):
+    p1 = Port("P1", 1)
+    self.assertEqual(p1.get_capacity(), 1)
+
+if __name__ == '__main__':
+  unittest.main()

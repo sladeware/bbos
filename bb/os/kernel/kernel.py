@@ -19,7 +19,7 @@ customizable time sharing scheduler algorithm.
 The kernel is represented by :class:`bb.os.kernel.Kernel`.
 """
 
-__copyright__ = 'Copyyright (c) 2012 Sladeware LLC'
+__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
 __author__ = 'Oleksandr Sviridenko'
 
 import bb
@@ -30,6 +30,7 @@ class Kernel(object):
   """The heart of BB operating system."""
 
   def __init__(self, scheduler=StaticScheduler()):
+    self._ports = dict()
     self._threads = dict()
     # Select scheduler first if defined before any thread will be added
     # By default, if scheduler was not defined will be used static
@@ -61,8 +62,11 @@ class Kernel(object):
     return thread
 
   def register_thread(self, thread):
+    """Registers a thread. Returns :class:`bb.Thread` object."""
     if not isinstance(thread, bb.Thread):
       raise TypeError()
+    if thread.get_name() in self._threads:
+      raise Exception("Thread '%s' was already registered." % thread.get_name())
     self._threads[thread.get_name()] = thread
     return thread
 
@@ -71,3 +75,17 @@ class Kernel(object):
       raise TypeError("Must be list")
     for thread in threads:
       self.register_thread(thread)
+
+  def register_port(self, port):
+    if not isinstance(port, bb.Port):
+      raise TypeError()
+    if port.get_name() in self._ports:
+      raise Exception("Port '%s' was already registered." % port.get_name())
+    self._ports[port.get_name()] = port
+    return port
+
+  def get_ports(self):
+    return self._ports.values()
+
+  def get_num_ports(self):
+    return len(self.get_ports())
