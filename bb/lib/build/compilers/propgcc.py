@@ -42,6 +42,7 @@ class PropGCCCompiler(UnixCCompiler):
   def __init__(self, *args, **kargs):
     UnixCCompiler.__init__(self, *args, **kargs)
     self.__memory_model = None
+    self.define_macro("__linux__")
 
   def set_memory_model(self, model):
     """Set memory model (not case sensetive). Available models:

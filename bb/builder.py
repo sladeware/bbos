@@ -16,6 +16,7 @@ import inspect
 import math
 import imp
 import types
+import sys
 
 import bb
 from bb import application as bbapp
@@ -24,7 +25,6 @@ from bb.lib.utils import typecheck
 from bb.lib.build import toolchain_manager
 from bb.lib.build.compilers import CustomCCompiler
 
-_targets = []
 _class_rules = {}
 _instance_rules = {}
 
@@ -154,24 +154,6 @@ def _add_rule(target, cases, owner):
     raise TypeError("Unknown target type %s" % target)
   print owner.__name__, ":", "add rule for target '%s'" % target
 
-def _add_targets(targets):
-  for target in targets:
-    _add_target(target)
-
-def _add_target(target):
-  global _targets
-  if not isinstance(target, object):
-    raise TypeError("Must be object instance")
-  rule = _get_rule_by_target(target)
-  if not rule:
-    print "WARNING: Don't have a rule for target", target
-    return
-  _targets.append(target)
-
-def _get_targets():
-  global _targets
-  return _targets
-
 # TODO: move the function
 def default_thread_distribution(threads, cores):
   step = int(math.ceil(float(len(threads)) / float(len(cores))))
@@ -183,22 +165,24 @@ def _print_header(title):
 def _init():
   _print_header('Initialization')
 
-def _apply_rules():
+def _apply_rules(targets, toolchain):
   global _class_rules
   global _instance_rules
-  for target in _get_targets():
+  for target in targets:
+    rule = _get_rule_by_target(target)
+    if not rule:
+      print "WARNING: Don't have a rule for target", target
+  for target in targets:
     for match_target_class, rule in _class_rules.items():
       if isinstance(target, match_target_class):
-        rule.apply(target, _get_toolchain())
+        rule.apply(target, toolchain)
   for target, rule in _instance_rules.items():
-    rule.apply(target, _get_toolchain())
+    rule.apply(target, toolchain)
 
-def _os_generator():
+def _analyse_application():
   _print_header('Analyse application')
   mappings = bbapp.get_mappings()
   for mapping in mappings:
-    if not isinstance(mapping, bb.Mapping):
-      raise Exception("Must be Mapping")
     print "Analyse mapping '%s'" % mapping.get_name()
     if not mapping.get_num_threads():
       logging.error("Mapping", mapping.get_name(), "doesn't have threads")
@@ -231,56 +215,90 @@ def _os_generator():
       core = cores[core_id]
       os = os_class(processor=mapping.get_processor(),
                     threads=threads_per_core[core_id])
-      _add_target(os)
-      _add_target(os.kernel)
-      _add_targets(os.kernel.get_threads())
-      _add_target(os.kernel.get_scheduler())
-      _add_target(os.processor)
-      yield
+      _add_project(Project(os))
+
+_projects = list()
+
+def _add_project(os):
+  global _projects
+  _projects.append(os)
+
+def _get_projects():
+  global _projects
+  return _projects
+
+class Project(object):
+  def __init__(self, os):
+    self.os = os
+    self.targets = list()
+    self.extract_targets()
+
+  def extract_targets(self):
+    self.add_target(self.os)
+    self.add_target(self.os.kernel)
+    self.add_targets(self.os.kernel.get_threads())
+    self.add_target(self.os.kernel.get_scheduler())
+    self.add_target(self.os.processor)
+
+  def add_targets(self, targets):
+    for target in targets:
+      self.add_target(target)
+
+  def add_target(self, target):
+    if not isinstance(target, object):
+      raise TypeError("Must be object instance")
+    self.targets.append(target)
+
+  def get_targets(self):
+    return self.targets
+
+  def select_toolchain(self):
+    first_rule = _get_rules()[0]
+    available_toolchains = set(first_rule.get_supported_toolchains())
+    for rule in _get_rules():
+      supported_toolchains = set(rule.get_supported_toolchains())
+      if not supported_toolchains:
+        print "Rule", rule, "does not have supported toolchains"
+        return False
+      available_toolchains = available_toolchains.intersection(supported_toolchains)
+      if not available_toolchains:
+        print "No common toolchains for an objects were found"
+        return None
+    self.available_toolchains = list(available_toolchains)
+    self.toolchain = toolchain_manager.new_toolchain(self.available_toolchains[0])
+    #print "Use toolchain:", self.toolchain.__class__.__name__
 
 def build():
   _init()
-  gen = _os_generator()
-  try:
-    while True:
-      gen.next()
-      print len(_get_targets()), "target(s) to build"
-      if not len(_get_targets()):
-        print "Nothing to build"
-        exit(1)
-      _print_header("Building")
-      _select_toolchain()
-      #print bb.CLI.config.options.list_toolchains
-      #exit(0)
-      _setup_toolchain()
-      _apply_rules()
-      _toolchain.build()
-  except StopIteration, e:
-    pass
+  _analyse_application()
+  for project in _get_projects():
+    print len(project.get_targets()), "target(s) to build"
+    if not len(project.get_targets()):
+      print "Nothing to build"
+      exit(1)
+    project.select_toolchain()
+  if bb.CLI.config.options.list_toolchains:
+    _print_available_toolchains_and_exit()
+  _start_build_process()
 
-def _setup_toolchain():
-  global _toolchain
-  #_toolchain.enable_dry_run_mode()
-  _toolchain.compiler.set_output_filename('test')
-  compiler = _toolchain.get_compiler()
-  compiler.define_macro("__linux__")
-  if isinstance(compiler, CustomCCompiler):
-    compiler.add_include_dir(bb.env['BB_PACKAGE_HOME'])
-    compiler.add_include_dir(bb.env['BB_APPLICATION_HOME'])
+def _print_available_toolchains_and_exit():
+  for project in _get_projects():
+    print project.os
+    print "Available toolchains:", project.available_toolchains
+  sys.exit(0)
 
-def _select_toolchain():
-  first_rule = _get_rules()[0]
-  available_toolchains = set(first_rule.get_supported_toolchains())
-  for rule in _get_rules():
-    supported_toolchains = set(rule.get_supported_toolchains())
-    if not supported_toolchains:
-      print "Rule", rule, "does not have supported toolchains"
-      return False
-    available_toolchains = available_toolchains.intersection(supported_toolchains)
-    if not available_toolchains:
-      print "No common toolchains for an objects were found"
-      return None
-  print "Available toolchains:", list(available_toolchains)
-  _set_toolchain(toolchain_manager.new_toolchain(
-      list(available_toolchains).pop(0)))
-  print "Use toolchain:", _get_toolchain().__class__.__name__
+def _start_build_process():
+  _print_header("Building")
+  for project in _get_projects():
+    print project.os
+    # TODO: define output filename
+    project.toolchain.compiler.set_output_filename('test')
+    _apply_rules(project.targets, project.toolchain)
+    try:
+      project.toolchain.build()
+    except Exception, e:
+      print e
+      _stop_build_process()
+
+def _stop_build_process():
+  print "Stop"

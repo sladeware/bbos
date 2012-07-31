@@ -66,7 +66,13 @@ def build():
   try:
     bbimport.import_build_scripts()
     imp.load_source('bb.buildtime.application.build', build_script_path)
+  except SystemExit, e:
+    if e.code > 0:
+      _build_exception()
   except:
+    _build_exception()
+
+def _build_exception():
     print '=' * 70
     print "Exception in build script"
     print '=' * 70

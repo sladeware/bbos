@@ -17,7 +17,6 @@
 from bb.config import host_os
 from bb.os.kernel import Kernel
 
-
 class OS(object):
   def __init__(self, processor, threads=[]):
     self._processor = processor
@@ -38,3 +37,8 @@ class OS(object):
 
   def get_kernel(self):
     return self._kernel
+
+  def __str__(self):
+    return "OS on processor '%s', with %d thread(s): %s" \
+        % (self.get_processor(), self.kernel.get_num_threads(),
+           [str(_) for _ in self.kernel.get_threads()])

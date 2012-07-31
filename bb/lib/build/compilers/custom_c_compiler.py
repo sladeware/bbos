@@ -6,9 +6,9 @@ __author__ = "Oleksandr Sviridenko"
 import sys
 import time
 
+import bb
 from bb.config import host_os
 from bb.lib.utils.host_os.path import mkpath
-
 from bb.lib.utils import typecheck
 from bb.lib.build.compilers.compiler import Compiler
 
@@ -136,6 +136,8 @@ class CustomCCompiler(Compiler):
     self._extra_preopts = list()
     self._extra_postopts = list()
     self._linker = None
+    self.add_include_dir(bb.env['BB_PACKAGE_HOME'])
+    self.add_include_dir(bb.env['BB_APPLICATION_HOME'])
 
   def show_compilers():
     """Print list of available compilers."""
