@@ -17,3 +17,4 @@ import bb.config
 from bb import os
 from bb.thread import Thread
 from bb.mapping import Mapping
+from bb.cli import CommandLineInterface, CLI

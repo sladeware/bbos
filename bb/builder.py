@@ -12,39 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Simple way to define *_build.py build-script that will build all the targets
-with base class bb.Thread:
-
-  from bb import builder
-
-  builder.rule('bb.Thread', {
-    'simulator' : {
-      'srcs' : ("f1.py", "f2.py", "f3.py"),
-      'lstn' : ("l1"),
-    }
-    ('propgcc', 'catalina') : {
-      'srcs' : ("f1.c", "f2.c")
-    }
-  })
-
-The case when developer needs to build a thread printer defined in
-helloworld.py:
-
-  from bb import builder
-  from bb.buildtime.application import helloworld
-
-  builder.rule(helloworld.printer, {
-    'simulator' : {
-      'srcs' : ("printer.py",)
-    }
-    ('propgcc', 'catalina') : {
-      'srcs' : ("printer.c",)
-    }
-  })
-
-"""
-
 import inspect
 import math
 import imp
@@ -283,6 +250,8 @@ def build():
         exit(1)
       _print_header("Building")
       _select_toolchain()
+      #print bb.CLI.config.options.list_toolchains
+      #exit(0)
       _setup_toolchain()
       _apply_rules()
       _toolchain.build()
