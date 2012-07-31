@@ -26,7 +26,8 @@ def import_build_scripts():
   logging.debug("Found %d build script(s)" % len(build_scripts))
   for _ in range(len(build_scripts)):
     fullname = BBImporter.get_fullname_by_path(build_scripts[_])
-    imp.load_source(fullname, build_scripts[_])
+    #imp.load_source(fullname, build_scripts[_])
+    __import__(fullname, globals(), locals(), [], -1)
 
 class BBImporter(object):
   """Read more about import hooks here
@@ -133,4 +134,4 @@ class BBImporter(object):
       self.include_autogen_module()
     return self._mod
 
-sys.meta_path = [BBImporter()]
+#sys.meta_path = [BBImporter()]
