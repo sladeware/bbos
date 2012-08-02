@@ -1,16 +1,18 @@
 #!/usr/bib/env python
 
 """Initially based on sysconfig.py from distutils package, with
-a few improvements."""
+a few improvements.
+"""
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
 
-import sys
 import os
+import sys
 
 REQUIRED_PYTHON_MODULES = {
-    "serial": "please download and install pyserial from http://pyserial.sourceforge.net",
-    "networkx": "please download and install networkx library from http://networkx.lanl.gov",
+  "serial": "please download and install pyserial from http://pyserial.sourceforge.net",
+  "networkx": "please download and install networkx library from http://networkx.lanl.gov",
 }
 
 # These are needed in a couple of spots, so just compute them once.
@@ -20,118 +22,120 @@ EXEC_PREFIX = os.path.normpath(sys.exec_prefix)
 _config_vars = None
 
 def get_python_version():
-    """Return a string containing the major and minor Python version,
-    leaving off the patchlevel.  Sample return values could be '1.5'
-    or '2.2'."""
-    return sys.version[:3]
+  """Return a string containing the major and minor Python version,
+  leaving off the patchlevel.  Sample return values could be '1.5'
+  or '2.2'.
+  """
+  return sys.version[:3]
 
 def get_python_lib(plat_specific=0, standard_lib=0, prefix=None):
-    """Return the directory containing the Python library (standard or
-    site additions).
+  """Return the directory containing the Python library (standard or
+  site additions).
 
-    If 'plat_specific' is true, return the directory containing
-    platform-specific modules, i.e. any module from a non-pure-Python
-    module distribution; otherwise, return the platform-shared library
-    directory.  If 'standard_lib' is true, return the directory
-    containing standard Python library modules; otherwise, return the
-    directory for site-specific modules.
+  If 'plat_specific' is true, return the directory containing
+  platform-specific modules, i.e. any module from a non-pure-Python
+  module distribution; otherwise, return the platform-shared library
+  directory.  If 'standard_lib' is true, return the directory
+  containing standard Python library modules; otherwise, return the
+  directory for site-specific modules.
 
-    If 'prefix' is supplied, use it instead of sys.prefix or
-    sys.exec_prefix -- i.e., ignore 'plat_specific'."""
-    if prefix is None:
-        prefix = plat_specific and EXEC_PREFIX or PREFIX
-    if os.name == "posix":
-        libpython = os.path.join(prefix,
-                                 "lib", "python" + get_python_version())
-        if standard_lib:
-            return libpython
-        else:
-            return os.path.join(libpython, "site-packages")
-    elif os.name == "nt":
-        if standard_lib:
-            return os.path.join(prefix, "Lib")
-        else:
-            if get_python_version() < "2.2":
-                return prefix
-            else:
-                return os.path.join(prefix, "Lib", "site-packages")
-    elif os.name == "os2":
-        if standard_lib:
-            return os.path.join(prefix, "Lib")
-        else:
-            return os.path.join(prefix, "Lib", "site-packages")
+  If 'prefix' is supplied, use it instead of sys.prefix or
+  sys.exec_prefix -- i.e., ignore 'plat_specific'.
+  """
+  if prefix is None:
+    prefix = plat_specific and EXEC_PREFIX or PREFIX
+  if os.name == "posix":
+    libpython = os.path.join(prefix,
+                             "lib", "python" + get_python_version())
+    if standard_lib:
+      return libpython
     else:
-        raise Exception("I don't know where Python installs its library "
-                        "on platform '%s'" % os.name)
+      return os.path.join(libpython, "site-packages")
+  elif os.name == "nt":
+    if standard_lib:
+      return os.path.join(prefix, "Lib")
+    else:
+      if get_python_version() < "2.2":
+        return prefix
+      else:
+        return os.path.join(prefix, "Lib", "site-packages")
+  elif os.name == "os2":
+    if standard_lib:
+      return os.path.join(prefix, "Lib")
+    else:
+      return os.path.join(prefix, "Lib", "site-packages")
+  else:
+    raise Exception("I don't know where Python installs its library "
+                    "on platform '%s'" % os.name)
 
 def _init_posix():
-    """Initialize the module as appropriate for POSIX systems."""
-    global _config_vars
-    _config_vars = {
-        'LIBDEST': get_python_lib(plat_specific=0, standard_lib=1),
-        'CC': 'gcc',
-        'CXX': 'g++',
-        'OPT': '',
-        'CFLAGS': '' ,
-        'EXTRA_CFLAGS': '',
-        'BASECFLAGS': '',
-        'CCSHARED': '',
-        'LDSHARED': '',
-        'SO': '.so',
-        }
-    return _config_vars
+  """Initialize the module as appropriate for POSIX systems."""
+  global _config_vars
+  _config_vars = {
+    'LIBDEST': get_python_lib(plat_specific=0, standard_lib=1),
+    'CC': 'gcc',
+    'CXX': 'g++',
+    'OPT': '',
+    'CFLAGS': '' ,
+    'EXTRA_CFLAGS': '',
+    'BASECFLAGS': '',
+    'CCSHARED': '',
+    'LDSHARED': '',
+    'SO': '.so',
+    }
+  return _config_vars
 
 def _init_nt():
-    """Initialize the module as appropriate for NT"""
-    global _config_vars
-    _config_vars = {
-        # set basic install directories
-        'LIBDEST': get_python_lib(plat_specific=0, standard_lib=1),
-        'BINLIBDEST': get_python_lib(plat_specific=1, standard_lib=1),
-        # XXX hmmm.. a normal install puts include files here
-        'INCLUDEPY': get_python_inc(plat_specific=0),
-        'SO': '.pyd',
-        'EXE': ".exe",
-        'VERSION': get_python_version().replace(".", ""),
-        'BINDIR': os.path.dirname(os.path.realpath(sys.executable)),
-        }
-    return _config_vars
+  """Initialize the module as appropriate for NT"""
+  global _config_vars
+  _config_vars = {
+    # set basic install directories
+    'LIBDEST': get_python_lib(plat_specific=0, standard_lib=1),
+    'BINLIBDEST': get_python_lib(plat_specific=1, standard_lib=1),
+    # XXX hmmm.. a normal install puts include files here
+    'INCLUDEPY': get_python_inc(plat_specific=0),
+    'SO': '.pyd',
+    'EXE': ".exe",
+    'VERSION': get_python_version().replace(".", ""),
+    'BINDIR': os.path.dirname(os.path.realpath(sys.executable)),
+    }
+  return _config_vars
 
 def _init_mac():
-    """Initialize the module as appropriate for Macintosh systems"""
-    global _config_vars
-    _config_vars = {
-        # set basic install directories
-        'LIBDEST': get_python_lib(plat_specific=0, standard_lib=1),
-        'BINLIBDEST': get_python_lib(plat_specific=1, standard_lib=1),
-        # XXX hmmm.. a normal install puts include files here
-        'INCLUDEPY': get_python_inc(plat_specific=0),
-        # XXX are these used anywhere?
-        'install_lib': os.path.join(EXEC_PREFIX, "Lib"),
-        'install_platlib': os.path.join(EXEC_PREFIX, "Mac", "Lib"),
-        # These are used by the extension module build
-        'srcdir': ':',
-        }
-    import MacOS
-    if not hasattr(MacOS, 'runtimemodel'):
-        _config_vars['SO'] = '.ppc.slb'
-    else:
-        _config_vars['SO'] = '.%s.slb' % MacOS.runtimemodel
-    return _config_vars
+  """Initialize the module as appropriate for Macintosh systems."""
+  global _config_vars
+  _config_vars = {
+    # set basic install directories
+    'LIBDEST': get_python_lib(plat_specific=0, standard_lib=1),
+    'BINLIBDEST': get_python_lib(plat_specific=1, standard_lib=1),
+    # XXX hmmm.. a normal install puts include files here
+    'INCLUDEPY': get_python_inc(plat_specific=0),
+    # XXX are these used anywhere?
+    'install_lib': os.path.join(EXEC_PREFIX, "Lib"),
+    'install_platlib': os.path.join(EXEC_PREFIX, "Mac", "Lib"),
+    # These are used by the extension module build
+    'srcdir': ':',
+    }
+  import MacOS
+  if not hasattr(MacOS, 'runtimemodel'):
+    _config_vars['SO'] = '.ppc.slb'
+  else:
+    _config_vars['SO'] = '.%s.slb' % MacOS.runtimemodel
+  return _config_vars
 
 def _init_os2():
-    """Initialize the module as appropriate for OS/2"""
-    global _config_vars
-    _config_vars = {
-        # set basic install directories
-        'LIBDEST': get_python_lib(plat_specific=0, standard_lib=1),
-        'BINLIBDEST': get_python_lib(plat_specific=1, standard_lib=1),
-        # XXX hmmm.. a normal install puts include files here
-        'INCLUDEPY': get_python_inc(plat_specific=0),
-        'SO': '.pyd',
-        'EXE': ".exe",
-        }
-    return _config_vars
+  """Initialize the module as appropriate for OS/2"""
+  global _config_vars
+  _config_vars = {
+    # set basic install directories
+    'LIBDEST': get_python_lib(plat_specific=0, standard_lib=1),
+    'BINLIBDEST': get_python_lib(plat_specific=1, standard_lib=1),
+    # XXX hmmm.. a normal install puts include files here
+    'INCLUDEPY': get_python_inc(plat_specific=0),
+    'SO': '.pyd',
+    'EXE': ".exe",
+    }
+  return _config_vars
 
 def get_config_vars(*args):
     """With no arguments, return a dictionary of all configuration
@@ -141,7 +145,8 @@ def get_config_vars(*args):
     installed Makefile; on Windows and Mac OS it's a much smaller set.
 
     With arguments, return a list of values that result from looking up
-    each argument in the configuration variable dictionary. """
+    each argument in the configuration variable dictionary.
+    """
     global _config_vars
     if _config_vars is None:
         if os.name == 'posix': _config_vars = _init_posix()
@@ -213,8 +218,6 @@ def get_config_vars(*args):
     else:
         return _config_vars
 
-#_______________________________________________________________________________
-
 def banner():
     print " ____  ____    ___           _        _ _ "
     print "| __ )| __ )  |_ _|_ __  ___| |_ __ _| | |"
@@ -224,23 +227,19 @@ def banner():
     print
 
 def check_dependencies():
-    ok = True
-    print "Checking for dependencies:"
-    for mod_name, err_msg in REQUIRED_PYTHON_MODULES.items():
-        try:
-            __import__(mod_name)
-            print "* '%s'... [OK]" % mod_name
-        except ImportError:
-            msg = "[NOT FOUND]"
-            if err_msg:
-                msg = err_msg
-            print "* '%s'... %s" % (mod_name, msg)
-            ok = False
-    return ok
-
-#_______________________________________________________________________________
-
-banner()
+  ok = True
+  print "Checking for dependencies:"
+  for mod_name, err_msg in REQUIRED_PYTHON_MODULES.items():
+    try:
+      __import__(mod_name)
+      print "* '%s'... [OK]" % mod_name
+    except ImportError:
+      msg = "[NOT FOUND]"
+      if err_msg:
+        msg = err_msg
+      print "* '%s'... %s" % (mod_name, msg)
+      ok = False
+  return ok
 
 BB_HOME = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 BB_PACKAGE_NAME = 'bb'
@@ -253,16 +252,20 @@ if not os.path.exists(BB_PACKAGE_PATH):
 else:
     print "Package path:", BB_PACKAGE_PATH
 
-# XXX On this moment we will only create a link
-(libdest, ) = get_config_vars('LIBDEST')
-to = os.path.join(libdest, BB_PACKAGE_NAME)
-if os.path.exists(to) or os.path.lexists(to):
+def main():
+  banner()
+  # XXX On this moment we will only create a link
+  (libdest, ) = get_config_vars('LIBDEST')
+  to = os.path.join(libdest, BB_PACKAGE_NAME)
+  if os.path.exists(to) or os.path.lexists(to):
     print "Removing old link:", to
     os.unlink(to)
-
-if not check_dependencies():
+  if not check_dependencies():
     print "Sorry, but BB cannot be installed"
     exit(1)
+  print "Creating a link:", to
+  os.symlink(BB_PACKAGE_PATH, to)
+  return 0
 
-print "Creating a link:", to
-os.symlink(BB_PACKAGE_PATH, to)
+if __name__ == '__main__':
+  sys.exit(main())

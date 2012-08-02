@@ -62,13 +62,15 @@ class Kernel(object):
     return thread
 
   def register_thread(self, thread):
-    """Registers a thread. Returns :class:`bb.Thread` object."""
+    """Registers a thread. Returns :class:`bb.os.kernel.kernel.Kernel` object
+    for further work.
+    """
     if not isinstance(thread, bb.Thread):
-      raise TypeError()
+      raise TypeError("Must be bb.Thread")
     if thread.get_name() in self._threads:
       raise Exception("Thread '%s' was already registered." % thread.get_name())
     self._threads[thread.get_name()] = thread
-    return thread
+    return self
 
   def register_threads(self, threads):
     if not typecheck.is_list(threads):
@@ -76,13 +78,19 @@ class Kernel(object):
     for thread in threads:
       self.register_thread(thread)
 
+  def register_ports(self, ports):
+    if not typecheck.is_sequence(ports):
+      raise TypeError("ports must be a sequence.")
+    for port in ports:
+      self.register_port(port)
+
   def register_port(self, port):
     if not isinstance(port, bb.Port):
       raise TypeError()
     if port.get_name() in self._ports:
       raise Exception("Port '%s' was already registered." % port.get_name())
     self._ports[port.get_name()] = port
-    return port
+    return self
 
   def get_ports(self):
     return self._ports.values()
