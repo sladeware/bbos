@@ -25,6 +25,9 @@ by compile time mapping to system integrators that need to incorporate new
 software features as applications inevitably grow in complexity.
 """
 
+__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
+__author__ = 'Oleksandr Sviridenko'
+
 import bb
 from bb.hardware.devices.processors import Processor
 from bb.lib.utils import typecheck
@@ -59,6 +62,11 @@ class Mapping(object):
     if not isinstance(thread, bb.Thread):
       raise Exception("Must be derived from bb.Thread")
     self._threads[ thread.get_name() ] = thread
+
+  def get_thread(self, name):
+    if not typecheck.is_string(name):
+      raise TypeError("name must be a string")
+    return self._threads.get(name, None)
 
   def register_threads(self, threads):
     for thread in threads:

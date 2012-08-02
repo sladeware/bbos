@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-from bb import builder
-import model
+import bb
 
-builder.rule(model.printer, {
+hello_world = bb.application.get_mapping("HELLO_WORLD")
+bb.builder.rule(hello_world.get_thread("PRINTER"), {
     'PropellerToolchain': {
       'srcs': ('helloworld.c',)
       }

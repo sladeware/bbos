@@ -26,22 +26,18 @@ The application also controls the hardware or devices that will be managed
 by mappings.
 """
 
+__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
+__author__ = 'Oleksandr Sviridenko'
+
 import bb
 from bb import networking
 from bb.lib.utils import typecheck
 
-_mappings = []
 _network = networking.Network()
 
 def get_network():
   global _network
   return _network
-
-def register_mappings(mappings):
-  if not typecheck.is_list(mappings):
-    raise TypeError("Must be list")
-  for mapping in mappings:
-    register_mapping(mapping)
 
 def get_mappings():
   return get_network().get_nodes()
@@ -58,3 +54,18 @@ def register_mapping(mapping):
   if is_registered_mapping(mapping):
     return False
   get_network().add_node(mapping)
+
+def register_mappings(mappings):
+  if not typecheck.is_list(mappings):
+    raise TypeError("Must be list")
+  for mapping in mappings:
+    register_mapping(mapping)
+
+def get_mapping(name):
+  if not typecheck.is_string(name):
+    raise TypeError("must be a string")
+  # Search for the mapping with specified name in the network
+  for mapping in get_mappings():
+    if mapping.get_name() == name:
+      return mapping
+  return None
