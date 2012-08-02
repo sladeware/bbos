@@ -2,12 +2,12 @@ Copyright (c) 2011-2012 Sladeware LLC
 
 Bionic Bunny <http://bionicbunny.org>
 
-## CONTENTS
+## Contents
 
- * WHAT IS BIONIC BUNNY?
- * INSTALLING ON LINUX AND OTHER PLATFORMS
+ * What is Bionic Bunny?
+ * Installing on Linux
 
-## WHAT IS BIONIC BUNNY?
+## What is Bionic Bunny?
 
 Bionic Bunny (BB) is a platform for embedded systems development, providing
 microkernel operating system-like functionality. It provides
@@ -15,7 +15,7 @@ language-independent, hardware-independent and network-transparent communication
 for power efficient computing in heterogeneous microcontroller robotics
 applications.
 
-## INSTALLING ON LINUX AND OTHER PLATFORMS
+## Installing on Linux
 
 First, of all, you need to install prerequisites, BB requires Python 2.5
 or higher:
