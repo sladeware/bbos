@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
+__author__ = 'Oleksandr Sviridenko'
+
 """The Parallax P8X32A Propeller chip is a multi-core architecture parallel
 microcontroller with eight 32-bit RISC CPU cores.
 
@@ -79,6 +82,3 @@ class PropellerP8X32A_Q44(PropellerP8X32A):
   """
 
   PROPERTIES = (Processor.Property("name", "Propeller P8X32A-Q44"),)
-
-  #def __str__(self):
-  #    return "Propeller P8X32A-Q44"

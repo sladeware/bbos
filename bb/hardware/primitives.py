@@ -15,6 +15,9 @@
 """This module contains basic hardware primitives, such as pin, bus, wire, etc.
 """
 
+__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
+__author__ = 'Oleksandr Sviridenko'
+
 from bb.lib.utils import typecheck
 
 __all__ = ['Primitive', 'ElectronicPrimitive', 'Pin', 'Wire', 'Bus', 'Note']
@@ -105,13 +108,15 @@ class Primitive(object):
     reference designator unambiguously identifies a component in an electrical
     schematic (circuit diagram) or on a printed circuit board (PCB). The
     reference designator usually consists of one or two letters followed by a
-    number, e.g. R13, C1002."""
+    number, e.g. R13, C1002.
+    """
     return self._designator_format
 
   def generate_designator(self, counter=0):
     """Generate a new designator and set it as the current one by using
     :func:`set_designator`. Return new designator. Usually generator uses
-    designator format and `counter` that represents the number of relatives."""
+    designator format and `counter` that represents the number of relatives.
+    """
     designator = self.get_designator_format() % counter
     self.set_designator(designator)
     return designator
