@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2012 Sladeware LLC
+ * Author: Oleksandr Sviridenko
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,6 +70,7 @@
 #define propeller_lockclr(lock) _lockclr(lock)
 #define propeller_lockset(lock) _lockset(lock)
 #define propeller_lockret(lock) _lockret(lock)
+
 #elif __GNUC__
 #define propeller_cogid() cogid()
 #define propeller_get_clockfreq() CLKFREQ

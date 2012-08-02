@@ -222,15 +222,15 @@ class Note(Primitive):
   """
   def __init__(self):
     Primitive.__init__(self)
-    self.__text = ""
+    self._text = ""
 
   @property
   def text(self):
-    return self.__text
+    return self._text
 
   @text.setter
   def text(self, text):
-    self.__text = text
+    self._text = text
 
 class Bus(ElectronicPrimitive):
   """A bus is an electrical design primitive. It is an object that represents

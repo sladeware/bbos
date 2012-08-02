@@ -15,6 +15,7 @@
 import bb.config
 
 from bb import application
+from bb import config
 from bb import builder
 from bb import os
 from bb.thread import Thread

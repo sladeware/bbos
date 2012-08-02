@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2012 Sladeware LLC
+ * Author: Oleksandr Sviridenko
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include <bb/os/drivers/processors/propeller_p8x32/delay.h>
 #include <bb/os/drivers/processors/propeller_p8x32/sio.h>
-#ifdef __CATALINA__
+
+#ifdef __CATALINA__ /* Catalina compiler */
 
 void
 bbos_delay_usec(int usecs)
@@ -23,7 +26,7 @@ bbos_delay_usec(int usecs)
   _waitcnt(_cnt() + usecs * (_clockfreq() / 1000000));
 }
 
-#elif defined(__GNUC__)
+#elif defined(__GNUC__) /* GNU C compiler */
 
 #include <sys/thread.h>
 
@@ -41,4 +44,5 @@ bbos_delay_usec(int usec)
     return; /* don't bother function delay is likely enough */
   waitcnt((CLKFREQ / 1000000) * usec + CNT);
 }
+
 #endif /* no errors */

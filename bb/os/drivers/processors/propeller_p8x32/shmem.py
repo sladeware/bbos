@@ -23,4 +23,3 @@ class shmem(Module):
 
     def on_unload(self):
         pass
-
