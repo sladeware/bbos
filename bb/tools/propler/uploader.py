@@ -17,8 +17,8 @@ taken from
 `uploader <http://forums.parallax.com/showthread.php?90707-Propeller-development-for-non-Windows-users>`_
 proposed by Remy Blank."""
 
-__copyright__ = "Copyright (c) 2012 Sladeware LLC"
-__author__ = "<oleks.sviridenko@gmail.com> Alexander Sviridenko"
+__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
+__author__ = 'Olexander Sviridenko'
 
 import os
 import os.path
@@ -31,10 +31,10 @@ import logging
 import threading
 from ctypes import *
 try:
-    import serial
+  import serial
 except ImportError:
-    print >>sys.stderr, "Please install pyserial."
-    exit(0)
+  print >>sys.stderr, "Please install pyserial."
+  exit(0)
 
 from bb.utils import module
 from bb.utils.spawn import spawn
