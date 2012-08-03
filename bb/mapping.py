@@ -49,6 +49,9 @@ class Mapping(object):
       self.set_os_class(self.OS_CLASS)
     if processor:
       self.set_processor(processor)
+    # Once a new mapping was created, it will automatically register itself
+    # within existed application. See issue #16.
+    bb.application.register_mapping(self)
 
   def set_name(self, name):
     if not typecheck.is_string(name):
