@@ -24,7 +24,9 @@
 
 // Include main OS configuration file defined by user.
 #include <bb/os/config_autogen.h> // MUST be second
+#ifdef BB_CONFIG_OS_H
 #include BB_CONFIG_OS_H
+#endif // BB_CONFIG_OS_H
 
 #include <bb/os/version.h>
 #include <bb/os/types.h>
@@ -70,7 +72,7 @@
 
 // This macro builds path for the proper driver header file.
 #define BBOS_DRIVER_FILE(relative_file) \
-  BB_PATH_JOIN2(bb/os/drivers, relative_file)
+  BB_STR(BB_PATH_JOIN2(bb/os/drivers, relative_file))
 
 // This macro builds path for the proper processor header file. Allows to find
 // files related to processor in use. For example, if you are using the
@@ -95,6 +97,6 @@
 #else
 #warning Cannot define processor in use. Please define BBOS_CONFIG_PROCESSOR_H or BBOS_CONFIG_PROCESSOR.
 #endif // BBOS_CONFIG_PROCESSOR_H
-#include BB_STR(BBOS_CONFIG_PROCESSOR_H)
+#include BBOS_CONFIG_PROCESSOR_H
 
 #endif // __BB_OS_CONFIG_H
