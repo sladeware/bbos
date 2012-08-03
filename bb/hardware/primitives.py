@@ -152,6 +152,7 @@ class Primitive(object):
   def set_designator(self, text):
     # TODO(team): designator should be unique within its graph
     self._designator = text
+    return self
 
   def get_id(self):
     return self._id
