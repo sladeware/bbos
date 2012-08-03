@@ -28,4 +28,4 @@ class P8X32A_QuickStartBoard(Board):
   def __init__(self):
     Board.__init__(self)
     self.add_element(PropellerP8X32A_Q44().set_designator("U1"))
-    self.add_elements([LED() for _ in range(8)])
+    self.add_elements([LED().set_designator("D%d" % i) for i in range(1, 9)])
