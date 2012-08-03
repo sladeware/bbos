@@ -26,6 +26,12 @@ class Sketch(object):
   def __init__(self):
     pass
 
+class Sketch(object):
+  G = networkx.Graph()
+
+  def __init__(self):
+    pass
+
 class Device(primitives.ElectronicPrimitive):
   DRIVER_CLASS=None
   DESIGNATOR_FORMAT="D%d"
@@ -47,8 +53,11 @@ class Device(primitives.ElectronicPrimitive):
     return self
 
   def add_element(self, element):
+<<<<<<< HEAD
     if not isinstance(element, primitives.ElectronicPrimitive):
       raise TypeError('Must be primitives.ElectronicPrimitive')
+=======
+>>>>>>> upstream/master
     self.connect_to(element)
     return self
 
@@ -65,12 +74,16 @@ class Device(primitives.ElectronicPrimitive):
     return Sketch.G.neighbors(self)
 
   def find_element(self, by):
+<<<<<<< HEAD
     # TODO: this method has to be modified! Add very basic design.
     if typecheck.is_string(by):
       for element in self.get_elements():
         if element.get_designator() == by:
           return element
     return None
+=======
+    pass
+>>>>>>> upstream/master
 
   def find_elements(self, by):
     return []

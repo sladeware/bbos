@@ -20,7 +20,7 @@ applications.
 First, of all, you need to install prerequisites, BB requires Python 2.5
 or higher:
 
-       $ sudo apt-get install make git python python-networkx
+       $ sudo apt-get install make git python python-networkx automake autoconf
 
 Next, download the latest version of BB platform (see <http://bionicbunny.org>)
 to the place where it will live (e.g. /opt/bionicbunny/):
