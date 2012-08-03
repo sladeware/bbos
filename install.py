@@ -82,6 +82,7 @@ def _init_posix():
     'CCSHARED': '',
     'LDSHARED': '',
     'SO': '.so',
+    'BINDIR': os.path.dirname(os.path.realpath(sys.executable)),
     }
   return _config_vars
 
@@ -138,93 +139,93 @@ def _init_os2():
   return _config_vars
 
 def get_config_vars(*args):
-    """With no arguments, return a dictionary of all configuration
-    variables relevant for the current platform.  Generally this includes
-    everything needed to build extensions and install both pure modules and
-    extensions.  On Unix, this means every variable defined in Python's
-    installed Makefile; on Windows and Mac OS it's a much smaller set.
+  """With no arguments, return a dictionary of all configuration
+  variables relevant for the current platform.  Generally this includes
+  everything needed to build extensions and install both pure modules and
+  extensions.  On Unix, this means every variable defined in Python's
+  installed Makefile; on Windows and Mac OS it's a much smaller set.
 
-    With arguments, return a list of values that result from looking up
-    each argument in the configuration variable dictionary.
-    """
-    global _config_vars
-    if _config_vars is None:
-        if os.name == 'posix': _config_vars = _init_posix()
-        elif os.name == 'mac': _config_vars = _init_mac()
-        elif os.name == 'nt':  _config_vars = _init_nt()
-        elif os.name == 'os2': _config_vars = _init_os2()
-        # Normalized versions of prefix and exec_prefix are handy to have;
-        # in fact, these are the standard versions used most places in the
-        # Distutils.
-        _config_vars['prefix'] = PREFIX
-        _config_vars['exec_prefix'] = EXEC_PREFIX
-        if sys.platform == 'darwin':
-            kernel_version = os.uname()[2] # Kernel version (8.4.3)
-            major_version = int(kernel_version.split('.')[0])
-            if major_version < 8:
-                # On Mac OS X before 10.4, check if -arch and -isysroot
-                # are in CFLAGS or LDFLAGS and remove them if they are.
-                # This is needed when building extensions on a 10.3 system
-                # using a universal build of python.
-                for key in ('LDFLAGS', 'BASECFLAGS', 'LDSHARED',
+  With arguments, return a list of values that result from looking up
+  each argument in the configuration variable dictionary.
+  """
+  global _config_vars
+  if _config_vars is None:
+    if   os.name == 'posix': _config_vars = _init_posix()
+    elif os.name == 'mac'  : _config_vars = _init_mac()
+    elif os.name == 'nt'   : _config_vars = _init_nt()
+    elif os.name == 'os2'  : _config_vars = _init_os2()
+    # Normalized versions of prefix and exec_prefix are handy to have;
+    # in fact, these are the standard versions used most places in the
+    # Distutils.
+    _config_vars['prefix'] = PREFIX
+    _config_vars['exec_prefix'] = EXEC_PREFIX
+    if sys.platform == 'darwin':
+      kernel_version = os.uname()[2] # Kernel version (8.4.3)
+      major_version = int(kernel_version.split('.')[0])
+      if major_version < 8:
+        # On Mac OS X before 10.4, check if -arch and -isysroot
+        # are in CFLAGS or LDFLAGS and remove them if they are.
+        # This is needed when building extensions on a 10.3 system
+        # using a universal build of python.
+        for key in ('LDFLAGS', 'BASECFLAGS', 'LDSHARED',
+                    # a number of derived variables. These need to be
+                    # patched up as well.
+                    'CFLAGS', 'PY_CFLAGS', 'BLDSHARED'):
+          flags = _config_vars[key]
+          flags = re.sub('-arch\s+\w+\s', ' ', flags)
+          flags = re.sub('-isysroot [^ \t]*', ' ', flags)
+          _config_vars[key] = flags
+      else:
+        # Allow the user to override the architecture flags using
+        # an environment variable.
+        # NOTE: This name was introduced by Apple in OSX 10.5 and
+        # is used by several scripting languages distributed with
+        # that OS release.
+        if 'ARCHFLAGS' in os.environ:
+          arch = os.environ['ARCHFLAGS']
+          for key in ('LDFLAGS', 'BASECFLAGS', 'LDSHARED',
+                      # a number of derived variables. These need to be
+                      # patched up as well.
+                      'CFLAGS', 'PY_CFLAGS', 'BLDSHARED'):
+            flags = _config_vars[key]
+            flags = re.sub('-arch\s+\w+\s', ' ', flags)
+            flags = flags + ' ' + arch
+            _config_vars[key] = flags
+        # If we're on OSX 10.5 or later and the user tries to
+        # compiles an extension using an SDK that is not present
+        # on the current machine it is better to not use an SDK
+        # than to fail.
+        #
+        # The major usecase for this is users using a Python.org
+        # binary installer  on OSX 10.6: that installer uses
+        # the 10.4u SDK, but that SDK is not installed by default
+        # when you install Xcode.
+        m = re.search('-isysroot\s+(\S+)', _config_vars['CFLAGS'])
+        if m is not None:
+          sdk = m.group(1)
+          if not os.path.exists(sdk):
+            for key in ('LDFLAGS', 'BASECFLAGS', 'LDSHARED',
                         # a number of derived variables. These need to be
                         # patched up as well.
                         'CFLAGS', 'PY_CFLAGS', 'BLDSHARED'):
-                    flags = _config_vars[key]
-                    flags = re.sub('-arch\s+\w+\s', ' ', flags)
-                    flags = re.sub('-isysroot [^ \t]*', ' ', flags)
-                    _config_vars[key] = flags
-            else:
-                # Allow the user to override the architecture flags using
-                # an environment variable.
-                # NOTE: This name was introduced by Apple in OSX 10.5 and
-                # is used by several scripting languages distributed with
-                # that OS release.
-                if 'ARCHFLAGS' in os.environ:
-                    arch = os.environ['ARCHFLAGS']
-                    for key in ('LDFLAGS', 'BASECFLAGS', 'LDSHARED',
-                                # a number of derived variables. These need to be
-                                # patched up as well.
-                                'CFLAGS', 'PY_CFLAGS', 'BLDSHARED'):
-                        flags = _config_vars[key]
-                        flags = re.sub('-arch\s+\w+\s', ' ', flags)
-                        flags = flags + ' ' + arch
-                        _config_vars[key] = flags
-                # If we're on OSX 10.5 or later and the user tries to
-                # compiles an extension using an SDK that is not present
-                # on the current machine it is better to not use an SDK
-                # than to fail.
-                #
-                # The major usecase for this is users using a Python.org
-                # binary installer  on OSX 10.6: that installer uses
-                # the 10.4u SDK, but that SDK is not installed by default
-                # when you install Xcode.
-                m = re.search('-isysroot\s+(\S+)', _config_vars['CFLAGS'])
-                if m is not None:
-                    sdk = m.group(1)
-                    if not os.path.exists(sdk):
-                        for key in ('LDFLAGS', 'BASECFLAGS', 'LDSHARED',
-                                    # a number of derived variables. These need to be
-                                    # patched up as well.
-                                    'CFLAGS', 'PY_CFLAGS', 'BLDSHARED'):
-                            flags = _config_vars[key]
-                            flags = re.sub('-isysroot\s+\S+(\s|$)', ' ', flags)
-                            _config_vars[key] = flags
-    if args:
-        vals = []
-        for name in args:
-            vals.append(_config_vars.get(name))
-        return vals
-    else:
-        return _config_vars
+              flags = _config_vars[key]
+              flags = re.sub('-isysroot\s+\S+(\s|$)', ' ', flags)
+              _config_vars[key] = flags
+  if args:
+    vals = []
+    for name in args:
+      vals.append(_config_vars.get(name))
+    return vals
+  else:
+    return _config_vars
 
 def banner():
-    print " ____  ____    ___           _        _ _ "
-    print "| __ )| __ )  |_ _|_ __  ___| |_ __ _| | |"
-    print "|  _ \|  _ \   | || '_ \/ __| __/ _` | | |"
-    print "| |_) | |_) |  | || | | \__ \ || (_| | | |"
-    print "|____/|____/  |___|_| |_|___/\__\__,_|_|_|"
-    print
+  print " ____  ____    ___           _        _ _ "
+  print "| __ )| __ )  |_ _|_ __  ___| |_ __ _| | |"
+  print "|  _ \|  _ \   | || '_ \/ __| __/ _` | | |"
+  print "| |_) | |_) |  | || | | \__ \ || (_| | | |"
+  print "|____/|____/  |___|_| |_|___/\__\__,_|_|_|"
+  print
 
 def check_dependencies():
   ok = True
@@ -247,24 +248,32 @@ BB_PACKAGE_PATH = os.path.join(BB_HOME, BB_PACKAGE_NAME)
 
 # Test BB_PACKAGE_PATH
 if not os.path.exists(BB_PACKAGE_PATH):
-    print "Can not find bb package '%s'" % BB_PACKAGE_PATH
-    sys.exit(1)
+  print "Can not find bb package '%s'" % BB_PACKAGE_PATH
+  sys.exit(1)
 else:
-    print "Package path:", BB_PACKAGE_PATH
+  print "Package path:", BB_PACKAGE_PATH
 
 def main():
   banner()
-  # XXX On this moment we will only create a link
+  # NOTE: on this moment we will only create a links
   (libdest, ) = get_config_vars('LIBDEST')
-  to = os.path.join(libdest, BB_PACKAGE_NAME)
-  if os.path.exists(to) or os.path.lexists(to):
-    print "Removing old link:", to
-    os.unlink(to)
+  bb_package_link_path = os.path.join(libdest, BB_PACKAGE_NAME)
+  if os.path.exists(bb_package_link_path) or os.path.lexists(bb_package_link_path):
+    print "Removing old link:", bb_package_link_path
+    os.unlink(bb_package_link_path)
   if not check_dependencies():
     print "Sorry, but BB cannot be installed"
     exit(1)
-  print "Creating a link:", to
-  os.symlink(BB_PACKAGE_PATH, to)
+  print "Creating a link to BB package:", bb_package_link_path
+  os.symlink(BB_PACKAGE_PATH, bb_package_link_path)
+  # Create link to the BB script
+  (bindir, ) = get_config_vars('BINDIR')
+  bb_script_link_path = os.path.join(bindir, 'bb')
+  print "Creating a link to BB script:", bb_script_link_path
+  if os.path.exists(bb_script_link_path) or os.path.lexists(bb_script_link_path):
+    print "Removing old link:", bb_script_link_path
+    os.unlink(bb_script_link_path)
+  os.link('./scripts/bionicbunny.py', bb_script_link_path)
   return 0
 
 if __name__ == '__main__':
