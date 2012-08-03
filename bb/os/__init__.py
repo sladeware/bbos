@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+from __future__ import absolute_import
 
-"""The Bionic Bunny Operating System is a microkernel for microprocessors. 
-"""
+__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
+__author__ = 'Oleksandr Sviridenko'
 
-from bb.os.kernel import *
-
+from bb.os.os import OS
+from bb.os.kernel import Kernel

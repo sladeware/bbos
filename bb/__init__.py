@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__copyright__ = "Copyright (c) 2011-2012 Sladeware LLC"
-
 import bb.config
 
-# Do general imports and create common aliases
-
-from bb.app import Mapping, mapping_factory
-from bb.os import OS
-
-BBOS = OS
+from bb import application
+from bb import config
+from bb import builder
+from bb import os
+from bb.thread import Thread
+from bb.port import Port
+from bb.mapping import Mapping
+from bb.cli import CommandLineInterface, CLI

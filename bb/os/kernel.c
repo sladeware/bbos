@@ -1,23 +1,23 @@
-/*
- * Copyright (c) 2012 Sladeware LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Copyright (c) 2012 Sladeware LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+// Author: Oleksandr Sviridenko
 #include <bb/os/kernel.h>
 
 bbos_thread_t bbos_kernel_threads[BBOS_NR_THREADS];
 
-/* Initialize thread. */
+// Initialize thread.
 void
 bbos_kernel_init_thread(bbos_thread_id_t tid, bbos_thread_runner_t runner,
                         bbos_port_id_t pid)
@@ -47,7 +47,7 @@ bbos_kernel_panic(const int8_t* fmt, ...)
   va_end(args);
   printf("Panic: %s\n", buf);
 #endif
-  exit(0);
+  //exit(0);
 }
 
 /**
@@ -73,25 +73,27 @@ bbos_kernel_init()
   /* Initialize scheduler */
   //bbos_printf("Initialize scheduler '" BBOS_SCHED_NAME "'\n");
   bbos_sched_init();
-  /* ITC */
+  // Inter-thread communication
 #ifdef BBOS_KERNEL_ITC
   bbos_kernel_init_itc();
-#endif /* BBOS_KERNEL_ITC */
+#endif // BBOS_KERNEL_ITC
 }
 
-/* The main loop can be overload by static scheduler in BBOS_H file. */
+// The main loop can be overload by static scheduler in BBOS_H file.
 #ifndef BBOS_CONFIG_KERNEL_LOOP
+#define BBOS_CONFIG_KERNEL_LOOP bbos_kernel_loop
 static void
 bbos_kernel_loop()
 {
-  /* Do the main loop */
+  // Do the main loop
   while (TRUE)
     {
       bbos_sched_move();
       bbos_kernel_switch_context();
     }
 }
-#endif /* bbos_kernel_loop */
+#endif // bbos_kernel_loop
+#define BBOS_KERNEL_LOOP BBOS_CONFIG_KERNEL_LOOP
 
 void
 bbos_kernel_enable_all_threads()
@@ -103,26 +105,19 @@ bbos_kernel_enable_all_threads()
     }
 }
 
-void
-bbos_idle_runner()
-{
-}
-
 /**
  * Start the kernel.
  */
 void
 bbos_kernel_start()
 {
-  //bbos_printf("Start kernel\n");
-  bbos_kernel_init_thread(BBOS_IDLE, bbos_idle_runner, 0);
-  bbos_kernel_enable_thread(BBOS_IDLE);
-  bbos_kernel_loop();
+  bbos_printf("Start kernel\n");
+  BBOS_KERNEL_LOOP();
 }
 
 void
 bbos_kernel_stop()
 {
   //bbos_printf("Stop kernel\n");
-  exit(0);
+  //exit(0);
 }

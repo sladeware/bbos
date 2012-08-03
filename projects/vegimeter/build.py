@@ -3,26 +3,28 @@
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __author__ = "<oleks.sviridenko@gmail.com> Alexander Sviridenko"
 
-import os
-import time
-
-from bb.utils import module
+from bb.app import appmanager
 from bb.tools import propler
 from bb import builder
-from bb.builder.projects import CProject
+from bb.builder.toolchains import propgcc
 from bb.builder.compilers import PropGCCCompiler
+
+from vegimeter import vegimeter, vegimeter_device
+
+vegetable_plant_guard = appmanager.new_application([vegimeter])
+#vegimeter.hardware.set_simulation_mode()
+vegetable_plant_guard.add_device(vegimeter_device)
+
+builder.get_config().parse_command_line()
+builder.set_application(vegetable_plant_guard)
+builder.build(toolchain_class=propgcc.PropGCCToolchain)
+
+exit(0)
 
 def create_image():
     image = CProject("image")
     compiler = PropGCCCompiler()
     image.set_compiler(compiler)
-    # At some point propgcc doesn't provide platform macro so we need to
-    # define it manually
-    compiler.define_macro("__linux__")
-    compiler.define_macro("BB_HAS_STDINT_H")
-    compiler.define_macro("printf", "__simple_printf")
-    compiler.set_memory_model("LMM") # case insensetive
-    compiler.set_extra_preopts(["-Os", "-Wall"])
 
     for filename in ("./../../bb/os.c",
                      "./../../bb/os/drivers/processors/propeller_p8x32/delay.c",
@@ -33,26 +35,6 @@ def create_image():
     compiler = image.get_compiler()
     compiler.add_include_dirs(["./../..", "."])
     return image
-
-def buttons_driver_image(image):
-    compiler = image.get_compiler()
-    compiler.define_macro("BB_CONFIG_OS_H", '"button_driver_config.h"')
-    image.set_name("button_driver_image")
-    for filename in ("./../../bb/os/drivers/gpio/button.c",
-                     "./../../bb/os/drivers/processors/propeller_p8x32/shmem.c",
-                     "./../../bb/os/drivers/processors/propeller_p8x32/sio.c",
-                     "button_driver.c"):
-        image.add_source(os.path.join(module.get_dir(), filename))
-
-def ui_image(image):
-    compiler = image.get_compiler()
-    compiler.define_macro("BB_CONFIG_OS_H", '"ui_config.h"')
-    image.set_name("ui_image")
-    for filename in ("ui.c",
-                     "./../../bb/os/drivers/processors/propeller_p8x32/shmem.c",
-                     "./../../bb/os/drivers/processors/propeller_p8x32/sio.c",
-                     ):
-        image.add_source(os.path.join(module.get_dir(), filename))
 
 cogid_to_addr_mapping = dict()
 cogid_to_filename_mapping = dict()

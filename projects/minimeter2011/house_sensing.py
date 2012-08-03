@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright (c) 2011 Sladeware LLC"
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "<oleks.sviridenko@gmail.com> Alexander Sviridenko"
 
 """This application describes a network of minimeters to be used as a house
 sensing system."""
 
+import bb
 from bb import simulator
 from bb.app import Application
 from minimeter import Minimeter
@@ -32,5 +34,6 @@ house_sensing.network.add_star([workstation, minimeter1, minimeter2],
                                key_format="WIRELESS_%d")
 
 if __name__ == '__main__':
-    simulator.config.parse_command_line()
-    house_sensing.start()
+    simulator.config().parse_command_line()
+    simulator.set_application(house_sensing)
+    simulator.start()

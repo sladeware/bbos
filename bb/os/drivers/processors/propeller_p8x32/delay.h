@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2012 Sladeware LLC
+ * Authro: Oleksandr Sviridenko
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include <bb/os/drivers/processors/propeller_p8x32/config.h>
 
-/**
- * The minimal waitcnt windows value must always be at least 381 to
- * avoid unexpectedly long delays.
- */
+// The minimal waitcnt windows value must always be at least 381 to
+// avoid unexpectedly long delays.
 #define MIN_WAITCNT_WINDOW 381
 
 static int
@@ -29,9 +29,7 @@ int_max(int a, int b)
   return a;
 }
 
-/**
- * Macro for a millisecond delay.
- */
+// Macro for a millisecond delay.
 #define BBOS_DELAY_MSEC(msec)                                         \
   propeller_waitcnt(int_max((propeller_get_clockfreq() / 1000) * msec - 3932, MIN_WAITCNT_WINDOW) + \
                     propeller_get_cnt())
@@ -39,9 +37,9 @@ int_max(int a, int b)
 #ifdef __CATALINA__
 #include <catalina_icc.h>
 
-/* Wait for specified number of ticks */
+// Wait for specified number of ticks
 #define bbos_delay_ticks(ticks) wait(ticks)
-/* Wait for the specified number of milliseconds */
+// Wait for the specified number of milliseconds
 #define bbos_delay_msec(msec) msleep(msec)
 void bbos_delay_usec(int usec);
 #define bbos_delay_sec(sec) sleep(sec)
@@ -51,7 +49,7 @@ void bbos_delay_usec(int usec);
 
 void bbos_delay_msec(int msec);
 void bbos_delay_usec(int usec);
-/* Wait for the specified number of seconds */
+// Wait for the specified number of seconds
 #define bbos_delay_sec(sec) sleep(sec)
 
 #else

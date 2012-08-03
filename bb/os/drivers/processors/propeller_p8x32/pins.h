@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2012 Sladeware LLC
+ * Author: Oleksandr Sviridenko
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +18,10 @@
 /**
  * @file bb/os/drivers/processors/propeller_p8x32/pins.h
  * @brief Parallax Propeller P8X32A GPIO Pin Support
- * @note This implementatin has to be independent from BBOS.
  */
 
-#ifndef __PROPELLER_P8X32_PINS_H
-#define __PROPELLER_P8X32_PINS_H
+#ifndef __BB_OS_DRIVERS_PROCESSORS_PROPELLER_P8X32_PINS_H
+#define __BB_OS_DRIVERS_PROCESSORS_PROPELLER_P8X32_PINS_H
 
 #include <bb/types.h>
 #include <bb/os/drivers/processors/propeller_p8x32/config.h>
@@ -90,4 +90,4 @@
 #define OUT_LOW_MASK(mask) (propeller_clr_outa_bits((unsigned)mask))
 #define OUT_HIGH_MASK(mask) (propeller_set_outa_bits((unsigned)mask))
 
-#endif /* __PROPELLER_P8X32_PINS_H */
+#endif /* __BB_OS_DRIVERS_PROCESSORS_PROPELLER_P8X32_PINS_H */

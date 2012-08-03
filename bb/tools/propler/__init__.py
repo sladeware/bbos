@@ -20,8 +20,8 @@ Output::
 
 """
 
-__copyright__ = "Copyright (c) 2012 Sladeware LLC"
-__author__ = "<oleks.sviridenko@gmail.com> Alexander Sviridenko"
+__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
+__author__ = 'Olexander Sviridenko'
 
 import sys
 
@@ -32,21 +32,21 @@ from bb.tools.propler.terminal import *
 from bb.tools.propler.uploader import *
 
 def terminal_mode(port="/dev/ttyUSB0"):
-    """Enter propler to terminal mode."""
-    print "Enter to terminal mode"
-    print "_" * 70
-    print
-    term = Terminal(port)
-    term.start()
-    print
-    print "\r", "_" * 70
-    print
-    print "Exit from terminal mode"
+  """Enter propler to terminal mode."""
+  print "Enter to terminal mode"
+  print "_" * 70
+  print
+  term = Terminal(port)
+  term.start()
+  print
+  print "\r", "_" * 70
+  print
+  print "Exit from terminal mode"
 
 def main(argv):
-    from bb.tools.propler.config import Config
-    cfg = Config(argv)
-    return 0
+  from bb.tools.propler.config import Config
+  cfg = Config(argv)
+  return 0
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv))
+  sys.exit(main(sys.argv))

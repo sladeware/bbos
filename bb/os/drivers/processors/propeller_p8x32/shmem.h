@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2012 Sladeware LLC
+ * Authro: Oleksandr Sviridenko
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

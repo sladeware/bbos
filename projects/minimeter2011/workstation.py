@@ -2,8 +2,9 @@
 
 __copyright__ = "Copyright (c) 2011-2012 Sladeware LLC"
 
-"""The workstation connects to database and process the packages received from
-a network of minimeter devices."""
+"""The workstation connects to database and process the packages received from a
+network of minimeter devices.
+"""
 
 from bb.app import Mapping
 from bb.hardware.devices.boards import Board
@@ -56,17 +57,19 @@ class WorkstationOS(OS):
 
 class WorkstationDevice(Board):
     """This class describes device that will run workstation. On this moment we
-    will use a random board."""
+    will use a random board.
+    """
     def __init__(self, mapping):
         # I think, that workstation should include only one single mapping
         if not isinstance(mapping, Mapping):
-            raise TypeError("mapping should be a Mapping() instance")
+            raise TypeError('mapping should be a Mapping() instance')
         # Build a random board for the first time
-        processor = Processor("A processor", num_cores=1, cores=[Processor.Core("A core", mapping)])
+        processor = Processor(num_cores=1,
+                              cores=[Processor.Core(0, mapping)])
         #Board.__init__(self, "A board", 1, [processor])
 
 class Workstation(Mapping):
-    DEFAULT_OS_CLASS = WorkstationOS
+    OS_CLASS = WorkstationOS
 
     def __init__(self, name):
         Mapping.__init__(self, name)

@@ -48,9 +48,8 @@
 #define BBOS_CHECK_VERSION(major, minor, patch)                     \
   (bbos_version_number() >= BBOS_MAKE_VERSION(major, minor, patch))
 
-/* Obtain version number. */
+// Obtain version number.
 #define bbos_version_number()                   \
   (BBOS_VERSION)
 
-#endif /* __BBOS_VERSION_H */
-
+#endif // __BBOS_VERSION_H

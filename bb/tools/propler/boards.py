@@ -12,63 +12,64 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
+__author__ = 'Oleksandr Sviridenko'
 __all__ = ["CustomBoardConfig", "QuickStartBoardConfig", "DemoBoardConfig"]
 
 class BoardConfig(object):
-    """Base board config."""
+  """Base board config."""
 
-    def __init__(self):
-        self.__eeprom_size = getattr(self, "EEPROM_SIZE", None)
-        self.__baudrate = getattr(self, "BAUDRATE", None)
-        self.__chip_version = None
+  def __init__(self):
+    self._eeprom_size = getattr(self, "EEPROM_SIZE", None)
+    self._baudrate = getattr(self, "BAUDRATE", None)
+    self._chip_version = None
 
-    def set_chip_version(self, version):
-        self.__chip_version = version
+  def set_chip_version(self, version):
+    self._chip_version = version
 
-    def get_chip_version(self):
-        return self.__chip_version
+  def get_chip_version(self):
+    return self._chip_version
 
-    def get_eeprom_size(self):
-        """Return EEPROM size."""
-        return self.__eeprom_size
+  def get_eeprom_size(self):
+    """Return EEPROM size."""
+    return self._eeprom_size
 
-    def get_baudrate(self):
-        """Return baudrate."""
-        return self.__baudrate
+  def get_baudrate(self):
+    """Return baudrate."""
+    return self._baudrate
 
 class DemoBoardConfig(BoardConfig):
-    """Propeller Demo Board configuration:
+  """Propeller Demo Board configuration:
 
-    .. image:: http://www.parallax.com/DesktopModules/CATALooKStore/MakeThumbImage.aspx?ID=%2fPortals%2f0%2fImages%2fProd%2f3%2f321%2f32100-M.jpg&PORTALID=0&W=120&H=120
+  .. image:: http://www.parallax.com/DesktopModules/CATALooKStore/MakeThumbImage.aspx?ID=%2fPortals%2f0%2fImages%2fProd%2f3%2f321%2f32100-M.jpg&PORTALID=0&W=120&H=120
 
-    ===========  ======
-    Property     Value
-    ===========  ======
-    BAUDRATE     115200
-    EEPROM_SIZE  32768
-    ===========  ======
-    """
-    BAUDRATE = 115200
-    EEPROM_SIZE = 32768
+  ===========  ======
+  Property     Value
+  ===========  ======
+  BAUDRATE     115200
+  EEPROM_SIZE  32768
+  ===========  ======
+  """
+  BAUDRATE = 115200
+  EEPROM_SIZE = 32768
 
 class QuickStartBoardConfig(BoardConfig):
-    """QuickStart board configuration:
+  """QuickStart board configuration:
 
-    .. image:: http://www.parallax.com/DesktopModules/CATALooKStore/MakeThumbImage.aspx?ID=%2fPortals%2f0%2fImages%2fProd%2f4%2f400%2f40000-M.jpg&PORTALID=0&W=120&H=120
+  .. image:: http://www.parallax.com/DesktopModules/CATALooKStore/MakeThumbImage.aspx?ID=%2fPortals%2f0%2fImages%2fProd%2f4%2f400%2f40000-M.jpg&PORTALID=0&W=120&H=120
 
-    ===========  ======
-    Property     Value
-    ===========  ======
-    BAUDRATE     115200
-    EEPROM_SIZE  32768
-    ===========  ======
-    """
-    BAUDRATE = 115200
-    EEPROM_SIZE = 32768
+  ===========  ======
+  Property     Value
+  ===========  ======
+  BAUDRATE     115200
+  EEPROM_SIZE  32768
+  ===========  ======
+  """
+  BAUDRATE = 115200
+  EEPROM_SIZE = 32768
 
 class CustomBoardConfig(BoardConfig):
-    """Just a custom board."""
-    EEPROM_SIZE = 32768
-    # Baud rate to use for all interprop communications
-    BAUDRATE = 115200
+  """Just a custom board."""
+  EEPROM_SIZE = 32768
+  # Baud rate to use for all interprop communications
+  BAUDRATE = 115200

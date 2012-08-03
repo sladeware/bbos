@@ -28,7 +28,7 @@ stored at index file. This file has `JSON (JavaScript Object Notation) format
 """
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
-__author__ = "<oleks.sviridenko@gmail.com> Alexander Sviridenko"
+__author__ = "Olexander Sviridenko"
 
 import copy
 import json

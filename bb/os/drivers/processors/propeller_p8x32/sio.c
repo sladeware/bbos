@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2012 Sladeware LLC
+ * Author: Oleksandr Sviridenko
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -383,7 +384,7 @@ sio_init()
     {
       cogsafe_lock = cogsafe_lock - 1;
     }
-#endif /* SIO_COGSAFE_PRINTING */ 
+#endif /* SIO_COGSAFE_PRINTING */
 }
 
 /*
