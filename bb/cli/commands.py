@@ -4,6 +4,8 @@ __copyright__ = 'Copyright (c) 2012 Sladeware LLC'
 __author__ = 'Oleksandr Sviridenko'
 
 import imp
+import os
+
 import sys
 import traceback
 
@@ -64,6 +66,8 @@ def build():
     model_path = host_os.path.join(bb.env["BB_APPLICATION_HOME"], model_filename)
   if not model_path:
     raise Exception("model_path")
+  if not os.path.exists(model_path):
+    raise Exception("mode %s doesn't exist" % model_path)
   build_script_filename = "build.py"
   build_script_path = host_os.path.join(bb.env["BB_APPLICATION_HOME"],
                                         build_script_filename)
@@ -73,7 +77,8 @@ def build():
   try:
     imp.load_source('model', model_path) # TODO: right module name
     bbimport.import_build_scripts()
-    imp.load_source('bb.buildtime.application.build', build_script_path)
+    if os.path.exists(build_script_path):
+      imp.load_source('bb.buildtime.application.build', build_script_path)
   except SystemExit, e:
     if e.code > 0:
       _build_exception()
