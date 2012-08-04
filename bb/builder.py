@@ -203,7 +203,7 @@ def _analyse_application():
           continue
         print '  ', str(core), ':', [str(_) for _ in threads]
         os = os_class(processor=processor, threads=threads)
-        _add_project(Project(os))
+        _add_project(Project(mapping, core, os))
 
 _projects = list()
 
@@ -216,7 +216,9 @@ def _get_projects():
   return _projects
 
 class Project(object):
-  def __init__(self, os):
+  def __init__(self, mapping, core, os):
+    self.mapping = mapping
+    self.core = core
     self.os = os
     self.targets = list()
     self.extract_targets()
@@ -278,9 +280,8 @@ def _print_available_toolchains_and_exit():
 def _start_build_process():
   _print_header("Building")
   for project in _get_projects():
-    print project.os
-    # TODO: define output filename
-    project.toolchain.compiler.set_output_filename('test')
+    output_filename = "%s_%s" % (project.mapping.get_name(), str(project.core.get_id()))
+    project.toolchain.compiler.set_output_filename(output_filename)
     _apply_rules(project.targets, project.toolchain)
     try:
       project.toolchain.build()
