@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
+
 import inspect
 import math
 import imp
@@ -154,11 +156,6 @@ def _add_rule(target, cases, owner):
     raise TypeError("Unknown target type %s" % target)
   print owner.__name__, ":", "add rule for target '%s'" % target
 
-# TODO: move the function
-def default_thread_distribution(threads, cores):
-  step = int(math.ceil(float(len(threads)) / float(len(cores))))
-  return [threads[x : x + step] for x in xrange(0, len(threads), step)]
-
 def _print_header(title):
   print "=>", title
 
@@ -188,34 +185,25 @@ def _analyse_application():
       logging.error("Mapping", mapping.get_name(), "doesn't have threads")
       return
     print "*", "number of threads", "=", mapping.get_num_threads()
-    processor = mapping.get_processor()
-    if not processor:
-      print "Mapping", mapping.get_name(), "doesn't connected to any processor"
+    board = mapping.get_board()
+    if not board:
+      print "Mapping", mapping.get_name(), "doesn't connected to a board"
       return
-    print "*", "processor", "=", str(processor)
-    cores = processor.get_cores()
-    # Some cores can be disabled or not defined
-    active_cores = list()
-    for core_id in range(len(cores)):
-      if cores[core_id]:
-        active_cores.append(core_id)
-    if not active_cores:
-      print "Processor does not have active cores"
-      return
-    threads_per_core = default_thread_distribution(mapping.get_threads(), active_cores)
-    print "Thread distribution:"
-    for i in range(len(threads_per_core)):
-      if not threads_per_core[i]:
-        continue
-      print "\t", str(processor.get_core(i)), ":", [str(_) for _ in threads_per_core[i]]
     os_class = mapping.get_os_class()
-    for i in range(len(threads_per_core)):
-      print "Generate OS"
-      core_id = active_cores[i]
-      core = cores[core_id]
-      os = os_class(processor=mapping.get_processor(),
-                    threads=threads_per_core[core_id])
-      _add_project(Project(os))
+    thread_distributor = mapping.get_thread_distributor()
+    print "*", "board", "=", str(board)
+    # TODO: verify board; maybe this board doesn't have the processors.
+    print "Thread distribution:"
+    thread_distribution = thread_distributor(mapping.get_threads(),
+                                             board.get_processors())
+    for processor in board.get_processors():
+      print ' ', str(processor)
+      for core, threads in thread_distribution[processor].items():
+        if not threads:
+          continue
+        print '  ', str(core), ':', [str(_) for _ in threads]
+        os = os_class(processor=processor, threads=threads)
+        _add_project(Project(os))
 
 _projects = list()
 

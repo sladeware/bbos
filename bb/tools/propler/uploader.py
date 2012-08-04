@@ -18,7 +18,7 @@ taken from
 proposed by Remy Blank."""
 
 __copyright__ = 'Copyright (c) 2012 Sladeware LLC'
-__author__ = 'Olexander Sviridenko'
+__author__ = 'Oleksander Sviridenko'
 
 import os
 import os.path
@@ -36,33 +36,32 @@ except ImportError:
   print >>sys.stderr, "Please install pyserial."
   exit(0)
 
-from bb.utils import module
-from bb.utils.spawn import spawn
+from bb.lib.utils.spawn import spawn
 from bb.tools.propler.image import *
 from bb.tools.propler.chips import *
 from bb.tools.propler.bitwise_op import *
 from bb.tools.propler.boards import *
 
 DEFAULT_SERIAL_PORTS = {
-    "posix": "/dev/ttyUSB0",
-    "nt": "COM1",
+  "posix": "/dev/ttyUSB0",
+  "nt": "COM1",
 }
 """Default serial ports by platforms:
 
-    ======== ================
-    PLATFORM PORT
-    ======== ================
-    posix    **/dev/ttyUSB0**
-    nt       **COM1**
-    ======== ================
+  ======== ================
+  PLATFORM PORT
+  ======== ================
+  posix    **/dev/ttyUSB0**
+  nt       **COM1**
+  ======== ================
 """
 
 class UploaderException(Exception):
-    pass
+  pass
 
 class UploadingError(UploaderException):
-    """Base uploading error."""
-    pass
+  """Base uploading error."""
+  pass
 
 PAGE_SIZE = 1 << 9
 
@@ -333,8 +332,6 @@ class SPIUploader(SPIUploaderInterface):
         result.append(chr(0xf2 | (value & 0x01) | ((value & 2) << 2)))
         return "".join(result)
 
-#_____________________________________________________________________
-
 class MulticogBootloaderCommands(BootloaderCommands):
     pass
 
@@ -543,7 +540,7 @@ def multicog_spi_upload(cogid_to_filename_mapping, serial_port,
     """Start multicog upload, instanciate uploader
     :class:`MulticogSPIUploader` and connect to the target
     device. `cogid_to_filename_mapping` represents mapping of cog to
-    file name that has to be uploaded on this cog. As result the 
+    file name that has to be uploaded on this cog. As result the
     function returns uploading status.
 
     By default the images will be uploaded to the RAM and will be
@@ -618,7 +615,7 @@ def upload_bootloader(port="/dev/ttyUSB0", config=None, rebuild=False):
         raise Exception("Cannot find catalina config for %s" %
                         config.__class__.__name__)
     bootloader_src = os.path.join(HOME_DIR, "multicog_spi_bootloader.spin")
-    bootloader_binary = os.path.join(module.get_dir(), "multicog_spi_bootloader.binary")
+    bootloader_binary = os.path.join(os.path.dirname(__file__), "multicog_spi_bootloader.binary")
     if rebuild or not os.path.exists(bootloader_binary):
         spawn(["homespun", bootloader_src, "-b",
                "-L", "/usr/local/lib/catalina/target/",
@@ -632,4 +629,3 @@ def upload_bootloader(port="/dev/ttyUSB0", config=None, rebuild=False):
     uploader.upload_file(bootloader_binary, eeprom=True)
     uploader.disconnect()
     return uploader
-
