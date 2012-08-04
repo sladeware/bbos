@@ -26,11 +26,9 @@ const static char bbos_banner[] = "BBOS version " BBOS_VERSION_STR  \
   "\n";
 #endif // BBOS_SKIP_BANNER_PRINTING
 
-// BBOS entry point. It works in several ways. The user may define
-// bbos_main() function to describe application functionally. In this
-// case the system will automatically initialize itself and start the
-// kernel. Otherwise user will have to start kernel manually by
-// calling bbos_kernel_start().
+// BBOS entry point. The user may define bbos_main() function to describe
+// application functionally between kerenl initialization and running.
+// NOTE: the system will automatically initialize itself and start the kernel.
 void
 bbos()
 {
@@ -40,6 +38,6 @@ bbos()
   bbos_kernel_init();
 #ifdef bbos_main
   bbos_main();
-  bbos_kernel_start();
 #endif
+  bbos_kernel_start();
 }
