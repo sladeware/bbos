@@ -25,6 +25,9 @@ class P8X32A_QuickStartBoard(Board):
 
   Please see http://www.parallaxsemiconductor.com/sites/default/files/parallax/P8X32AQuickStartSchematicRevA_2.pdf
   for schematic."""
+
+  PROPERTIES = (Board.Property("name", "P8X32A QuickStartBoard"),)
+
   def __init__(self):
     Board.__init__(self)
     self.add_processor(PropellerP8X32A_Q44().set_designator('U1'))
