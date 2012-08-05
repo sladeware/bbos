@@ -21,6 +21,7 @@ import types
 import sys
 
 import bb
+from bb.cli import CLI
 from bb import application as bbapp
 from bb.config import host_os
 from bb.lib.utils import typecheck
@@ -282,6 +283,8 @@ def _start_build_process():
   for project in _get_projects():
     output_filename = "%s_%s" % (project.mapping.get_name(), str(project.core.get_id()))
     project.toolchain.compiler.set_output_filename(output_filename)
+    project.toolchain.compiler.dry_run = CLI.config.options.dry_run
+    project.toolchain.compiler.verbose = CLI.config.options.verbose
     _apply_rules(project.targets, project.toolchain)
     try:
       project.toolchain.build()

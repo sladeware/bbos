@@ -20,8 +20,8 @@ class build(Command):
   def function(self):
     model_filename = None
     model_path = None
-    if len(CLI.config.args) > 0:
-      model_filename= CLI.config.args[0]
+    if len(CLI.config.args) > 1:
+      model_filename = CLI.config.args[1]
       model_path = os.path.join(bb.env["BB_APPLICATION_HOME"], model_filename)
     if not model_path:
       raise Exception("model_path")
@@ -56,10 +56,11 @@ class build(Command):
                          dest='list_toolchains',
                          action='store_true',
                          help='List supported toolchains.')
-    optparser.add_option('--dry-run',
-                         dest='dry_run',
-                         action='store_true',
-                         help='Dry run mode.')
+    optparser.add_option('--verbose',
+                         dest='verbose',
+                         type='int',
+                         default=0,
+                         help='Verbose level.')
     optparser.add_option('--dry-run',
                          action='store_true',
                          dest='dry_run',
