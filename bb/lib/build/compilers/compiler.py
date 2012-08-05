@@ -1,4 +1,16 @@
 #!/usr/bin/env python
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __author__ = "Oleksandr Sviridenko"
@@ -8,18 +20,18 @@ import types
 from bb.lib.utils.spawn import which, ExecutionError
 
 class ProgramHandler(object):
-  DEFAULT_EXECUTABLES = dict()
+  EXECUTABLES = dict()
   """Default executables."""
 
   def __init__(self):
     self._executables = dict()
-    self.set_executables(self.DEFAULT_EXECUTABLES)
+    self.set_executables(self.EXECUTABLES)
 
   def set_executables(self, *args, **kargs):
     """Define the executables (and options for them) that will be run
     to perform the various stages of compilation. The exact set of
     executables that may be specified here depends on the compiler
-    class (via the :const:`Compiler.DEFAULT_EXECUTABLES` class attribute).
+    class (via the :const:`Compiler.EXECUTABLES` class attribute).
     For example they may have the following view:
 
     * `compiler` --- the C/C++ compiler

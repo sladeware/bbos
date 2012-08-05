@@ -1,7 +1,19 @@
 #!/usr/bin/env python
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-__copyright__ = "Copyright (c) 2012 Sladeware LLC"
-__author__ = "Oleksandr Sviridenko"
+__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
+__author__ = 'Oleksandr Sviridenko'
 
 from bb.lib.build.compilers.custom_c_compiler import CustomCCompiler
 from bb.lib.build.compilers.gcc import LD
@@ -11,8 +23,8 @@ from bb.config import host_os
 
 class UnixCCompiler(CustomCCompiler):
   """This class is subclass of
-  :class:`bb.builder.compilers.c.CCompiler` that handles the typical
-  Unix-style command-line C compiler.
+  :class:`bb.lib.build.compilers.custom_c_compiler.CCompiler` that handles the
+  typical Unix-style command-line C compiler.
 
   * macros defined with `-Dname[=value]`
   * macros undefined with `-Uname`
@@ -25,13 +37,13 @@ class UnixCCompiler(CustomCCompiler):
   * link shared library handled by **cc** `-shared`
   """
 
-  DEFAULT_SOURCE_EXTENSIONS = [".c", ".C", ".cc", ".cxx", ".cpp", ".m"]
+  SOURCE_EXTENSIONS = ['.c', '.C', '.cc', '.cxx', '.cpp', '.m']
   """Default source extensions are ``.c``, ``.C``, ``.cc``, ``.cxx``,
   ``.cpp``, ``.m``.
   """
 
-  DEFAULT_OBJECT_EXTENSION = ".o"
-  DEFAULT_EXECUTABLES = {
+  OBJECT_EXTENSION = ".o"
+  EXECUTABLES = {
     'preprocessor' : None,
     'compiler'     : ["cc"],
     'compiler_so'  : ["cc"],
@@ -59,7 +71,7 @@ class UnixCCompiler(CustomCCompiler):
 
   def __init__(self, verbose=None, dry_run=False):
     CustomCCompiler.__init__(self, verbose, dry_run)
-    for name, executable in UnixCCompiler.DEFAULT_EXECUTABLES.items():
+    for name, executable in UnixCCompiler.EXECUTABLES.items():
       if not self.get_executable(name):
         self.set_executable(name, executable)
     self.set_linker(LD())
