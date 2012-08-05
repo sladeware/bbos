@@ -508,21 +508,23 @@ class CustomCCompiler(Compiler):
     macros, objects, extra_postopts, pp_options, build = \
         self._setup_compile(sources, output_dir, macros, include_dirs, extra_postopts, depends)
     cc_options = self._gen_cc_options(pp_options, debug, extra_preopts)
+
     for obj in objects:
       try:
         src, ext = build[obj]
       except KeyError:
         continue
-      if self.dry_run:
-        print "Compiling '%s'" % src
-      else:
+      if not self.verbose:
         sys.stdout.flush()
         sys.stdout.write("Compiling '%s'\r" % src)
         time.sleep(0.010)
-        # Note: we pass a copy of sources, options, etc. since we
-        # need to privent their modification
+      else:
+        print "Compiling '%s'\r" % src
+      # Note: we pass a copy of sources, options, etc. since we
+      # need to privent their modification
+      if not self.dry_run:
         self._compile(obj, src, ext, list(cc_options), extra_postopts, pp_options)
-    if not self.dry_run:
+    if not self.verbose:
       print
     return objects
 
