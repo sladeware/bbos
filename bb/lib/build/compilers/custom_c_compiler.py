@@ -1,7 +1,19 @@
 #!/usr/bin/env python
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-__copyright__ = "Copyright (c) 2012 Sladeware LLC"
-__author__ = "Oleksandr Sviridenko"
+__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
+__author__ = 'Oleksandr Sviridenko'
 
 import sys
 import time
@@ -72,23 +84,23 @@ class CustomCCompiler(Compiler):
   deciding what language to use when mixing source types. For example, if some
   extension has two files with ``.c`` extension, and one with ``.cpp``, it is
   still linked as ``c++``. The order can be changed by using
-  :func:`CCompiler.set_language_precedence_order`. By default it equals to
-  :const:`CCompiler.DEFAULT_LANGUAGE_PRECEDENCE_ORDER`.
+  :func:`CustomCCompiler.set_language_precedence_order`. By default it equals to
+  :const:`CustomCCompiler.LANGUAGE_PRECEDENCE_ORDER`.
 
   Learn more about GCC options:
   http://gcc.gnu.org/onlinedocs/gcc/Option-Summary.html
   """
 
-  DEFAULT_LANGUAGE_PRECEDENCE_ORDER = ["c++", "objc", "c"]
-  """Default language precedence order: ``c++``, ``objc``, ``c``."""
+  LANGUAGE_PRECEDENCE_ORDER = ["c++", "objc", "c"]
+  """Language precedence order: ``c++``, ``objc``, ``c``."""
 
-  DEFAULT_SOURCE_EXTENSIONS = None
-  """Default source extensions."""
+  SOURCE_EXTENSIONS = None
+  """Source extensions."""
 
-  DEFAULT_OBJECT_EXTENSION = None
-  """Default object file extension."""
+  OBJECT_EXTENSION = None
+  """Object file extension."""
 
-  DEFAULT_EXT_TO_LANGUAGE_MAPPING = {
+  EXT_TO_LANGUAGE_MAPPING = {
     ".c"   : "c",
     ".cc"  : "c++",
     ".cpp" : "c++",
@@ -112,9 +124,8 @@ class CustomCCompiler(Compiler):
   def __init__(self, verbose=0, dry_run=False):
     Compiler.__init__(self, verbose, dry_run)
     # A list of macro definitions (we are using list since the order is
-    # important). A macro definition is a 2-tuple (name, value), where
-    # the value is either a string or None. A macro undefinition is a
-    # 1-tuple (name, ).
+    # important). A macro definition is a 2-tuple (name, value), where the value
+    # is either a string or None. A macro undefinition is a 1-tuple (name, ).
     self.macros = list()
     # A list of directories
     self.include_dirs = list()
@@ -126,13 +137,13 @@ class CustomCCompiler(Compiler):
     # A list of object files
     self.objects = list()
     self._object_extension = None
-    self.set_object_extension(self.DEFAULT_OBJECT_EXTENSION)
+    self.set_object_extension(self.OBJECT_EXTENSION)
     self._source_extensions = list()
-    self.set_source_extensions(self.DEFAULT_SOURCE_EXTENSIONS)
+    self.set_source_extensions(self.SOURCE_EXTENSIONS)
     self._language_by_ext_mapping = dict()
-    self.set_ext_to_language_mapping(self.DEFAULT_EXT_TO_LANGUAGE_MAPPING)
+    self.set_ext_to_language_mapping(self.EXT_TO_LANGUAGE_MAPPING)
     self._language_precedence_order = list()
-    self.set_language_precedence_order(self.DEFAULT_LANGUAGE_PRECEDENCE_ORDER)
+    self.set_language_precedence_order(self.LANGUAGE_PRECEDENCE_ORDER)
     self._extra_preopts = list()
     self._extra_postopts = list()
     self._linker = None
@@ -164,7 +175,7 @@ class CustomCCompiler(Compiler):
       osname = host_os.name
     if platform is None:
       platform = sys.platform
-    for pattern, compiler in DEFAULT_CCOMPILERS:
+    for pattern, compiler in CCOMPILERS:
       if re.match(pattern, platform) is not None or \
             re.match(pattern, osname) is not None:
         return compiler
@@ -199,7 +210,7 @@ class CustomCCompiler(Compiler):
 
   def set_ext_to_language_mapping(self, mapping):
     """Set file extension to language mapping.
-    See also :const:`CCompiler.DEFAULT_LANGUAGE_BY_EXT_MAPPING`.
+    See also :const:`CustomCCompiler.LANGUAGE_BY_EXT_MAPPING`.
     """
     for ext, language in mapping.items():
       self.bind_ext_to_language(ext, language)
@@ -217,7 +228,7 @@ class CustomCCompiler(Compiler):
   def set_language_precedence_order(self, order):
     """Set language precedence order. This order will be used by
     :func:`CCompiler.identify_language` to identify language name. See also
-    :const:`CCompiler.DEFAULT_LANGUAGE_PRECEDENCE_ORDER`.
+    :const:`CustomCCompiler.LANGUAGE_PRECEDENCE_ORDER`.
     """
     self._language_precedence_order = order
 
@@ -472,7 +483,8 @@ class CustomCCompiler(Compiler):
         raise UnknownFileError("unknown file type '%s' (from '%s')" \
                                  % (ext, src_filename))
       obj_filenames.append(
-        host_os.path.join(output_dir, base + self.get_object_extension()))
+        host_os.path.join(bb.env['BB_BUILD_DIR_NAME'], output_dir,
+                          base + self.get_object_extension()))
     return obj_filenames
 
   def set_extra_preopts(self, extra_preopts):

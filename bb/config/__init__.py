@@ -34,9 +34,20 @@ if not getattr(bb, 'env', None):
 
 # TODO: choose the right names
 
+#_______________________________________________________________________________
+#
+# Host environment variables
+#_______________________________________________________________________________
+
 bb.env['BB_HOST_OS'] = platform.system() # NOTE: what about os.name?
 bb.env['BB_HOST_PROCESSOR'] = platform.processor()
 bb.env['BB_HOST_ARCH'] = platform.machine()
+
+#_______________________________________________________________________________
+#
+# BB basic variables
+#_______________________________________________________________________________
+
 bb.env['BB_HOME'] = host_os.path.abspath(
   host_os.path.join(
     host_os.path.dirname(
@@ -48,9 +59,17 @@ bb_package_dir = host_os.path.abspath(
   )
 bb.env['BB_PACKAGE_HOME'] = bb_package_dir
 
+#_______________________________________________________________________________
+#
+# Application environment variables
+#_______________________________________________________________________________
+
 bb.env['BB_APPLICATION_HOME'] = host_os.path.realpath(host_os.curdir)
 sys.path.append(bb.env['BB_APPLICATION_HOME'])
 
-def update_env():
-  for k, v in bb.env.items():
-    host_os.environ[k] = v
+#_______________________________________________________________________________
+#
+# Build environment
+#_______________________________________________________________________________
+
+bb.env['BB_BUILD_DIR_NAME'] = host_os.environ.get('BB_BUILD_DIR_NAME', 'build')
