@@ -12,11 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The basic idea of code uploader for Parallax Propeller chip was
-taken from
-`uploader <http://forums.parallax.com/showthread.php?90707-Propeller-development-for-non-Windows-users>`_
-proposed by Remy Blank."""
-
 __copyright__ = 'Copyright (c) 2012 Sladeware LLC'
 __author__ = 'Oleksander Sviridenko'
 
@@ -72,265 +67,263 @@ MARKER = 0xFFFFFE
 HOME_DIR = os.path.dirname(os.path.realpath(__file__))
 
 class SPIUploaderInterface(object):
-    """Base class for SPI uploaders. Learn more about transmission protocol from
-    discussion of
-    `"serial boot loader" <http://forums.parallax.com/showthread.php?96822-serial-boot-loader&p=670593#post670593>`_.
+  """Base class for SPI uploaders. Learn more about transmission protocol from
+  discussion of
+  `"serial boot loader" <http://forums.parallax.com/showthread.php?96822-serial-boot-loader&p=670593#post670593>`_.
+  """
+
+  # Processor constants
+  LFSR_REQUEST_LEN = 250
+  LFSR_REPLY_LEN = 250
+  LFSR_SEED = ord("P") # P is for Propeller
+
+  def __init__(self, port=None, baudrate=9600, timeout=0, config=None):
+    self.__config = None
+    # Setup serial
+    if not port:
+      port = raw_input("Please select port: ")
+      print port
+    self.__serial = serial.Serial(baudrate=baudrate, timeout=timeout)
+    self.__serial.port = port
+    self.__serial.stopbits = 1
+    # self.__serial.nonblocking() # configure for nonblocking operation
+    if not config:
+      config = CustomBoardConfig()
+    self.set_config(config)
+
+  def set_config(self, config):
+    """Configure uploader with help of :class:`Config`."""
+    self.serial.baudrate = config.get_baudrate()
+    self.__config = config
+
+  def get_config(self):
+    """Return used :class:`Config`."""
+    return self.__config
+
+  def bin_to_eeprom(self, image):
+    if len(image) > self.get_config().get_eeprom_size() - 8:
+      raise UploadingError("Code too long for EEPROM (max %d bytes)"
+                           % (self.get_config().get_eeprom_size() - 8))
+    dbase = ord(image[0x0A]) + (ord(image[0x0B]) << 8)
+    if dbase > self.get_config().get_eeprom_size():
+      raise UploadingError("Invalid binary format")
+    image += "".join(chr(0x00) * (dbase - 8 - len(image)))
+    image += "".join(chr(each) for each in [0xFF, 0xFF, 0xF9, 0xFF,
+                                            0xFF, 0xFF, 0xF9, 0xFF])
+    image += "".join(chr(0x00) * (self.get_config().get_eeprom_size() - len(image)))
+    return image
+
+  @property
+  def serial(self):
+    """Return instance of :class:`serial.Serial` that controls serial port."""
+    return self.__serial
+
+  def __calibrate(self):
+    """Send calibration pulse."""
+    if self.send_byte(0xF9) != 1:
+      raise Exception("The calibration byte wasn't written.")
+
+  def receive_bit(self, echo, timeout):
+    """Receive response from hardware via echoed byte."""
+    start = time.time()
+    while (time.time() - start) < timeout:
+      if echo:
+        self.send_byte(0xF9)
+        time.sleep(0.025)
+      c = self.serial.read(1)
+      if c:
+        if c in (chr(0xFE), chr(0xFF)):
+          return ord(c) & 0x01
+        # else:
+        #    raise Exception("Bad reply")
+    raise Exception("Timeout error")
+
+  def __connect(self, config=None):
+    """Actual connect implementation."""
+    if config:
+      self.set_config(config)
+    #self.disconnect()
+    self.serial.close()
+    if not self.serial.isOpen():
+      self.serial.open()
+    self.reset()
+    print "Send the calibration pulse"
+    self.__calibrate()
+    seq = []
+    for (i, value) in zip(range(self.LFSR_REQUEST_LEN + self.LFSR_REPLY_LEN),
+                          lfsr(self.LFSR_SEED)):
+      seq.append(value)
+    print "Send the magic propeller LFSR byte stream"
+    self.serial.write("".join(chr(each | 0xFE) for each in seq[0:self.LFSR_REQUEST_LEN]))
+    # send gobs of 0xF9 for id sync-up - these clock out the LSFR bits and the id
+    self.serial.write(chr(0xF9) * (self.LFSR_REPLY_LEN + 8))
+    # wait for response so we know we have a Propeller.
+    # count passed bits to provide more useful information for dubuging
+    n = self.LFSR_REPLY_LEN
+    ok = 0
+    for i in range(self.LFSR_REQUEST_LEN, self.LFSR_REQUEST_LEN + n):
+      bit = self.receive_bit(False, 0.100) # 0.110?
+      if bit != seq[i]:
+        print "%d/%d: %d <> %d" % (ok, n, bit, seq[i])
+        raise Exception("No hardware found")
+      ok += 1
+    version = 0
+    for i in range(8):
+      version = ((version >> 1) & 0x7F) | ((self.receive_bit(False, 0.050) << 7))
+    print "Connecting to propeller v%d on '%s'" % (version, self.__serial.port)
+    # Update chip version for board config
+    if self.get_config():
+      self.get_config().set_chip_version(version)
+    if version:
+      return True
+    self.disconnect()
+    return False
+
+  def connect(self, config=None, attempts=2):
+    """Find propeller device on port using sync-up sequence. Return
+    ``False`` on error.
     """
+    result = False
+    while attempts:
+      try:
+        result = self.__connect(config)
+      except Exception, e:
+        print e
+      if result:
+        break
+      attempts -= 1
+      time.sleep(1)
+    return result
 
-    # Processor constants
-    LFSR_REQUEST_LEN = 250
-    LFSR_REPLY_LEN = 250
-    LFSR_SEED = ord("P") # P is for Propeller
+  def reset(self):
+    """Reset propeller chip."""
+    self.serial.flushOutput()
+    # TODO: mac os
+    self.serial.setDTR(1)
+    time.sleep(0.025) # 0.010?
+    self.serial.setDTR(0)
+    time.sleep(0.090)
+    self.serial.flushInput()
 
-    def __init__(self, port=None, baudrate=9600, timeout=0, config=None):
-        self.__config = None
-        # Setup serial
-        if not port:
-            sys.stdout.write("Please select port: ")
-            port = raw_input()
-        self.__serial = serial.Serial(baudrate=baudrate, timeout=timeout)
-        self.__serial.port = port
-        self.__serial.stopbits = 1
-        #self.__serial.nonblocking() # configure for nonblocking operation
-        if not config:
-            config = CustomBoardConfig()
-        self.set_config(config)
+  def send(self, data, timeout=None):
+    self.__serial.write(data)
 
-    def set_config(self, config):
-        """Configure uploader with help of :class:`Config`."""
-        self.serial.baudrate = config.get_baudrate()
-        self.__config = config
+  def send_byte(self, byte, timeout=None):
+    """Send a `byte` to the serial with sepcified `timeout`. Return number
+    of bytes written.
+    """
+    if not type(byte) is types.StringType:
+      byte = chr(byte)
+    n = self.__serial.write(byte)
+    if timeout:
+      time.sleep(timeout)
+    return n
 
-    def get_config(self):
-        """Return used :class:`Config`."""
-        return self.__config
+  def receive(self, n=1, timeout=-1):
+    """Try to receive `n` bytes with specified `timeout`. Return number of
+    bytes that was successfully received.
+    """
+    # Save previous value of read timeout
+    old_timeout = self.__serial.timeout
+    if timeout is None or timeout > 0:
+      self.__serial.timeout = timeout
+    n = self.__serial.read(n)
+    self.__serial.timeout = old_timeout
+    return n
 
-    def bin_to_eeprom(self, image):
-        if len(image) > self.get_config().get_eeprom_size() - 8:
-            raise UploadingError("Code too long for EEPROM (max %d bytes)"
-                                 % (self.get_config().get_eeprom_size() - 8))
-        dbase = ord(image[0x0A]) + (ord(image[0x0B]) << 8)
-        if dbase > self.get_config().get_eeprom_size():
-            raise UploadingError("Invalid binary format")
-        image += "".join(chr(0x00) * (dbase - 8 - len(image)))
-        image += "".join(chr(each) for each in [0xFF, 0xFF, 0xF9, 0xFF,
-                                                0xFF, 0xFF, 0xF9, 0xFF])
-        image += "".join(chr(0x00) * (self.get_config().get_eeprom_size() - len(image)))
-        return image
-
-    @property
-    def serial(self):
-        """Return instance of :class:`serial.Serial` that controls serial port.
-        """
-        return self.__serial
-
-    def __calibrate(self):
-        """Send calibration pulse."""
-        if self.send_byte(0xF9) != 1:
-            raise Exception("The calibration byte wasn't written.")
-
-    def receive_bit(self, echo, timeout):
-        """Receive response from hardware via echoed byte."""
-        start = time.time()
-        while (time.time() - start) < timeout:
-            if echo:
-                self.send_byte(0xF9)
-                time.sleep(0.025)
-            c = self.serial.read(1)
-            if c:
-                if c in (chr(0xFE), chr(0xFF)):
-                    return ord(c) & 0x01
-                #else:
-                #    raise Exception("Bad reply")
-        raise Exception("Timeout error")
-
-    def __connect(self, config=None):
-        """Actual connect implementation."""
-        if config:
-            self.set_config(config)
-        #self.disconnect()
-        self.serial.close()
-        if not self.serial.isOpen():
-            self.serial.open()
-        self.reset()
-        print "Send the calibration pulse"
-        self.__calibrate()
-        seq = []
-        for (i, value) in zip(range(self.LFSR_REQUEST_LEN + self.LFSR_REPLY_LEN),
-                              lfsr(self.LFSR_SEED)):
-            seq.append(value)
-        print "Send the magic propeller LFSR byte stream"
-        self.serial.write("".join(chr(each | 0xFE) for each in seq[0:self.LFSR_REQUEST_LEN]))
-        # send gobs of 0xF9 for id sync-up - these clock out the LSFR bits and the id
-        self.serial.write(chr(0xF9) * (self.LFSR_REPLY_LEN + 8))
-        # wait for response so we know we have a Propeller.
-        # count passed bits to provide more useful information for dubuging
-        n = self.LFSR_REPLY_LEN
-        ok = 0
-        for i in range(self.LFSR_REQUEST_LEN, self.LFSR_REQUEST_LEN + n):
-            bit = self.receive_bit(False, 0.100) # 0.110?
-            if bit != seq[i]:
-                print "%d/%d: %d <> %d" % (ok, n, bit, seq[i])
-                raise Exception("No hardware found")
-            ok += 1
-        version = 0
-        for i in range(8):
-            version = ((version >> 1) & 0x7F) | ((self.receive_bit(False, 0.050) << 7))
-        print "Connecting to propeller v%d on '%s'" % (version, self.__serial.port)
-        # Update chip version for board config
-        if self.get_config():
-            self.get_config().set_chip_version(version)
-        if version:
-            return True
-        self.disconnect()
-        return False
-
-    def connect(self, config=None, attempts=2):
-        """Find propeller device on port using sync-up sequence. Return
-        ``False`` on error.
-        """
-        result = False
-        while attempts:
-            try:
-                result = self.__connect(config)
-            except Exception, e:
-                print e
-            if result:
-                break
-            attempts -= 1
-            time.sleep(1)
-        return result
-
-    def reset(self):
-        """Reset propeller chip."""
-        self.serial.flushOutput()
-        # TODO: mac os
-        self.serial.setDTR(1)
-        time.sleep(0.025) # 0.010?
-        self.serial.setDTR(0)
-        time.sleep(0.090)
-        self.serial.flushInput()
-
-    def send(self, data, timeout=None):
-        self.__serial.write(data)
-
-    def send_byte(self, byte, timeout=None):
-        """Send a `byte` to the serial with sepcified `timeout`. Return number
-        of bytes written.
-        """
-        if not type(byte) is types.StringType:
-            byte = chr(byte)
-        n = self.__serial.write(byte)
-        if timeout:
-            time.sleep(timeout)
-        return n
-
-    def receive(self, n=1, timeout=-1):
-        """Try to receive `n` bytes with specified `timeout`. Return number of
-        bytes that was successfully received.
-        """
-        # Save previous value of read timeout
-        old_timeout = self.__serial.timeout
-        if timeout is None or timeout > 0:
-            self.__serial.timeout = timeout
-        n = self.__serial.read(n)
-        self.__serial.timeout = old_timeout
-        return n
-
-    def disconnect(self):
-        """Disconnect from device. Close serial port connection."""
-        print "Disconnecting"
-        self.serial.close()
-
+  def disconnect(self):
+    """Disconnect from device. Close serial port connection."""
+    print "Disconnecting"
+    self.serial.close()
 
 class BootloaderCommands:
 
-    @classmethod
-    def get_command_list(cls):
-        return sorted(cls.commands, key=lambda cmd: cls.commands[cmd])
+  @classmethod
+  def get_command_list(cls):
+    return sorted(cls.commands, key=lambda cmd: cls.commands[cmd])
 
-    @classmethod
-    def get_code_list(cls):
-        return sorted(cls.commands.values())
+  @classmethod
+  def get_code_list(cls):
+    return sorted(cls.commands.values())
 
-    @classmethod
-    def get_command_code(cls, name):
-        return cls.commands[name]
+  @classmethod
+  def get_command_code(cls, name):
+    return cls.commands[name]
 
-    commands = {
-        "SHUTDOWN"               : 0,
-        "LOAD_TO_RAM_AND_RUN"    : 1,
-        "LOAD_TO_EEPROM"         : 2,
-        "LOAD_TO_EEPROM_AND_RUN" : 3
-        }
+  commands = {
+    "SHUTDOWN"               : 0,
+    "LOAD_TO_RAM_AND_RUN"    : 1,
+    "LOAD_TO_EEPROM"         : 2,
+    "LOAD_TO_EEPROM_AND_RUN" : 3
+    }
 
 class SPIUploader(SPIUploaderInterface):
-    """Standard one-cog uploader.
+  """Basic one-cog uploader."""
+
+  def __init__(self, *args, **kargs):
+    SPIUploaderInterface.__init__(self, *args, **kargs)
+
+  def upload_file(self, filename, run=True, eeprom=False):
+    image = Image.extract_from_file(filename)
+    self.upload_image(image, run, eeprom)
+
+  @classmethod
+  def verify_image(cls, image, eeprom=False):
+    """Verify `image`. Check its checksum."""
+    if len(image) % 4 != 0:
+      raise Exception("Invalid image size: must be a multiple of 4")
+    checksum = reduce(lambda a, b: a + b, (ord(each) for each in image))
+    if not eeprom:
+      checksum += 2 * (0xff + 0xff + 0xf9 + 0xff)
+    checksum &= 0xff
+    if checksum != 0:
+      raise Exception("Code checksum error: 0x%.2x" % checksum)
+
+  def upload_image(self, image, run=True, eeprom=False):
+    self.verify_image(image)
+    if eeprom:
+      image = self.bin_to_eeprom(image)
+    count_bytes = len(image)
+    count_longs = count_bytes // 4
+    print "Ready to transmit", count_bytes, "bytes"
+    command = BootloaderCommands.get_code_list()[eeprom * 2 + run]
+    self.send_long(command)
+    self.send_long(count_longs)
+    #time.sleep(0.05)
+    for i in range(0, count_bytes, 4):
+      #chunk = map(ord, image[i:i+4])
+      #chunk = chunk[0] | (chunk[1] << 8) | (chunk[2] << 16) | (chunk[3] << 24)
+      #self.send_long(chunk)
+      self.send_long(ord(image[i]) | (ord(image[i + 1]) << 8) |
+                     (ord(image[i + 2]) << 16) | (ord(image[i + 3]) << 24))
+      done = float(i + 4) / float(count_bytes)
+      sys.stdout.write("Downloading [{0:50s}] {1:.1f}%".format('#' * int(done * 50), done * 100))
+      sys.stdout.write("\r")
+      sys.stdout.flush()
+    print # escape from progress bar
+    # wait for checksum calculation on Propeller ... 95ms is minimum
+    time.sleep(0.15)
+    sys.stdout.write("Verifying... ")
+    sys.stdout.flush()
+    if self.receive_bit(True, 8):
+      print "RAM checksum error"
+      return
+    print "OK"
+
+  def send_long(self, value):
+    """Transmit an encoded long word to propeller."""
+    self.serial.write(self.encode_long(value))
+
+  def encode_long(self, value):
+    """Make an encoded long word to string. Encode a 32-bit long
+    as short/long pulses.
     """
-
-    def __init__(self, *args, **kargs):
-        SPIUploaderInterface.__init__(self, *args, **kargs)
-
-    def upload_file(self, filename, run=True, eeprom=False):
-        image = Image.extract_from_file(filename)
-        self.upload_image(image, run, eeprom)
-
-    @classmethod
-    def verify_image(cls, image, eeprom=False):
-        """Verify `image`. Check its checksum."""
-        if len(image) % 4 != 0:
-            raise Exception("Invalid image size: must be a multiple of 4")
-        checksum = reduce(lambda a, b: a + b, (ord(each) for each in image))
-        if not eeprom:
-            checksum += 2 * (0xff + 0xff + 0xf9 + 0xff)
-        checksum &= 0xff
-        if checksum != 0:
-            raise Exception("Code checksum error: 0x%.2x" % checksum)
-
-    def upload_image(self, image, run=True, eeprom=False):
-        self.verify_image(image)
-        if eeprom:
-            image = self.bin_to_eeprom(image)
-        count_bytes = len(image)
-        count_longs = count_bytes // 4
-        print "Ready to transmit", count_bytes, "bytes"
-        command = BootloaderCommands.get_code_list()[eeprom * 2 + run]
-        self.send_long(command)
-        self.send_long(count_longs)
-        #time.sleep(0.05)
-        for i in range(0, count_bytes, 4):
-            #chunk = map(ord, image[i:i+4])
-            #chunk = chunk[0] | (chunk[1] << 8) | (chunk[2] << 16) | (chunk[3] << 24)
-            #self.send_long(chunk)
-            self.send_long(ord(image[i]) | (ord(image[i + 1]) << 8) | (ord(image[i + 2]) << 16) | (ord(image[i + 3]) << 24))
-            done = float(i + 4) / float(count_bytes)
-            sys.stdout.write("Downloading [{0:50s}] {1:.1f}%".format('#' * int(done * 50), done * 100))
-            sys.stdout.write("\r")
-            sys.stdout.flush()
-        print # escape from progress bar
-
-        # wait for checksum calculation on Propeller ... 95ms is minimum
-        time.sleep(0.15)
-        sys.stdout.write("Verifying... ")
-        sys.stdout.flush()
-        if self.receive_bit(True, 8):
-            print "RAM checksum error"
-            return
-        print "OK"
-
-    def send_long(self, value):
-        """Transmit an encoded long word to propeller."""
-        self.serial.write(self.encode_long(value))
-
-    def encode_long(self, value):
-        """Make an encoded long word to string. Encode a 32-bit long
-        as short/long pulses."""
-        result = []
-        for i in range(10):
-            result.append(chr(0x92 | (value & 0x01) | ((value & 2) << 2) | ((value & 4) << 4)))
-            value >>= 3
-        result.append(chr(0xf2 | (value & 0x01) | ((value & 2) << 2)))
-        return "".join(result)
+    result = []
+    for i in range(10):
+      result.append(chr(0x92 | (value & 0x01) | ((value & 2) << 2) | ((value & 4) << 4)))
+      value >>= 3
+    result.append(chr(0xf2 | (value & 0x01) | ((value & 2) << 2)))
+    return "".join(result)
 
 class MulticogBootloaderCommands(BootloaderCommands):
     pass
