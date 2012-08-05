@@ -61,6 +61,7 @@ def spawn(cmd, search_path=True, verbose=0, dry_run=False):
     if not type(cmd[i]) is types.StringType:
       cmd[i] = str(cmd[i])
   if verbose:
+    print verbose
     print ' '.join(cmd)
   if os.name == 'posix':
     _spawn_posix(cmd, search_path, verbose, dry_run)
