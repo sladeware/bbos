@@ -65,36 +65,36 @@ class Image(object):
     start = 0 # TODO: fix this
     image_buf = [chr(0)] * image_size
     # Experemental!
-    pos = 0
-    for i in range(ctx.hdr.shnum):
-      section = ctx.load_section_table_entry(i)
-      if not section:
-        print "Can not load section table entry %d" % i
-      if section.type not in (ElfSectionHeader.SHT_PROGBITS,
-                              ElfSectionHeader.SHT_NOBITS):
-        continue
-      buf = ctx.load_section_segment(section)
-      for j in range(section.size):
-        image_buf[pos - start + j] = buf[j]
-      pos += section.size
+    #pos = 0
+    #for i in range(ctx.hdr.shnum):
+    #  section = ctx.load_section_table_entry(i)
+    #  if not section:
+    #    print "Can not load section table entry %d" % i
+    #  if section.type not in (ElfSectionHeader.SHT_PROGBITS,
+    #                          ElfSectionHeader.SHT_NOBITS):
+    #    continue
+    #  buf = ctx.load_section_segment(section)
+    #  for j in range(section.size):
+    #    image_buf[pos - start + j] = buf[j]
+    #  pos += section.size
     # load each program section
     for i in range(ctx.hdr.phnum):
       program = ctx.load_program_table_entry(i)
-      # print program
       if not program:
         print "Can not load program table entry %d" % i
       buf = ctx.load_program_segment(program)
       if not buf:
         print "Cannot load program section %d" % i
-      # for j in range(program.filesz):
-      #    image_buf[program.paddr - start + j] = buf[j]
+      for j in range(program.filesz):
+        image_buf[program.paddr - start + j] = buf[j]
     img = ''.join(image_buf)
     # Fixup the header to point past the spin bytecodes and generated
     # PASM code
     x = c_char_p(img)
     hdr_p = cast(x, POINTER(SpinHeader))
-    # hdr_p.contents.clk_speed = 80000000
-    # hdr_p.contents.clk_mode = 0x6F
+    # TODO: connect clkfreq and clkmode with chip config
+    hdr_p.contents.clkfreq = 80000000
+    hdr_p.contents.clkmode = 0x6F
     hdr_p.contents.vbase = image_size
     hdr_p.contents.dbase = image_size + 2 * 4 # stack markers
     hdr_p.contents.dcurr = hdr_p.contents.dbase + 4
@@ -170,14 +170,14 @@ class SpinHeader(Structure):
              instraction to be executed.
   dcurr      Address of the next variable to be stored on the stack.
   =========  ============"""
-  _fields_ = [("clkfreq", c_int),
-              ("clkmode", c_byte),
-              ("checksum", c_byte),
-              ("pbase", c_short),
-              ("vbase", c_short),
-              ("dbase", c_short),
-              ("pcurr", c_short),
-              ("dcurr", c_short)
+  _fields_ = [("clkfreq", c_uint32),
+              ("clkmode", c_uint8),
+              ("checksum", c_uint8),
+              ("pbase", c_uint16),
+              ("vbase", c_uint16),
+              ("dbase", c_uint16),
+              ("pcurr", c_uint16),
+              ("dcurr", c_uint16)
               ]
 
   def __str__(self):
@@ -201,6 +201,9 @@ assert sizeof(SpinHeader) == 16, \
 
 class ElfContext(object):
   """This class represents ELF context."""
+
+  # base address of cog driver overlays to be loaded into eeprom
+  COG_DRIVER_IMAGE_BASE = 0xC0000000
 
   def __init__(self):
     self.__fname = None
@@ -231,25 +234,31 @@ class ElfContext(object):
 
   def get_program_size(self):
     """Return `start` and `end` of the program."""
+    # The following implemetation reflects implementation from
+    # propeller-load tool. See GetProgramSize() function.
     start = 0xFFFFFFFF
     end = 0
-    ## The following implemetation reflects implementation from
-    ## propeller-load tool.
+    cog_images_start = start
+    cog_images_end = end
+    cog_images_found = False
     for i in range(self.hdr.phnum):
       program = self.load_program_table_entry(i)
-      if program.paddr < start:
-        start = program.paddr
-      if (program.paddr + program.filesz) > end:
-        end = program.paddr + program.filesz
-
-    #for i in range(self.hdr.shnum):
-    #    section = self.load_section_table_entry(i)
-    #    if section.addr < start:
-    #        start = section.addr
-    #    if (section.addr + section.size) > end:
-    #        end = section.addr + section.size
-
-    return (start, end - start)
+      if program.paddr < self.COG_DRIVER_IMAGE_BASE:
+        if program.paddr < start:
+          start = program.paddr
+        if (program.paddr + program.filesz) > end:
+          end = program.paddr + program.filesz
+      else:
+        if program.paddr < cog_images_start:
+          cog_images_start = program.paddr
+        if (program.paddr + program.filesz) > cog_images_end:
+          cog_images_end = program.paddr + program.filesz;
+        cog_images_found = True
+    size = end - start;
+    cog_images_size = 0
+    if cog_images_found:
+      cog_images_size = cog_images_end - cog_images_start
+    return (start, size)
 
   def load_section_table_entry(self, i):
     """Load i-th section table entry and return `ElfSectionHeader` instance."""
@@ -274,33 +283,33 @@ class ElfContext(object):
     return self.__data[program.offset:program.offset + program.filesz]
 
 class ElfSectionHeader(Structure):
-  SHT_NULL =0
-  SHT_PROGBITS =1
-  SHT_SYMTAB =2
-  SHT_STRTAB =3
-  SHT_RELA =4
-  SHT_HASH =5
-  SHT_DYNAMIC =6
-  SHT_NOTE =7
-  SHT_NOBITS =8
-  SHT_REL =9
-  SHT_SHLIB =10
-  SHT_DYNSYM =11
-  SHT_LOPROC =0x70000000
-  SHT_HIPROC =0x7fffffff
-  SHT_LOUSER =0x80000000
-  SHT_HIUSER =0xffffffff
+  SHT_NULL     = 0
+  SHT_PROGBITS = 1
+  SHT_SYMTAB   = 2
+  SHT_STRTAB   = 3
+  SHT_RELA     = 4
+  SHT_HASH     = 5
+  SHT_DYNAMIC  = 6
+  SHT_NOTE     = 7
+  SHT_NOBITS   = 8
+  SHT_REL      = 9
+  SHT_SHLIB    = 10
+  SHT_DYNSYM   = 11
+  SHT_LOPROC   = 0x70000000
+  SHT_HIPROC   = 0x7fffffff
+  SHT_LOUSER   = 0x80000000
+  SHT_HIUSER   = 0xffffffff
 
-  _fields_ = [("name"      , c_long),
-              ("type"      , c_long),
-              ("flags"     , c_long),
-              ("addr"      , c_long),
-              ("offset"    , c_long),
-              ("size"      , c_long),
-              ("link"      , c_long),
-              ("info"      , c_long),
-              ("addralign" , c_long),
-              ("entsize"   , c_long)]
+  _fields_ = [("name"      , c_uint32),
+              ("type"      , c_uint32),
+              ("flags"     , c_uint32),
+              ("addr"      , c_uint32),
+              ("offset"    , c_uint32),
+              ("size"      , c_uint32),
+              ("link"      , c_uint32),
+              ("info"      , c_uint32),
+              ("addralign" , c_uint32),
+              ("entsize"   , c_uint32)]
 
 class ElfProgramHeader(Structure):
   """An executable or shared object file's program header table is an array of
@@ -311,14 +320,14 @@ class ElfProgramHeader(Structure):
   """
   FLAGS = [[0x1, "R"], [0x2, "W"], [0x4, "E"]]
 
-  _fields_ = [("type"   , c_long),
-              ("offset" , c_long),
-              ("vaddr"  , c_long),
-              ("paddr"  , c_long),
-              ("filesz" , c_long),
-              ("memsz"  , c_long),
-              ("flags"  , c_long),
-              ("align"  , c_long)]
+  _fields_ = [("type"   , c_uint32),
+              ("offset" , c_uint32),
+              ("vaddr"  , c_uint32),
+              ("paddr"  , c_uint32),
+              ("filesz" , c_uint32),
+              ("memsz"  , c_uint32),
+              ("flags"  , c_uint32),
+              ("align"  , c_uint32)]
 
   def __str__(self):
     flags_string = ""
@@ -326,12 +335,12 @@ class ElfProgramHeader(Structure):
       if self.flags & flag[0]: flags_string += flag[1]
       else: flags_string += " "
     return "Program header:\n" \
-        " Type     : %d\n" \
+        " Type     : %d\n"     \
         " Offset   : 0x%08x\n" \
         " VirtAddr : 0x%08x\n" \
         " PhysAddr : 0x%08x\n" \
-        " FileSize : %d\n" \
-        " MemSize  : %d\n" \
+        " FileSize : %d\n"     \
+        " MemSize  : %d\n"     \
         " Flags    : %s (0x%02x)\n" \
         " Align    : 0x%08x\n" \
         % (self.type, self.offset, self.vaddr, self.paddr,
@@ -395,20 +404,20 @@ class ElfHeader(Structure):
     0x5072: "Parallax Propeller",
     }
 
-  _fields_ = [("ident"    , (c_char * 16)), # Magic number and other info
-              ("type"     , c_ushort), # Object file type
-              ("machine"  , c_ushort),
-              ("version"  , c_uint),
-              ("entry"    , c_uint),
-              ("phoff"    , c_uint),
-              ("shoff"    , c_uint),
-              ("flags"    , c_uint),
-              ("ehsize"   , c_ushort),
-              ("phentsize", c_ushort),
-              ("phnum"    , c_ushort),
-              ("shentsize", c_ushort),
-              ("shnum"    , c_ushort),
-              ("shstrndx" , c_ushort),
+  _fields_ = [("ident"    , (c_char * 16)), # magic number and other info
+              ("type"     , c_uint16),      # object file type
+              ("machine"  , c_uint16),
+              ("version"  , c_uint32),
+              ("entry"    , c_uint32),
+              ("phoff"    , c_uint32),
+              ("shoff"    , c_uint32),
+              ("flags"    , c_uint32),
+              ("ehsize"   , c_uint16),
+              ("phentsize", c_uint16),
+              ("phnum"    , c_uint16),
+              ("shentsize", c_uint16),
+              ("shnum"    , c_uint16),
+              ("shstrndx" , c_uint16),
               ]
 
   def is_valid(self):
@@ -428,6 +437,7 @@ class ElfHeader(Structure):
         " entry point address       : 0x%08x\n" \
         " start of program headers  : %d (bytes into file)\n" \
         " start of section headers  : %d (bytes into file)\n" \
+        " flags                     : %d\n" \
         " size of program headers   : %d (bytes)\n" \
         " number of program headers : %d\n" \
         " size of section headers   : %d (bytes)\n" \
@@ -435,12 +445,15 @@ class ElfHeader(Structure):
         " section header string table index : %d" \
         % ("".join([" %02x" % ord(c) for c in self.ident]),
            self.type,
-           self.machine, self.MACHINE_MAP[self.machine],
+           self.machine,
+           self.MACHINE_MAP[self.machine],
            self.version,
            self.entry,
            self.phoff,
            self.shoff,
+           self.flags,
            self.phentsize,
            self.phnum,
            self.shentsize,
-           self.shnum, self.shstrndx)
+           self.shnum,
+           self.shstrndx)
