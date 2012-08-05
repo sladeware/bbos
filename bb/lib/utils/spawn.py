@@ -39,7 +39,7 @@ class PlatformError(Exception):
 class ExecutionError(Exception):
   """Execution error."""
 
-def spawn(cmd, search_path=True, verbose=0, dry_run=False):
+def spawn(cmd, search_path=True, debug=False, dry_run=False):
   """Run another program, specified as a command list 'cmd', in a new
   process. 'cmd' is just the argument list for the new process, ie.
   cmd[0] is the program to run and cmd[1:] are the rest of its arguments.
@@ -60,11 +60,10 @@ def spawn(cmd, search_path=True, verbose=0, dry_run=False):
   for i in range(len(cmd)):
     if not type(cmd[i]) is types.StringType:
       cmd[i] = str(cmd[i])
-  if verbose:
-    print verbose
+  if debug:
     print ' '.join(cmd)
   if os.name == 'posix':
-    _spawn_posix(cmd, search_path, verbose, dry_run)
+    _spawn_posix(cmd, search_path, debug, dry_run)
   else:
     raise PlatformError("Don't know how to spawn programs on platform '%s'" %
                         os.name)
@@ -74,12 +73,12 @@ _stdin_fd = sys.stdin.fileno()
 _stdout_fd = sys.stdout.fileno()
 _stderr_fd = sys.stderr.fileno()
 
-def _spawn_posix(cmd, search_path=True, verbose=0, dry_run=False):
+def _spawn_posix(cmd, search_path=True, debug=False, dry_run=False):
   if dry_run:
     return
   exec_fn = search_path and os.execvp or os.execcv
 
-  if not verbose:
+  if not debug:
     child_stdin, parent_stdout = os.pipe()
     parent_stdin, child_stdout = os.pipe()
     (_, child_stderr) = os.pipe()
@@ -88,7 +87,7 @@ def _spawn_posix(cmd, search_path=True, verbose=0, dry_run=False):
 
   if not pid: # in a new child
     # Redirect STDIN, STDOUT and STDERR
-    if not verbose:
+    if not debug:
       os.dup2(child_stdin , _stdin_fd)
       os.dup2(child_stdout, _stdout_fd)
       os.dup2(child_stderr, _stderr_fd)
@@ -109,7 +108,7 @@ def _spawn_posix(cmd, search_path=True, verbose=0, dry_run=False):
           continue
         raise ExecutionError("command '%s' failed: %s"
                              % (cmd[0], exc[-1]))
-      if not verbose:
+      if not debug:
         os.close(child_stdin)
         os.close(child_stdout)
         os.close(child_stderr)

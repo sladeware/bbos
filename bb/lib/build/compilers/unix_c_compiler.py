@@ -80,7 +80,7 @@ class UnixCCompiler(CustomCCompiler):
     compiler = self.get_executable('compiler')
     try:
       spawn.spawn(compiler + cc_args + [src, '-o', obj] + extra_postargs,
-                  verbose=self.verbose, dry_run=self.dry_run)
+                  debug=self.verbose, dry_run=self.dry_run)
     except spawn.ExecutionError, msg:
       raise Exception(msg) # CompileError
 
@@ -113,7 +113,7 @@ class UnixCCompiler(CustomCCompiler):
             i = i + 1
         # TODO: resolve this
         #linker[i] = self.get_executable('compiler_cxx')[i]
-        spawn.spawn(linker + ld_options, verbose=self.verbose, \
+        spawn.spawn(linker + ld_options, debug=self.verbose, \
                 dry_run=self.dry_run)
     except Exception, msg:
       raise Exception, msg
