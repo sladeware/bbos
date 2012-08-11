@@ -12,23 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
+__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
+__author__ = 'Oleksandr Sviridenko'
 
-from bb import Thread
+import bb
 
-class ThreadTest(unittest.TestCase):
-  def setUp(self):
-    pass
-
-  def testThreadName(self):
-    t1 = Thread("T1")
-    self.assertEqual(t1.get_name(), "T1")
-
-  def testThreadRunner(self):
-    t1 = Thread("T1", "old_hello_world")
-    self.assertEqual(t1.get_runner(), "old_hello_world")
-    t1.set_runner("new_hello_world")
-    self.assertEqual(t1.get_runner(), "new_hello_world")
-
-if __name__ == '__main__':
-  unittest.main()
+class Driver(object):
+  pass

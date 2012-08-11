@@ -54,12 +54,25 @@ def register_mapping(mapping):
   if is_registered_mapping(mapping):
     return False
   get_network().add_node(mapping)
+  return True
 
 def register_mappings(mappings):
   if not typecheck.is_list(mappings):
     raise TypeError("Must be list")
   for mapping in mappings:
     register_mapping(mapping)
+
+def unregister_mapping(mapping):
+  if not isinstance(mapping, bb.Mapping):
+    raise TypeError("Must be bb.Mapping")
+  if not is_registered_mapping(mapping):
+    return False
+  get_network().remove_node(mapping)
+  return True
+
+def unregister_all_mappings():
+  for mapping in get_mappings():
+    unregister_mapping(mapping)
 
 def get_mapping(name):
   if not typecheck.is_string(name):

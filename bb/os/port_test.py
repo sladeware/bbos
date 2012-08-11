@@ -12,12 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import absolute_import
+import unittest
 
-__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
-__author__ = 'Oleksandr Sviridenko'
+import bb
+import bb.os as bbos
 
-from bb.os.os import OS
-from bb.os.kernel import Kernel
-from bb.os.thread import Thread
-from bb.os.port import Port
+class PortTest(unittest.TestCase):
+  def setUp(self):
+    pass
+
+  def testPortName(self):
+    p1 = bbos.Port("P1", 1)
+    self.assertEqual(p1.get_name(), "P1")
+
+  def testPortCapacity(self):
+    p1 = bbos.Port("P1", 1)
+    self.assertEqual(p1.get_capacity(), 1)
+
+if __name__ == '__main__':
+  unittest.main()

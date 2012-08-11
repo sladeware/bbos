@@ -19,6 +19,7 @@ from bb import application as bbapp
 
 class ApplicationTest(unittest.TestCase):
   def testMappingRegistration(self):
+    bbapp.unregister_all_mappings()
     m1 = bb.Mapping("M1")
     m2 = bb.Mapping("M2")
     bbapp.register_mappings([m1, m2])
