@@ -47,8 +47,8 @@ def roundrobin_thread_distributor(threads, processors):
   p = 0
   c = 0
   for thread in threads:
-    if not isinstance(thread, bb.Thread):
-      raise TypeError("thread must be derived from bb.Thread")
+    if not isinstance(thread, bb.os.Thread):
+      raise TypeError("thread must be derived from bb.os.Thread")
     processor = processors[p]
     p = (p + 1) % len(processors)
     core = processor.get_cores()[c]
@@ -96,8 +96,8 @@ class Mapping(object):
     return self._thread_distributor
 
   def register_thread(self, thread):
-    if not isinstance(thread, bb.Thread):
-      raise Exception("Must be derived from bb.Thread")
+    if not isinstance(thread, bb.os.Thread):
+      raise Exception("Must be derived from bb.os.Thread")
     self._threads[ thread.get_name() ] = thread
 
   def get_thread(self, name):

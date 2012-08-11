@@ -18,7 +18,5 @@ from bb import application
 from bb import config
 from bb import builder
 from bb import os
-from bb.thread import Thread
-from bb.port import Port
 from bb.mapping import Mapping
 from bb.cli import CommandLineInterface, CLI
