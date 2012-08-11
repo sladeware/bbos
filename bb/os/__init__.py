@@ -20,3 +20,4 @@ __author__ = 'Oleksandr Sviridenko'
 from bb.os.os import OS
 from bb.os.kernel import Kernel
 from bb.os.thread import Thread
+from bb.os.port import Port

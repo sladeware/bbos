@@ -15,13 +15,14 @@
 import unittest
 
 import bb
+from bb.hardware.devices.processors import PropellerP8X32A_Q44
 
 class OSTest(unittest.TestCase):
   def setUp(self):
-    self._os = bb.os.OS()
+    self._os = bb.os.OS(processor=PropellerP8X32A_Q44())
 
   def testMicrokernel(self):
-    self.assertIsNot(self._os.get_microkernel(), None)
+    self.assertIsNot(self._os.get_kernel(), None)
 
 if __name__ == '__main__':
   unittest.main()

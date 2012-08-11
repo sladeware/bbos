@@ -24,6 +24,7 @@ __author__ = 'Oleksandr Sviridenko'
 
 import bb
 from bb.lib.utils import typecheck
+from bb.os.thread import Thread
 from bb.os.kernel.schedulers import Scheduler, StaticScheduler
 
 class Kernel(object):
@@ -55,7 +56,7 @@ class Kernel(object):
     return len(self.get_threads())
 
   def unregister_thread(self, thread):
-    if not isinstance(thread, bb.Thread):
+    if not isinstance(thread, Thread):
       raise TypeError()
     if thread.get_name() in self._threads:
       del self._threads[thread.get_name()]
@@ -65,8 +66,8 @@ class Kernel(object):
     """Registers a thread. Returns :class:`bb.os.kernel.kernel.Kernel` object
     for further work.
     """
-    if not isinstance(thread, bb.Thread):
-      raise TypeError("Must be bb.Thread")
+    if not isinstance(thread, Thread):
+      raise TypeError("Must be bb.os.thread.Thread")
     if thread.get_name() in self._threads:
       raise Exception("Thread '%s' was already registered." % thread.get_name())
     self._threads[thread.get_name()] = thread

@@ -14,18 +14,19 @@
 
 import unittest
 
-from bb import Port
+import bb
+import bb.os as bbos
 
 class PortTest(unittest.TestCase):
   def setUp(self):
     pass
 
   def testPortName(self):
-    p1 = Port("P1", 1)
+    p1 = bbos.Port("P1", 1)
     self.assertEqual(p1.get_name(), "P1")
 
   def testPortCapacity(self):
-    p1 = Port("P1", 1)
+    p1 = bbos.Port("P1", 1)
     self.assertEqual(p1.get_capacity(), 1)
 
 if __name__ == '__main__':
