@@ -29,6 +29,7 @@ class Thread(object):
 
   NAME = None
   RUNNER = None
+  PORTS = []
 
   def __init__(self, name=None, runner=None, ports=[]):
     self._name = None
@@ -49,6 +50,8 @@ class Thread(object):
     else:
       raise Exception("Runner wasn't provided")
     # Ports
+    if hasattr(self, "PORTS"):
+      self.add_ports(self.PORTS)
     if ports:
       self.add_ports(ports)
 
@@ -73,6 +76,7 @@ class Thread(object):
       raise TypeError("ports must be a sequence of bb.os.port.Port instances.")
     for port in ports:
       self.add_port(port)
+    return self
 
   def has_port(self, port):
     if not isinstance(port, Port):
@@ -90,13 +94,14 @@ class Thread(object):
     if not isinstance(port, Port):
       raise TypeError("port must be derived from bb.os.port.Port")
     if self.has_port(port) and default is False:
-      return
+      return self
     if self.get_num_ports() and default is True:
       if self.has_port(port):
         self._ports.remove(port)
       self._ports = [port] + self._ports
-      return
+      return self
     self._ports.append(port)
+    return self
 
   def remove_all_ports(self):
     self._ports = []
