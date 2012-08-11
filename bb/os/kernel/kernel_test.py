@@ -21,7 +21,7 @@ class MicrokernelTest(unittest.TestCase):
   def setUp(self):
     self._kernel = bbos.Kernel()
 
-  def testThreadRegistration(self):
+  def test_thread_registration(self):
     t1 = bbos.Thread("T1")
     self._kernel.register_thread(t1)
     self.assertEqual(self._kernel.get_num_threads(), 1)
