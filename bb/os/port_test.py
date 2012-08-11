@@ -21,13 +21,13 @@ class PortTest(unittest.TestCase):
   def setUp(self):
     pass
 
-  def testPortName(self):
-    p1 = bbos.Port("P1", 1)
-    self.assertEqual(p1.get_name(), "P1")
+  def test_name(self):
+    p0 = bbos.Port("P0", 1)
+    self.assertEqual(p0.get_name(), "P0")
 
-  def testPortCapacity(self):
-    p1 = bbos.Port("P1", 1)
-    self.assertEqual(p1.get_capacity(), 1)
+  def test_capacity(self):
+    p0 = bbos.Port("P0", 1)
+    self.assertEqual(p0.get_capacity(), 1)
 
 if __name__ == '__main__':
   unittest.main()

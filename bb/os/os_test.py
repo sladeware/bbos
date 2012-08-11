@@ -21,7 +21,7 @@ class OSTest(unittest.TestCase):
   def setUp(self):
     self._os = bb.os.OS(processor=PropellerP8X32A_Q44())
 
-  def testMicrokernel(self):
+  def test_kernel(self):
     self.assertIsNot(self._os.get_kernel(), None)
 
 if __name__ == '__main__':
