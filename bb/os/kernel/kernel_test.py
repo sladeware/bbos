@@ -15,17 +15,18 @@
 import unittest
 
 import bb
+import bb.os as bbos
 
 class MicrokernelTest(unittest.TestCase):
   def setUp(self):
-    self._microkernel = bb.os.Microkernel()
+    self._kernel = bbos.Kernel()
 
   def testThreadRegistration(self):
-    t1 = bb.Thread("T1")
-    self._microkernel.register_thread(t1)
-    self.assertEqual(self._microkernel.get_num_threads(), 1)
-    self._microkernel.unregister_thread(t1)
-    self.assertEqual(self._microkernel.get_num_threads(), 0)
+    t1 = bbos.Thread("T1")
+    self._kernel.register_thread(t1)
+    self.assertEqual(self._kernel.get_num_threads(), 1)
+    self._kernel.unregister_thread(t1)
+    self.assertEqual(self._kernel.get_num_threads(), 0)
 
 if __name__ == '__main__':
   unittest.main()
