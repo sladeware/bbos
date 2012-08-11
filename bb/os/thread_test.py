@@ -21,15 +21,30 @@ class ThreadTest(unittest.TestCase):
   def setUp(self):
     pass
 
-  def testThreadName(self):
-    t1 = bbos.Thread("T1")
-    self.assertEqual(t1.get_name(), "T1")
+  def test_port_management(self):
+    p0 = bbos.Port("P0", 1)
+    p1 = bbos.Port("P1", 1)
+    p2 = bbos.Port("P2", 1)
+    ports = [p0, p1, p2]
+    t0 = bbos.Thread("T0", ports=ports)
+    self.assertEqual(t0.get_num_ports(), 3)
+    t0.remove_all_ports()
+    self.assertEqual(t0.get_num_ports(), 0)
+    # Test default port
+    for port in ports:
+      t0.add_port(port)
+    t0.add_port(p1, default=True)
+    self.assertEqual(t0.get_default_port(), p1)
 
-  def testThreadRunner(self):
-    t1 = bbos.Thread("T1", "old_hello_world")
-    self.assertEqual(t1.get_runner(), "old_hello_world")
-    t1.set_runner("new_hello_world")
-    self.assertEqual(t1.get_runner(), "new_hello_world")
+  def test_name(self):
+    t0 = bbos.Thread("T0")
+    self.assertEqual(t0.get_name(), "T0")
+
+  def test_runner(self):
+    t0 = bbos.Thread("T0", "old_hello_world")
+    self.assertEqual(t0.get_runner(), "old_hello_world")
+    t0.set_runner("new_hello_world")
+    self.assertEqual(t0.get_runner(), "new_hello_world")
 
 if __name__ == '__main__':
   unittest.main()

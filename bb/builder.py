@@ -54,36 +54,32 @@ class Rule(object):
   def apply(self, target, toolchain):
     owner, args = self._cases.get(toolchain.__class__.__name__, None)
     if 'srcs' in args:
-      self._fix_srcs(args, owner, target)
-      for src in args['srcs']:
+      for src in self._get_srcs(args['srcs'], owner, target):
         toolchain.add_source(src)
 
-  def _fix_srcs(self, args, owner, target):
+  def _get_srcs(self, sources, owner, target):
+    srcs = []
     build_script_file = inspect.getsourcefile(owner)
     build_script_dirname = host_os.path.dirname(build_script_file)
-    if 'srcs' in args:
-      garbage_indices = list()
-      if typecheck.is_tuple(args['srcs']):
-        args['srcs'] = list(args['srcs'])
-      for i in range(len(args['srcs'])):
-        src = args['srcs'][i]
-        if typecheck.is_function(src):
-          src = src(target)
-          args['srcs'][i] = src
-        # If source is None, skip it
-        if not src:
-          garbage_indices.append(i)
-          continue
-        if not typecheck.is_string(src):
-          raise TypeError("unknown source type: %s" % src)
-        if not host_os.path.exists(src):
-          alternative_src = host_os.path.join(build_script_dirname, src)
-          if not host_os.path.exists(alternative_src):
-            print "WARNING: file '%s' cannot be found" % src
-            return
-          args['srcs'][i] = alternative_src
-      for i in reversed(range(len(garbage_indices))):
-        args['srcs'].pop(garbage_indices[i])
+    if typecheck.is_tuple(sources):
+      sources = list(sources)
+    for src in sources:
+      if typecheck.is_function(src):
+        src = src(target)
+      # If source is None, skip it
+      if not src:
+        continue
+      if not typecheck.is_string(src):
+        raise TypeError("unknown source type: %s" % src)
+      if not host_os.path.exists(src):
+        alternative_src = host_os.path.join(build_script_dirname, src)
+        if not host_os.path.exists(alternative_src):
+          print "WARNING: file '%s' cannot be found" % src
+          return
+        srcs.append(alternative_src)
+      else:
+        srcs.append(src)
+    return srcs
 
   def add_build_cases(self, owner, cases):
     if not typecheck.is_dict(cases):
@@ -174,8 +170,10 @@ def _apply_rules(targets, toolchain):
     for match_target_class, rule in _class_rules.items():
       if isinstance(target, match_target_class):
         rule.apply(target, toolchain)
-  for target, rule in _instance_rules.items():
-    rule.apply(target, toolchain)
+  for target in targets:
+    rule = _instance_rules.get(target, None)
+    if rule:
+      rule.apply(target, toolchain)
 
 def _analyse_application():
   _print_header('Analyse application')

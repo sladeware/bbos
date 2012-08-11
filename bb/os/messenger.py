@@ -27,7 +27,9 @@ class Messenger(bb.Thread):
   handler by using :func:`Messenger.message_handler` decorator::
 
     my_messenger = Messenger('MY_MESSENGER')
-                   .add_message_handler('SERIAL_OPEN', 'serial_open_handler')
+                   .add_port(Port('P0', 10))
+                   .add_message_handler('SERIAL_OPEN',  'serial_open_handler')
+                   .add_message_handler('SERIAL_CLOSE', 'serial_close_handler')
 
   Or the same example, but as a class::
 

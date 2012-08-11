@@ -17,14 +17,14 @@ import unittest
 import bb
 
 class MappingTest(unittest.TestCase):
-  def testThreadRegistration(self):
+  def test_thread_registration(self):
     t1 = bb.os.Thread("T1")
     t2 = bb.os.Thread("T2")
     mapping = bb.Mapping("M1")
     mapping.register_threads([t1, t2])
     self.assertEqual(len(mapping.get_threads()), 2)
 
-  def testNaming(self):
+  def test_name(self):
     mapping = bb.Mapping("M1")
     self.assertEqual(mapping.get_name(), "M1")
 
