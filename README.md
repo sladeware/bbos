@@ -35,3 +35,9 @@ Go to this directory and initiate configuration process:
 Once configuration was successfully done, run installation as root:
 
        $ sudo make install
+
+## Development
+
+To run testing, go to the root BB directory and run:
+
+       $ python test.py
