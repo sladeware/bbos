@@ -17,7 +17,7 @@
 #ifndef __PROPELLER_P8X32_CONFIG_H
 #define __PROPELLER_P8X32_CONFIG_H
 
-#if defined(__GNUC__) /* defined(__PROPELLER__) &&  */
+#if defined(__GNUC__) // defined(__PROPELLER__) &&
 /*
  * We use the hubtext attribute to make sure functions
  * go into hub memory even with xmm code.
@@ -39,16 +39,15 @@
  */
 #define HUBDATA_SEC __attribute__((section(".hub")))
 
-/* For variables that should go in cog memory */
+// For variables that should go in cog memory
 #define COGMEM __attribute__((cogmem))
-/* For functions that use cog "call/ret" calling (nonrecursive) */
+// For functions that use cog "call/ret" calling (nonrecursive)
 #define NATIVE __attribute__((native))
-/* For functions with no epilogue or prologue: these should never
-   return */
+// For functions with no epilogue or prologue: these should never return
 #define NAKED __attribute__((naked))
 
-/* Load 16 registers local to a cog: PAR, CNT, INA, INB, OUTA, OUTB,
-   DIRA, DIRB, CTRA, CTRB, FRQA, FRQB, PHSA, PHSB, VCFG, VSCL. */
+// Load 16 registers local to a cog: PAR, CNT, INA, INB, OUTA, OUTB,
+// DIRA, DIRB, CTRA, CTRB, FRQA, FRQB, PHSA, PHSB, VCFG, VSCL.
 #include <propeller.h>
 #else
 #define HUBCODE
