@@ -1,14 +1,15 @@
 #!/usr/bin/env python
 
+__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
+
 from bb import builder
 
 import bb
-from bb.config import host_os
 from bb import builder
 from bb.os.kernel.schedulers import StaticScheduler
 
 def update_bbos_config_h(kernel):
-  file_path = host_os.path.join(bb.env["BB_HOME"], "bb", "os", "config_autogen.h")
+  file_path = bb.host_os.path.join(bb.env["BB_HOME"], "bb", "os", "config_autogen.h")
   fh = open(file_path, 'a')
   for thread in kernel.get_threads():
     fh.write("void %s();\n" % thread.get_runner())

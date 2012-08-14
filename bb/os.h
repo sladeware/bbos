@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-#ifndef __BBOS_H
-#define __BBOS_H
+#ifndef __BB_OS_H
+#define __BB_OS_H
 
 #include <bb/os/kernel.h>
 
-PROTOTYPE(void bbos, ());
-/* PROTOTYPE(void bbos_main, ()); */
+PROTOTYPE(void bbos_init, ());
 PROTOTYPE(void bbos_start, ());
 
-#endif // __BBOS_H
+#endif // __BB_OS_H

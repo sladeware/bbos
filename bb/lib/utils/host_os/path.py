@@ -14,11 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__copyright__ = "Copyright (c) 2012 Sladeware LLC"
-__author__ = "Oleksandr Sviridenko"
+__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
+__author__ = 'Oleksandr Sviridenko'
 
-from bb.config import host_os
 import types
+
+import bb
 
 # cache for by mkpath() -- in addition to cheapening redundant calls
 _path_created = {}
@@ -44,20 +45,20 @@ def mkpath(name, mode=0777, verbose=0, dry_run=0):
     # only announce the creation of the whole path? (quite easy to do
     # the latter since we're not using a recursive algorithm)
 
-    name = host_os.path.normpath(name)
+    name = bb.host_os.path.normpath(name)
     created_dirs = []
-    if host_os.path.isdir(name) or name == '':
+    if bb.host_os.path.isdir(name) or name == '':
         return created_dirs
-    if _path_created.get(host_os.path.abspath(name)) \
-            and host_os.path.exists(host_os.path.abspath(name)):
+    if _path_created.get(bb.host_os.path.abspath(name)) \
+            and bb.host_os.path.exists(bb.host_os.path.abspath(name)):
         return created_dirs
 
-    (head, tail) = host_os.path.split(name)
+    (head, tail) = bb.host_os.path.split(name)
     tails = [tail] # stack of lone dirs to create
 
-    while head and tail and not host_os.path.isdir(head):
+    while head and tail and not bb.host_os.path.isdir(head):
         #print "splitting '%s': " % head,
-        (head, tail) = host_os.path.split(head)
+        (head, tail) = bb.host_os.path.split(head)
         #print "to ('%s','%s')" % (head, tail)
         tails.insert(0, tail) # push next higher dir onto stack
 
@@ -68,15 +69,15 @@ def mkpath(name, mode=0777, verbose=0, dry_run=0):
     # that does *not* exist)
     for d in tails:
         #print "head = %s, d = %s: " % (head, d),
-        head = host_os.path.join(head, d)
-        abs_head = host_os.path.abspath(head)
+        head = bb.host_os.path.join(head, d)
+        abs_head = bb.host_os.path.abspath(head)
 
-        if _path_created.get(abs_head) and host_os.path.exists(abs_head):
+        if _path_created.get(abs_head) and bb.host_os.path.exists(abs_head):
             continue
 
         if not dry_run:
             try:
-                host_os.mkdir(head)
+                bb.host_os.mkdir(head)
                 created_dirs.append(head)
             except OSError, exc:
                 raise OSError("could not create '%s': %s" % (head, exc[-1]))

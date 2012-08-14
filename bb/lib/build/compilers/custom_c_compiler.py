@@ -19,7 +19,6 @@ import sys
 import time
 
 import bb
-from bb.config import host_os
 from bb.lib.utils.host_os.path import mkpath
 from bb.lib.utils import typecheck
 from bb.lib.build.compilers.compiler import Compiler
@@ -60,9 +59,9 @@ class Linker(object):
   def link(self, objects, output_filename, *list_args, **dict_args):
     # Adopt output file name to output directory
     if self.get_output_dir() is not None:
-      self.set_output_filename(host_os.path.join(self.get_output_dir(),
+      self.set_output_filename(bb.host_os.path.join(self.get_output_dir(),
                                                  output_filename))
-    print "Linking executable:", host_os.path.relpath(output_filename,
+    print "Linking executable:", bb.host_os.path.relpath(output_filename,
                                                       self.output_dir)
     self._link(objects, *list_args, **dict_args)
 
@@ -172,7 +171,7 @@ class CustomCCompiler(Compiler):
     parameters are not given.
     """
     if osname is None:
-      osname = host_os.name
+      osname = bb.host_os.name
     if platform is None:
       platform = sys.platform
     for pattern, compiler in CCOMPILERS:
@@ -351,7 +350,7 @@ class CustomCCompiler(Compiler):
     lang = None
     index = len(self.language_order)
     for source in sources:
-      base, ext = host_os.path.splitext(source)
+      base, ext = bb.host_os.path.splitext(source)
       extlang = self.language_map.get(ext)
       try:
         extindex = self.language_order.index(extlang)
@@ -476,14 +475,14 @@ class CustomCCompiler(Compiler):
       output_dir = ""
     obj_filenames = []
     for src_filename in src_filenames:
-      base, ext = host_os.path.splitext(src_filename)
-      base = host_os.path.splitdrive(base)[1]
-      base = base[host_os.path.isabs(base):]
+      base, ext = bb.host_os.path.splitext(src_filename)
+      base = bb.host_os.path.splitdrive(base)[1]
+      base = base[bb.host_os.path.isabs(base):]
       if ext not in self.get_source_extensions():
         raise UnknownFileError("unknown file type '%s' (from '%s')" \
                                  % (ext, src_filename))
       obj_filenames.append(
-        host_os.path.join(bb.env['BB_BUILD_DIR_NAME'], output_dir,
+        bb.host_os.path.join(bb.env['BB_BUILD_DIR_NAME'], output_dir,
                           base + self.get_object_extension()))
     return obj_filenames
 
@@ -562,8 +561,8 @@ class CustomCCompiler(Compiler):
     for i in range(len(sources)):
       src = sources[i]
       obj = objects[i]
-      ext = host_os.path.splitext(src)[1]
-      mkpath(host_os.path.dirname(obj), 0777)
+      ext = bb.host_os.path.splitext(src)[1]
+      mkpath(bb.host_os.path.dirname(obj), 0777)
       build[obj] = (src, ext)
     return macros, objects, extra, pp_options, build
 
@@ -573,10 +572,10 @@ class CustomCCompiler(Compiler):
     if not output_filename:
       raise Exception("output_filename must be provided")
     if self.get_output_dir() is not None:
-      output_filename = host_os.path.join(self.get_output_dir(),
+      output_filename = bb.host_os.path.join(self.get_output_dir(),
                                           output_filename)
       self.set_output_filename(output_filename)
-    print "Linking executable '%s'" % host_os.path.relpath(output_filename,
+    print "Linking executable '%s'" % bb.host_os.path.relpath(output_filename,
                                                            self.output_dir)
     self._link(objects, *list_args, **dict_args)
 

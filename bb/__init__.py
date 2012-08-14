@@ -12,8 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import bb.config
+from __future__ import absolute_import
 
+import os as host_os
+
+import bb.config
 from bb import application
 from bb import config
 from bb import builder

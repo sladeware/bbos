@@ -23,7 +23,6 @@ import sys
 import bb
 from bb.cli import CLI
 from bb import application as bbapp
-from bb.config import host_os
 from bb.lib.utils import typecheck
 from bb.lib.build import toolchain_manager
 from bb.lib.build.compilers import CustomCCompiler
@@ -60,7 +59,7 @@ class Rule(object):
   def _get_srcs(self, sources, owner, target):
     srcs = []
     build_script_file = inspect.getsourcefile(owner)
-    build_script_dirname = host_os.path.dirname(build_script_file)
+    build_script_dirname = bb.host_os.path.dirname(build_script_file)
     if typecheck.is_tuple(sources):
       sources = list(sources)
     for src in sources:
@@ -71,9 +70,9 @@ class Rule(object):
         continue
       if not typecheck.is_string(src):
         raise TypeError("unknown source type: %s" % src)
-      if not host_os.path.exists(src):
-        alternative_src = host_os.path.join(build_script_dirname, src)
-        if not host_os.path.exists(alternative_src):
+      if not bb.host_os.path.exists(src):
+        alternative_src = bb.host_os.path.join(build_script_dirname, src)
+        if not bb.host_os.path.exists(alternative_src):
           print "WARNING: file '%s' cannot be found" % src
           return
         srcs.append(alternative_src)
@@ -197,12 +196,15 @@ def _analyse_application():
                                              board.get_processors())
     for processor in board.get_processors():
       print ' ', str(processor)
+      project = Project(mapping)
       for core, threads in thread_distribution[processor].items():
         if not threads:
           continue
         print '  ', str(core), ':', [str(_) for _ in threads]
-        os = os_class(processor=processor, threads=threads)
-        _add_project(Project(mapping, core, os))
+        os = os_class(core=core, threads=threads)
+        project.oses.append(os)
+      project.extract_targets()
+      _add_project(project)
 
 _projects = list()
 
@@ -215,19 +217,18 @@ def _get_projects():
   return _projects
 
 class Project(object):
-  def __init__(self, mapping, core, os):
+  def __init__(self, mapping):
     self.mapping = mapping
-    self.core = core
-    self.os = os
+    self.oses = []
     self.targets = list()
-    self.extract_targets()
 
   def extract_targets(self):
-    self.add_target(self.os)
-    self.add_target(self.os.kernel)
-    self.add_targets(self.os.kernel.get_threads())
-    self.add_target(self.os.kernel.get_scheduler())
-    self.add_target(self.os.processor)
+    for os in self.oses:
+      self.add_target(os)
+      self.add_target(os.kernel)
+      self.add_targets(os.kernel.get_threads())
+      self.add_target(os.kernel.get_scheduler())
+      self.add_target(os.core.get_processor())
 
   def add_targets(self, targets):
     for target in targets:
@@ -279,7 +280,7 @@ def _print_available_toolchains_and_exit():
 def _start_build_process():
   _print_header("Building")
   for project in _get_projects():
-    output_filename = "%s_%s" % (project.mapping.get_name(), str(project.core.get_id()))
+    output_filename = "%s" % project.mapping.get_name()
     project.toolchain.compiler.set_output_filename(output_filename)
     project.toolchain.compiler.dry_run = CLI.config.options.dry_run
     project.toolchain.compiler.verbose = CLI.config.options.verbose

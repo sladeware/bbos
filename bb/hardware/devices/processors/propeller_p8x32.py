@@ -60,7 +60,7 @@ class PropellerP8X32A(Processor):
 
   def __init__(self):
     cores = list()
-    cores = [self.Core(_) for _ in range(8)]
+    cores = [self.Core(self, id_=_) for _ in range(8)]
     Processor.__init__(self, 8, cores)
     # Define Hub RAM Memory unit (in bytes)
     self.__RAM = None#RAM(8192 * 32)
