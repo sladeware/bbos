@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import bb
-from bb import builder
+from bb import Builder
 
 autogen_dir_path = bb.host_os.path.join(bb.env["BB_HOME"], "bb", "runtime")
 
@@ -36,7 +36,7 @@ def gen_os_file(os):
   fh.close()
   return file_path
 
-builder.rule('bb.os.os.OS', {
+Builder.rule('bb.os.os.OS', {
     'SimulationToolchain' : {
       'srcs' : ("./__init__.py", "./os.py",
                 "./../__init__.py", "./../main.py",

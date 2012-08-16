@@ -6,6 +6,7 @@ __author__ = 'Oleksandr Sviridenko'
 import os
 
 import bb
+from bb import Builder
 from bb.hardware.devices.processors import PropellerP8X32A
 
 def update_bbos_config_h(processor):
@@ -45,7 +46,7 @@ def gen_main_h(processor):
   fh.write('#endif /* __MAIN_AUTOGEN_H */\n')
   fh.close()
 
-bb.builder.rule(PropellerP8X32A, {
+Builder.rule(PropellerP8X32A, {
     'PropellerToolchain' : {
       'srcs': (gen_main_c, gen_main_h,
                update_bbos_config_h,

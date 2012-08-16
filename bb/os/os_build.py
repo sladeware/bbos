@@ -5,7 +5,7 @@ __copyright__ = 'Copyright (c) 2012 Sladeware LLC'
 import collections
 
 import bb
-from bb import builder
+from bb import Builder
 
 autogen_header = """
 //////////////////////////////////////////////////////////////////////
@@ -24,13 +24,15 @@ def gen_os_c(os):
   fh.write("#include <bb/os.h>\n\n")
 
   fh.write('static void bbos_init() {\n')
-  fh.write('  BBOS_SET_NR_THREADS(%d);\n' % os.kernel.get_num_threads())
-  fh.write('  BBOS_KERNEL_SET_RUNNING_TYPE(%d);\n' % 0)
+  #fh.write('  BBOS_SET_NR_THREADS(%d);\n' % os.kernel.get_num_threads())
+  #fh.write('  BBOS_KERNEL_SET_RUNNING_TYPE(%d);\n' % 0)
   fh.write('}\n')
   fh.write('\n')
   fh.write('static void bbos_start() {\n')
   fh.write('  bbos_kernel_start();\n')
+  fh.write('  bbos_loop();\n')
   fh.write('}\n')
+  fh.write('\n')
   fh.write('void main%d() {\n' % os.core.get_id())
   fh.write('  bbos_init();\n')
   fh.write('  bbos_start();\n')
@@ -48,7 +50,7 @@ def gen_config_h(os):
     fh.write("#define %s_RUNNER %s\n" % (thread.get_name(), thread.get_runner()))
   fh.close()
 
-builder.rule('bb.os.os.OS', {
+Builder.rule('bb.os.os.OS', {
     'PropellerToolchain' : {
       'srcs': ('kernel.c', gen_os_c, gen_config_h)
       }

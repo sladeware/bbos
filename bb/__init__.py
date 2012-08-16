@@ -16,10 +16,10 @@ from __future__ import absolute_import
 
 import os as host_os
 
-import bb.config
+from bb import config # sorry, bus this goes first
 from bb import application
-from bb import config
-from bb import builder
 from bb import os
 from bb.mapping import Mapping
 from bb.cli import CommandLineInterface, CLI
+from bb import builder
+from bb.builder import Builder
