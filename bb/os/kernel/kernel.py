@@ -30,16 +30,28 @@ from bb.os.kernel.schedulers import Scheduler, StaticScheduler
 class Kernel(object):
   """The heart of BB operating system."""
 
-  def __init__(self, scheduler=StaticScheduler()):
+  def __init__(self, core=None, threads=[], scheduler=StaticScheduler()):
+    self._core = None
     self._ports = dict()
     self._threads = dict()
     # Select scheduler first if defined before any thread will be added
     # By default, if scheduler was not defined will be used static
     # scheduling policy.
     self._scheduler = None
-    self._set_scheduler(scheduler)
+    if threads:
+      self.register_threads(threads)
+    if scheduler:
+      self.set_scheduler(scheduler)
+    if core:
+      self.set_core(core)
 
-  def _set_scheduler(self, scheduler):
+  def set_core(self, core):
+    self._core = core
+
+  def get_core(self):
+    return self._core
+
+  def set_scheduler(self, scheduler):
     """Select scheduler."""
     if not isinstance(scheduler, Scheduler):
       raise Exception("Scheduler '%s' must be bb.os.kernel.Scheduler "

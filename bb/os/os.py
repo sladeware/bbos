@@ -20,28 +20,36 @@ import bb
 from bb.os.kernel import Kernel
 
 class OS(object):
-  def __init__(self, core, threads=[]):
-    self._core = core
-    self._kernel = Kernel()
-    if threads:
-      self._kernel.register_threads(threads)
-    core.set_os(self)
+  def __init__(self, processor, thread_distribution):
+    self._processor = processor
+    self._kernels = []
+    for core, threads in thread_distribution.items():
+      # Skip the core if we do not have a threads for it
+      if not threads:
+        continue
+      self._kernels.append(Kernel(core=core, threads=threads))
 
   @property
-  def core(self):
-    return self._core
+  def processor(self):
+    return self._processor
 
-  def get_core(self):
-    return self._core
+  def get_processor(self):
+    return self._processor
 
   @property
-  def kernel(self):
-    return self.get_kernel()
+  def kernels(self):
+    return self.get_kernels()
 
-  def get_kernel(self):
-    return self._kernel
+  def get_num_kernels(self):
+    return len(self.get_kernels())
+
+  def get_kernels(self):
+    return self._kernels
+
+  def get_kernel(self, i=0):
+    return self._kernels[i]
 
   def __str__(self):
-    return "OS on core '%s', with %d thread(s): %s" \
-        % (self.get_core(), self.kernel.get_num_threads(),
-           [str(_) for _ in self.kernel.get_threads()])
+    return "OS on processor '%s', with %d kernel(s): %s" \
+        % (self.get_processor(), self.get_num_kernels(),
+           [str(_) for _ in self.kernels])

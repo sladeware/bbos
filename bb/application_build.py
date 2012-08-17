@@ -32,16 +32,13 @@ class MultiKernelOS(bb.builder.Image):
     self._mapping = mapping
     os_class = mapping.get_os_class()
     print ' ', str(processor)
+    os = os_class(processor=processor,
+                  thread_distribution=thread_distribution[processor])
+    self.add_target(os)
     self.add_target(processor)
-    for core, threads in thread_distribution[processor].items():
-      # Skip the core if we do not have a threads for it
-      if not threads:
-        continue
-      print '  ', str(core), ':', [str(_) for _ in threads]
-      os = os_class(core=core, threads=threads)
-      self.add_targets([os, os.get_kernel(),
-                        os.kernel.get_scheduler()])
-      self.add_targets(os.kernel.get_threads())
+    for kernel in os.kernels:
+      self.add_targets([kernel, kernel.get_scheduler()])
+      self.add_targets(kernel.get_threads())
 
   def get_name(self):
     return '%s' % (self._mapping.get_name(),)
