@@ -26,16 +26,24 @@ class Processor(Device):
   class Core(primitives.ElectronicPrimitive):
     DESIGNATOR_FORMAT = "CORE%d"
 
-    def __init__(self, id_=None):
+    def __init__(self, processor, id_=None):
       primitives.ElectronicPrimitive.__init__(self)
+      self._os = None
       self._processor = None
+      self._set_processor(processor)
       if not id_ is None:
         self.set_id(id_)
+
+    def get_os(self):
+      return self._os
+
+    def set_os(self, os):
+      self._os = os
 
     def get_processor(self):
       return self._processor
 
-    def set_processor(self, processor):
+    def _set_processor(self, processor):
       if not isinstance(processor, Processor):
         raise Exception("Requires Processor class")
       self._processor = processor
@@ -62,7 +70,6 @@ class Processor(Device):
     self.verify_core(core)
     self.validate_core(core)
     self.validate_core_id(id)
-    core.set_processor(self)
     self._cores[id] = core
     core.set_id(id)
 

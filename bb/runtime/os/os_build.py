@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 
 import bb
-from bb import builder
-from bb.config import host_os
+from bb import Builder
 
-autogen_dir_path = host_os.path.join(bb.env["BB_HOME"], "bb", "runtime")
+autogen_dir_path = bb.host_os.path.join(bb.env["BB_HOME"], "bb", "runtime")
 
 autogen_header = """#!/usr/bin/env python
 ######################################################################
@@ -14,7 +13,7 @@ autogen_header = """#!/usr/bin/env python
 """
 
 def gen_config_file(os):
-  file_path = host_os.path.join(autogen_dir_path, "os", "config_autogen.py")
+  file_path = bb.host_os.path.join(autogen_dir_path, "os", "config_autogen.py")
   fh = open(file_path, "w")
   fh.write(autogen_header)
   fh.write("BBOS_CONFIG_NR_THREADS = %d\n" % os.microkernel.get_num_threads())
@@ -26,7 +25,7 @@ def gen_config_file(os):
   return file_path
 
 def gen_os_file(os):
-  file_path = host_os.path.join(autogen_dir_path, "os", "os_autogen.py")
+  file_path = bb.host_os.path.join(autogen_dir_path, "os", "os_autogen.py")
   fh = open(file_path, "w")
   fh.write(autogen_header)
   fh.write("def thread_registration():\n")
@@ -37,10 +36,10 @@ def gen_os_file(os):
   fh.close()
   return file_path
 
-builder.rule('bb.os.os.OS', {
-    'SimulationToolchain' : {
-      'srcs' : ("./__init__.py", "./os.py",
-                "./../__init__.py", "./../main.py",
-                gen_config_file, gen_os_file),
-      }
-    })
+#Builder.rule('bb.os.os.OS', {
+#    'SimulationToolchain' : {
+#      'srcs' : ("./__init__.py", "./os.py",
+#                "./../__init__.py", "./../main.py",
+#                gen_config_file, gen_os_file),
+#      }
+#    })

@@ -1,24 +1,20 @@
-/*
- * Copyright (c) 2012 Sladeware LLC
- * Author: Oleksandr Sviridenko
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-/**
- * Note, sio_put_char() and sio_get_char() is the only external
- * dependency for this file.
- */
+// Copyright (c) 2012 Sladeware LLC
+// Author: Oleksandr Sviridenko
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+// Note, sio_put_byte() and sio_get_byte() is the only external dependency for
+// this file.
 
 #include <bb/os/drivers/processors/propeller_p8x32/sio.h>
 #include <bb/os/drivers/processors/propeller_p8x32/pins.h>
@@ -27,79 +23,58 @@
 
 #define SIO_PRINTF_STRING_SUPPORT
 #define SIO_COGSAFE_PRINTING
+#define SIO_CNT_DELTA 500
 
-/**
- * Receive a character to serial.
- *
- * @return
- *
- * 8-bit character.
- */
-int8_t
-sio_get_char()
+HUBTEXT int8_t sio_wait_byte()
 {
-  int32_t rx_data;
-  uint32_t num_bitticks;
-  uint32_t bitticks_cnt;
-  int8_t i;
-
-  /* Initialization */
-  i = 8;
-  rx_data = 0;
-  num_bitticks = propeller_get_clockfreq() / SIO_BAUDRATE;
-
-  /* Wait for start bit on rx pin */
   while (GET_INPUT(SIO_RX_PIN));
-
-  /* Ready to receive a byte */
-  bitticks_cnt = propeller_get_cnt() + (num_bitticks >> 1);
-  /* Start receiving */
-  do
-    {
-      bitticks_cnt += num_bitticks; /* ready next bit period */
-      /* Check if bit receive period done */
-      while (bitticks_cnt > propeller_get_cnt());
-      /* Put the next bit */
-      rx_data >>= 1;
-      rx_data = rx_data &~ GET_MASK(SIO_RX_PIN);
-      rx_data |= GET_INPUT(SIO_RX_PIN) << SIO_RX_PIN;/* receive bit on rx pin */
-    } while (i--);
-
-  /* Enrolled version of the while-loop above. */
-#if 0
-#define RECEIVE_BIT                                      \
-  do {                                                   \
-    bitticks_cnt += num_bitticks;                        \
-    while (bitticks_cnt > propeller_get_cnt());          \
-    rx_data = rx_data &~ GET_MASK(SIO_RX_PIN);           \
-    rx_data |= GET_INPUT(SIO_RX_PIN) << SIO_RX_PIN;      \
-    rx_data >>= 1;                                       \
-  } while (0)
-
-  RECEIVE_BIT;
-  RECEIVE_BIT;
-  RECEIVE_BIT;
-  RECEIVE_BIT;
-  RECEIVE_BIT;
-  RECEIVE_BIT;
-  RECEIVE_BIT;
-  RECEIVE_BIT;
-#endif
-
-  /* justify (32 - 9) and trim received byte */
-  rx_data = (rx_data >> 23) & 0xFFFF;
-
-  return (int8_t)rx_data;
+  return sio_get_byte();
 }
 
-/**
- * Writes a character to the serial. This function is safe to changing
- * of clock frequency.
- */
-/* NOTE: We need sio_put_char() to always be in HUB memory for speed.
-   Time critical functions like this can't live in external memory. */
-HUBTEXT void
-sio_put_char(int8_t c)
+HUBTEXT int8_t sio_wait_byte_with_timeout(int16_t secs)
+{
+  int8_t byte;
+  int32_t counts_delta = 0;
+  int32_t start_counts;
+
+  counts_delta = secs * propeller_get_clockfreq();
+  start_counts = propeller_get_cnt();
+  while ((propeller_get_cnt() - start_counts) < counts_delta) {
+    if ((byte = sio_get_byte())) {
+      return byte;
+    }
+  }
+  return 0;
+}
+
+// Receive a character to serial. Return 8-bit character.
+HUBTEXT int8_t sio_get_byte()
+{
+  int8_t i;
+  int16_t byte;
+
+  // Initialization
+  byte = 0;
+  // Check start bit on rx pin
+  if (GET_INPUT(SIO_RX_PIN)) {
+    return byte;
+  }
+  // Start reading a byte...
+  for (i = 0; i < 8; i++) {
+    propeller_waitcnt(SIO_CNT_DELTA + propeller_get_cnt());
+    byte = ((0 != (propeller_get_ina_bits() & GET_MASK(SIO_RX_PIN))) << 7) | (byte >> 1);
+  }
+  // Fix and return byte
+  byte >>= 1;
+  return (int8_t)byte;
+}
+
+// Writes a character to the serial. This function is safe to changing
+// of clock frequency.
+//
+// NOTE: We need sio_put_byte() to always be in HUB memory for speed.
+// Time critical functions like this can't live in external memory.
+HUBTEXT void sio_put_byte(int8_t c)
 {
   int frame = 0;
   //int i = 11;
@@ -210,7 +185,7 @@ sio_put_string(int8_t* s)
 {
   while (*s)
     {
-      sio_put_char(*s++);
+      sio_put_byte(*s++);
     }
 }
 #endif /* SIO_PRINTF_STRING_SUPPORT */
@@ -247,13 +222,13 @@ xtoa(unsigned long x, const unsigned long *dp)
           d = *dp++;
           c = '0';
           while (x >= d) ++c, x -= d;
-          sio_put_char(c);
+          sio_put_byte(c);
         }
       while (!(d & 1));
     }
   else
     {
-      sio_put_char('0');
+      sio_put_byte('0');
     }
 }
 
@@ -265,7 +240,7 @@ sio_put_hex(unsigned n)
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
     'A','B','C','D','E','F'
   };
-  sio_put_char(hex[n & 15]);
+  sio_put_byte(hex[n & 15]);
 }
 #endif /* SIO_PRINTF_HEX_SUPPORT */
 
@@ -289,7 +264,7 @@ _sio_multiarg_printf(const int8_t* format, va_list a)
             break;
 #endif /* SIO_PRINTF_STRING_SUPPORT */
           case 'c': /* character */
-            sio_put_char((int8_t)va_arg(a, int)); /* char? */
+            sio_put_byte((int8_t)va_arg(a, int)); /* char? */
             break;
           case 'd': /* '%d' and '%i' are synonymous for output */
           case 'i': /* 16 bit integer */
@@ -298,7 +273,7 @@ _sio_multiarg_printf(const int8_t* format, va_list a)
             if (c == 'i' && i < 0)
               {
                 i = -i;
-                sio_put_char('-');
+                sio_put_byte('-');
               }
             xtoa((unsigned)i, dv + 5);
             break;
@@ -309,7 +284,7 @@ _sio_multiarg_printf(const int8_t* format, va_list a)
             if (c == 'l' &&  n < 0)
               {
                 n = -n;
-                sio_put_char('-');
+                sio_put_byte('-');
               }
             xtoa((unsigned long)n, dv);
             break;
@@ -326,7 +301,7 @@ _sio_multiarg_printf(const int8_t* format, va_list a)
           case 0:
             return;
           case '%':
-            sio_put_char('%');
+            sio_put_byte('%');
             break;
           default:
             goto bad_fmt;
@@ -334,7 +309,7 @@ _sio_multiarg_printf(const int8_t* format, va_list a)
         }
       else
         {
-        bad_fmt: sio_put_char(c);
+        bad_fmt: sio_put_byte(c);
         }
     }
 }
@@ -367,24 +342,22 @@ static int16_t cogsafe_lock;
 void
 sio_init()
 {
-  /* Initialize tx pin */
-  //DIR_OUTPUT(SIO_TX_PIN);
+  // Initialize tx pin
+  DIR_OUTPUT(SIO_TX_PIN);
   //BBOS_DELAY_MSEC(1);
 
 #ifdef SIO_COGSAFE_PRINTING
   cogsafe_lock = *SIO_COGSAFE_LOCK_ADDR;
 
-  if (cogsafe_lock == 0)
-    {
-      cogsafe_lock = propeller_locknew();
-      *(SIO_COGSAFE_LOCK_ADDR) = cogsafe_lock + 1;
-      propeller_lockclr(cogsafe_lock);
-    }
-  else
-    {
-      cogsafe_lock = cogsafe_lock - 1;
-    }
-#endif /* SIO_COGSAFE_PRINTING */
+  if (cogsafe_lock == 0) {
+    cogsafe_lock = propeller_locknew();
+    *(SIO_COGSAFE_LOCK_ADDR) = cogsafe_lock + 1;
+    propeller_lockclr(cogsafe_lock);
+  }
+  else {
+    cogsafe_lock = cogsafe_lock - 1;
+  }
+#endif // SIO_COGSAFE_PRINTING
 }
 
 /*

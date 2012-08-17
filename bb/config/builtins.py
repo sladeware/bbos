@@ -224,20 +224,22 @@ except NameError:
 # Miscellaneous Functions
 
 def caller(n=1):
-    """Return the name of the calling function n levels up in the frame stack.
-    >>> caller(0)
-    'caller'
-    >>> def f():
-    ...     return caller()
-    >>> f()
-    'f'
-    """
-    import inspect
-    mod = inspect.getmodule(inspect.getouterframes(inspect.currentframe())[n][0])
-    if not mod:
-      frms = inspect.stack(1)
-      mod = inspect.getmodule(frms[n][0])
-    name = inspect.getouterframes(inspect.currentframe())[n][3]
-    if name == '<module>':
-      return mod
-    return getattr(mod, name)
+  """Return the name of the calling function n levels up in the frame stack.
+  >>> caller(0)
+  'caller'
+  >>> def f():
+  ...     return caller()
+  >>> f()
+  'f'
+  """
+  import inspect
+  mod = inspect.getmodule(inspect.getouterframes(inspect.currentframe())[n][0])
+  if not mod:
+    frms = inspect.stack(1)
+    mod = inspect.getmodule(frms[n][0])
+  name = inspect.getouterframes(inspect.currentframe())[n][3]
+  if name == '<module>':
+    return mod
+  return getattr(mod, name)
+
+__builtins__['caller'] = caller

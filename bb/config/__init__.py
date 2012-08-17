@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os as host_os # this is host-os support module, do not mix with bb.os
 import inspect
 import sys
 import platform
 
+import bb
 import bb.config.importing # override standard __import__
 import bb.config.builtins
 
@@ -28,9 +28,29 @@ Pythons or happen to work in newer ones, but you're on your own --
 edit __init__.py if you want to try it.
 """
 
+class _Environment(object):
+  def __init__(self):
+    self._vars = dict()
+
+  def get(self, key, default_value=None):
+    return self._vars.get(key, default_value)
+
+  def echo(self, key):
+    print self.get(key)
+
+  def pwd(self):
+    f = bb.config.builtins.caller(n=2)
+    return bb.host_os.path.dirname(inspect.getfile(f))
+
+  def __setitem__(self, key, value):
+    self._vars[key] = value
+
+  def __getitem__(self, key):
+    return self.get(key)
+
 # Setup host environment, check compatibility and some dependencies
 if not getattr(bb, 'env', None):
-  setattr(bb, 'env', dict())
+  setattr(bb, 'env', _Environment())
 
 # TODO: choose the right names
 
@@ -48,14 +68,14 @@ bb.env['BB_HOST_ARCH'] = platform.machine()
 # BB basic variables
 #_______________________________________________________________________________
 
-bb.env['BB_HOME'] = host_os.path.abspath(
-  host_os.path.join(
-    host_os.path.dirname(
-      host_os.path.realpath(__file__)), "../..")
+bb.env['BB_HOME'] = bb.host_os.path.abspath(
+  bb.host_os.path.join(
+    bb.host_os.path.dirname(
+      bb.host_os.path.realpath(__file__)), "../..")
   )
 bb_package_file = inspect.getsourcefile(sys.modules['bb'])
-bb_package_dir = host_os.path.abspath(
-  host_os.path.join(host_os.path.dirname(bb_package_file), '..')
+bb_package_dir = bb.host_os.path.abspath(
+  bb.host_os.path.join(bb.host_os.path.dirname(bb_package_file), '..')
   )
 bb.env['BB_PACKAGE_HOME'] = bb_package_dir
 
@@ -64,7 +84,7 @@ bb.env['BB_PACKAGE_HOME'] = bb_package_dir
 # Application environment variables
 #_______________________________________________________________________________
 
-bb.env['BB_APPLICATION_HOME'] = host_os.path.realpath(host_os.curdir)
+bb.env['BB_APPLICATION_HOME'] = bb.host_os.path.realpath(bb.host_os.curdir)
 sys.path.append(bb.env['BB_APPLICATION_HOME'])
 
 #_______________________________________________________________________________
@@ -72,4 +92,4 @@ sys.path.append(bb.env['BB_APPLICATION_HOME'])
 # Build environment
 #_______________________________________________________________________________
 
-bb.env['BB_BUILD_DIR_NAME'] = host_os.environ.get('BB_BUILD_DIR_NAME', 'build')
+bb.env['BB_BUILD_DIR_NAME'] = bb.host_os.environ.get('BB_BUILD_DIR_NAME', 'build')

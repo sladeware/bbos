@@ -20,6 +20,12 @@
 #include <bb/os/config.h>
 //#include <bb/os/kernel/mm.h> // memory management
 
+// Running types
+enum {
+  BBOS_KERNEL_DYNAMIC_RUNNING = 0,
+  BBOS_KERNEL_STATIC_RUNNING
+};
+
 #include <assert.h>
 
 // Kernel error codes
@@ -48,7 +54,10 @@ enum {
 
 #define bbos_kernel_assert(expr) assert(expr)
 
+void bbos_kernel_main();
+
 // List of kernel threads.
+#define BBOS_NR_THREADS 2
 extern bbos_thread_t bbos_kernel_threads[BBOS_NR_THREADS];
 
 #define bbos_message_set_owner(message, owner) \
@@ -76,8 +85,7 @@ extern bbos_thread_t bbos_kernel_threads[BBOS_NR_THREADS];
 #define bbos_kernel_get_thread(tid) bbos_kernel_threads[tid]
 
 PROTOTYPE(void bbos_kernel_init_thread, (bbos_thread_id_t tid,
-                                         bbos_thread_runner_t runner,
-                                         bbos_port_id_t pid));
+                                         bbos_thread_runner_t runner));
 PROTOTYPE(void bbos_kernel_enable_all_threads, ());
 PROTOTYPE(void bbos_kernel_disable_all_threads, ());
 PROTOTYPE(void bbos_thread_run, (bbos_thread_id_t tid));

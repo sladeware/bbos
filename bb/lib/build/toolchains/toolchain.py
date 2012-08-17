@@ -16,7 +16,6 @@ __copyright__ = 'Copyright (c) 2012 Sladeware LLC'
 __author__ = 'Oleksandr Sviridenko'
 
 import bb
-from bb.config import host_os
 from bb.lib.utils import typecheck
 from bb.lib.build.compilers import Compiler
 
@@ -86,11 +85,12 @@ class Toolchain(EventManager):
     if not source:
       raise Exception("WTF!")
     if typecheck.is_string(source):
-      source = host_os.path.abspath(source)
-      if not host_os.path.exists(source):
+      source = bb.host_os.path.abspath(source)
+      if not bb.host_os.path.exists(source):
         raise Exception("Source doesn't exist: %s" % source)
       print "Adding source '%s'" % source
-      self._sources.append(source)
+      if not source in self._sources:
+        self._sources.append(source)
       return source
     raise TypeError("unknown source type '%s' of '%s'"
                     % (type(source), source))

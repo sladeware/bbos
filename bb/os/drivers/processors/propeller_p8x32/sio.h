@@ -19,23 +19,17 @@
 
 #include <bb/config.h> /* BB platform configuration */
 
-/**
- * Receiving pin. By default is 31.
- */
+// Receiving pin. By default is 31.
 #ifndef SIO_RX_PIN
-#  define SIO_RX_PIN   31
+#define SIO_RX_PIN   31
 #endif
-/**
- * Transmitting pin. By default is 30.
- */
+// Transmitting pin. By default is 30.
 #ifndef SIO_TX_PIN
-#  define SIO_TX_PIN   30
+#define SIO_TX_PIN   30
 #endif
-/**
- * Serial baudrate. By default is 115200.
- */
+// Serial baudrate. By default is 115200.
 #ifndef SIO_BAUDRATE
-#  define SIO_BAUDRATE 115200
+#define SIO_BAUDRATE 115200
 #endif
 
 /**
@@ -52,8 +46,11 @@
 
 void sio_init();
 
-int8_t sio_get_char();
-void sio_put_char(int8_t c);
+int8_t sio_get_byte();
+int8_t sio_wait_byte_with_timeout(int16_t secs);
+int8_t sio_wait_byte();
+
+void sio_put_byte(int8_t c);
 
 #if defined(SIO_PRINTF_STRING_SUPPORT)
 void sio_put_string(int8_t* s);
