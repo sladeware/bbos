@@ -41,27 +41,6 @@
 #define BBOS_CONFIG_DEBUG NDEBUG
 #endif
 
-// Check number of threads
-#ifndef BBOS_CONFIG_NR_THREADS
-#error Please define BBOS_CONFIG_NR_THREADS in BB_CONFIG_OS_H
-#endif
-#if BBOS_CONFIG_NR_THREADS < 1
-#error System requires atleast one thread
-#endif // BBOS_CONFIG_NR_THREADS
-
-// System threads
-#define BBOS_NR_SYSTEM_THREADS 0
-
-// Set final number of threads
-#define BBOS_NR_THREADS (BBOS_CONFIG_NR_THREADS + BBOS_NR_SYSTEM_THREADS)
-
-// By default the number of ports in zero. In this case port interface wont be
-// supported.
-#ifndef BBOS_CONFIG_NR_PORTS
-#define BBOS_CONFIG_NR_PORTS 0
-#endif
-#define BBOS_NR_PORTS BBOS_CONFIG_NR_PORTS
-
 ////////////////////////////////////////////////////////////////////////////////
 //  Hardware                                                                  //
 ////////////////////////////////////////////////////////////////////////////////

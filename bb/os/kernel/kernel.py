@@ -37,9 +37,9 @@ class Kernel(object):
     # By default, if scheduler was not defined will be used static
     # scheduling policy.
     self._scheduler = None
-    self.set_scheduler(scheduler)
+    self._set_scheduler(scheduler)
 
-  def set_scheduler(self, scheduler):
+  def _set_scheduler(self, scheduler):
     """Select scheduler."""
     if not isinstance(scheduler, Scheduler):
       raise Exception("Scheduler '%s' must be bb.os.kernel.Scheduler "

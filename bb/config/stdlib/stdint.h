@@ -15,9 +15,7 @@
 
 #include <limits.h>
 
-/*
- * 8-bit types
- */
+// 8-bit types
 #if UCHAR_MAX == 0xFF
 typedef char int8_t;
 typedef unsigned char uint8_t;

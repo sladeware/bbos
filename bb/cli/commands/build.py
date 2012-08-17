@@ -18,23 +18,14 @@ class build(Command):
   USES_BASEPATH = False
 
   def function(self):
-    model_filename = None
-    model_path = None
-    if len(CLI.config.args) > 1:
-      model_filename = CLI.config.args[1]
-      model_path = os.path.join(bb.env["BB_APPLICATION_HOME"], model_filename)
-    if not model_path:
-      raise Exception("model_path")
-    if not os.path.exists(model_path):
-      raise Exception("mode %s doesn't exist" % model_path)
     build_script_filename = "build.py"
     build_script_path = os.path.join(bb.env["BB_APPLICATION_HOME"],
                                      build_script_filename)
     if not os.path.exists(build_script_path):
       print "Build script '%s' doesn't exist" % build_script_path
+      sys.exit(0)
     print "Run build script: %s" % build_script_path
     try:
-      imp.load_source('model', model_path) # TODO: right module name
       bbimport.import_build_scripts()
       if os.path.exists(build_script_path):
         imp.load_source('bb.buildtime.application.build', build_script_path)
@@ -46,7 +37,7 @@ class build(Command):
 
   def _build_exception(self):
     print '=' * 70
-    print "Exception in build script"
+    print 'Exception in build script'
     print '=' * 70
     traceback.print_exc(file=sys.stdout)
     print '_' * 70

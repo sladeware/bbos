@@ -6,7 +6,6 @@ import sys
 import warnings
 
 import bb
-from bb.config import host_os
 from bb.lib.build.toolchains.toolchain import Toolchain
 
 # TODO: do not ignore every single warning
@@ -79,8 +78,8 @@ class Process(multiprocessing.Process):
         sys.stdout = old_stdout
 
     def kill(self):
-        """Kill this process. See also :func:`host_os.kill`."""
-        host_os.kill(self.pid, signal.SIGTERM)
+        """Kill this process. See also :func:`bb.host_os.kill`."""
+        bb.host_os.kill(self.pid, signal.SIGTERM)
 
 class SimulationToolchain(Toolchain):
     def __init__(self, *args, **kargs):
@@ -112,11 +111,11 @@ class SimulationToolchain(Toolchain):
 
     def _get_package_name_by_file_name(self, file_name):
         package_name = None
-        for home in (host_os.environ['BB_HOME'], host_os.environ['BB_PACKAGE_HOME']):
+        for home in (bb.host_os.environ['BB_HOME'], bb.host_os.environ['BB_PACKAGE_HOME']):
             if file_name.startswith(home):
                 package_name = file_name[len(home):]
-                package_name = package_name.strip(host_os.sep)
-                package_name, _ = host_os.path.splitext(package_name)
-                package_name = package_name.replace(host_os.sep, '.')
+                package_name = package_name.strip(bb.host_os.sep)
+                package_name, _ = bb.host_os.path.splitext(package_name)
+                package_name = package_name.replace(bb.host_os.sep, '.')
                 return package_name
         raise Exception()

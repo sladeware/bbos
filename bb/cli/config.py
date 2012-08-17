@@ -20,7 +20,6 @@ import logging
 import sys
 
 import bb
-from bb.config import host_os
 from bb.cli.command_line_interface import CLI
 
 class OptionError(optparse.OptionError):

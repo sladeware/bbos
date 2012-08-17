@@ -4,7 +4,7 @@ Demo project that blinks LED's on the board.
 
 Build command:
 
-       $ bb build blinker.py
+       $ bb build
 
 Supported boards:
 

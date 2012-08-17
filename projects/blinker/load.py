@@ -2,11 +2,14 @@
 
 from bb.tools import propler
 
-#uploader = propler.SPIUploader(port='/dev/ttyUSB0')
-#if not uploader.connect():
-#  exit(1)
-#uploader.upload_file('Blinker_1', eeprom=False)
-#uploader.disconnect()
+uploader = propler.SPIUploader(port='/dev/ttyUSB0')
+if not uploader.connect():
+  exit(1)
+uploader.upload_file('Blinker', eeprom=False)
+#propler.terminal_mode()
+uploader.disconnect()
+
+exit(0)
 
 import time
 board_config = propler.QuickStartBoardConfig()

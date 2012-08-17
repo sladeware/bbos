@@ -12,11 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import bb.config
+from __future__ import absolute_import
 
+import os as host_os
+
+from bb import config # sorry, bus this goes first
 from bb import application
-from bb import config
-from bb import builder
 from bb import os
 from bb.mapping import Mapping
 from bb.cli import CommandLineInterface, CLI
+from bb import builder
+from bb.builder import Builder

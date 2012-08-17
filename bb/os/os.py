@@ -12,24 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The Bionic Bunny Operating System is a microkernel for microprocessors."""
+"""The Bionic Bunny Operating System is one or more microkernel for
+microprocessors.
+"""
 
-from bb.config import host_os
+import bb
 from bb.os.kernel import Kernel
 
 class OS(object):
-  def __init__(self, processor, threads=[]):
-    self._processor = processor
+  def __init__(self, core, threads=[]):
+    self._core = core
     self._kernel = Kernel()
     if threads:
       self._kernel.register_threads(threads)
+    core.set_os(self)
 
   @property
-  def processor(self):
-    return self._processor
+  def core(self):
+    return self._core
 
-  def get_processor(self):
-    return self._processor
+  def get_core(self):
+    return self._core
 
   @property
   def kernel(self):
@@ -39,6 +42,6 @@ class OS(object):
     return self._kernel
 
   def __str__(self):
-    return "OS on processor '%s', with %d thread(s): %s" \
-        % (self.get_processor(), self.kernel.get_num_threads(),
+    return "OS on core '%s', with %d thread(s): %s" \
+        % (self.get_core(), self.kernel.get_num_threads(),
            [str(_) for _ in self.kernel.get_threads()])
