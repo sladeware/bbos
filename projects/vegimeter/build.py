@@ -1,15 +1,25 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright (c) 2012 Sladeware LLC"
-__author__ = "<oleks.sviridenko@gmail.com> Alexander Sviridenko"
+__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
 
-from bb.app import appmanager
-from bb.tools import propler
-from bb import builder
-from bb.builder.toolchains import propgcc
-from bb.builder.compilers import PropGCCCompiler
+from vegimeter import vegimeter
 
-from vegimeter import vegimeter, vegimeter_device
+import bb
+from bb.application_build import Application
+
+bb.Builder.rule(bb.application.get_mapping('Vegimeter').get_thread('UI'), {
+    'PropellerToolchain' : {
+      'srcs' : ('ui.c',)
+      }
+    })
+bb.Builder.rule(bb.application.get_mapping('Vegimeter').get_thread('BUTTON_DRIVER'), {
+    'PropellerToolchain' : {
+      'srcs' : ('button_driver.c',)
+      }
+    })
+bb.Builder.build(Application())
+
+exit(0)
 
 vegetable_plant_guard = appmanager.new_application([vegimeter])
 #vegimeter.hardware.set_simulation_mode()

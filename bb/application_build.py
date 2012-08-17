@@ -36,6 +36,7 @@ class MultiKernelOS(bb.builder.Image):
                   thread_distribution=thread_distribution[processor])
     self.add_target(os)
     self.add_target(processor)
+    self.add_targets(mapping.get_drivers())
     for kernel in os.kernels:
       self.add_targets([kernel, kernel.get_scheduler()])
       self.add_targets(kernel.get_threads())
