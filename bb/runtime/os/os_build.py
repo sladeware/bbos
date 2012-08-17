@@ -36,10 +36,10 @@ def gen_os_file(os):
   fh.close()
   return file_path
 
-Builder.rule('bb.os.os.OS', {
-    'SimulationToolchain' : {
-      'srcs' : ("./__init__.py", "./os.py",
-                "./../__init__.py", "./../main.py",
-                gen_config_file, gen_os_file),
-      }
-    })
+#Builder.rule('bb.os.os.OS', {
+#    'SimulationToolchain' : {
+#      'srcs' : ("./__init__.py", "./os.py",
+#                "./../__init__.py", "./../main.py",
+#                gen_config_file, gen_os_file),
+#      }
+#    })

@@ -19,7 +19,4 @@
 
 #include <bb/os/kernel.h>
 
-PROTOTYPE(void bbos_init, ());
-PROTOTYPE(void bbos_start, ());
-
 #endif // __BB_OS_H

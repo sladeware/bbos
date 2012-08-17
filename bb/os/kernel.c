@@ -21,15 +21,15 @@
 // Initialize thread.
 void bbos_kernel_init_thread(bbos_thread_id_t tid, bbos_thread_runner_t runner)
 {
-  bbos_validate_thread_id(tid);
-  bbos_thread_set_runner(tid, runner);
+  //bbos_validate_thread_id(tid);
+  //bbos_thread_set_runner(tid, runner);
 }
 
 void bbos_thread_run(bbos_thread_id_t tid)
 {
-  bbos_validate_thread_id(tid);
-  bbos_kernel_assert(bbos_thread_get_runner(tid) != NULL);
-  (*bbos_thread_get_runner(tid))();
+  //bbos_validate_thread_id(tid);
+  //bbos_kernel_assert(bbos_thread_get_runner(tid) != NULL);
+  //(*bbos_thread_get_runner(tid))();
 }
 
 // Halt the system. Display a message, then perform cleanups with exit.
@@ -57,7 +57,7 @@ void bbos_kernel_init()
   //bbos_printf("Initialize kernel\n");
   // Initialize threads
   for (tid = 0; tid < BBOS_NR_THREADS; tid++) {
-    bbos_kernel_init_thread(tid, NULL);
+    //bbos_kernel_init_thread(tid, NULL);
   }
   // Initialize scheduler
   //bbos_printf("Initialize scheduler '" BBOS_SCHED_NAME "'\n");
@@ -86,7 +86,7 @@ void bbos_kernel_enable_all_threads()
 {
   bbos_thread_id_t tid;
   for (tid = 0; tid < BBOS_NR_THREADS; tid++) {
-    bbos_kernel_enable_thread(tid);
+    //bbos_kernel_enable_thread(tid);
   }
 }
 
@@ -108,15 +108,6 @@ void bbos_kernel_start()
 {
   bbos_printf("Start kernel\n");
   bbos_kernel_test();
-  // Finallyze running type and start running
-  switch (BBOS_KERNEL_GET_RUNNING_TYPE()) {
-  case BBOS_KERNEL_DYNAMIC_RUNNING:
-    bbos_kernel_loop();
-    break; // we should never be here
-  case BBOS_KERNEL_STATIC_RUNNING:
-    bbos_kernel_main();
-    break;
-  }
 }
 
 void

@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The Bionic Bunny Operating System is a microkernel for microprocessors."""
+"""The Bionic Bunny Operating System is one or more microkernel for
+microprocessors.
+"""
 
 import bb
 from bb.os.kernel import Kernel

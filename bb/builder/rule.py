@@ -2,6 +2,9 @@
 
 __copyright__ = 'Copyright (c) 2012 Sladeware LLC'
 
+import inspect
+
+import bb
 from bb.lib.utils import typecheck
 from bb.lib.build import toolchain_manager
 from bb.lib.build.compilers import CustomCCompiler
@@ -16,10 +19,10 @@ class Rule(object):
         self.add_build_cases(cases, owner)
 
   def get_supported_toolchains(self):
-    return self._cases.keys()
+    return self._build_cases.keys()
 
   def apply(self, target, toolchain):
-    owner, args = self._cases.get(toolchain.__class__.__name__, None)
+    owner, args = self._build_cases.get(toolchain.__class__.__name__, None)
     if 'srcs' in args:
       for src in self._get_srcs(args['srcs'], owner, target):
         toolchain.add_source(src)

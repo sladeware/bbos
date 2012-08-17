@@ -57,6 +57,7 @@ enum {
 void bbos_kernel_main();
 
 // List of kernel threads.
+#define BBOS_NR_THREADS 2
 extern bbos_thread_t bbos_kernel_threads[BBOS_NR_THREADS];
 
 #define bbos_message_set_owner(message, owner) \
