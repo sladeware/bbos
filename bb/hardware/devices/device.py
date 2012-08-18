@@ -56,7 +56,7 @@ class Device(primitives.ElectronicPrimitive):
     if not isinstance(element, primitives.ElectronicPrimitive):
       raise TypeError('Must be primitives.ElectronicPrimitive')
     self.connect_to(element)
-    return self
+    return element
 
   def update_element(self, original, new):
     original_designator = original.get_designator()

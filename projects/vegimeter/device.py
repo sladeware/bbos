@@ -21,48 +21,46 @@ import getpass
 
 from bb.hardware.primitives import Pin
 from bb.hardware.devices.processors.propeller_p8x32 import PropellerP8X32A_Q44
-from bb.utils import module
 
 vegimeter_device = None
 
 use_fritzing = False
 if use_fritzing:
-    from bb.tools import fritzing
+  from bb.tools import fritzing
 
-    # First of all you need to setup Fritzing
-    # XXX: developer can use fritzing.set_home_dir() to setup home directory
-    # directly.
-    fritzing.find_home_dir()
-    fritzing.add_search_path(os.path.join(module.get_dir(), "parts"))
-
-    vegimeter_device = fritzing.parse("device.fz")
-    # Fix vegimeter device design loaded from Fritzing schematic. The reason is,
-    # the current version of QuickStart Board doesn't have a parts such as
-    # Propeller P8X32A-Q44 microchip. Thus we need to add them manually.
-    board = vegimeter_device.find_element("QSP1")
-    processor = board.add_element(PropellerP8X32A_Q44())
-    processor.set_designator("PRCR1")
+  # First of all you need to setup Fritzing
+  # XXX: developer can use fritzing.set_home_dir() to setup home directory
+  # directly.
+  fritzing.find_home_dir()
+  fritzing.add_search_path(os.path.join(bb.env.pwd(), 'parts'))
+  vegimeter_device = fritzing.parse("device.fz")
+  # Fix vegimeter device design loaded from Fritzing schematic. The reason is,
+  # the current version of QuickStart Board doesn't have a parts such as
+  # Propeller P8X32A-Q44 microchip. Thus we need to add them manually.
+  board = vegimeter_device.find_element("QSP1")
+  processor = board.add_element(PropellerP8X32A_Q44())
+  processor.set_designator("PRCR1")
 else:
-    from bb.hardware.devices.boards import P8X32AQuickStartBoard
-    board = P8X32AQuickStartBoard()
-    board.set_designator("QSP1")
-    processor = board.add_element(PropellerP8X32A_Q44())
-    processor.set_designator("PRCR1")
-    vegimeter_device = board
+  from bb.hardware.devices.boards import P8X32A_QuickStartBoard
+  board = P8X32A_QuickStartBoard()
+  board.set_designator("QSP1")
+  processor = board.add_element(PropellerP8X32A_Q44())
+  processor.set_designator("PRCR1")
+  vegimeter_device = board
 
 def bill_of_materials():
-    bill_of_materials = dict()
-    for element in vegimeter_device.get_elements():
-        name = element.get_property_value("name")
-        if name not in bill_of_materials:
-            bill_of_materials[name] = 0
-        bill_of_materials[name] += 1
-    return bill_of_materials
+  bill_of_materials = dict()
+  for element in vegimeter_device.get_elements():
+    name = element.get_property_value("name")
+    if name not in bill_of_materials:
+      bill_of_materials[name] = 0
+    bill_of_materials[name] += 1
+  return bill_of_materials
 
-if __name__ == "__main__":
-    print "Vegimeter bill of materials:"
-    for name, amount in bill_of_materials().items():
-        print "\t%d %s(s)" % (amount, name)
+if __name__ == '__main__':
+  print "Vegimeter bill of materials:"
+  for name, amount in bill_of_materials().items():
+    print "\t%d %s(s)" % (amount, name)
 
 """
 ## The next snippet shows all the pins

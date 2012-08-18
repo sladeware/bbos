@@ -14,13 +14,15 @@
 
 __copyright__ = 'Copyright (c) 2012 Sladeware LLC'
 
-import math
-import types
-import sys
+import fnmatch
 import logging
+import math
+import sys
+import types
 
 import bb
 from bb.lib.utils import typecheck
+from bb.lib.utils import pyimport
 from bb.lib.build import toolchain_manager
 from bb.builder.rule import Rule
 from bb.builder.image import Image
@@ -32,6 +34,21 @@ class _Builder(object):
     self._instance_rules = {}
     self._toolchain_for_image = {}
     self.context = {}
+    self._import_build_scripts_done = False
+
+  def _import_build_scripts(self):
+    search_pathes = (bb.host_os.path.join(bb.env['BB_PACKAGE_HOME'], 'bb'),
+                     bb.host_os.path.join(bb.env['BB_APPLICATION_HOME']))
+    build_scripts = []
+    for search_path in search_pathes:
+      for root, dirnames, filenames in bb.host_os.walk(search_path):
+        for filename in fnmatch.filter(filenames, '*_build.py'):
+          build_scripts.append(bb.host_os.path.join(root, filename))
+    logging.debug("Found %d build script(s)" % len(build_scripts))
+    for _ in range(len(build_scripts)):
+      fullname = pyimport.get_fullname_by_path(build_scripts[_])
+      __import__(fullname, globals(), locals(), [], -1)
+    self._import_build_scripts_done = True
 
   def _select_toolchain(self, image):
     first_rule = self.get_rule_by_target(image.get_targets()[0])
@@ -51,12 +68,23 @@ class _Builder(object):
     print "Use toolchain", toolchain, "for image", image
     self._toolchain_for_image[image] = toolchain
 
-  def build(self, application):
+  def set_application_class(self, application_class):
+    self._application_class = application_class
+
+  def get_application(self):
+    return self._application
+
+  def prepare(self):
+    self._application = self._application_class()
+    self._application.build_images()
+
+  def build(self):
+    if not self._import_build_scripts_done:
+      self._import_build_scripts()
     print 'Initialization'
-    application.build_images()
-    for image in application.get_images():
+    self.prepare()
+    for image in self._application.get_images():
       self.build_image(image)
-    #self._build_target_tree(target)
 
   def build_image(self, image):
     print 'Build image', image, 'with', len(image.get_targets()), 'target(s)'
@@ -68,7 +96,7 @@ class _Builder(object):
     toolchain = self._toolchain_for_image[image]
     toolchain.compiler.set_output_filename(output_filename)
     #toolchain.compiler.dry_run = CLI.config.options.dry_run
-    toolchain.compiler.verbose = 1 #CLI.config.options.verbose
+    toolchain.compiler.verbose = bb.CLI.config.options.verbose
     self._apply_rules(image)
     try:
       toolchain.build()
@@ -91,12 +119,6 @@ class _Builder(object):
       if rule:
         rule.apply(target, toolchain)
 
-  def _build_target_tree(self, target):
-    rule = self.get_rule_by_target(target)
-    print rule, target
-    leafs = rule.extract_dependencies()
-    print target, rule, leafs
-
   def get_rule_by_target(self, target, class_only=False):
     # What if target is derived from a several target classes?
     if type(target) == types.TypeType:
@@ -113,6 +135,9 @@ class _Builder(object):
     return None
 
   def rule(self, targets, cases=None):
+    # Ignore rule if there are no targets
+    if not targets:
+      return
     owner = caller(2)
     return self.add_rule(targets, Rule(build_cases=(cases, owner)))
 

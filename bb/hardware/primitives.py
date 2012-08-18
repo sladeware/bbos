@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This module contains basic hardware primitives, such as pin, bus, wire, etc.
+"""This module contains basic hardware primitives, such as pin, bus, wire,
+etc. and other hardware primitives such as notes.
 """
 
 __copyright__ = 'Copyright (c) 2012 Sladeware LLC'
@@ -214,6 +215,50 @@ class Primitive(object):
 class ElectronicPrimitive(Primitive):
   """This class represents basic electrical design primitive."""
   pass
+
+class Pin(ElectronicPrimitive):
+  """A pin is an electrical design primitive derived from
+  :class:`ElectronicPrimitive` class. Pins give a part its electrical properties
+  and define connection points on the part for directing signals in and out.
+
+  Each pin has electrical type. Electrical type represents the type of
+  electrical connection the pin makes. This can be used to detect electrical
+  wiring errors in your schematic.
+  """
+
+  # Possible electrical types.
+  INPUT_TYPE = 0
+  IO_TYPE = 1
+  OUTPUT_TYPE = 2
+
+  def __init__(self):
+    ElectronicPrimitive.__init__(self)
+    self._connections = dict()
+    self._electrical_type = None
+
+  def get_electrical_type(self):
+    """Return electrical type of this pin."""
+    return self._electrical_type
+
+  def set_electrical_type(self, type_):
+    """Set electrical type. See :class:`Pin.ElectricalTypes` to find support
+    types."""
+    if not getattr(Pin.ElectricalTypes, type_):
+      raise
+    self._electrical_type = type_
+
+  def connect_to(self, pin):
+    """Connect source pin to destination pin."""
+    if not isinstance(pin, Pin):
+      raise Exception("'%s' must be a Pin" % pin)
+    G.add_edge(self, pin)
+    G.add_edge(pin, self)
+    if not self.is_connected_to(pin):
+      self.__connections[id(pin)] = pin
+      pin.connect_to(self)
+
+  def is_connected_to(self, pin):
+    return id(pin) in self.__connections
 
 class Note(Primitive):
   """A note is a design primitive (non-electrical), derived from class

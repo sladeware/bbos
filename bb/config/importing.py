@@ -7,26 +7,11 @@ import imp
 import sys
 import os
 import logging
-import fnmatch
 import inspect
 
 import bb
 
 logging.basicConfig(level=logging.DEBUG)
-
-def import_build_scripts():
-  search_pathes = (bb.host_os.path.join(bb.env['BB_PACKAGE_HOME'], 'bb'),
-                   bb.host_os.path.join(bb.env['BB_APPLICATION_HOME']))
-  build_scripts = []
-  for search_path in search_pathes:
-    for root, dirnames, filenames in bb.host_os.walk(search_path):
-      for filename in fnmatch.filter(filenames, '*_build.py'):
-        build_scripts.append(bb.host_os.path.join(root, filename))
-  logging.debug("Found %d build script(s)" % len(build_scripts))
-  for _ in range(len(build_scripts)):
-    fullname = BBImporter.get_fullname_by_path(build_scripts[_])
-    #imp.load_source(fullname, build_scripts[_])
-    __import__(fullname, globals(), locals(), [], -1)
 
 class BBImporter(object):
   """Read more about import hooks here
@@ -34,17 +19,6 @@ class BBImporter(object):
   <http://docs.python.org/py3k/library/importlib.html>,
   <http://docs.python.org/library/imp.html>.
   """
-
-  @classmethod
-  def get_fullname_by_path(self, path):
-    fullname = None
-    for search_path in sys.path:
-      if path.startswith(search_path):
-        mod_location = path[len(search_path) + 1:]
-        parts = mod_location.split(bb.host_os.sep)
-        parts[-1] = parts[-1].split('.')[0] # remove extension
-        fullname = '.'.join(parts)
-    return fullname
 
   def __init__(self, *args, **kargs):
     self._mod = None
