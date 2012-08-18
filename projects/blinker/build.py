@@ -18,4 +18,5 @@ bb.Builder.rule(bb.application.get_mapping('Blinker').get_thread('B1'), {
       'srcs' : ('b1.c',)
       }
     })
-bb.Builder.build(Application())
+
+bb.Builder.set_application_class(Application)

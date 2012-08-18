@@ -17,7 +17,6 @@ __copyright__ = 'Copyright (c) 2012 Sladeware LLC'
 import imp
 import os
 import sys
-import traceback
 
 import bb
 from bb.cli.command_line_interface import CLI
@@ -36,22 +35,9 @@ class build(Command):
       print "Build script '%s' doesn't exist" % build_script_path
       sys.exit(0)
     print "Run build script: %s" % build_script_path
-    try:
-      if os.path.exists(build_script_path):
-        imp.load_source('bb.buildtime.application.build', build_script_path)
-      bb.Builder.build()
-    except SystemExit, e:
-      if e.code > 0:
-        self._build_exception()
-    except:
-      self._build_exception()
-
-  def _build_exception(self):
-    print '=' * 70
-    print 'Exception in build script'
-    print '=' * 70
-    traceback.print_exc(file=sys.stdout)
-    print '_' * 70
+    if os.path.exists(build_script_path):
+      imp.load_source('bb.buildtime.application.build', build_script_path)
+    bb.Builder.build()
 
   def options(self, config, optparser):
     optparser.add_option('--list-toolchains',
