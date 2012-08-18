@@ -96,7 +96,7 @@ class _Builder(object):
     toolchain = self._toolchain_for_image[image]
     toolchain.compiler.set_output_filename(output_filename)
     #toolchain.compiler.dry_run = CLI.config.options.dry_run
-    #toolchain.compiler.verbose = bb.CLI.config.options.verbose
+    toolchain.compiler.verbose = bb.CLI.config.options.verbose
     self._apply_rules(image)
     try:
       toolchain.build()
