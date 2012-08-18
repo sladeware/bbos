@@ -71,13 +71,19 @@ class _Builder(object):
   def set_application_class(self, application_class):
     self._application_class = application_class
 
+  def get_application(self):
+    return self._application
+
+  def prepare(self):
+    self._application = self._application_class()
+    self._application.build_images()
+
   def build(self):
     if not self._import_build_scripts_done:
       self._import_build_scripts()
-    application = self._application_class()
     print 'Initialization'
-    application.build_images()
-    for image in application.get_images():
+    self.prepare()
+    for image in self._application.get_images():
       self.build_image(image)
 
   def build_image(self, image):
@@ -90,7 +96,7 @@ class _Builder(object):
     toolchain = self._toolchain_for_image[image]
     toolchain.compiler.set_output_filename(output_filename)
     #toolchain.compiler.dry_run = CLI.config.options.dry_run
-    toolchain.compiler.verbose = bb.CLI.config.options.verbose
+    #toolchain.compiler.verbose = bb.CLI.config.options.verbose
     self._apply_rules(image)
     try:
       toolchain.build()
