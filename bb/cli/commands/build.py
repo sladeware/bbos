@@ -22,15 +22,23 @@ import bb
 from bb.cli.command_line_interface import CLI
 from bb.cli.commands.command import Command
 
+INIT_SCRIPT_FILENAME = '__init__.py'
+BUILD_SCRIPT_FILENAME = 'build.py'
+
 class build(Command):
   USAGE = '%prog build'
   SHORT_DESC = 'Build an application'
   USES_BASEPATH = False
 
   def function(self):
-    build_script_filename = "build.py"
+    init_script_path = os.path.join(bb.env["BB_APPLICATION_HOME"],
+                                    INIT_SCRIPT_FILENAME)
+    if not os.path.exists(init_script_path):
+      print "Init script '%s' doesn't exist" % init_script_path
+    else:
+      imp.load_source('init', init_script_path)
     build_script_path = os.path.join(bb.env["BB_APPLICATION_HOME"],
-                                     build_script_filename)
+                                     BUILD_SCRIPT_FILENAME)
     if not os.path.exists(build_script_path):
       print "Build script '%s' doesn't exist" % build_script_path
       sys.exit(0)
