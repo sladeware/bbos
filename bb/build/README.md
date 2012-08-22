@@ -1,162 +1,152 @@
 # BB Build System
 
 Build system is the key component of BB platform. It includes such tools as
-*builder*, *toolchain\_manager*, *compiler\_manager* and *loader\_manager*.
+*builder*, *uploader*, *toolchain\_manager*, *compiler\_manager* and *loader\_manager*.
+
+Stages are: buildtime stage represented by `bb.BUILDTIME_STAGE` and loadtime
+stage represented by `bb.LOADTIME_STAGE`.
+
+## Instructions
+
+An _instruction_ specifies rules that will be used by tool in order to process
+the object. The object can be represented by a class or an instance. Different
+instructions are used by different tools. The instructions meaning is heavely
+depends on the system state.
+
+(see _build-script_ and _load-script_).
 
 ## Builder
 
-The builder is the heart of build system. It reads build-files and does
-appropriate actions.
+The builder is the heart of build system. It reads instructions from
+build-scripts and does appropriate actions. The state of BB that represents
+builder activity is `bb.BUILDTIME_STATE`.
 
-### Build file
+### Instructuins
 
-The _build-file_ is a container for _targets_ and _descriptors_.
+ *  Explain to builder how to build an object:
 
-All the build files ends with _\_build.py_, except of main application build
-file, which has name *build.py* and only one per application. This file is the
+  _object_ << {
+    '_toolchain_': {
+      '_key_': '_value_'
+    }
+  }
+
+ * Add object dependencies:
+
+  _object_ >> (_object1_, _object2_, ..., _objectN_)
+
+All the instructions lives in _build-scripts_.
+
+### Build-script
+
+The _build-script_ is a container of build instructions read by builder.
+
+All the build-scripts ends with _\_build.py_, except of main application build
+script, which has name *build.py* and only one per application. This file is the
 entry point for the builder to your application.
 
-On the start up the builder will load all the build files and store them under
-the reserved namespace `bb.buildtime`. However builder stores build files it a
-special way. For example build file for the BB application
-_bb.application\_build.py_ will be stored as `bb.buildtime.application`.
+Once the build process was started, the system will switch to the new state
+`bb.BUILDTIME`. Builder will start to import all the build files and store them under
+the reserved namespace `bb.buildtime`. Builder stores build scripts in a special
+way. For example build-script for the BB application _bb.application\_build.py_
+will be stored as `bb.buildtime.application`.
 
 ### Targets
 
-Each build-file may contain a _targets_. There are two kind of targets: _images_
-and _functions_.
-
-The targets can be used with help of `bb.buildtime` namespace. Suppose you have a target
-`bootloader` that will produce a bootloader binary for you. Here is the way you can run it:
-
-    builder.select_target('bb.buildtime.application:bootloader')
-
-#### Images
+The purpose of builder is to build all the _targets_ inside of
+application. There is only one type of targets: _image_. Note, builder selects
+targets by its own pattern, which cannot be changed. The main driver of this
+pattern is mapping (see `bb.Mapping`).
 
 An _image_ is a form of target that combines a set of objects that will be
 later processed by builder and as the result will be created a binary.
 
-    builder.image(
-      name     = <string>,
-      objects  = <list>,
-      filename = <string>
-    )
+The image has to be created in initialization stage (`bb.INITIALIZATION_STAGE`)
+with help of `Image` class.
 
-#### Functions
+    class Bootloader(Image):
+	  pass
 
-A _function_ is a function that can be called by builder as
-target. For exanple functions can be used to create another targets such as
-images. For example:
+There are two instructions: `build` and `load`. The `build` instructuin tells to builder how to
+build object(s).
 
-    builder.function(
-      name = 'main',
-      f = lambda: builder.image('myrobot', myrobot), builder.add_image(':myrobot')
-    )
+### Example
 
-Or
+Let us consider instructions available during BUILDTIME stage.
 
-    def main():
-      builder.image('myrobot', myrobot)
-      builder.add_image(':myrobot')
-  
-    builder.function(
-      name = 'main',
-      f = main,
-    )
-  
-Call `builder.select_target('bb.buildtime.application:main')`.
+You can use `>>` operator to assign build instructions for builder about your object.
 
-### Descriptors
+    from bb.buildtime.application import robot
 
-A _descriptor_ specifies relationship between an object and toolchain that will be
-used to process this object. The object can be represented by a class and its instance.
-
-    builder.descriptor(
-      object  = Robot,
-       = {
-        'propeller': {
-          sources = ('body.c', 'head.c'),
-        }
-        'simulator': {
-          sources = ('body.py', 'head.py')
-        }
+    robot.Arm >> {
+      ('propeller', 'catalina'): {
+        sources = ('arm.c',),
       }
-    )
+      'simulator': {
+        sources = ('arm.py',)
+      }
+    }
 
-This rule will be applied to all the `Robot` instances that builder will
-interact with.  In order to add files which are specific to your robot, just
+This instruction will be applied to all the `robot.Arm` instances that builder will
+interact with. In order to add files which are specific to your robot, just
 pass its instance as an object:
 
-    myrobot = Robot()
+    robot.right_arm >> {
+      'propeller': {
+        'sources': ('right_arm.c',)
+       }
+    }
 
-    builder.propeller_plugin(
-      myrobot,
-      ('mybody.c', 'myhead.c')
-    )
+As the result your binary will include the next sources: _arm.c_ and _right\_arm.c_.
 
-As the result your binary will include the next sources: _body.c_, _head.c_,
-_mybody.c_, _myhead.c_.
+Each _source_ or even all _sources_ can be also represented by a function, where
+the function may, or may not return a value. Let us replace the previous sources
+with the function `myrobot_c_files`:
 
-The _source_ can be also represented by a function, where the function may, or
-may not return a value. Let us replace the previous sources with the function
-`myrobot_c_files` function:
+    def right_arm_c_files(myrobot):
+      return ('right_arm.c',)
 
-    def myrobot_c_files(myrobot):
-      return ('mybody.c', 'myhead.c')
+    robot.right_arm >> {
+	  'propeller': {'sources': right_arm_c_files }
+	}
 
 When the function returns a value it will be translated by builder as file
 path. When the function returns `None`, this will be simply ignored. The last
 case is useful when you need to edit another source file and you are not going
 to produce a new one.
 
-## Project
+## Uploader
 
-On the last step has to be created project that will include all the images and
-rules for the target.
+### Instructions
 
-    builder.project(myrobot)
+ * Explain to uploader how to upload an image that is based on the object:
 
-    class Application(bb.build.Project):
-      TARGET = myrobot
+  _object_ << {
+    '_uploader_': {
+      '_key_': '_value_'
+    }
+  }
 
-      def build(self):
-        self.add_images(myrobot)
-    
+### Load-script
 
-This will automatically add images assciated with target `myrobot`.
+All the load-scripts ends with _\_load.py_, except of main application load
+script, which has name *load.py* and only one per application. This file is the
+entry point for the uploader to your application.
 
-    builder.select_projects(myrobot)
+### Example
 
-Once targets were selected you can run build process manually:
+The load-instructions can be used only during `LOADTIME` stage and can be applied
+only to `Image` derived objects.
 
-    builder.build()
-    
-Or with help of command-line interface:
-
-    $ bb build
-
-By default builder know only about one target `bb.application`.
-
-## Simple example
-
-This example shows how you can use bb builder for other purposes.
-
-    from bb.build import builder
-
-    robot = object()
-
-    builder.rule(
-      robot, {
-        'propeller': {
-          sources: ('hello.c', 'world.c')
-        }
-      }
-    )
-    # ... produce the binary 'robot' for the target
-    builder.image(robot, 'robot')
-    builder.project(robot)
-
-Now call 'bb build'.
-
-
-This will create a binary _myrobot_ that you will be able to load later.
+    from bb.loadtime.application import robot
+	
+	board = robot.arm.get_board()
+	# Assume there is only one processor on this board
+	processor = board.get_processors()[0]
+	bootloader = processor.get_bootloader()
+	
+	bootloader >> {
+	  '*' {
+	    port = '/dev/ttyUSB0'
+	  }
+	}
