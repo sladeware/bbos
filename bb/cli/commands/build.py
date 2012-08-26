@@ -13,16 +13,18 @@
 # limitations under the License.
 
 __copyright__ = 'Copyright (c) 2012 Sladeware LLC'
+__author__ = 'Oleksandr Sviridenko'
 
 import imp
+import logging
 import os
 import sys
 
 import bb
 from bb.cli.command_line_interface import CLI
 from bb.cli.commands.command import Command
+from bb.tools import builder
 
-INIT_SCRIPT_FILENAME = '__init__.py'
 BUILD_SCRIPT_FILENAME = 'build.py'
 
 class build(Command):
@@ -31,21 +33,14 @@ class build(Command):
   USES_BASEPATH = False
 
   def function(self):
-    init_script_path = os.path.join(bb.env["BB_APPLICATION_HOME"],
-                                    INIT_SCRIPT_FILENAME)
-    if not os.path.exists(init_script_path):
-      print "Init script '%s' doesn't exist" % init_script_path
-    else:
-      imp.load_source('init', init_script_path)
-    build_script_path = os.path.join(bb.env["BB_APPLICATION_HOME"],
+    build_script_path = os.path.join(bb.env['BB_APPLICATION_HOME'],
                                      BUILD_SCRIPT_FILENAME)
     if not os.path.exists(build_script_path):
-      print "Build script '%s' doesn't exist" % build_script_path
-      sys.exit(0)
-    print "Run build script: %s" % build_script_path
-    if os.path.exists(build_script_path):
+      logging.warning("Build script '%s' doesn't exist" % build_script_path)
+    else:
+      print "Run build script: %s" % build_script_path
       imp.load_source('bb.buildtime.application.build', build_script_path)
-    bb.Builder.build()
+    builder.build()
 
   def options(self, config, optparser):
     optparser.add_option('--list-toolchains',
@@ -60,4 +55,5 @@ class build(Command):
     optparser.add_option('--dry-run',
                          action='store_true',
                          dest='dry_run',
-                         help='Show only messages that would be printed in a real run.')
+                         help='Show only messages that would be printed in a ' \
+                           'real run.')

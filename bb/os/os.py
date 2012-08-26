@@ -16,24 +16,35 @@
 microprocessors.
 """
 
+__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
+__authro__ = 'Oleksandr Sviridenko'
+
 import bb
 from bb.os.kernel import Kernel
+from bb.hardware.devices.processors import Processor
 
 class OS(object):
-  def __init__(self, processor, thread_distribution):
+  """This class is container/environment for Kernel's."""
+
+  def __init__(self, processor):
+    if not isinstance(processor, Processor):
+      raise Exception('processor must be derived from Processor class.')
     self._processor = processor
     self._kernels = []
-    for core, threads in thread_distribution.items():
+    for core in processor.get_cores():
       # Skip the core if we do not have a threads for it
-      if not threads:
+      kernel = core.get_kernel()
+      if not kernel:
         continue
-      self._kernels.append(Kernel(core=core, threads=threads))
+      self._kernels.append(kernel)
 
   @property
   def processor(self):
-    return self._processor
+    """This property returns Processor instance. See get_processor()."""
+    return self.get_processor()
 
   def get_processor(self):
+    """Return Processor instance on which OS will be running."""
     return self._processor
 
   @property

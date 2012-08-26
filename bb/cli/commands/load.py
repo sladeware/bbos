@@ -9,7 +9,7 @@ import traceback
 
 import bb
 from bb.cli.commands.command import Command
-from bb.tools import propler
+#from bb.tools import propler
 
 class load(Command):
   USAGE = '%prog load'
@@ -28,9 +28,9 @@ class load(Command):
     if os.path.exists(build_script_path):
       imp.load_source('bb.buildtime.application.build', build_script_path)
     bb.Builder.prepare()
-    for image in bb.Builder.get_application().get_images():
-      uploader = propler.SPIUploader(port='/dev/ttyUSB0')
-      if not uploader.connect():
-        sys.exit(1)
-      uploader.upload_file(image.get_name(), eeprom=False)
-      uploader.disconnect()
+    #for image in bb.Builder.get_application().get_images():
+    #  uploader = propler.SPIUploader(port='/dev/ttyUSB0')
+    #  if not uploader.connect():
+    #    sys.exit(1)
+    #  uploader.upload_file(image.get_name(), eeprom=False)
+    #  uploader.disconnect()

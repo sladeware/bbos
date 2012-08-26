@@ -1,4 +1,6 @@
 #!/usr/bin/env python
 
-from bb.lib.build.generators.generator import Generator
-from bb.lib.build.generators.c_generator import CGenerator
+__author__ = 'Oleksandr Sviridenko'
+
+from bb.tools.generators.generator import Generator
+from bb.tools.generators.c_generator import CGenerator

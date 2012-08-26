@@ -16,8 +16,8 @@ __copyright__ = 'Copyright (c) 2012 Sladeware LLC'
 __author__ = 'Oleksandr Sviridenko'
 
 import bb
-from bb.lib.build.compilers.custom_c_compiler import CustomCCompiler
-from bb.lib.build.compilers.gcc import LD
+from bb.tools.compilers.custom_c_compiler import CustomCCompiler
+from bb.tools.compilers.gcc import LD
 from bb.lib.utils import spawn
 from bb.lib.utils.host_os.path import mkpath
 

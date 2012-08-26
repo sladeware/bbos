@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from bb.lib.build.generators.generator import Generator
+from bb.tools.generators.generator import Generator
 
 class CGenerator(Generator):
   def write_header(self, data, level=1):

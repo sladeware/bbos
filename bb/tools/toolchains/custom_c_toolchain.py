@@ -17,7 +17,7 @@ __author__ = 'Oleksandr Sviridenko'
 
 import os
 
-from bb.lib.build.toolchains.toolchain import Toolchain
+from bb.tools.toolchains.toolchain import Toolchain
 
 class CustomCToolchain(Toolchain):
   """C toolchain for C-like compilers."""

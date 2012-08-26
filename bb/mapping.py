@@ -155,3 +155,24 @@ class Mapping(object):
 
   def get_os_class(self):
     return self._os_class
+
+  def gen_oses(self):
+    board = self.get_board()
+    if not board:
+      raise Exception("Board wasn't defined")
+    if not self.get_num_threads():
+      raise Exception("No threads. Nothing to do.")
+    distributor = self.get_thread_distribution()
+    if not thread_distributor:
+      raise Exception("Thread-distributor wasn't defined")
+    distribution = distributor(self.get_threads(), self.get_board())
+    os_class = self.get_os_class()
+    oses = list()
+    for processor, core_distribution in distribution.items():
+      for core, threads in thread_distribution.items():
+        kernel = bb.os.Kernel(core=core, threads=threads)
+        core.set_kernel(kernel)
+      os = os_class(processor)
+      processor.set_os(os)
+      oses.append(os)
+    return oses

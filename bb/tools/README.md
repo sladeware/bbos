@@ -1,10 +1,12 @@
-# BB Build System
+# BB Tools
 
-Build system is the key component of BB platform. It includes such tools as
-*builder*, *uploader*, *toolchain\_manager*, *compiler\_manager* and *loader\_manager*.
+Tools:
 
-Stages are: buildtime stage represented by `bb.BUILDTIME_STAGE` and loadtime
-stage represented by `bb.LOADTIME_STAGE`.
+* *builder*
+* *uploader*
+* *toolchain\_manager*
+* *compiler\_manager*
+* *loader\_manager*
 
 ## Instructions
 
@@ -17,6 +19,7 @@ depends on the system state.
 
 ## Builder
 
+Build system is the key component of BB platform.
 The builder is the heart of build system. It reads instructions from
 build-scripts and does appropriate actions. The state of BB that represents
 builder activity is `bb.BUILDTIME_STATE`.

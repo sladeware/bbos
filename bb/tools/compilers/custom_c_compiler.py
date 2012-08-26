@@ -21,7 +21,7 @@ import time
 import bb
 from bb.lib.utils.host_os.path import mkpath
 from bb.lib.utils import typecheck
-from bb.lib.build.compilers.compiler import Compiler
+from bb.tools.compilers.compiler import Compiler
 
 class Linker(object):
   """Base linker class."""

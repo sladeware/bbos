@@ -17,7 +17,7 @@ __author__ = 'Oleksandr Sviridenko'
 
 import bb
 from bb.lib.utils import typecheck
-from bb.lib.build.compilers import Compiler
+from bb.tools.compilers import Compiler
 
 class EventManager(object):
   def __init__(self):

@@ -12,22 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
-
 import bb
 import bb.os as bbos
+from bb.testing import unittest
 
 class PortTest(unittest.TestCase):
-  def setUp(self):
+  def setup(self):
     pass
 
   def test_name(self):
     p0 = bbos.Port("P0", 1)
-    self.assertEqual(p0.get_name(), "P0")
+    self.assert_equal(p0.get_name(), "P0")
 
   def test_capacity(self):
     p0 = bbos.Port("P0", 1)
-    self.assertEqual(p0.get_capacity(), 1)
+    self.assert_equal(p0.get_capacity(), 1)
 
 if __name__ == '__main__':
   unittest.main()

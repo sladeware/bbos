@@ -16,7 +16,7 @@ __copyright__ = 'Copyright (c) 2012 Sladeware LLC'
 __author__ = 'Oleksandr Sviridenko'
 
 from bb.lib.utils import typecheck
-from bb.lib.build.compilers.unix_c_compiler import UnixCCompiler
+from bb.tools.compilers.unix_c_compiler import UnixCCompiler
 
 class PropGCCCompiler(UnixCCompiler):
   """PropGCC is a GCC port for the Parallax Propeller P8X32A

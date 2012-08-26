@@ -6,7 +6,7 @@ import sys
 import warnings
 
 import bb
-from bb.lib.build.toolchains.toolchain import Toolchain
+from bb.tools.toolchains.toolchain import Toolchain
 
 # TODO: do not ignore every single warning
 #warnings.simplefilter("ignore")

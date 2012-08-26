@@ -43,20 +43,19 @@ except NameError:
         return reduce(operator.add, seq, start)
 
 try:
-    enumerate ## Introduced in 2.3
+  enumerate ## Introduced in 2.3
 except NameError:
-    def enumerate(collection):
-        """Return an iterator that enumerates pairs of (i, c[i]). PEP 279.
-        >>> list(enumerate('abc'))
-        [(0, 'a'), (1, 'b'), (2, 'c')]
-        """
-        ## Copied from PEP 279
-        i = 0
-        it = iter(collection)
-        while 1:
-            yield (i, it.next())
-            i += 1
-
+  def enumerate(collection):
+    """Return an iterator that enumerates pairs of (i, c[i]). PEP 279.
+    >>> list(enumerate('abc'))
+    [(0, 'a'), (1, 'b'), (2, 'c')]
+    """
+    ## Copied from PEP 279
+    i = 0
+    it = iter(collection)
+    while 1:
+      yield (i, it.next())
+      i += 1
 
 try:
     reversed ## Introduced in 2.4

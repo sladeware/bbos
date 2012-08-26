@@ -12,17 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import bb
-from bb import application as bbapp
-from bb.testing import unittest
+from __future__ import absolute_import
 
-class ApplicationTest(unittest.TestCase):
-  def test_mapping_registration(self):
-    bbapp.unregister_all_mappings()
-    m1 = bb.Mapping("M1")
-    m2 = bb.Mapping("M2")
-    bbapp.register_mappings([m1, m2])
-    self.assert_equal(bbapp.get_num_mappings(), 2)
+__author__ = 'Oleksandr Sviridenko'
 
-if __name__ == '__main__':
-  unittest.main()
+import unittest
+
+class TestCase(unittest.TestCase):
+  assert_equal = unittest.TestCase.assertEqual
+  assert_is_not = unittest.TestCase.assertIsNot
+
+  def setup(self):
+    pass
+
+  def setUp(self):
+    return self.setup()
