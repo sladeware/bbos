@@ -57,6 +57,10 @@ class Toolchain(EventManager):
     if sources:
       self.add_sources(sources)
 
+  @classmethod
+  def get_name(klass):
+    return klass.__name__.lower()
+
   def enable_dry_run_mode(self):
     self._dry_run = True
 
@@ -88,7 +92,7 @@ class Toolchain(EventManager):
       source = bb.host_os.path.abspath(source)
       if not bb.host_os.path.exists(source):
         raise Exception("Source doesn't exist: %s" % source)
-      print "Adding source '%s'" % source
+      print "Add source '%s'" % source
       if not source in self._sources:
         self._sources.append(source)
       return source

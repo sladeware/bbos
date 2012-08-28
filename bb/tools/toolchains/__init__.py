@@ -17,4 +17,4 @@ __author__ = 'Oleksandr Sviridenko'
 
 from bb.tools.toolchains.toolchain import Toolchain
 from bb.tools.toolchains.simulator import SimulationToolchain
-from bb.tools.toolchains.propeller import PropellerToolchain
+from bb.tools.toolchains.propeller import Propeller

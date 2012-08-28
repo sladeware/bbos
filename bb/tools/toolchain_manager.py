@@ -1,15 +1,28 @@
 #!/usr/bin/env python
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import inspect
 import sys
 
 import bb
-from bb.lib.build.toolchains import Toolchain
+from bb.tools.toolchains import Toolchain
 from bb.lib.utils import typecheck
 
 _toolchain_classes = dict()
 
-classes = inspect.getmembers(sys.modules['bb.lib.build.toolchains'], inspect.isclass)
+classes = inspect.getmembers(sys.modules['bb.tools.toolchains'],
+                             inspect.isclass)
 for name, klass in classes:
   if klass is Toolchain:
     continue
@@ -21,6 +34,9 @@ def is_supported_toolchain(name):
 
 def new_toolchain(name, args={}):
   toolchain_class = get_toolchain_class(name)
+  if not toolchain_class:
+    print "Toolchain '%s' is not supported" % name
+    return None
   return toolchain_class(**args)
 
 def get_toolchain_class(name):

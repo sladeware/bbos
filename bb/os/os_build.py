@@ -19,12 +19,11 @@ import bb
 from bb.os import OS
 from bb.tools.generators import CGenerator
 
-def os_decomposer(os):
-  """Decomposes OS instances derived from OS class."""
-  return os.kernels()
-
-os_descriptor = bb.application.get_object_descriptor(OS)
-#os_descriptor.decomposer = os_decomposer
+with OS as bundle:
+  def dependency_resolver(self, os):
+    """Decomposes OS instances derived from OS class."""
+    return [os.get_processor()] + os.get_kernels()
+  bundle.decomposer = dependency_resolver
 
 # TODO(team): the following code has to be moved with all C files, once C
 # implementation will be separated.
@@ -40,10 +39,10 @@ def gen_config_h(os):
                                           thread.get_runner()))
   g.close()
 
-#os_descriptor = bb.application.get_object_descriptor(OS)
-#os_descriptor.build += {
-  # Propeller GCC compiler support
-#  'propler' : {
-#    'sources': ('kernel.c', gen_config_h)
-#    }
-#}
+with OS as bundle:
+  bundle.build_cases.update({
+    # Propeller GCC compiler support
+    'propeller' : {
+      'sources': (gen_config_h,)
+      }
+    })

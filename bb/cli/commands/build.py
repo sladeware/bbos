@@ -39,7 +39,7 @@ class build(Command):
       logging.warning("Build script '%s' doesn't exist" % build_script_path)
     else:
       print "Run build script: %s" % build_script_path
-      imp.load_source('bb.buildtime.application.build', build_script_path)
+      imp.load_source('bb.build', build_script_path)
     builder.build()
 
   def options(self, config, optparser):

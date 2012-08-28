@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__copyright__ = "Copyright (c) 2012 Sladeware LLC"
-__author__ = "Oleksandr Sviridenko"
+__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
+__author__ = 'Oleksandr Sviridenko'
 
 from bb.tools.toolchains.custom_c_toolchain import CustomCToolchain
 from bb.tools.compilers import propgcc
 
-class PropellerToolchain(CustomCToolchain):
+class Propeller(CustomCToolchain):
   def __init__(self, *args, **kargs):
     CustomCToolchain.__init__(self, compiler=propgcc.PropGCCCompiler(),
                               *args, **kargs)

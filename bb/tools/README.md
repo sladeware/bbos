@@ -22,21 +22,7 @@ depends on the system state.
 Build system is the key component of BB platform.
 The builder is the heart of build system. It reads instructions from
 build-scripts and does appropriate actions. The state of BB that represents
-builder activity is `bb.BUILDTIME_STATE`.
-
-### Instructuins
-
- *  Explain to builder how to build an object:
-
-  _object_ << {
-    '_toolchain_': {
-      '_key_': '_value_'
-    }
-  }
-
- * Add object dependencies:
-
-  _object_ >> (_object1_, _object2_, ..., _objectN_)
+builder activity is `bb.STAGE_BUILD_TIME` (see also `bb.is_build_time_stage()`).
 
 All the instructions lives in _build-scripts_.
 

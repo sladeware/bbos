@@ -17,5 +17,6 @@ __author__ = 'Oleksandr Sviridenko'
 
 import bb
 
-class Driver(object):
-  pass
+class Driver(bb.Object):
+  def __init__(self):
+    bb.Object.__init__(self)

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 __copyright__ = 'Copyright (c) 2012 Sladeware LLC'
+__author__ = 'Oleksandr Sviridenko'
 
 import bb
 from bb.hardware.devices.boards import P8X32A_QuickStartBoard

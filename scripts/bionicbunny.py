@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright (c) 2012 Sladeware LLC"
-__author__ = "Oleksandr Sviridenko"
+__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
+__author__ = 'Oleksandr Sviridenko'
 
 import sys
 import traceback
@@ -10,6 +10,7 @@ import bb
 from bb.cli import CLI
 
 def trace_exception_and_exit():
+  print
   print '=' * 70
   print 'EXCEPTION'
   print '=' * 70

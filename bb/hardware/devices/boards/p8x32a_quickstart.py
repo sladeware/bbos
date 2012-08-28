@@ -16,7 +16,7 @@ __copyright__ = 'Copyright (c) 2012 Sladeware LLC'
 __author__ = 'Oleksandr Sviridenko'
 
 from bb.hardware.devices.boards.board import Board
-from bb.hardware.devices.processors import PropellerP8X32A_Q44
+from bb.hardware.devices.processors import PropellerP8X32A
 from bb.hardware.devices.leds import LED
 from bb.hardware.devices.gpio import Button
 
@@ -32,7 +32,8 @@ class P8X32A_QuickStartBoard(Board):
 
   def __init__(self):
     Board.__init__(self)
-    self.add_processor(PropellerP8X32A_Q44().set_designator('U1'))
+    # TODO(team): fix the problem with processors
+    self.add_processor(PropellerP8X32A().set_designator('U1'))
     # Add LED's
     self.add_elements([LED().set_designator("D%d" % i) for i in range(1, 9)])
     self.add_elements([Button().set_designator("B%d" % i) for i in range(1, 9)])

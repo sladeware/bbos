@@ -111,7 +111,7 @@ class Mapping(object):
 
   def get_thread(self, name):
     if not typecheck.is_string(name):
-      raise TypeError("name must be a string")
+      raise TypeError('name must be a string')
     return self._threads.get(name, None)
 
   def register_threads(self, threads):
@@ -122,6 +122,7 @@ class Mapping(object):
     return len(self.get_threads())
 
   def get_threads(self):
+    """Return list of threads handled by this mapping."""
     return self._threads.values()
 
   def set_simulation_mode(self):
@@ -162,14 +163,17 @@ class Mapping(object):
       raise Exception("Board wasn't defined")
     if not self.get_num_threads():
       raise Exception("No threads. Nothing to do.")
-    distributor = self.get_thread_distribution()
-    if not thread_distributor:
+    distributor = self.get_thread_distributor()
+    if not distributor:
       raise Exception("Thread-distributor wasn't defined")
-    distribution = distributor(self.get_threads(), self.get_board())
+    distribution = distributor(self.get_threads(),
+                               self.get_board().get_processors())
     os_class = self.get_os_class()
     oses = list()
     for processor, core_distribution in distribution.items():
-      for core, threads in thread_distribution.items():
+      for core, threads in core_distribution.items():
+        if not threads:
+          continue
         kernel = bb.os.Kernel(core=core, threads=threads)
         core.set_kernel(kernel)
       os = os_class(processor)

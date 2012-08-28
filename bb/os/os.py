@@ -17,16 +17,17 @@ microprocessors.
 """
 
 __copyright__ = 'Copyright (c) 2012 Sladeware LLC'
-__authro__ = 'Oleksandr Sviridenko'
+__author__ = 'Oleksandr Sviridenko'
 
 import bb
 from bb.os.kernel import Kernel
 from bb.hardware.devices.processors import Processor
 
-class OS(object):
+class OS(bb.Object):
   """This class is container/environment for Kernel's."""
 
   def __init__(self, processor):
+    bb.Object.__init__(self)
     if not isinstance(processor, Processor):
       raise Exception('processor must be derived from Processor class.')
     self._processor = processor
@@ -61,6 +62,5 @@ class OS(object):
     return self._kernels[i]
 
   def __str__(self):
-    return "OS on processor '%s', with %d kernel(s): %s" \
-        % (self.get_processor(), self.get_num_kernels(),
-           [str(_) for _ in self.kernels])
+    return "OS on processor '%s', with %d kernel(s)" \
+        % (self.get_processor(), self.get_num_kernels())
