@@ -173,12 +173,6 @@ class Binary(object):
 def import_build_scripts():
   if BUILD_SCRIPTS:
     return
-  build_script_path = os.path.join(bb.env['BB_APPLICATION_HOME'], 'build.py')
-  if not bb.host_os.path.exists(build_script_path):
-    logging.warning("Build script '%s' doesn't exist" % build_script_path)
-  else:
-    logging.debug('Import script: %s' % build_script_path)
-    imp.load_source('bb.build', build_script_path)
   search_pathes = (bb.host_os.path.join(bb.env['BB_PACKAGE_HOME'], 'bb'),
                    bb.host_os.path.join(bb.env['BB_APPLICATION_HOME']))
   for search_path in search_pathes:
@@ -190,6 +184,12 @@ def import_build_scripts():
     fullname = pyimport.get_fullname_by_path(build_script)
     logging.debug('Import script: %s as %s' % (build_script, fullname))
     __import__(fullname, globals(), locals(), [], -1)
+  build_script_path = os.path.join(bb.env['BB_APPLICATION_HOME'], 'build.py')
+  if not bb.host_os.path.exists(build_script_path):
+    logging.warning("Build script '%s' doesn't exist" % build_script_path)
+  else:
+    logging.debug('Import script: %s' % build_script_path)
+    imp.load_source('bb.build', build_script_path)
 
 def extract_images():
   images = []
