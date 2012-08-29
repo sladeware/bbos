@@ -111,3 +111,7 @@ class Kernel(bb.Object):
 
   def get_num_ports(self):
     return len(self.get_ports())
+
+  def __str__(self):
+    return '%s[threads=%d, ports=%d]' % \
+        (self.__class__.__name__, self.get_num_threads(), self.get_num_ports())

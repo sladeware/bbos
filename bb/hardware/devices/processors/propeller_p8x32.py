@@ -63,8 +63,7 @@ class PropellerP8X32A(Processor):
     Processor.__init__(self, 8, cores)
 
   def __str__(self):
-    return "%s with %d cores" % (self.get_property("name").value,
-                                 self.get_num_cores())
+    return "%s[cores=%d]" % (self.__class__.__name__, self.get_num_cores())
 
 # A few aliases to provide termin "cog"
 PropellerP8X32A.get_cog = PropellerP8X32A.get_core

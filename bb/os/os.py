@@ -62,5 +62,6 @@ class OS(bb.Object):
     return self._kernels[i]
 
   def __str__(self):
-    return "OS on processor '%s', with %d kernel(s)" \
-        % (self.get_processor(), self.get_num_kernels())
+    return '%s[processor=%s, kernels=%d]' % \
+        (self.__class__.__name__, self.get_processor(),
+         self.get_num_kernels())

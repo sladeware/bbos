@@ -25,7 +25,6 @@ import bb
 from bb.cli.commands.command import Command
 from bb.tools import builder
 from bb.tools import uploader
-#from bb.tools import propler
 
 class load(Command):
   USAGE = '%prog load'
@@ -33,19 +32,12 @@ class load(Command):
   USES_BASEPATH = False
 
   def function(self):
-    load_script_filename = "load.py"
-    load_script_path = os.path.join(bb.env['BB_APPLICATION_HOME'],
-                                    load_script_filename)
-    if not os.path.exists(load_script_path):
-      logging.warning("Load script '%s' doesn't exist" % load_script_path)
-    else:
-      print "Run load script: %s" % load_script_path
-      imp.load_source('bb.loadtime.load', load_script_path)
     builder.build()
-    #bb.Builder.prepare()
-    #for image in bb.Builder.get_application().get_images():
-    #  uploader = propler.SPIUploader(port='/dev/ttyUSB0')
-    #  if not uploader.connect():
-    #    sys.exit(1)
-    #  uploader.upload_file(image.get_name(), eeprom=False)
-    #  uploader.disconnect()
+    uploader.upload()
+
+  def options(self, config, optparser):
+    optparser.add_option('--verbose',
+                         dest='verbose',
+                         type='int',
+                         default=0,
+                         help='Verbose level.')

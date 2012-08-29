@@ -11,8 +11,8 @@ List of supported loaders:
    ======================================================= ============================
 """
 
-__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
+__author__ = 'Oleksandr Sviridenko'
 
-from bb.builder.loaders.loader import Loader
-from bb.builder.loaders.bstl import BSTLLoader
-
+from bb.tools.loaders.loader import Loader
+from bb.tools.loaders.bstl import BSTLLoader

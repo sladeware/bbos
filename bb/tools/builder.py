@@ -15,51 +15,123 @@
 __copyright__ = 'Copyright (c) 2012 Sladeware LLC'
 __author__ = 'Oleksandr Sviridenko'
 
+import imp
 import os.path
 import fnmatch
 import logging
-import networkx
-from networkx import bfs_edges
 import inspect
+import md5
 
 import bb
 from bb.lib.utils import pyimport
 from bb.lib.utils import typecheck
 from bb.tools import toolchain_manager
 
-_BUILD_SCRIPTS = list()
-_IMAGES = list()
+BINARIES = []
+BUILD_SCRIPTS = []
+
+import networkx
+from networkx import bfs_edges
+
+class Image(networkx.Graph):
+  def __init__(self, root):
+    networkx.Graph.__init__(self)
+    self._root = root
+    self._build(root)
+
+  def _build(self, node, parent=None):
+    """Build the image graph."""
+    with node as bundle:
+      self.add_node(node)
+      if parent:
+        self.add_edge(parent, node)
+      if bundle.decomposer:
+        children = bundle.decomposer(node)
+        if not children:
+          return
+        for child in children:
+          self._build(child, node)
+
+  def __str__(self):
+    return '%s[objects=%d]' % (self.__class__.__name__, len(self))
+
+  def get_root(self):
+    return self._root
+
+  def get_objects(self):
+    return self.nodes()
+
+  def get_bundles(self):
+    bundles = []
+    for obj in self.get_objects():
+      with obj as bundle:
+        bundles.append(bundle)
+    return bundles
 
 class Binary(object):
 
   def __init__(self, image):
-    self._image = image
+    self._image = None
     self._toolchain = None
     self._available_toolchains = list()
-    self._detect_available_toolchains()
+    if image:
+      self._set_image(image)
+
+  def get_available_toolchains(self):
+    """Return list of available toolchains for this image."""
+    if not self._image:
+      return
+    if not self._image.get_bundles():
+      raise Exception("Image doesn't have bundles")
+    first_bundle = self._image.get_bundles()[0]
+    available = set(first_bundle.build_cases.get_supported_toolchains())
+    for bundle in self._image.get_bundles():
+      supported = set(bundle.build_cases.get_supported_toolchains())
+      if not supported:
+        logging.warning("Bundle of '%s' does not have supported toolchains" % bundle)
+        continue
+      available = available.intersection(supported)
+      if not available:
+        print "No common toolchains for an objects were found"
+        return None
+    return list(available)
+
+  def get_image(self):
+    return self._image
+
+  def get_filename(self):
+    return md5.md5(str(self.get_image().get_root())).hexdigest()
+
+  def __str__(self):
+    return '%s[output_file=%s]' % (self.__class__.__name__, self.get_filename())
+
+  def _set_image(self, image):
+    print 'Process image', image
+    if not len(image):
+      logging.warning("Cannot create a binary for image %s. Image is empty." %
+                      image)
+      return
+    self._image = image
 
   def use_toolchain(self, toolchain):
-    if not toolchain in self._available_toolchains:
-      raise Exception('Toolchain %s is not supported' % toolchain)
+    #if not toolchain in self._available_toolchains:
+    #  raise Exception('Toolchain %s is not supported' % toolchain)
     self._toolchain = toolchain_manager.new_toolchain(toolchain)
 
   def get_toolchain(self):
     return self._toolchain
 
-  def get_available_toolchains(self):
-    return self._available_toolchains
-
   def _setup_toolchain(self):
     compiler = self._toolchain.compiler
     compiler.verbose = bb.CLI.config.get_option('verbose', 1)
-    compiler.set_output_filename('a.out')
+    compiler.set_output_filename(self.get_filename())
 
   def _build_object(self, obj):
-    print "Build '%s'" % obj
-    with obj as bundle:
-      if not bundle.build_cases:
+    logging.debug("Build %s" % obj)
+    with obj as target:
+      if not target.build_cases:
         return
-      build_case = bundle.build_cases[self._toolchain.get_name()]
+      build_case = target.build_cases[self._toolchain.get_name()]
       if not build_case:
         return
       build_script_file = inspect.getsourcefile(build_case.owner)
@@ -75,23 +147,21 @@ class Binary(object):
         if not os.path.exists(source):
           alternative_source = os.path.join(build_script_dirname, source)
           if not os.path.exists(alternative_source):
-            print "WARNING: file '%s' cannot be found" % source
-            return
+            logging.warning("File '%s' cannot be found" % source)
+            continue
           source = alternative_source
         self._toolchain.add_source(os.path.abspath(source))
 
   def build(self):
-    print 'Process image', self._image, 'with', len(self._image), 'bundle(s)'
-    if not len(self._image):
-      print "Image is empty. Skip image."
+    available_toolchains = self.get_available_toolchains()
+    print " available toolchains =", available_toolchains
+    if not available_toolchains:
+      logging.warning("Image doesn't have toolchains for building")
       return
-    print " available toolchains =", self.get_available_toolchains()
-    if not self.get_available_toolchains():
-      print "Not available toolchains to build the image."
-      return
-    toolchain = self.get_available_toolchains()[0]
-    self.use_toolchain(toolchain)
+    # TODO(team): provide mechanism how to select a toolchain
+    toolchain = available_toolchains[0]
     print " selected toolchain =", toolchain
+    self.use_toolchain(toolchain)
     self._build_object(self._image.get_root())
     edges = bfs_edges(self._image, self._image.get_root())
     for edge in edges:
@@ -100,68 +170,29 @@ class Binary(object):
     self._setup_toolchain()
     self._toolchain.build()
 
-  def _detect_available_toolchains(self):
-    if not self._image.get_bundles():
-      raise Exception("Image doesn't have bundles")
-    first_bundle = self._image.get_bundles()[0]
-    available_toolchains = set(first_bundle.build_cases.get_supported_toolchains())
-    for bundle in self._image.get_bundles():
-      supported_toolchains = set(bundle.build_cases.get_supported_toolchains())
-      if not supported_toolchains:
-        logging.warning("Bundle of '%s' does not have supported toolchains" % bundle)
-        continue
-      available_toolchains = available_toolchains.intersection(supported_toolchains)
-      if not available_toolchains:
-        print "No common toolchains for an objects were found"
-        return None
-    self._available_toolchains = list(available_toolchains)
-
-class _Image(networkx.Graph):
-  def __init__(self, gozer):
-    networkx.Graph.__init__(self)
-    self._root = gozer
-    # Build the image graph
-    def _extract_dependencies(node, parent=None):
-      with node as bundle:
-        self.add_node(node)
-        if parent:
-          self.add_edge(parent, node)
-        if bundle.decomposer:
-          children = bundle.decomposer(node)
-          if not children:
-            return
-          for child in children:
-            _extract_dependencies(child, node)
-    _extract_dependencies(self._root)
-
-  def get_root(self):
-    return self._root
-
-  def get_objects(self):
-    return self.nodes()
-
-  def get_bundles(self):
-    bundles = []
-    for obj in self.get_objects():
-      with obj as bundle:
-        bundles.append(bundle)
-    return bundles
-
-def _import_build_scripts():
-  if _BUILD_SCRIPTS:
+def import_build_scripts():
+  if BUILD_SCRIPTS:
     return
+  build_script_path = os.path.join(bb.env['BB_APPLICATION_HOME'], 'build.py')
+  if not bb.host_os.path.exists(build_script_path):
+    logging.warning("Build script '%s' doesn't exist" % build_script_path)
+  else:
+    logging.debug('Import script: %s' % build_script_path)
+    imp.load_source('bb.build', build_script_path)
   search_pathes = (bb.host_os.path.join(bb.env['BB_PACKAGE_HOME'], 'bb'),
                    bb.host_os.path.join(bb.env['BB_APPLICATION_HOME']))
   for search_path in search_pathes:
     for root, dirnames, filenames in bb.host_os.walk(search_path):
       for filename in fnmatch.filter(filenames, '*_build.py'):
-        _BUILD_SCRIPTS.append(bb.host_os.path.join(root, filename))
-  logging.debug("Found %d build script(s)" % len(_BUILD_SCRIPTS))
-  for _ in range(len(_BUILD_SCRIPTS)):
-    fullname = pyimport.get_fullname_by_path(_BUILD_SCRIPTS[_])
+        BUILD_SCRIPTS.append(bb.host_os.path.join(root, filename))
+  logging.debug("Found %d build script(s)" % len(BUILD_SCRIPTS))
+  for build_script in BUILD_SCRIPTS:
+    fullname = pyimport.get_fullname_by_path(build_script)
+    logging.debug('Import script: %s as %s' % (build_script, fullname))
     __import__(fullname, globals(), locals(), [], -1)
 
-def _process_application():
+def extract_images():
+  images = []
   print 'Process application'
   if not bb.application.get_num_mappings():
     logging.debug("Application doesn't have any mapping")
@@ -178,13 +209,19 @@ def _process_application():
     oses = mapping.gen_oses()
     for os in oses:
       print ' *', os
-      _IMAGES.append(_Image(os))
+      images.append(Image(os))
+  return images
 
 def build():
   bb.next_stage()
-  _import_build_scripts()
-  _process_application()
-  print '%d image(s) to build' % len(_IMAGES)
-  for image in _IMAGES:
+  import_build_scripts()
+  images = extract_images()
+  print '%d image(s) to build' % len(images)
+  for image in images:
     binary = Binary(image)
+    BINARIES.append(binary)
+    logging.debug('Build binary %s' % binary)
     binary.build()
+    # If binary was successfully build we can associate it with root object
+    with binary.get_image().get_root() as bundle:
+      bundle.binary = binary

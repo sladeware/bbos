@@ -15,11 +15,6 @@
 __copyright__ = 'Copyright (c) 2012 Sladeware LLC'
 __author__ = 'Oleksandr Sviridenko'
 
-import imp
-import logging
-import os
-import sys
-
 import bb
 from bb.cli.command_line_interface import CLI
 from bb.cli.commands.command import Command
@@ -33,13 +28,6 @@ class build(Command):
   USES_BASEPATH = False
 
   def function(self):
-    build_script_path = os.path.join(bb.env['BB_APPLICATION_HOME'],
-                                     BUILD_SCRIPT_FILENAME)
-    if not os.path.exists(build_script_path):
-      logging.warning("Build script '%s' doesn't exist" % build_script_path)
-    else:
-      print "Run build script: %s" % build_script_path
-      imp.load_source('bb.build', build_script_path)
     builder.build()
 
   def options(self, config, optparser):

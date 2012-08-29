@@ -122,4 +122,5 @@ class Thread(bb.Object):
     return len(self.get_ports())
 
   def __str__(self):
-    return "Thread:%s[%s]" % (self.get_name(), self.get_runner())
+    return "%s[name=%s, runner=%s]" % (self.__class__.__name__, self.get_name(),
+                                       self.get_runner())

@@ -18,7 +18,8 @@ to propeller device via ``/dev/ttyUSB0`` serial port::
     loader.load("helloworld.binary")
 """
 
-__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
+__author__ = 'Oleksandr Sviridenko'
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,98 +33,95 @@ __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from bb.utils.spawn import spawn
-from bb.builder.errors import *
-from bb.builder.loaders import Loader
+from bb.lib.utils.spawn import spawn
+from bb.tools.loaders import Loader
 
 class BSTLLoader(Loader):
-    """This class represents BSTL loader and derived from
-    :class:`bb.builder.loaders.loader.Loader` class.
+  """This class represents BSTL loader and derived from
+  :class:`bb.builder.loaders.loader.Loader` class.
 
-    By default `device_filename` is ``None``, which forces BSTL to use
-    ``/dev/ttyUSB0`` device. You can change device manually later by
-    using :func:`BSTLLoader.set_device_filename`.
-    """
+  By default `device_filename` is ``None``, which forces BSTL to use
+  ``/dev/ttyUSB0`` device. You can change device manually later by
+  using :func:`BSTLLoader.set_device_filename`.
+  """
 
-    executables = {
-        'loader' : ['bstl']
-        }
+  executables = {
+    'loader' : ['bstl']
+    }
 
-    class Modes:
-        """This class contains available program modes:
+  """Available program modes:
 
-        ===================  =====
-        Mode                 Value
-        ===================  =====
-        RAM_ONLY             1
-        EEPROM_AND_SHUTDOWN  2
-        EEPROM_AND_RUN       3
-        ===================  ====="""
-        RAM_ONLY            = 1
-        EEPROM_AND_SHUTDOWN = 2
-        EEPROM_AND_RUN      = 3
+  ===================  =====
+  Mode                 Value
+  ===================  =====
+  RAM_ONLY             1
+  EEPROM_AND_SHUTDOWN  2
+  EEPROM_AND_RUN       3
+  ===================  =====
+  """
+  MODE_RAM_ONLY            = 1
+  MODE_EEPROM_AND_SHUTDOWN = 2
+  MODE_EEPROM_AND_RUN      = 3
 
-    DEFAULT_MODE = Modes.RAM_ONLY
-    """Represents default loader mode, which is
-    :const:`BSTLLoader.Modes.RAM_ONLY`."""
+  DEFAULT_MODE = MODE_RAM_ONLY
+  """Represents default loader mode, which is
+  :const:`BSTLLoader.Modes.RAM_ONLY`.
+  """
 
-    def __init__(self, verbose=False,
-                 device_filename=None,
-                 mode=None,
-                 high_speed=False):
-        Loader.__init__(self, verbose)
-        self.__mode = mode or self.DEFAULT_MODE
-        self.__device_filename = device_filename
-        # Setup high speed
-        self.__high_speed = None
-        self.disable_high_speed()
-        if high_speed:
-            self.enable_high_speed()
+  def __init__(self, verbose=False, device_filename=None, mode=None,
+               high_speed=False):
+    Loader.__init__(self, verbose)
+    self._mode = mode or self.DEFAULT_MODE
+    self._device_filename = device_filename
+    # Setup high speed
+    self._high_speed = None
+    self.disable_high_speed()
+    if high_speed:
+      self.enable_high_speed()
 
-    def set_mode(self, mode):
-        """Set program mode. See :class:`BSTLLoader.Modes`."""
-        self.__mode = mode
+  def set_mode(self, mode):
+    """Set program mode. See :class:`BSTLLoader.Modes`."""
+    self._mode = mode
 
-    def get_mode(self):
-        """Return current program mode."""
-        return self.__mode
+  def get_mode(self):
+    """Return current program mode."""
+    return self._mode
 
-    def set_device_filename(self, filename):
-        """Set serial device to use."""
-        self.__device_filename = filename
+  def set_device_filename(self, filename):
+    """Set serial device to use."""
+    self._device_filename = filename
 
-    def get_device_filename(self):
-        """Return device filename to use."""
-        return self.__device_filename
+  def get_device_filename(self):
+    """Return device filename to use."""
+    return self._device_filename
 
-    def enable_high_speed(self):
-        """Enable high speed."""
-        self.__high_speed = True
+  def enable_high_speed(self):
+    """Enable high speed."""
+    self._high_speed = True
 
-    def disable_high_speed(self):
-        """Disable high speed."""
-        self.__high_speed = False
+  def disable_high_speed(self):
+    """Disable high speed."""
+    self._high_speed = False
 
-    def is_high_speed_enabled(self):
-        """Whether high speed was enabled."""
-        return self.__high_speed
+  def is_high_speed_enabled(self):
+    """Whether high speed was enabled."""
+    return self._high_speed
 
-    def _load(self, filename, device_filename=None, program_mode=1):
-        loader = self.executables['loader']
-        flags = []
-        if device_filename:
-            self.set_device_filename(device_filename)
-        # Add high speed flag
-        if self.is_high_speed_enabled():
-            flags.append('-f')
-        # Add device flag
-        if self.get_device_filename():
-            flags.extend(['-d', self.get_device_filename()])
-        # Add mode flag
-        flags.extend(['-p', self.get_mode()])
-        # Spawn!
-        try:
-            spawn(loader + flags + [filename],
-                  verbose=self.verbose)
-        except BuilderExecutionError, msg:
-            raise LoaderError, msg
+  def _load(self, filename, device_filename=None, program_mode=1):
+    loader = self.executables['loader']
+    flags = []
+    if device_filename:
+      self.set_device_filename(device_filename)
+    # Add high speed flag
+    if self.is_high_speed_enabled():
+      flags.append('-f')
+    # Add device flag
+    if self.get_device_filename():
+      flags.extend(['-d', self.get_device_filename()])
+    # Add mode flag
+    flags.extend(['-p', self.get_mode()])
+    # Spawn!
+    try:
+      spawn(loader + flags + [filename], verbose=self.verbose)
+    except BuilderExecutionError, msg:
+      raise LoaderError, msg

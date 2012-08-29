@@ -32,10 +32,10 @@ except ImportError:
   exit(0)
 
 from bb.lib.utils.spawn import spawn
-from bb.tools.propler.image import *
-from bb.tools.propler.chips import *
-from bb.tools.propler.bitwise_op import *
-from bb.tools.propler.boards import *
+from bb.tools.loaders.propler.image import *
+from bb.tools.loaders.propler.chips import *
+from bb.tools.loaders.propler.bitwise_op import *
+from bb.tools.loaders.propler.boards import *
 
 DEFAULT_SERIAL_PORTS = {
   "posix": "/dev/ttyUSB0",

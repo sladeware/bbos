@@ -92,7 +92,7 @@ class Toolchain(EventManager):
       source = bb.host_os.path.abspath(source)
       if not bb.host_os.path.exists(source):
         raise Exception("Source doesn't exist: %s" % source)
-      print "Add source '%s'" % source
+      print "Add source %s" % source
       if not source in self._sources:
         self._sources.append(source)
       return source

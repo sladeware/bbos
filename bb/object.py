@@ -125,6 +125,10 @@ class Object(object):
   def __enter__(self):
     if bb.is_build_time_stage():
       return self._bundle
+    elif bb.is_load_time_stage():
+      if not self._bundle.binary:
+        raise Exception('No binary associated with this object')
+      return self._bundle.binary
     else:
       raise Exception()
 
