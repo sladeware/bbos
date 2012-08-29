@@ -23,7 +23,6 @@ Each of the eight 32-bit cores (called a cog) has a CPU which has access to 512
 """
 
 from bb.hardware.devices.processors.processor import Processor
-#from bb.hardware.devices.memory import RAM
 from bb.lib.utils import typecheck
 
 class PropellerP8X32A(Processor):
@@ -41,13 +40,13 @@ class PropellerP8X32A(Processor):
   class Core(Processor.Core):
     """Parallax Propeller processor's cog core.
 
-    A "cog" is a CPU contained within the Propeller processor. Cogs are
-    designed to run independently and concurrently within the same silicon
-    die. They have their own internal memory, configurable counters, video
-    generators and access to I/O pins as well as the system clock. All the
-    cogs in the processor share access to global resources sych as the main
-    RAM/ROM, synchronization resources and specialized monitoring
-    capabilities to know what the other cogs are doing.
+    A "cog" is a CPU contained within the Propeller processor. Cogs are designed
+    to run independently and concurrently within the same silicon die. They have
+    their own internal memory, configurable counters, video generators and
+    access to I/O pins as well as the system clock. All the cogs in the
+    processor share access to global resources sych as the main RAM/ROM,
+    synchronization resources and specialized monitoring capabilities to know
+    what the other cogs are doing.
     """
 
     def __init__(self, *args, **kwargs):
@@ -62,15 +61,9 @@ class PropellerP8X32A(Processor):
     cores = list()
     cores = [self.Core(self, id_=_) for _ in range(8)]
     Processor.__init__(self, 8, cores)
-    # Define Hub RAM Memory unit (in bytes)
-    self.__RAM = None#RAM(8192 * 32)
-
-  @property
-  def RAM(self):
-    return self.__RAM
 
   def __str__(self):
-    return "%s with %d cores" % (self.get_property("name").value, self.get_num_cores())
+    return "%s[cores=%d]" % (self.__class__.__name__, self.get_num_cores())
 
 # A few aliases to provide termin "cog"
 PropellerP8X32A.get_cog = PropellerP8X32A.get_core

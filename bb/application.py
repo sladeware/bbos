@@ -33,11 +33,11 @@ import bb
 from bb import networking
 from bb.lib.utils import typecheck
 
-_network = networking.Network()
+network = networking.Network()
 
 def get_network():
-  global _network
-  return _network
+  global network
+  return network
 
 def get_mappings():
   return get_network().get_nodes()

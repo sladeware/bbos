@@ -19,11 +19,12 @@ etc. and other hardware primitives such as notes.
 __copyright__ = 'Copyright (c) 2012 Sladeware LLC'
 __author__ = 'Oleksandr Sviridenko'
 
+import bb
 from bb.lib.utils import typecheck
 
 __all__ = ['Primitive', 'ElectronicPrimitive', 'Pin', 'Wire', 'Bus', 'Note']
 
-class Primitive(object):
+class Primitive(bb.Object):
   """This class is basic for any primitive.
 
   Each primitive has unique ID -- designator for identification that can be
@@ -77,6 +78,7 @@ class Primitive(object):
       self._value = new_value
 
   def __init__(self, designator=None, designator_format=None):
+    bb.Object.__init__(self)
     self._properties = dict()
     self._id = id(self)
     self._designator_format = None
@@ -214,7 +216,9 @@ class Primitive(object):
 
 class ElectronicPrimitive(Primitive):
   """This class represents basic electrical design primitive."""
-  pass
+
+  def __init__(self, designator=None, designator_format=None):
+    Primitive.__init__(self, designator, designator_format)
 
 class Pin(ElectronicPrimitive):
   """A pin is an electrical design primitive derived from
@@ -242,7 +246,8 @@ class Pin(ElectronicPrimitive):
 
   def set_electrical_type(self, type_):
     """Set electrical type. See :class:`Pin.ElectricalTypes` to find support
-    types."""
+    types.
+    """
     if not getattr(Pin.ElectricalTypes, type_):
       raise
     self._electrical_type = type_

@@ -27,10 +27,11 @@ from bb.lib.utils import typecheck
 from bb.os.thread import Thread
 from bb.os.kernel.schedulers import Scheduler, StaticScheduler
 
-class Kernel(object):
+class Kernel(bb.Object):
   """The heart of BB operating system."""
 
   def __init__(self, core=None, threads=[], scheduler=StaticScheduler()):
+    bb.Object.__init__(self)
     self._core = None
     self._ports = dict()
     self._threads = dict()
@@ -110,3 +111,7 @@ class Kernel(object):
 
   def get_num_ports(self):
     return len(self.get_ports())
+
+  def __str__(self):
+    return '%s[threads=%d, ports=%d]' % \
+        (self.__class__.__name__, self.get_num_threads(), self.get_num_ports())

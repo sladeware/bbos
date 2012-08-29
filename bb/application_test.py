@@ -12,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
-
 import bb
 from bb import application as bbapp
+from bb.testing import unittest
 
 class ApplicationTest(unittest.TestCase):
   def test_mapping_registration(self):
@@ -23,7 +22,7 @@ class ApplicationTest(unittest.TestCase):
     m1 = bb.Mapping("M1")
     m2 = bb.Mapping("M2")
     bbapp.register_mappings([m1, m2])
-    self.assertEqual(bbapp.get_num_mappings(), 2)
+    self.assert_equal(bbapp.get_num_mappings(), 2)
 
 if __name__ == '__main__':
   unittest.main()

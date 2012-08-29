@@ -26,19 +26,14 @@ class Sketch(object):
   def __init__(self):
     pass
 
-class Sketch(object):
-  G = networkx.Graph()
-
-  def __init__(self):
-    pass
-
 class Device(primitives.ElectronicPrimitive):
+  """Base device class."""
+
   DRIVER_CLASS=None
   DESIGNATOR_FORMAT="D%d"
 
   def __init__(self, designator=None, designator_format=None):
-    primitives.ElectronicPrimitive.__init__(self, designator,
-                                            designator_format)
+    primitives.ElectronicPrimitive.__init__(self, designator, designator_format)
 
   @property
   def G(self):

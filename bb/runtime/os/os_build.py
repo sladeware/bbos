@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import bb
-from bb import Builder
 
 autogen_dir_path = bb.host_os.path.join(bb.env["BB_HOME"], "bb", "runtime")
 

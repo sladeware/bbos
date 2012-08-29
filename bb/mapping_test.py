@@ -12,9 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
-
 import bb
+from bb.testing import unittest
 
 class MappingTest(unittest.TestCase):
   def test_thread_registration(self):
@@ -22,11 +21,11 @@ class MappingTest(unittest.TestCase):
     t2 = bb.os.Thread("T2")
     mapping = bb.Mapping("M1")
     mapping.register_threads([t1, t2])
-    self.assertEqual(len(mapping.get_threads()), 2)
+    self.assert_equal(len(mapping.get_threads()), 2)
 
   def test_name(self):
     mapping = bb.Mapping("M1")
-    self.assertEqual(mapping.get_name(), "M1")
+    self.assert_equal(mapping.get_name(), "M1")
 
 if __name__ == '__main__':
     unittest.main()

@@ -17,27 +17,27 @@ applications.
 
 ## Installing on Linux
 
-First, of all, you need to install prerequisites, BB requires Python 2.5
-or higher:
+First, of all, you need to install prerequisites. BB requires Python 2.5 or
+higher and a few other basic tools:
 
-       $ sudo apt-get install make git python python-networkx automake autoconf
+    $ sudo apt-get install make git python python-networkx automake autoconf
 
 Next, download the latest version of BB platform (see <http://bionicbunny.org>)
-to the place where it will live (e.g. /opt/bionicbunny/):
+to the place where it will live (e.g. `/opt/bbos/`):
 
-       $ git clone git@github.com:sladeware/bbos.git bionicbunny
+    $ git clone git@github.com:sladeware/bbos.git bbos
 
 Go to this directory and initiate configuration process:
 
-       $ cd /opt/bionicbunny/
-       $ ./configure
+    $ cd /opt/bbos/
+    $ ./configure
 
 Once configuration was successfully done, run installation as root:
 
-       $ sudo make install
+    $ sudo make install
 
 ## Development
 
 To run testing, go to the root BB directory and run:
 
-       $ python test.py
+    $ python test.py

@@ -27,17 +27,17 @@ class Processor(Device):
 
     def __init__(self, processor, id_=None):
       primitives.ElectronicPrimitive.__init__(self)
-      self._os = None
       self._processor = None
       self._set_processor(processor)
+      self._kernel = None
       if not id_ is None:
         self.set_id(id_)
 
-    def get_os(self):
-      return self._os
+    def set_kernel(self, kernel):
+      self._kernel = kernel
 
-    def set_os(self, os):
-      self._os = os
+    def get_kernel(self):
+      return self._kernel
 
     def get_processor(self):
       return self._processor
@@ -48,12 +48,19 @@ class Processor(Device):
       self._processor = processor
 
   def __init__(self, num_cores=0, cores=None):
+    self._os = None
     Device.__init__(self)
     if num_cores < 1:
       raise Exception("Number of cores must be greater than zero.")
     self._cores = [None] * num_cores
     if cores:
       self.set_cores(cores)
+
+  def get_os(self):
+    return self._os
+
+  def set_os(self, os):
+    self._os = os
 
   def set_cores(self, cores):
     if typecheck.is_sequence(cores) and len(cores):
@@ -90,10 +97,8 @@ class Processor(Device):
 
   def validate_core_id(self, id_):
     if id_ >= 0 and self.get_num_cores() <= id_:
-      raise Exception('The %s supports up to %d cores. '
-                      'You have too many: %d' %
-                      (self.__class__.__name__,
-                       self.get_num_cores(), id_))
+      raise Exception('The %s supports up to %d cores. You have too many: %d' %
+                      (self.__class__.__name__, self.get_num_cores(), id_))
 
   def get_cores(self):
     return self._cores
