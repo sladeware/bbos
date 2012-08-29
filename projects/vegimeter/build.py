@@ -5,7 +5,6 @@ __copyright__ = 'Copyright (c) 2012 Sladeware LLC'
 from vegimeter import vegimeter
 
 import bb
-from bb.application_build import Application
 
 vegimeter = bb.application.get_mapping('Vegimeter')
 if not vegimeter:
@@ -13,15 +12,18 @@ if not vegimeter:
   print "Nothing to build. Exit."
   exit(0)
 
-bb.Builder.rule(vegimeter.get_thread('UI'), {
-    'PropellerToolchain' : {
-      'srcs' : ('ui.c',)
+if vegimeter.get_thread('UI'):
+  with vegimeter.get_thread('UI') as target:
+    target.build_cases += {
+      'propeller' : {
+        'sources' : ('ui.c',)
+        }
       }
-    })
-bb.Builder.rule(vegimeter.get_thread('BUTTON_DRIVER'), {
-    'PropellerToolchain' : {
-      'srcs' : ('button_driver.c',)
-      }
-    })
 
-bb.Builder.set_application_class(Application)
+if vegimeter.get_thread('BUTTON_DRIVER'):
+  with vegimeter.get_thread('BUTTON_DRIVER') as target:
+    target.build_cases += {
+      'propeller' : {
+        'sources' : ('button_driver.c',)
+        }
+      }
