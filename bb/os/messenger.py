@@ -15,10 +15,12 @@
 __copyright__ = 'Copyright (c) 2012 Sladeware LLC'
 __author__ = 'Oleksandr Sviridenko'
 
-import bb
+import logging
+
+from bb.os.thread import Thread
 from bb.lib.utils import typecheck
 
-class Messenger(bb.Thread):
+class Messenger(Thread):
   """This class is a special form of thread, which allows to automatically
   provide an action for received message by using specified map of predefined
   handlers.
@@ -35,7 +37,10 @@ class Messenger(bb.Thread):
 
     class SerialMessenger(Messenger):
       NAME = 'MY_MESSENGER'
-      MESSAGE_HANDLERS = {'SERIAL_OPEN': 'serial_open_handler'}
+      MESSAGE_HANDLERS = {
+        'SERIAL_OPEN'  : 'serial_open_handler',
+        'SERIAL_CLOSE' : 'serial_close_handler'
+      }
 
   When a :class:`SerialMessenger` object receives a ``SERIAL_OPEN`` message,
   the message is directed to :func:`SerialMessenger.serial_open_handler`
@@ -50,10 +55,8 @@ class Messenger(bb.Thread):
 
   MESSAGE_HANDLERS = {}
 
-  def __init__(self, name, message_handlers={}):
-    if not typecheck.is_string(name):
-      raise TypeError('Messengers name has to be a string')
-    bb.Thread.__init__(name)
+  def __init__(self, name=None, message_handlers={}):
+    Thread.__init__(self, name)
     self._message_handlers = {}
     if message_handlers:
       self.add_message_handlers(message_handlers)
@@ -70,8 +73,8 @@ class Messenger(bb.Thread):
     if not typecheck.is_string(message) or not typecheck.is_string(handler):
       raise TypeError('message and handler both have to be strings')
     if not handler.endswith('_handler'):
-      print "WARNING: Message handler '%s' that handles message '%s' " \
-          "doesn't end with '_handler'" % (handler, message)
+      logging.warning("WARNING: Message handler '%s' that handles message '%s' "
+                      "doesn't end with '_handler'" % (handler, message))
     self._message_handlers[message] = handler
     return self
 

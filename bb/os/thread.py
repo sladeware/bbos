@@ -29,6 +29,7 @@ class Thread(bb.Object):
   """
 
   NAME = None
+  NAME_FORMAT = 'THREAD_%d'
   RUNNER = None
   PORTS = []
 
@@ -37,37 +38,37 @@ class Thread(bb.Object):
     self._name = None
     self._runner = None
     self._ports = []
-    # Initialize thread name
     if name:
       self.set_name(name)
-    elif hasattr(self, "NAME"):
-      self.set_name(getattr(self, "NAME"))
+    elif hasattr(self, 'NAME'):
+      name = getattr(self, 'NAME', None)
+      self.set_name(name)
     else:
       raise Exception("Name wasn't provided")
-    # Initialize thread runner
     if runner:
       self.set_runner(runner)
     elif hasattr(self, "RUNNER"):
       self._runner = self.RUNNER
     else:
       raise Exception("Runner wasn't provided")
-    # Ports
-    if hasattr(self, "PORTS"):
+    if hasattr(self, 'PORTS'):
       self.add_ports(self.PORTS)
     if ports:
       self.add_ports(ports)
 
   def set_runner(self, runner):
     if not typecheck.is_string(runner):
-      raise TypeError("Must be string")
+      raise TypeError('Must be string')
     self._runner = runner
 
   def get_runner(self):
     return self._runner
 
   def set_name(self, name):
+    if not name:
+      raise TypeError('Name cannot be None value')
     if not typecheck.is_string(name):
-      raise TypeError("Must be string")
+      raise TypeError('Must be string')
     self._name = name
 
   def get_name(self):

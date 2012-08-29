@@ -63,7 +63,6 @@ class Mapping(object):
                thread_distributor=roundrobin_thread_distributor):
     self._name = None
     self._threads = dict()
-    self._drivers = []
     self._os_class = None
     self._is_simulation_mode = False
     self._board = None
@@ -95,14 +94,6 @@ class Mapping(object):
 
   def get_thread_distributor(self):
     return self._thread_distributor
-
-  def register_driver(self, driver):
-    if not isinstance(driver, bb.os.Driver):
-      raise Exception('Must be derived from bb.os.Driver')
-    self._drivers.append(driver)
-
-  def get_drivers(self):
-    return self._drivers
 
   def register_thread(self, thread):
     if not isinstance(thread, bb.os.Thread):

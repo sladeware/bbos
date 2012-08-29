@@ -62,7 +62,7 @@ if not vegimeter_board:
 vegimeter = bb.Mapping('Vegimeter', board=vegimeter_board)
 #vegimeter.register_thread(bb.os.Thread('UI', 'ui_runner'))
 vegimeter.register_thread(bb.os.Thread('BUTTON_DRIVER', 'button_driver_runner'))
-vegimeter.register_driver(ButtonDriver())
+vegimeter.register_thread(ButtonDriver())
 
 def bill_of_materials():
   bill_of_materials = dict()

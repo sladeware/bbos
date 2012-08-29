@@ -68,6 +68,10 @@ class Image(networkx.Graph):
         bundles.append(bundle)
     return bundles
 
+def all_subclasses(cls):
+    return list(cls.__bases__) + [g for s in cls.__bases__
+                                   for g in all_subclasses(s)]
+
 class Binary(object):
 
   def __init__(self, image):
@@ -93,6 +97,7 @@ class Binary(object):
       available = available.intersection(supported)
       if not available:
         print "No common toolchains for an objects were found"
+        print "Stoped on object", bundle
         return None
     return list(available)
 
@@ -126,31 +131,41 @@ class Binary(object):
     compiler.verbose = bb.CLI.config.get_option('verbose', 1)
     compiler.set_output_filename(self.get_filename())
 
+  def _build_target(self, target, obj):
+    if not target.build_cases:
+      return
+    logging.debug("Apply %s to %s" % (target, obj))
+    build_case = target.build_cases[self._toolchain.get_name()]
+    if not build_case:
+      return
+    build_script_file = inspect.getsourcefile(build_case.owner)
+    build_script_dirname = os.path.dirname(build_script_file)
+    for source in build_case['sources']:
+      if typecheck.is_function(source):
+        source = source(obj)
+      # If source is None, skip it
+      if not source:
+        continue
+      if not typecheck.is_string(source):
+        raise TypeError("unknown source type: %s" % source)
+      if not os.path.exists(source):
+        alternative_source = os.path.join(build_script_dirname, source)
+        if not os.path.exists(alternative_source):
+          logging.warning("File '%s' cannot be found" % source)
+          continue
+        source = alternative_source
+      self._toolchain.add_source(os.path.abspath(source))
+
   def _build_object(self, obj):
     logging.debug("Build %s" % obj)
-    with obj as target:
-      if not target.build_cases:
-        return
-      build_case = target.build_cases[self._toolchain.get_name()]
-      if not build_case:
-        return
-      build_script_file = inspect.getsourcefile(build_case.owner)
-      build_script_dirname = os.path.dirname(build_script_file)
-      for source in build_case['sources']:
-        if typecheck.is_function(source):
-          source = source(obj)
-        # If source is None, skip it
-        if not source:
-          continue
-        if not typecheck.is_string(source):
-          raise TypeError("unknown source type: %s" % source)
-        if not os.path.exists(source):
-          alternative_source = os.path.join(build_script_dirname, source)
-          if not os.path.exists(alternative_source):
-            logging.warning("File '%s' cannot be found" % source)
-            continue
-          source = alternative_source
-        self._toolchain.add_source(os.path.abspath(source))
+    parents = all_subclasses(obj.__class__)
+    family = list(parents) + [obj]
+    print family
+    for relative in family:
+      if relative.__class__ != bb.Object.__metaclass__ and not issubclass(relative.__class__, bb.Object):
+        continue
+      with relative as target:
+        self._build_target(target, obj)
 
   def build(self):
     available_toolchains = self.get_available_toolchains()
