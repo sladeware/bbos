@@ -15,10 +15,11 @@
 __copyright__ = 'Copyright (c) 2012 Sladeware LLC'
 __author__ = 'Oleksandr Sviridenko'
 
+import bb
 from bb.lib.utils import typecheck
 from bb.os.port import Port
 
-class Thread(object):
+class Thread(bb.Object):
   """The thread is an atomic unit action within the BB operating system, which
   describes application specific actions wrapped into a single context of
   execution.
@@ -32,6 +33,7 @@ class Thread(object):
   PORTS = []
 
   def __init__(self, name=None, runner=None, ports=[]):
+    bb.Object.__init__(self)
     self._name = None
     self._runner = None
     self._ports = []
@@ -120,4 +122,5 @@ class Thread(object):
     return len(self.get_ports())
 
   def __str__(self):
-    return "Thread:%s[%s]" % (self.get_name(), self.get_runner())
+    return "%s[name=%s, runner=%s]" % (self.__class__.__name__, self.get_name(),
+                                       self.get_runner())

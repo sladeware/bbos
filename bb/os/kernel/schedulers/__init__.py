@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__copyright__ = 'Copyyright (c) 2012 Sladeware LLC'
+__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
 __author__ = 'Oleksandr Sviridenko'
 
 from bb.os.kernel.schedulers.scheduler import Scheduler

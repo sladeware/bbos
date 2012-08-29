@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+__author__ = 'Oleksandr Sviridenko'
+
 import inspect
 import types
 
