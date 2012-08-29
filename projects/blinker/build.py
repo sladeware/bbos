@@ -5,16 +5,18 @@ __author__ = 'Oleksandr Sviridenko'
 
 import bb
 
-import blinking
+import blinker
 
-with blinking.blinker.get_thread('B0') as target:
-  targe.build_cases += {
+blinker = bb.application.get_mapping('Blinker')
+
+with blinker.get_thread('B0') as target:
+  target.build_cases += {
     'propeller': {
       'sources': ('b0.c',)
       }
     }
 
-with blinking.blinker.get_thread('B1') as target:
+with blinker.get_thread('B1') as target:
   target.build_cases += {
     'propeller': {
       'sources': ('b1.c',)
