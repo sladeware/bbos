@@ -38,13 +38,11 @@ if USE_FRITZING:
   # Propeller P8X32A-Q44 microchip. Thus we need to add them manually.
   board = vegimeter_device.find_element('QSP1')
   processor = board.add_element(PropellerP8X32A_Q44())
-  processor.set_designator('PRCR1')
+  processor.set_designator('U1')
 else:
   from bb.hardware.devices.boards import P8X32A_QuickStartBoard
   board = P8X32A_QuickStartBoard()
   board.set_designator('QSP1')
-  processor = board.add_element(PropellerP8X32A_Q44())
-  processor.set_designator('PRCR1')
   vegimeter_device = board
 
 vegimeter_board = None
@@ -78,7 +76,7 @@ def bill_of_materials():
 if __name__ == '__main__':
   print 'Vegimeter bill of materials:'
   for name, amount in bill_of_materials().items():
-    print "\t%d %s(s)" % (amount, name)
+    print " %3d %s(s)" % (amount, name)
 
 """
 ## The next snippet shows all the pins
