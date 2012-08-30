@@ -14,11 +14,8 @@
 
 __copyright__ = 'Copyright (c) 2012 Sladeware LLC'
 
-import time
-import random
 import re
 import os.path
-import getpass
 
 import bb
 from bb.hardware.primitives import Pin
