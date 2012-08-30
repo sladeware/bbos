@@ -15,7 +15,6 @@
  */
 
 /* Application configs */
-#include "button_driver.h"
 #include "vegimeter_config.h"
 
 #include <bb/os.h>
@@ -27,7 +26,8 @@
 
 static int8_t buttons_state = 0;
 
-void button_driver_runner()
+void
+control_panel_runner()
 {
   int8_t i;
   uint16_t vegimeter_buttons;
