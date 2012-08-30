@@ -15,8 +15,10 @@
 __copyright__ = 'Copyright (c) 2012 Sladeware LLC'
 __author__ = 'Oleksandr Sviridenko'
 
-import bb
+from bb.os.messenger import Messenger
 
-class Driver(bb.Object):
-  def __init__(self):
-    bb.Object.__init__(self)
+class Driver(Messenger):
+  NAME_FORMAT = 'DRIVER_%d'
+
+  def __init__(self, name=None):
+    Messenger.__init__(self, name)

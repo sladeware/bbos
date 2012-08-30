@@ -17,6 +17,7 @@ from __future__ import absolute_import
 import os as host_os
 
 from bb import config # sorry, bus this goes first
+from bb import buildtime
 from bb.object import Object
 from bb import application
 from bb import os
