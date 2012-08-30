@@ -18,6 +18,6 @@ with vegimeter.get_thread('UI') as target:
 with vegimeter.get_thread('CONTROL_PANEL') as target:
   target.build_cases += {
     'propeller' : {
-      'sources' : ('button_driver.c',)
+      'sources' : ('control_panel.c',)
       }
     }
