@@ -61,7 +61,8 @@ vegimeter.register_thread(bb.os.Thread('CONTROL_PANEL', 'control_panel_runner'))
 # automatically.
 from bb.os.drivers.gpio.button_driver import ButtonDriver
 from bb.os.drivers.processors.propeller_p8x32 import ShMemDriver
-vegimeter.register_threads([ButtonDriver(), ShMemDriver()])
+from bb.os.drivers.onewire.slaves import DS18B20Driver
+vegimeter.register_threads([ButtonDriver(), ShMemDriver(), DS18B20Driver()])
 
 def bill_of_materials():
   bill_of_materials = dict()

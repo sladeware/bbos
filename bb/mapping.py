@@ -97,7 +97,7 @@ class Mapping(object):
 
   def register_thread(self, thread):
     if not isinstance(thread, bb.os.Thread):
-      raise Exception("Must be derived from bb.os.Thread")
+      raise Exception("Must be derived from bb.os.Thread: %s", thread)
     if thread.get_name() is None:
       frmt = thread.get_name_format()
       # TODO(team): improve name generation within a mapping

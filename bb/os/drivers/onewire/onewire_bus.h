@@ -23,19 +23,20 @@
 
 #include <bb/os.h>
 #include <bb/os/kernel/delay.h>
-#include <bb/os/drivers/processors/propeller_p8x32/pins.h>
+#include BBOS_PROCESSOR_FILE(pins.h)
 
-/*** ROM commands *************************************************************/
-/* Read the 64-bit ID of the 1-Wire device;serial num; CRC */
-#define OW_READ_ROM 0x33
-/* Look for specific device */
-#define OW_MATCH_ROM 0x55
-/* Skip rom (one device)  */
-#define OW_SKIP_ROM 0xCC
-/* Search */
-#define OW_SEARCH_ROM 0xF0
-#define OW_ALARM_SEARCH_ROM 0xEC
-/******************************************************************************/
+/* ROM commands */
+enum {
+  /* Read the 64-bit ID of the 1-Wire device;serial num; CRC */
+  OW_READ_ROM = 0x33,
+  /* Look for specific device */
+  OW_MATCH_ROM = 0x55,
+  /* Skip rom (one device)  */
+  OW_SKIP_ROM = 0xCC,
+  /* Search */
+  OW_SEARCH_ROM = 0xF0,
+  OW_ALARM_SEARCH_ROM = 0xEC,
+};
 
 /* Remember that pins start at 0 */
 #define OW_GET_INPUT(pin)  GET_INPUT(pin)
