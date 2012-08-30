@@ -14,9 +14,9 @@
 
 __copyright__ = 'Copyright (c) 2012 Sladeware LLC'
 
-from vegimeter import vegimeter
-
 import bb
+
+from vegimeter import vegimeter
 
 vegimeter = bb.application.get_mapping('Vegimeter')
 

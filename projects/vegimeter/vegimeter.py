@@ -57,7 +57,6 @@ if not vegimeter_board:
 vegimeter = bb.Mapping('Vegimeter', board=vegimeter_board)
 vegimeter.register_thread(bb.os.Thread('UI', 'ui_runner'))
 vegimeter.register_thread(bb.os.Thread('CONTROL_PANEL', 'control_panel_runner'))
-
 # TODO(team): the following (and others) drivers has to be connected
 # automatically.
 from bb.os.drivers.gpio.button_driver import ButtonDriver
