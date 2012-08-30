@@ -21,13 +21,13 @@ import os.path
 import getpass
 
 import bb
-from bb.os.drivers.gpio.button_driver import ButtonDriver
 from bb.hardware.primitives import Pin
 from bb.hardware.devices.processors.propeller_p8x32 import PropellerP8X32A_Q44
 
+# Temporary flag in order to hide fritzing support from users.
+USE_FRITZING = False
 
-use_fritzing = False
-if use_fritzing:
+if USE_FRITZING:
   from bb.third_party import fritzing
 
   # First of all you need to setup Fritzing
@@ -60,9 +60,14 @@ if not vegimeter_board:
   exit(0)
 
 vegimeter = bb.Mapping('Vegimeter', board=vegimeter_board)
-#vegimeter.register_thread(bb.os.Thread('UI', 'ui_runner'))
+vegimeter.register_thread(bb.os.Thread('UI', 'ui_runner'))
 vegimeter.register_thread(bb.os.Thread('BUTTON_DRIVER', 'button_driver_runner'))
-vegimeter.register_thread(ButtonDriver())
+
+# TODO(team): the following (and others) drivers has to be connected
+# automatically.
+from bb.os.drivers.gpio.button_driver import ButtonDriver
+from bb.os.drivers.processors.propeller_p8x32 import ShMemDriver
+vegimeter.register_threads([ButtonDriver(), ShMemDriver()])
 
 def bill_of_materials():
   bill_of_materials = dict()

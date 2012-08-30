@@ -69,6 +69,7 @@ with PropellerP8X32A as bundle:
   bundle.build_cases.update({
     'propeller': {
       'sources': (gen_main_c, gen_main_h, update_bbos_config_h,
-                  'propeller_p8x32/cog.c', 'propeller_p8x32/delay.c')
+                  'propeller_p8x32/cog.c', 'propeller_p8x32/delay.c',
+                  'propeller_p8x32/sio.c')
       }
     })

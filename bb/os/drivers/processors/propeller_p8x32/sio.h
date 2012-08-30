@@ -51,7 +51,7 @@ int8_t sio_wait_byte_with_timeout(int16_t secs);
 int8_t sio_wait_byte();
 
 void sio_put_byte(int8_t c);
-
+#define SIO_PRINTF_STRING_SUPPORT 1
 #if defined(SIO_PRINTF_STRING_SUPPORT)
 void sio_put_string(int8_t* s);
 #endif
@@ -64,7 +64,7 @@ void sio_printf(const int8_t* format, ...);
 
 /* By default SIO_LOCK_PRINTING is enabled */
 //#define SIO_LOCK_PRINTING
-#define SIO_COGSAFE_PRINTING /* <! */
+//#define SIO_COGSAFE_PRINTING /* <! */
 
 #ifdef SIO_COGSAFE_PRINTING
 /*

@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
+/* Application configs */
+#include "button_driver.h"
+#include "vegimeter_config.h"
+
 #include <bb/os.h>
 #include <bb/os/kernel/delay.h>
 #include <bb/os/drivers/gpio/button.h>
 #include BBOS_PROCESSOR_FILE(shmem.h)
 #include BBOS_PROCESSOR_FILE(sio.h)
 #include BBOS_PROCESSOR_FILE(pins.h)
-/* Application configs */
-#include "button_driver.h"
 
 static int8_t buttons_state = 0;
 
@@ -34,9 +36,9 @@ void button_driver_runner()
 
   /* Read, update and store pressed buttons on vegimeter device.
      We need just one byte from the button mask. */
-  //vegimeter_buttons = shmem_read_byte(VEGIMETER_BUTTONS_ADDR);
+  vegimeter_buttons = shmem_read_byte(VEGIMETER_BUTTONS_ADDR);
   vegimeter_buttons = (int8_t)are_buttons_pressed(button_mask); /* |=?*/
-  //shmem_write_byte(VEGIMETER_BUTTONS_ADDR, vegimeter_buttons);
+  shmem_write_byte(VEGIMETER_BUTTONS_ADDR, vegimeter_buttons);
   for (i = 0; i < 8; i++) {
     if (vegimeter_buttons & GET_MASK(i)) {
       buttons_state ^= GET_MASK(i);
@@ -45,17 +47,3 @@ void button_driver_runner()
     }
   }
 }
-
-#if 0
-int
-xmain()
-{
-  /* Initialize shared memory area. */
-  //shmem_write_byte(VEGIMETER_BUTTONS_ADDR, 0);
-
-  /* Initialize SIO driver for communication purposes */
-  sio_init();
-
-  return 0;
-}
-#endif

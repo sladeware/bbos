@@ -134,7 +134,7 @@ class Binary(object):
   def _build_target(self, target, obj):
     if not target.build_cases:
       return
-    logging.debug("Apply %s to %s" % (target, obj))
+    #logging.debug("Apply %s to %s" % (target, obj))
     build_case = target.build_cases[self._toolchain.get_name()]
     if not build_case:
       return
@@ -160,7 +160,6 @@ class Binary(object):
     logging.debug("Build %s" % obj)
     parents = all_subclasses(obj.__class__)
     family = list(parents) + [obj]
-    print family
     for relative in family:
       if relative.__class__ != bb.Object.__metaclass__ and not issubclass(relative.__class__, bb.Object):
         continue

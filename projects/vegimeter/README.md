@@ -10,7 +10,7 @@ optimize their nutrient transport.
 Please visit <http://bionicbunny.org/projects/vegimeter/> to learn more
 about Vegimeter device
 
-## How to build it and power
+## How to compile it and load
 
 Build command:
 
