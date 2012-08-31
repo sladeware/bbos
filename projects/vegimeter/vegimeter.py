@@ -18,15 +18,13 @@ import re
 import os.path
 
 import bb
-from bb.hardware.primitives import Pin
-from bb.hardware.devices.processors.propeller_p8x32 import PropellerP8X32A_Q44
 
 # Temporary flag in order to hide fritzing support from users.
 USE_FRITZING = False
 
 if USE_FRITZING:
   from bb.third_party import fritzing
-
+  from bb.hardware.devices.processors.propeller_p8x32 import PropellerP8X32A_Q44
   # First of all you need to setup Fritzing
   # NOTE(team): developer can use fritzing.set_home_dir() to setup home
   # directory directly.
@@ -62,7 +60,7 @@ vegimeter.register_thread(bb.os.Thread('CONTROL_PANEL', 'control_panel_runner'))
 from bb.os.drivers.gpio.button_driver import ButtonDriver
 from bb.os.drivers.processors.propeller_p8x32 import ShMemDriver
 from bb.os.drivers.onewire.slaves import DS18B20Driver
-vegimeter.register_threads([ButtonDriver(), ShMemDriver(), DS18B20Driver()])
+vegimeter.register_threads([ButtonDriver(), ShMemDriver()])
 
 def bill_of_materials():
   bill_of_materials = dict()
@@ -79,6 +77,7 @@ if __name__ == '__main__':
     print " %3d %s(s)" % (amount, name)
 
 """
+from bb.hardware.primitives import Pin
 ## The next snippet shows all the pins
 #pins = tempsensor1.find_elements(Pin)
 #for pin in pins:

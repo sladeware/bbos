@@ -96,10 +96,18 @@ class Mapping(object):
     return self._thread_distributor
 
   def register_thread(self, thread):
+    """Register thread by its name. The name has to be unique within this
+    mapping. If thread doesn't have a name, mapping will try to use its name
+    format (see Thread.get_name_format()) to generate one.
+    """
     if not isinstance(thread, bb.os.Thread):
       raise Exception("Must be derived from bb.os.Thread: %s", thread)
     if thread.get_name() is None:
       frmt = thread.get_name_format()
+      if not frmt:
+        logging.warning("Thread %s doesn't have a name and the format cannot be"
+                        "obtained to generate one." % thread)
+        return
       # TODO(team): improve name generation within a mapping
       thread.set_name(frmt % self.get_num_threads())
     self._threads[ thread.get_name() ] = thread
@@ -146,7 +154,7 @@ class Mapping(object):
 
   def set_os_class(self, os_class):
     if not issubclass(os_class, bb.os.OS):
-      raise TypeError("Must be derived from bbos.OS class: %s" % os_class)
+      raise TypeError("Must be derived from bb.os.OS class: %s" % os_class)
     self._os_class = os_class
 
   def get_os_class(self):

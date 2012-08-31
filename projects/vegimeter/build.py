@@ -22,14 +22,10 @@ vegimeter = bb.application.get_mapping('Vegimeter')
 
 with vegimeter.get_thread('UI') as target:
   target.build_cases += {
-    'propeller' : {
-      'sources' : ('ui.c',)
-      }
-    }
+    'propeller': { 'sources': ('ui.c',) }
+  }
 
 with vegimeter.get_thread('CONTROL_PANEL') as target:
   target.build_cases += {
-    'propeller' : {
-      'sources' : ('control_panel.c',)
-      }
-    }
+    'propeller': { 'sources': ('control_panel.c',) }
+  }
