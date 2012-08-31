@@ -19,6 +19,4 @@ from bb.hardware.devices import Device
 
 class LED(Device):
   DESIGNATOR_FORMAT = "LED%d"
-
-  def __init__(self):
-    Device.__init__(self)
+  PROPERTIES = (Device.Property('name', 'LED'),)

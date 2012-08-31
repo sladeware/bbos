@@ -14,16 +14,22 @@
 
 from __future__ import absolute_import
 
+__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
 __author__ = 'Oleksandr Sviridenko'
 
 import unittest
 
 class TestCase(unittest.TestCase):
   assert_equal = unittest.TestCase.assertEqual
+  assert_not_equal = unittest.TestCase.assertNotEqual
   assert_is_not = unittest.TestCase.assertIsNot
+  assert_is_none = unittest.TestCase.assertIsNone
+  assert_is_not_none = unittest.TestCase.assertIsNotNone
 
   def setup(self):
     pass
 
   def setUp(self):
     return self.setup()
+
+main = unittest.main

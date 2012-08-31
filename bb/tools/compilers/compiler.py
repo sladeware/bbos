@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__copyright__ = "Copyright (c) 2012 Sladeware LLC"
-__author__ = "Oleksandr Sviridenko"
+__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
+__author__ = 'Oleksandr Sviridenko'
 
-import types
+import logging
 
 from bb.lib.utils.spawn import which, ExecutionError
+from bb.lib.utils import typecheck
 
 class ProgramHandler(object):
   EXECUTABLES = dict()
@@ -28,38 +29,38 @@ class ProgramHandler(object):
     self.set_executables(self.EXECUTABLES)
 
   def set_executables(self, *args, **kargs):
-    """Define the executables (and options for them) that will be run
-    to perform the various stages of compilation. The exact set of
-    executables that may be specified here depends on the compiler
-    class (via the :const:`Compiler.EXECUTABLES` class attribute).
-    For example they may have the following view:
+    """Define the executables (and options for them) that will be run to perform
+    the various stages of compilation. The exact set of executables that may be
+    specified here depends on the compiler class (via the
+    :const:`ProgramHandler.EXECUTABLES` class attribute). For example they may
+    have the following view:
 
     * `compiler` --- the C/C++ compiler
     * `linker_so` --- linker used to create shared objects and libraries
     * `linker_exe` --- linker used to create binary executables
     * `archiver` --- static library creator
 
-    On platforms with a command-line (Unix, DOS/Windows), each of these
-    is a string that will be split into executable name and (optional)
-    list of arguments. (Splitting the string is done similarly to how
-    Unix shells operate: words are delimited by spaces, but quotes and
-    backslashes can override this. See 'distutils.util.split_quoted()'.)
+    On platforms with a command-line (Unix, DOS/Windows), each of these is a
+    string that will be split into executable name and (optional) list of
+    arguments. (Splitting the string is done similarly to how Unix shells
+    operate: words are delimited by spaces, but quotes and backslashes can
+    override this.)
     """
-    if type(args[0]) is types.DictType:
+    if typecheck.is_dict(args[0]):
       kargs.update(args[0])
     # Note that some CCompiler implementation classes will define class
-    # attributes 'cpp', 'cc', etc. with hard-coded executable names;
-    # this is appropriate when a compiler class is for exactly one
-    # compiler/OS combination (e.g. MSVCCompiler). Other compiler
-    # classes (UnixCCompiler, in particular) are driven by information
-    # discovered at run-time, since there are many different ways to do
-    # basically the same things with Unix C compilers.
+    # attributes 'cpp', 'cc', etc. with hard-coded executable names; this is
+    # appropriate when a compiler class is for exactly one compiler/OS
+    # combination (e.g. MSVCCompiler). Other compiler classes (UnixCCompiler, in
+    # particular) are driven by information discovered at run-time, since there
+    # are many different ways to do basically the same things with Unix C
+    # compilers.
     for key in kargs.keys():
       self.set_executable(key, kargs[key])
 
   def set_executable(self, key, value):
-    """Define the executable (and options for it) that will be run
-    to perform some compilation stage.
+    """Define the executable (and options for it) that will be run to perform
+    some compilation stage.
     """
     if isinstance(value, str):
       self._executables[key] = split_quoted(value)
@@ -73,14 +74,14 @@ class ProgramHandler(object):
     return self._executables.get(name, None)
 
   def check_executables(self):
-    """Check compiler executables. All of them has to exist. Print warning
-    if some executable was specified but not defined.
+    """Check compiler executables. All of them has to exist. Print warning if
+    some executable was specified but not defined.
     """
     if not self._executables:
       return
     for (name, cmd) in self._executables.items():
       if not cmd:
-        print "WARNING: undefined executable '%s'" % name
+        logging.warning("Undefined executable '%s'" % name)
         continue
       if not which(cmd[0]):
         raise ExecutionError("executable '%s' can not be found" % cmd[0])
@@ -89,12 +90,12 @@ class Compiler(ProgramHandler):
   """The basic compiler class."""
 
   def __init__(self, verbose=0, dry_run=False):
+    ProgramHandler.__init__(self)
     self.verbose = verbose
     self.dry_run = dry_run
-        # A common output directory for objects, libraries, etc.
+    # A common output directory for objects, libraries, etc.
     self.output_dir = ""
     self.output_filename = ""
-    ProgramHandler.__init__(self)
 
   def get_language(self, *arg_list, **arg_dict):
     raise NotImplemented
@@ -116,13 +117,13 @@ class Compiler(ProgramHandler):
 
   def set_output_dir(self, output_dir):
     """Set output directory."""
-    if not output_dir or type(output_dir) is not types.StringType:
-      raise types.TypeError("'output_dir' must be a string or None")
+    if not output_dir or not typecheck.is_string(output_dir):
+      raise TypeError("'output_dir' must be a string or None")
     else:
       self.output_dir = output_dir
 
   def _setup_compile(self, output_dir):
     if output_dir is None:
       outputdir = self.output_dir
-    elif type(output_dir) is not types.StringType:
-      raise types.TypeError("'output_dir' must be a string or None")
+    elif not typecheck.is_string(output_dir):
+      raise TypeError("'output_dir' must be a string or None")

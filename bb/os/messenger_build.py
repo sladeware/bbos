@@ -12,6 +12,15 @@ def gen_runner_c(messenger):
   g = CGenerator().create(file_path)
   g.writeln('void %s()' % messenger.get_runner())
   g.writeln('{')
+  g.writeln('#if 0')
+  g.writeln('  switch (command) {')
+  for command in messenger.get_supported_commands():
+    handler = messenger.get_message_handler(command)
+    g.writeln('   case %s:' % command)
+    g.writeln('     %s();' % handler)
+    g.writeln('     break;')
+  g.writeln('  }')
+  g.writeln('#endif')
   g.writeln('}')
   g.close()
   return file_path

@@ -28,4 +28,4 @@ class MappingTest(unittest.TestCase):
     self.assert_equal(mapping.get_name(), "M1")
 
 if __name__ == '__main__':
-    unittest.main()
+  unittest.main()

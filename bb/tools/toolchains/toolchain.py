@@ -19,29 +19,9 @@ import bb
 from bb.lib.utils import typecheck
 from bb.tools.compilers import Compiler
 
-class EventManager(object):
-  def __init__(self):
-    self._event_listeners = list()
-
-  def add_event_listener(self, event_listener):
-    self._event_listeners.append(event_listener)
-
-  @classmethod
-  def event(klass, event):
-    def _(self, *args, **kargs):
-      for listener in self._event_listeners:
-        action = getattr(listener, "on_" + event.__name__, None)
-        if action:
-          action()
-      return event(self, *args, **kargs)
-    return _
-
-class Toolchain(EventManager):
-  class EventListener(object):
-    pass
+class Toolchain(object):
 
   def __init__(self, sources=[], verbose=False, compiler=None, loader=None):
-    EventManager.__init__(self)
     if not typecheck.is_sequence(sources):
       raise Exception("Must be sequence")
     self._verbose = verbose
@@ -119,7 +99,6 @@ class Toolchain(EventManager):
   def loader(self):
     return self.get_loader()
 
-  #@EventManager.event
   def build(self, sources=[], output_dir=None, verbose=0, dry_run=None,
             *args, **kvargs):
     """Start building process."""
