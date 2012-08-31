@@ -14,22 +14,17 @@
 
 __copyright__ = 'Copyright (c) 2012 Sladeware LLC'
 
-import time
-import random
 import re
 import os.path
-import getpass
 
 import bb
-from bb.hardware.primitives import Pin
-from bb.hardware.devices.processors.propeller_p8x32 import PropellerP8X32A_Q44
 
 # Temporary flag in order to hide fritzing support from users.
 USE_FRITZING = False
 
 if USE_FRITZING:
   from bb.third_party import fritzing
-
+  from bb.hardware.devices.processors.propeller_p8x32 import PropellerP8X32A_Q44
   # First of all you need to setup Fritzing
   # NOTE(team): developer can use fritzing.set_home_dir() to setup home
   # directory directly.
@@ -41,13 +36,11 @@ if USE_FRITZING:
   # Propeller P8X32A-Q44 microchip. Thus we need to add them manually.
   board = vegimeter_device.find_element('QSP1')
   processor = board.add_element(PropellerP8X32A_Q44())
-  processor.set_designator('PRCR1')
+  processor.set_designator('U1')
 else:
   from bb.hardware.devices.boards import P8X32A_QuickStartBoard
   board = P8X32A_QuickStartBoard()
   board.set_designator('QSP1')
-  processor = board.add_element(PropellerP8X32A_Q44())
-  processor.set_designator('PRCR1')
   vegimeter_device = board
 
 vegimeter_board = None
@@ -61,18 +54,18 @@ if not vegimeter_board:
 
 vegimeter = bb.Mapping('Vegimeter', board=vegimeter_board)
 vegimeter.register_thread(bb.os.Thread('UI', 'ui_runner'))
-vegimeter.register_thread(bb.os.Thread('BUTTON_DRIVER', 'button_driver_runner'))
-
+vegimeter.register_thread(bb.os.Thread('CONTROL_PANEL', 'control_panel_runner'))
 # TODO(team): the following (and others) drivers has to be connected
 # automatically.
 from bb.os.drivers.gpio.button_driver import ButtonDriver
 from bb.os.drivers.processors.propeller_p8x32 import ShMemDriver
+from bb.os.drivers.onewire.slaves import DS18B20Driver
 vegimeter.register_threads([ButtonDriver(), ShMemDriver()])
 
 def bill_of_materials():
   bill_of_materials = dict()
   for element in vegimeter_device.get_elements():
-    name = element.get_property_value("name")
+    name = element.get_property_value('name')
     if name not in bill_of_materials:
       bill_of_materials[name] = 0
     bill_of_materials[name] += 1
@@ -81,9 +74,10 @@ def bill_of_materials():
 if __name__ == '__main__':
   print 'Vegimeter bill of materials:'
   for name, amount in bill_of_materials().items():
-    print "\t%d %s(s)" % (amount, name)
+    print " %3d %s(s)" % (amount, name)
 
 """
+from bb.hardware.primitives import Pin
 ## The next snippet shows all the pins
 #pins = tempsensor1.find_elements(Pin)
 #for pin in pins:

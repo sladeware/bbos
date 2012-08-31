@@ -12,7 +12,8 @@ import vegimeter
 vegimeter = bb.application.get_mapping('Vegimeter')
 (processor,) =  vegimeter.get_board().get_processors()
 with processor.get_os() as binary:
-  # TODO(team): straight-forward implementation. Should be replaced soon.
+  # TODO(team): this is straight-forward implementation.
+  #             Should be replaced soon.
   uploader = propler.SPIUploader(port='/dev/ttyUSB0')
   if not uploader.connect():
     sys.exit(1)

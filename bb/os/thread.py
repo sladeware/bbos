@@ -36,15 +36,13 @@ class Thread(bb.Object):
   def __init__(self, name=None, runner=None, ports=[]):
     bb.Object.__init__(self)
     self._name = None
+    self._name_format = None
     self._runner = None
     self._ports = []
     if name:
       self.set_name(name)
-    elif hasattr(self, 'NAME'):
-      name = getattr(self, 'NAME', None)
-      self.set_name(name)
-    else:
-      raise Exception("Name wasn't provided")
+    elif getattr(self, 'NAME', None) is not None:
+      self.set_name(getattr(self, 'NAME'))
     if runner:
       self.set_runner(runner)
     elif hasattr(self, "RUNNER"):
@@ -55,6 +53,16 @@ class Thread(bb.Object):
       self.add_ports(self.PORTS)
     if ports:
       self.add_ports(ports)
+    if hasattr(self, 'NAME_FORMAT'):
+      self._name_format = getattr(self, 'NAME_FORMAT')
+
+  def get_name_format(self):
+    return self._name_format
+
+  def set_name_format(self, frmt):
+    if not typecheck.is_string(frmt):
+      raise TypeError('Name format must be string')
+    self._name_format = frmt
 
   def set_runner(self, runner):
     if not typecheck.is_string(runner):

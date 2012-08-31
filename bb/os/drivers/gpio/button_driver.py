@@ -18,5 +18,5 @@ __author__ = 'Oleksandr Sviridenko'
 import bb
 
 class ButtonDriver(bb.os.Driver):
-  NAME = 'REAL_BUTTON_DRIVER'
-  RUNNER = 'real_button_driver_runner'
+  NAME_FORMAT = 'BUTTON_DRIVER_%d'
+  RUNNER = 'button_driver_runner'

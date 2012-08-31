@@ -58,6 +58,9 @@ class Messenger(Thread):
   def __init__(self, name=None, message_handlers={}):
     Thread.__init__(self, name)
     self._message_handlers = {}
+    if hasattr(self, 'MESSAGE_HANDLERS'):
+      for message, handler in self.MESSAGE_HANDLERS.items():
+        self.add_message_handler(message, handler)
     if message_handlers:
       self.add_message_handlers(message_handlers)
 
@@ -65,6 +68,10 @@ class Messenger(Thread):
     if not typecheck.is_string(message):
       raise TypeError('message has to be a string')
     return self._message_handlers.get(message, None)
+
+  def get_supported_commands(self):
+    """Return list of supported commands."""
+    return self._message_handlers.keys()
 
   def add_message_handler(self, message, handler):
     """Maps a command extracted from a message to the specified handler

@@ -1,29 +1,31 @@
 #!/usr/bin/env python
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 __copyright__ = 'Copyright (c) 2012 Sladeware LLC'
 
-from vegimeter import vegimeter
-
 import bb
 
+from vegimeter import vegimeter
+
 vegimeter = bb.application.get_mapping('Vegimeter')
-if not vegimeter:
-  print "Application doesn't have mapping Vegimeter."
-  print "Nothing to build. Exit."
-  exit(0)
 
-if vegimeter.get_thread('UI'):
-  with vegimeter.get_thread('UI') as target:
-    target.build_cases += {
-      'propeller' : {
-        'sources' : ('ui.c',)
-        }
-      }
+with vegimeter.get_thread('UI') as target:
+  target.build_cases += {
+    'propeller': { 'sources': ('ui.c',) }
+  }
 
-if vegimeter.get_thread('BUTTON_DRIVER'):
-  with vegimeter.get_thread('BUTTON_DRIVER') as target:
-    target.build_cases += {
-      'propeller' : {
-        'sources' : ('button_driver.c',)
-        }
-      }
+with vegimeter.get_thread('CONTROL_PANEL') as target:
+  target.build_cases += {
+    'propeller': { 'sources': ('control_panel.c',) }
+  }
