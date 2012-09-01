@@ -1,4 +1,6 @@
 /*
+ * One wire family. Learn more here <http://en.wikipedia.org/wiki/One_wire>.
+ *
  * Copyright (c) 2012 Sladeware LLC
  * Author: Oleksandr Sviridenko
  *
@@ -14,10 +16,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * One wire family. Learn more here <http://en.wikipedia.org/wiki/One_wire>.
- */
-
 #ifndef __BB_OS_DRIVERS_ONEWIRE_FAMILY_H
 #define __BB_OS_DRIVERS_ONEWIRE_FAMILY_H
 

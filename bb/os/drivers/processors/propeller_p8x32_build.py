@@ -44,7 +44,8 @@ def gen_main_c(processor):
                                                stack_size))
   g.writeln()
   # Write the main entry point
-  g.writeln('int main()')
+  g.writeln('int')
+  g.writeln('main()')
   g.writeln('{')
   for kernel in os.get_kernels():
     core = kernel.get_core()

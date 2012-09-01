@@ -18,6 +18,7 @@ __author__ = 'Oleksander Sviridenko'
 import os
 import sys
 import types
+import logging
 
 def which(program):
   def is_exe(fpath):
@@ -60,8 +61,7 @@ def spawn(cmd, search_path=True, debug=False, dry_run=False):
   for i in range(len(cmd)):
     if not type(cmd[i]) is types.StringType:
       cmd[i] = str(cmd[i])
-  if debug:
-    print ' '.join(cmd)
+  logging.debug(' '.join(cmd))
   if os.name == 'posix':
     _spawn_posix(cmd, search_path, debug, dry_run)
   else:

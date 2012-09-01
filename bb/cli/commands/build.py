@@ -15,12 +15,19 @@
 __copyright__ = 'Copyright (c) 2012 Sladeware LLC'
 __author__ = 'Oleksandr Sviridenko'
 
+import logging
+
 import bb
 from bb.cli.command_line_interface import CLI
 from bb.cli.commands.command import Command
 from bb.tools import builder
 
 BUILD_SCRIPT_FILENAME = 'build.py'
+
+def set_verbose_level(option, opt_str, value, parser):
+  logger = logging.getLogger()
+  logger.setLevel(value * 10)
+  setattr(parser.values, option.dest, value)
 
 class build(Command):
   USAGE = '%prog build'
@@ -39,6 +46,8 @@ class build(Command):
                          dest='verbose',
                          type='int',
                          default=0,
+                         action="callback",
+                         callback=set_verbose_level,
                          help='Verbose level.')
     optparser.add_option('--dry-run',
                          action='store_true',

@@ -1,76 +1,89 @@
-// Copyright (c) 2012 Sladeware LLC
-//
-// Author: Oleksandr Sviridenko
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//       http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-// This file implements kernel.h interface.
+/*
+ * This file implements kernel.h interface.
+ *
+ * Copyright (c) 2012 Sladeware LLC
+ *
+ * Author: Oleksandr Sviridenko
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * This file implements kernel.h interface.
+ */
 
 #include <bb/os/kernel.h>
 
-// Initialize thread.
 void bbos_kernel_init_thread(bbos_thread_id_t tid, bbos_thread_runner_t runner)
 {
   //bbos_validate_thread_id(tid);
   //bbos_thread_set_runner(tid, runner);
 }
 
-void bbos_thread_run(bbos_thread_id_t tid)
-{
-  //bbos_validate_thread_id(tid);
-  //bbos_kernel_assert(bbos_thread_get_runner(tid) != NULL);
-  //(*bbos_thread_get_runner(tid))();
-}
-
-// Halt the system. Display a message, then perform cleanups with exit.
 void bbos_kernel_panic(const int8_t* fmt, ...)
 {
 #ifdef BBOS_DEBUG
   static int8_t buf[128];
   va_list args;
   va_start(args, fmt);
-  vsnprintf(buf, sizeof(buf), fmt, args);
+  //vsnprintf(buf, sizeof(buf), fmt, args);
   va_end(args);
-  printf("Panic: %s\n", buf);
+  //bbos_printf("Panic: %s\n", buf);
 #endif
   //exit(0);
 }
 
-// The first function that system calls, while will initialize the kernel.
-//
-// NOTE: A requirement of BBOS is that you call bbos_kenrel_init() before
-// you invoke any of its other services.
+/*
+ * NOTE: A requirement of BBOS is that you call bbos_kenrel_init() before
+ * you invoke any of its other services.
+ */
 void bbos_kernel_init()
 {
+#if 0
   bbos_thread_id_t tid;
-
   //bbos_printf("Initialize kernel\n");
-  // Initialize threads
+
+  /* Initialize threads. */
   for (tid = 0; tid < BBOS_NR_THREADS; tid++) {
-    //bbos_kernel_init_thread(tid, NULL);
+    bbos_kernel_init_thread(tid, NULL);
   }
-  // Initialize scheduler
+#endif
+
+  /* Initialize scheduler. */
+#if 0
   //bbos_printf("Initialize scheduler '" BBOS_SCHED_NAME "'\n");
+#endif
   bbos_sched_init();
+
   // Inter-thread communication
 #ifdef BBOS_KERNEL_ITC
   bbos_kernel_init_itc();
-#endif // BBOS_KERNEL_ITC
+#endif /* BBOS_KERNEL_ITC */
 }
+
+void bbos_kernel_main()
+{
+}
+
+#ifndef BBOS_CONFIG_USE_STATIC_SCHED
+
+/* Switches execution context. Start next thread selected by scheduler. */
+#define bbos_kernel_switch_context()                                 \
+  do {                                                               \
+    bbos_validate_thread_id(bbos_sched_identify_myself());           \
+    bbos_thread_run(bbos_sched_identify_myself());                   \
+  } while (0)
 
 static void bbos_kernel_loop()
 {
-  // Do the main loop
   while (TRUE) {
     bbos_sched_move();
     bbos_kernel_switch_context();
@@ -78,17 +91,22 @@ static void bbos_kernel_loop()
   }
 }
 
-void bbos_kernel_main()
+void bbos_thread_run(bbos_thread_id_t tid)
 {
+  bbos_validate_thread_id(tid);
+  bbos_kernel_assert(bbos_thread_get_runner(tid) != NULL);
+  (*bbos_thread_get_runner(tid))();
 }
 
 void bbos_kernel_enable_all_threads()
 {
   bbos_thread_id_t tid;
   for (tid = 0; tid < BBOS_NR_THREADS; tid++) {
-    //bbos_kernel_enable_thread(tid);
+    bbos_kernel_enable_thread(tid);
   }
 }
+
+#endif /* BBOS_CONFIG_USE_STATIC_SCHED */
 
 static void bbos_kernel_test()
 {
@@ -106,7 +124,7 @@ static void bbos_kernel_test()
 // Start the kernel.
 void bbos_kernel_start()
 {
-  bbos_printf("Start kernel\n");
+  //bbos_printf("Start kernel\n");
   bbos_kernel_test();
 }
 

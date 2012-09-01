@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-/* Application configs */
 #include "vegimeter_config.h"
 
 #include <bb/os.h>
 #include <bb/os/kernel/delay.h>
-#include <bb/os/drivers/gpio/button.h>
+#include BBOS_DRIVER_FILE(gpio/button.h)
 #include BBOS_PROCESSOR_FILE(shmem.h)
 #include BBOS_PROCESSOR_FILE(sio.h)
 #include BBOS_PROCESSOR_FILE(pins.h)
@@ -34,8 +33,10 @@ control_panel_runner()
   /* QuickStart board has P0 - P7 as buttons */
   int16_t button_mask = 0xFFUL;
 
-  /* Read, update and store pressed buttons on vegimeter device.
-     We need just one byte from the button mask. */
+  /*
+   * Read, update and store pressed buttons on vegimeter device.
+   * We need just one byte from the button mask.
+   */
   vegimeter_buttons = shmem_read_byte(VEGIMETER_BUTTONS_ADDR);
   vegimeter_buttons = (int8_t)are_buttons_pressed(button_mask); /* |=?*/
   shmem_write_byte(VEGIMETER_BUTTONS_ADDR, vegimeter_buttons);
