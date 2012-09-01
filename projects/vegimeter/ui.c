@@ -31,7 +31,7 @@ ui_runner()
   if (vegimeter_buttons) {
     for (i = 0; i < 8; i++, vegimeter_buttons >>= 1) {
       if (vegimeter_buttons & 1) {
-        sio_printf("Button pressed: %d\n", i);
+        sio_printf((int8_t*)"Button pressed: %d\n", i);
       }
     }
     /* Zero buttons state */
