@@ -1,5 +1,6 @@
 /*
  * Main Bionic Bunny config
+ * Author: Oleksandr Sviridenko
  *
  * Copyright (c) 2012 Sladeware LLC
  *
@@ -18,41 +19,34 @@
 #ifndef __BB_CONFIG_H
 #define __BB_CONFIG_H
 
-// If we do not have compiler config set, try and find one
+/* If we do not have compiler config set, try and find one. */
 #if !defined(BBOS_CONFIG_COMPILER_H)
 #include "bb/config/compiler.h"
-#endif // BB_CONFIG_COMPILER_H
-// If compiler config header file was defined, include it now or
-//  provide an error.
+#endif /* BB_CONFIG_COMPILER_H */
+/* Include compiler config header file or provide an error. */
 #ifdef BB_CONFIG_COMPILER_H
 #include BB_CONFIG_COMPILER_H
 #else
 #error "Unknown compiler"
-#endif // BB_CONFIG_COMPILER_H
+#endif /* BB_CONFIG_COMPILER_H */
 
-// Locate which host platform we are using and define BB_CONFIG_PLATFORM_H
-// macro. If we do not have a platform config set, then try to find one.
+/* Locate which host platform we are using and define BB_CONFIG_PLATFORM_H
+   macro. If we do not have a platform config set, then try to find one. */
 #if !defined(BB_CONFIG_PLATFORM_H)
 #include "bb/config/platform.h"
-#endif // !defined(BB_CONFIG_PLATFORM_H)
-// If platform config header file was defined then include it now or provide an
-// error.
+#endif /* !defined(BB_CONFIG_PLATFORM_H) */
+/* Include platform config header file or provide an error. */
 #ifdef BB_CONFIG_PLATFORM_H
 #include BB_CONFIG_PLATFORM_H
 #else
 #error "Unknown platform"
-#endif // BB_CONFIG_PLATFORM_H
+#endif /* BB_CONFIG_PLATFORM_H */
 
-// Bionic Bunny OS specific configuration file.
-#ifndef BB_CONFIG_OS_H
-#warning "BB_CONFIG_OS_H wasn't defined"
-#endif
-
-// Include BB specific data types
+/* Include BB specific data types */
 #include <bb/types.h>
-#include <bb/config/stdlib/stdint.h> // MUST be second
+#include <bb/config/stdlib/stdint.h> /* MUST be second */
 
-// Include some magic tricks
+/* Include some magic tricks */
 #include <bb/lib/utils/tricks.h>
 
-#endif // __BB_CONFIG_H
+#endif /* __BB_CONFIG_H */

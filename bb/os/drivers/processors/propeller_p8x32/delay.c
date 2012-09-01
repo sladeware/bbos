@@ -1,4 +1,6 @@
 /*
+ * This file implements delay.h interface.
+ *
  * Copyright (c) 2012 Sladeware LLC
  * Author: Oleksandr Sviridenko
  *
@@ -40,8 +42,9 @@ bbos_delay_msec(int msec)
 void
 bbos_delay_usec(int usec)
 {
-  if (usec < 10) /* very small t values will cause a hang */
+  if (usec < 10) { /* very small t values will cause a hang */
     return; /* don't bother function delay is likely enough */
+  }
   waitcnt((CLKFREQ / 1000000) * usec + CNT);
 }
 

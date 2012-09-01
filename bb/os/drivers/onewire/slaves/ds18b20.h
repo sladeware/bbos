@@ -1,14 +1,12 @@
 /*
+ * DS18B20 temp sensor interface.
+ *
  * Copyright (c) 2012 Sladeware LLC
  * Author: Oleksandr Sviridenko
  */
 
-/*
- * DS18B20 temp sensor interface.
- */
-
-#ifndef __DS18B20_H
-#define __DS18B20_H
+#ifndef __BB_OS_DRIVERS_ONEWIRE_SLAVES_DS18B20_H
+#define __BB_OS_DRIVERS_ONEWIRE_SLAVES_DS18B20_H
 
 #include <bb/os/config.h>
 
@@ -32,7 +30,7 @@
 /* Prototypes */
 
 /*
- * Read temperature (scratchpad) of sensor.
+ * Reads temperature (scratchpad) from sensor.
  *
  * The pin argument is the P8X32A GPIO pin that connects to the DS18B20's DQ
  * It starts at 0 and goes to 31.
@@ -45,4 +43,4 @@
  */
 int ds18b20_read_temperature(uint8_t pin, int* value);
 
-#endif /* __DS18B20_H */
+#endif /* __BB_OS_DRIVERS_ONEWIRE_SLAVES_DS18B20_H */
