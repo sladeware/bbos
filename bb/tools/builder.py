@@ -226,7 +226,7 @@ def extract_images():
       images.append(Image(os))
   return images
 
-def build():
+def build(build_images=True):
   bb.next_stage()
   import_build_scripts()
   images = extract_images()
@@ -234,8 +234,9 @@ def build():
   for image in images:
     binary = Binary(image)
     BINARIES.append(binary)
-    logging.debug('Build binary %s' % binary)
-    binary.build()
+    if build_images:
+      logging.debug('Build binary %s' % binary)
+      binary.build()
     # If binary was successfully build we can associate it with root object
     with binary.get_image().get_root() as bundle:
       bundle.binary = binary

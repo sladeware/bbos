@@ -15,12 +15,6 @@
 __copyright__ = 'Copyright (c) 2012 Sladeware LLC'
 __author__ = 'Oleksandr Sviridenko'
 
-import imp
-import os
-import sys
-import traceback
-import logging
-
 import bb
 from bb.cli.commands.command import Command
 from bb.tools import builder
@@ -32,7 +26,7 @@ class load(Command):
   USES_BASEPATH = False
 
   def function(self):
-    builder.build()
+    builder.build(build_images=False)
     uploader.upload()
 
   def options(self, config, optparser):
