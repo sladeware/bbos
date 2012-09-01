@@ -60,9 +60,8 @@ void bbos_kernel_init()
   /* Initialize scheduler. */
 #if 0
   //bbos_printf("Initialize scheduler '" BBOS_SCHED_NAME "'\n");
-#endif
   bbos_sched_init();
-
+#endif
   // Inter-thread communication
 #ifdef BBOS_KERNEL_ITC
   bbos_kernel_init_itc();

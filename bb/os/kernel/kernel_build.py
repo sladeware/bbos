@@ -35,13 +35,10 @@ def gen_main_c(kernel):
   g = CGenerator().create(file_path)
   g.writeln('#include <bb/os.h>')
   g.writeln()
-  g.writeln('/* PROTOTYPES */');
-  g.writeln('static void bbos_loop();');
-  g.writeln()
   # Generate necessary API for static scheduler
   if isinstance(kernel.get_scheduler(), StaticScheduler):
     g.writeln('static void')
-    g.writeln('bbos_loop()')
+    g.writeln('loop()')
     g.writeln('{')
     g.writeln('  while (1) {')
     for thread in kernel.get_threads():
@@ -50,24 +47,25 @@ def gen_main_c(kernel):
     g.writeln('}')
   # Init
   g.writeln('static void')
-  g.writeln('bbos_init()')
+  g.writeln('init()')
   g.writeln('{')
+  g.writeln('  bbos_kernel_init();')
   #g.write('  BBOS_SET_NR_THREADS(%d);\n' % os.kernel.get_num_threads())
   #g.write('  BBOS_KERNEL_SET_RUNNING_TYPE(%d);\n' % 0)
   g.writeln('}')
   g.writeln()
   g.writeln('static void')
-  g.writeln('bbos_start()')
+  g.writeln('start()')
   g.writeln('{')
-  #g.write('  bbos_kernel_start();\n')
-  g.writeln('  bbos_loop();')
+  g.writeln('  bbos_kernel_start();\n')
+  g.writeln('  loop();')
   g.writeln('}')
   g.writeln()
   g.writeln('void')
   g.writeln('main%d(void* arg)' % kernel.get_core().get_id())
   g.writeln('{')
-  g.writeln('  bbos_init();')
-  g.writeln('  bbos_start();')
+  g.writeln('  init();')
+  g.writeln('  start();')
   g.writeln('}')
   return file_path
 

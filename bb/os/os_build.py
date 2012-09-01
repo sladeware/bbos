@@ -43,6 +43,7 @@ with OS as bundle:
   bundle.build_cases.update({
     # Propeller GCC compiler support
     'propeller' : {
-      'sources': (gen_config_h,)
+      'sources': ('../os.c',
+                  gen_config_h,)
       }
     })

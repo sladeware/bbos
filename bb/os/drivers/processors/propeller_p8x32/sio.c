@@ -329,7 +329,9 @@ sio_printf(const int8_t* format, ...)
  */
 #define SIO_COGSAFE_LOCK_ADDR (int16_t*)0x7530
 
+#ifdef SIO_COGSAFE_PRINTING
 static int16_t cogsafe_lock;
+#endif
 
 void
 sio_init()

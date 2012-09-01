@@ -17,6 +17,9 @@
 #ifndef __BB_OS_H
 #define __BB_OS_H
 
+#include <bb/os/config.h>
 #include <bb/os/kernel.h>
 
-#endif // __BB_OS_H
+PROTOTYPE(void bbos_init, ());
+
+#endif /* __BB_OS_H */
