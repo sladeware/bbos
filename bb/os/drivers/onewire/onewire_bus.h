@@ -1,4 +1,6 @@
 /*
+ * One wire device I/O support.
+ *
  * Copyright (c) 2012 Sladeware LLC
  * Author: Oleksandr Sviridenko
  *
@@ -13,9 +15,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
-/*
- * One wire device I/O support.
  */
 
 #ifndef __BB_OS_DRIVERS_ONEWIRE_BUS_H

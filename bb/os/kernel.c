@@ -34,9 +34,9 @@ void bbos_kernel_panic(const int8_t* fmt, ...)
   static int8_t buf[128];
   va_list args;
   va_start(args, fmt);
-  vsnprintf(buf, sizeof(buf), fmt, args);
+  //vsnprintf(buf, sizeof(buf), fmt, args);
   va_end(args);
-  bbos_printf("Panic: %s\n", buf);
+  //bbos_printf("Panic: %s\n", buf);
 #endif
   //exit(0);
 }
@@ -49,7 +49,7 @@ void bbos_kernel_init()
 {
 #if 0
   bbos_thread_id_t tid;
-  bbos_printf("Initialize kernel\n");
+  //bbos_printf("Initialize kernel\n");
 
   /* Initialize threads. */
   for (tid = 0; tid < BBOS_NR_THREADS; tid++) {
@@ -59,7 +59,7 @@ void bbos_kernel_init()
 
   /* Initialize scheduler. */
 #if 0
-  bbos_printf("Initialize scheduler '" BBOS_SCHED_NAME "'\n");
+  //bbos_printf("Initialize scheduler '" BBOS_SCHED_NAME "'\n");
 #endif
   bbos_sched_init();
 
@@ -124,7 +124,7 @@ static void bbos_kernel_test()
 // Start the kernel.
 void bbos_kernel_start()
 {
-  bbos_printf("Start kernel\n");
+  //bbos_printf("Start kernel\n");
   bbos_kernel_test();
 }
 

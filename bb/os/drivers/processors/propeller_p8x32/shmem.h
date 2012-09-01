@@ -19,17 +19,24 @@
 
 #include <bb/os/config.h>
 
+/* Reads and returns a byte from provided address of HUB RAM. */
 int8_t shmem_read_byte(int32_t addr);
 
-void shmem_read(int32_t src_addr, void* dst, size_t n);
+/*
+ * Reads n bytes from HUB RAM address to the buffer. Caller has to manage
+ * buffer memory.
+ */
+void shmem_read(int32_t addr, void* buf, size_t n);
 
+/* Writes a byte to the HUB RAM. */
 void shmem_write_byte(int32_t addr, int8_t byte);
 
 /*
- * Write n bytes for the HUB RAM. Note, a single long in the hub will
- * be updated in one hub turn. Thus the routine will use the locks,
- * since we are updating a multi-long structure.
+ * Writes n bytes to the HUB RAM.
+ *
+ * NOTE: a single long in the hub will be updated in one hub turn. Thus the
+ * routine will use the locks, since we are updating a multi-long structure.
  */
-void shmem_write(int32_t dst_addr, void* src, size_t n);
+void shmem_write(int32_t addr, void* buf, size_t n);
 
 #endif /* __BB_OS_DRIVERS_PROCESSORS_PROPELLER_P8X32_SHMEM_H */

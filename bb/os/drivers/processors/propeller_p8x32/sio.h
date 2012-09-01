@@ -24,11 +24,11 @@
 
 /* Receiving pin. */
 #ifndef SIO_RX_PIN
-#define SIO_RX_PIN   31
+#define SIO_RX_PIN 31
 #endif
 /* Transmitting pin. */
 #ifndef SIO_TX_PIN
-#define SIO_TX_PIN   30
+#define SIO_TX_PIN 30
 #endif
 /* Serial baudrate. */
 #ifndef SIO_BAUDRATE
@@ -51,8 +51,10 @@ int8_t sio_wait_byte_with_timeout(int16_t secs);
 
 int8_t sio_wait_byte();
 
-/* Writes a character to the serial. This function is safe to changing
-   of clock frequency. */
+/*
+ * Writes a character to the serial. This function is safe to changing of clock
+ * frequency.
+ */
 void sio_put_byte(int8_t c);
 
 #if defined(SIO_PRINTF_STRING_SUPPORT)
@@ -67,15 +69,19 @@ void sio_put_hex(unsigned n);
 void sio_printf(const int8_t* format, ...);
 
 #ifdef SIO_COGSAFE_PRINTING
-/* NOTE: once SIO_COGSAFE_PRINTING was enabled, SIO_LOCK_PRINTING will
-   be also automatically enabled. */
-#  define SIO_LOCK_PRINTING
+/*
+ * NOTE: once SIO_COGSAFE_PRINTING was enabled, SIO_LOCK_PRINTING will
+ * be also automatically enabled.
+ */
+#define SIO_LOCK_PRINTING
 void sio_cogsafe_printf(const int8_t* format, ...);
 #endif /* SIO_COGSAFE_PRINTING */
 
 #ifdef SIO_LOCK_PRINTING
-/* Lock printing routine. This routine assumes that
-   propeller_locknew() was used before. */
+/*
+ * Lock printing routine. This routine assumes that
+ * propeller_locknew() was used before.
+ */
 void sio_lock_printf(int lock, const int8_t* format, ...);
 #endif
 

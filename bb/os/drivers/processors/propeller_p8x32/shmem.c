@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#include <bb/os/config.h>
 #include "shmem.h"
+
 #include <string.h>
 
 int8_t

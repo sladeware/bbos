@@ -32,7 +32,7 @@ static int int_max(int a, int b)
   return a;
 }
 
-/* Millisecond delay. */
+/* Delay for a specified number of milliseconds. */
 #define BBOS_DELAY_MSEC(msec)                                           \
   propeller_waitcnt(int_max((propeller_get_clockfreq() / 1000) * msec - 3932, \
                             MIN_WAITCNT_WINDOW) +                       \
@@ -40,20 +40,29 @@ static int int_max(int a, int b)
 
 /* Catalina compiler specific interface. */
 #if defined(__CATALINA__)
+
 #include <catalina_icc.h>
+
 /* Wait for specified number of ticks. */
 #define bbos_delay_ticks(ticks) wait(ticks)
+
 /* Wait for the specified number of milliseconds. */
 #define bbos_delay_msec(msec) msleep(msec)
+
 void bbos_delay_usec(int usec);
+
 #define bbos_delay_sec(sec) sleep(sec)
 
 /* GNUC compiler specific interface. */
 #elif defined(__GNUC__)
 #include <sys/unistd.h>
 
+/* Delay for a specified number of milliseconds. */
 void bbos_delay_msec(int msec);
+
+/* Delay for a specified number of microseconds. */
 void bbos_delay_usec(int usec);
+
 /* Wait for the specified number of seconds. */
 #define bbos_delay_sec(sec) sleep(sec)
 

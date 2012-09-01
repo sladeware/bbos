@@ -29,17 +29,17 @@
 #include "delay.h"
 #include <stdarg.h>
 
-#define SIO_PRINTF_STRING_SUPPORT
-#define SIO_COGSAFE_PRINTING
 #define SIO_CNT_DELTA 500
 
-HUBTEXT int8_t sio_wait_byte()
+HUBTEXT int8_t
+sio_wait_byte()
 {
   while (GET_INPUT(SIO_RX_PIN));
   return sio_get_byte();
 }
 
-HUBTEXT int8_t sio_wait_byte_with_timeout(int16_t secs)
+HUBTEXT int8_t
+sio_wait_byte_with_timeout(int16_t secs)
 {
   int8_t byte;
   int32_t counts_delta = 0;
@@ -55,7 +55,8 @@ HUBTEXT int8_t sio_wait_byte_with_timeout(int16_t secs)
   return 0;
 }
 
-HUBTEXT int8_t sio_get_byte()
+HUBTEXT int8_t
+sio_get_byte()
 {
   int8_t i;
   int16_t byte;
@@ -74,9 +75,12 @@ HUBTEXT int8_t sio_get_byte()
   return (int8_t)byte;
 }
 
-/* NOTE: We need sio_put_byte() to always be in HUB memory for speed.
-   Time critical functions like this can't live in external memory. */
-HUBTEXT void sio_put_byte(int8_t c)
+/*
+ * NOTE: We need sio_put_byte() to always be in HUB memory for speed.
+ * Time critical functions like this can't live in external memory.
+ */
+HUBTEXT void
+sio_put_byte(int8_t c)
 {
   int frame = 0;
   //int i = 11;
@@ -185,30 +189,29 @@ HUBTEXT void sio_put_byte(int8_t c)
 void
 sio_put_string(int8_t* s)
 {
-  while (*s)
-    {
-      sio_put_byte(*s++);
-    }
+  while (*s) {
+    sio_put_byte(*s++);
+  }
 }
 #endif /* SIO_PRINTF_STRING_SUPPORT */
 
 static const unsigned long dv[] = {
 #if 0
-    4294967296,      /* 32 bit unsigned max */
+  4294967296,     /* 32 bit unsigned max */
 #endif
-    1000000000,     // +0
-     100000000,     // +1
-      10000000,     // +2
-       1000000,     // +3
-        100000,     // +4
+  1000000000,     /* +0 */
+  100000000,     /* +1 */
+  10000000,     /* +2 */
+  1000000,     /* +3 */
+  100000,     /* +4 */
 #if 0
-         65535,      // 16 bit unsigned max
+  65535,    /* 16 bit unsigned max */
 #endif
-         10000,     // +5
-          1000,     // +6
-           100,     // +7
-            10,     // +8
-             1,     // +9
+  10000,  /* +5 */
+  1000,  /* +6 */
+  100,  /* +7 */
+  10,  /* +8 */
+  1,  /* +9 */
 };
 
 static void
@@ -280,8 +283,8 @@ _sio_multiarg_printf(const int8_t* format, va_list a)
       case 'n': /* 32 bit unsigned long */
         n = va_arg(a, long);
         if (c == 'l' &&  n < 0) {
-            n = -n;
-            sio_put_byte('-');
+          n = -n;
+          sio_put_byte('-');
         }
         xtoa((unsigned long)n, dv);
         break;

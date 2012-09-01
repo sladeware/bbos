@@ -149,7 +149,7 @@ PROTOTYPE(void bbos_thread_run, (bbos_thread_id_t tid));
 ////////////////////////////////////////////////////////////////////////////////
 
 #ifndef bbos_printf
-#define bbos_printf printf
+//#define bbos_printf printf
 #endif /* bbos_printf */
 
 /* Halt the system. Display a message, then perform cleanups with exit. */

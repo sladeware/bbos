@@ -17,6 +17,7 @@
 #include "vegimeter_config.h"
 
 #include <bb/os.h>
+#include <bb/os/kernel/delay.h>
 #include BBOS_PROCESSOR_FILE(shmem.h)
 #include BBOS_PROCESSOR_FILE(sio.h)
 
@@ -25,14 +26,12 @@ ui_runner()
 {
   uint8_t i = 0;
   int8_t vegimeter_buttons;
-
   /* Read buttons state from the shared memory. */
   vegimeter_buttons = shmem_read_byte(VEGIMETER_BUTTONS_ADDR);
-
   if (vegimeter_buttons) {
     for (i = 0; i < 8; i++, vegimeter_buttons >>= 1) {
       if (vegimeter_buttons & 1) {
-        sio_printf((int8_t*)"Button pressed: %d\n", i);
+        sio_printf("Button pressed: %d\n", i);
       }
     }
     /* Zero buttons state */
