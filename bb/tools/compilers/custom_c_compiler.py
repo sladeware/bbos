@@ -15,6 +15,10 @@
 __copyright__ = 'Copyright (c) 2012 Sladeware LLC'
 __author__ = 'Oleksandr Sviridenko'
 
+# TODO: Move linker specific API from Compiler class to Linker class and start
+# using it.
+
+import os.path
 import sys
 import time
 
@@ -61,8 +65,8 @@ class Linker(object):
     if self.get_output_dir() is not None:
       self.set_output_filename(bb.host_os.path.join(self.get_output_dir(),
                                                  output_filename))
-    print "Linking executable:", bb.host_os.path.relpath(output_filename,
-                                                      self.output_dir)
+    binary_filename = bb.host_os.path.relpath(output_filename, self.output_dir)
+    print "Linking executable:", binary_filename
     self._link(objects, *list_args, **dict_args)
 
 class CustomCCompiler(Compiler):
@@ -575,9 +579,11 @@ class CustomCCompiler(Compiler):
       output_filename = bb.host_os.path.join(self.get_output_dir(),
                                           output_filename)
       self.set_output_filename(output_filename)
-    print "Linking executable '%s'" % bb.host_os.path.relpath(output_filename,
-                                                           self.output_dir)
+    binary_filename = bb.host_os.path.relpath(output_filename, self.output_dir)
+    print "Linking executable '%s'" % binary_filename
     self._link(objects, *list_args, **dict_args)
+    print "Binary %s, %d byte(s)" % (binary_filename,
+                                     os.path.getsize(binary_filename))
 
   def _link(self, objects, output_filename, output_dir=None, debug=False,
             extra_preargs=None, extra_postargs=None, target_lang=None):

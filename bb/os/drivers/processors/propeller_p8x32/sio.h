@@ -14,44 +14,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __PROPELLER_P8X32_SIO_H
-#define __PROPELLER_P8X32_SIO_H
+#ifndef __BB_OS_DRIVERS_PROCESSORS_PROPELLER_P8X32_SIO_H
+#define __BB_OS_DRIVERS_PROCESSORS_PROPELLER_P8X32_SIO_H
 
-#include <bb/config.h> /* BB platform configuration */
+#include <bb/config.h>
 
-// Receiving pin. By default is 31.
+/* Default definitions */
+#define SIO_PRINTF_STRING_SUPPORT
+
+/* Receiving pin. */
 #ifndef SIO_RX_PIN
 #define SIO_RX_PIN   31
 #endif
-// Transmitting pin. By default is 30.
+/* Transmitting pin. */
 #ifndef SIO_TX_PIN
 #define SIO_TX_PIN   30
 #endif
-// Serial baudrate. By default is 115200.
+/* Serial baudrate. */
 #ifndef SIO_BAUDRATE
 #define SIO_BAUDRATE 115200
 #endif
 
-/**
- * Defines mode bits
- *   mode bit 0 = invert rx
- *   mode bit 1 = invert tx
- *   mode bit 2 = open-drain/source tx
- *   mode bit 3 = ignore tx echo on rx
- */
 #define SIO_MODE_INVERT_RX      1
 #define SIO_MODE_INVERT_TX      2
 #define SIO_MODE_OPENDRAIN_TX   4
 #define SIO_MODE_IGNORE_TX_ECHO 8
 
+/* Prototypes. */
+
 void sio_init();
 
+/* Receives a character to serial. Return 8-bit character. */
 int8_t sio_get_byte();
+
 int8_t sio_wait_byte_with_timeout(int16_t secs);
+
 int8_t sio_wait_byte();
 
+/* Writes a character to the serial. This function is safe to changing
+   of clock frequency. */
 void sio_put_byte(int8_t c);
-#define SIO_PRINTF_STRING_SUPPORT 1
+
 #if defined(SIO_PRINTF_STRING_SUPPORT)
 void sio_put_string(int8_t* s);
 #endif
@@ -60,23 +63,20 @@ void sio_put_string(int8_t* s);
 void sio_put_hex(unsigned n);
 #endif
 
+/* See http://en.wikipedia.org/wiki/Printf#Format_placeholders */
 void sio_printf(const int8_t* format, ...);
 
-/* By default SIO_LOCK_PRINTING is enabled */
-//#define SIO_LOCK_PRINTING
-//#define SIO_COGSAFE_PRINTING /* <! */
-
 #ifdef SIO_COGSAFE_PRINTING
-/*
- * Note, once SIO_COGSAFE_PRINTING was enabled, SIO_LOCK_PRINTING will
- * be also automatically enabled.
- */
+/* NOTE: once SIO_COGSAFE_PRINTING was enabled, SIO_LOCK_PRINTING will
+   be also automatically enabled. */
 #  define SIO_LOCK_PRINTING
 void sio_cogsafe_printf(const int8_t* format, ...);
 #endif /* SIO_COGSAFE_PRINTING */
 
 #ifdef SIO_LOCK_PRINTING
+/* Lock printing routine. This routine assumes that
+   propeller_locknew() was used before. */
 void sio_lock_printf(int lock, const int8_t* format, ...);
 #endif
 
-#endif /* __PROPELLER_P8X32_SIO_H */
+#endif /* __BB_OS_DRIVERS_PROCESSORS_PROPELLER_P8X32_SIO_H */

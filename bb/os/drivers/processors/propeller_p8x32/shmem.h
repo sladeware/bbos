@@ -14,14 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __PROPELLER_P8X32_SHMEM_H
-#define __PROPELLER_P8X32_SHMEM_H
+#ifndef __BB_OS_DRIVERS_PROCESSORS_PROPELLER_P8X32_SHMEM_H
+#define __BB_OS_DRIVERS_PROCESSORS_PROPELLER_P8X32_SHMEM_H
 
 #include <bb/os/config.h>
 
 int8_t shmem_read_byte(int32_t addr);
+
 void shmem_read(int32_t src_addr, void* dst, size_t n);
+
 void shmem_write_byte(int32_t addr, int8_t byte);
+
+/*
+ * Write n bytes for the HUB RAM. Note, a single long in the hub will
+ * be updated in one hub turn. Thus the routine will use the locks,
+ * since we are updating a multi-long structure.
+ */
 void shmem_write(int32_t dst_addr, void* src, size_t n);
 
-#endif /* __PROPELLER_P8X32_SHMEM_H */
+#endif /* __BB_OS_DRIVERS_PROCESSORS_PROPELLER_P8X32_SHMEM_H */

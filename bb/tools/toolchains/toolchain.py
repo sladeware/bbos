@@ -15,6 +15,8 @@
 __copyright__ = 'Copyright (c) 2012 Sladeware LLC'
 __author__ = 'Oleksandr Sviridenko'
 
+import logging
+
 import bb
 from bb.lib.utils import typecheck
 from bb.tools.compilers import Compiler
@@ -72,7 +74,7 @@ class Toolchain(object):
       source = bb.host_os.path.abspath(source)
       if not bb.host_os.path.exists(source):
         raise Exception("Source doesn't exist: %s" % source)
-      print "Add source %s" % source
+      logging.debug("Add source %s" % source)
       if not source in self._sources:
         self._sources.append(source)
       return source
