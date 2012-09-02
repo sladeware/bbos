@@ -265,6 +265,61 @@ class Pin(ElectronicPrimitive):
   def is_connected_to(self, pin):
     return id(pin) in self.__connections
 
+class Wire(ElectronicPrimitive):
+  """A wire is an electrical design primitive derived from
+  :class:`ElectronicPrimitive`. It is an object that forms an electrical
+  connection between points on a schematic and is analogous to a physical
+  wire.
+
+  The pins can be set separately.
+  """
+
+  def __init__(self):
+    ElectronicPrimitive.__init__(self)
+    self._first_pin = None
+    self._second_pin = None
+
+  def connect(self, first_pin, second_pin):
+    """Connect two pins."""
+    self.set_first_pin(first_pin)
+    self.set_second_pin(second_pin)
+    G.add_edge(first_pin, second_pin)
+    G.add_edge(second_pin, first_pin)
+
+  def find_pin(self, by):
+    for pin in (self._first_pin, self._second_pin):
+      if pin.get_designator() == by:
+        return pin
+
+  def disconnect(self):
+    self._first_pin = self._second_pin = None
+
+  def set_first_pin(self, pin):
+    self._first_pin = pin
+
+  def get_first_pin(self):
+    return self._first_pin
+
+  def set_second_pin(self, pin):
+    self._second_pin = pin
+
+  def get_second_pin(self):
+    return self._second_pin
+
+  def clone(self):
+    """Clone this wire. Return cloned :class:`Wire` object."""
+    clone = ElectronicPrimitive.clone(self)
+    # Clone first pin if possible
+    if self.get_first_pin():
+      clone.set_first_pin(self.get_first_pin().clone())
+    if self.get_second_pin():
+      clone.set_second_pin(self.get_second_pin().clone())
+    if not None in (clone.get_first_pin(), clone.get_second_pin()):
+      clone.connect(clone.get_first_pin(), clone.get_second_pin())
+    # if not None in (self.get_first_pin(), self.get_second_pin()):
+    #   clone.connect(self.get_first_pin().clone(), self.get_second_pin().clone())
+    return clone
+
 class Note(Primitive):
   """A note is a design primitive (non-electrical), derived from class
   :class:`Primitive`. It is used to add informational or instructional text to a
