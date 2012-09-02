@@ -19,6 +19,3 @@ from bb.os.messenger import Messenger
 
 class Driver(Messenger):
   NAME_FORMAT = 'DRIVER_%d'
-
-  def __init__(self, name=None):
-    Messenger.__init__(self, name)

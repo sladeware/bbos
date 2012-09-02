@@ -52,14 +52,18 @@ if not vegimeter_board:
   print "Board <QSP1> cannot be found!"
   exit(0)
 
-vegimeter = bb.Mapping('Vegimeter', board=vegimeter_board)
+vegimeter = bb.Mapping('Vegimeter',
+                       processor=vegimeter_board.find_element('U1'))
 vegimeter.register_thread(bb.os.Thread('UI', 'ui_runner'))
 vegimeter.register_thread(bb.os.Thread('CONTROL_PANEL', 'control_panel_runner'))
 # TODO(team): the following (and others) drivers has to be connected
 # automatically.
 from bb.os.drivers.gpio.button_driver import ButtonDriver
 from bb.os.drivers.processors.propeller_p8x32 import ShMemDriver
-vegimeter.register_threads([ButtonDriver(), ShMemDriver()])
+from bb.os.drivers.onewire.slaves import DS18B20Driver
+#print ds18b20_driver.
+vegimeter.register_threads([ButtonDriver(ports=[bb.os.Port(10)]), ShMemDriver(),
+                            DS18B20Driver()])
 
 def bill_of_materials():
   bill_of_materials = dict()

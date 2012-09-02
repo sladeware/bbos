@@ -26,6 +26,8 @@ from bb.hardware.devices.processors import Processor
 class OS(bb.Object):
   """This class is container/environment for Kernel's."""
 
+  KERNEL_CLASS = Kernel
+
   def __init__(self, processor):
     bb.Object.__init__(self)
     if not isinstance(processor, Processor):

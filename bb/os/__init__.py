@@ -21,5 +21,6 @@ from bb.os.os import OS
 from bb.os.kernel import Kernel
 from bb.os.thread import Thread
 from bb.os.port import Port
+from bb.os.message import Message
 from bb.os.messenger import Messenger
 from bb.os.drivers.driver import Driver

@@ -29,54 +29,47 @@ __copyright__ = 'Copyright (c) 2012 Sladeware LLC'
 __author__ = 'Oleksandr Sviridenko'
 
 import bb
-from bb.hardware.devices.boards import Board
 from bb.hardware.devices.processors import Processor
 from bb.lib.utils import typecheck
 
-def roundrobin_thread_distributor(threads, processors):
+def roundrobin_thread_distributor(threads, processor):
   """Default thread distributor provides round-robin distribution of threads
   between all cores within the processors.
   """
   thread_distribution = {}
-  for processor in processors:
-    if not isinstance(processor, Processor):
-      raise TypeError("processor must be derived from Processor")
-    thread_distribution[processor] = {}
-    for core in processor.get_cores():
-      thread_distribution[processor][core] = []
-  p = 0
+  for core in processor.get_cores():
+    thread_distribution[core] = []
   c = 0
   for thread in threads:
     if not isinstance(thread, bb.os.Thread):
       raise TypeError("thread must be derived from bb.os.Thread")
-    processor = processors[p]
-    p = (p + 1) % len(processors)
     core = processor.get_cores()[c]
     c = (c + 1) % len(processor.get_cores())
-    thread_distribution[processor][core].append(thread)
+    thread_distribution[core].append(thread)
   return thread_distribution
 
 class Mapping(object):
   OS_CLASS = bb.os.OS
 
-  def __init__(self, name, board=None, os_class=None,
+  def __init__(self, name, processor=None, os_class=None,
                thread_distributor=roundrobin_thread_distributor):
     self._name = None
     self._threads = dict()
     self._os_class = None
+    self._max_message_size = 0
     self._is_simulation_mode = False
-    self._board = None
+    self._processor = None
     self._thread_distributor = None
     if thread_distributor:
       self.set_thread_distributor(thread_distributor)
-    # NOTE: for now we will force user to provide a name
+    # NOTE: for now we will force user to provide a name.
     self.set_name(name)
     if os_class:
       self.set_os_class(os_class)
     else:
       self.set_os_class(self.OS_CLASS)
-    if board:
-      self.set_board(board)
+    if processor:
+      self.set_processor(processor)
     # Once a new mapping was created, it will automatically register itself
     # within existed application. See issue #16.
     bb.application.register_mapping(self)
@@ -88,6 +81,14 @@ class Mapping(object):
 
   def get_name(self):
     return self._name
+
+  def get_messages(self):
+    all_messages = {}
+    for thread in self.get_threads():
+      messages = thread.get_supported_messages()
+      for message in messages:
+        all_messages[message.id] = message
+    return all_messages.values()
 
   def set_thread_distributor(self, f):
     self._thread_distributor = f
@@ -128,29 +129,42 @@ class Mapping(object):
     """Return list of threads handled by this mapping."""
     return self._threads.values()
 
+  def get_min_message_size(self):
+    size = 0
+    for message in self.get_messages():
+      for field in message.fields:
+        size += field.size
+    return size
+
+  def set_max_message_size(self, n_bytes):
+    self._max_message_size = n_bytes
+
+  def get_max_message_size(self):
+    return self._max_message_size
+
   def set_simulation_mode(self):
     self._is_simulation_mode = True
 
   def is_simulation_mode(self):
     return self._is_simulation_mode
 
-  def get_board(self):
-    """Return :class:`bb.hardware.devices.boards.board.Board`
+  def get_processor(self):
+    """Return :class:`bb.hardware.devices.processors.processor.Processor`
     instance.
     """
-    return self._board
+    return self._processor
 
-  def set_board(self, board):
-    if not isinstance(board, Board):
-      raise TypeError("Requires Board class.")
-    self._board = board
+  def set_processor(self, processor):
+    if not isinstance(processor, Processor):
+      raise TypeError("'processor' has to be derived from Processor class.")
+    self._processor = processor
 
-  def is_board_defined(self):
-    """Whether or not a board was defined. Return ``True`` value if the
-    :class:`bb.hardware.devices.boards.board.Board` instance can be
-    obtained by using specified core. Otherwise return ``False``.
+  def is_processor_defined(self):
+    """Whether or not a processor was defined. Return ``True`` value if the
+    :class:`bb.hardware.devices.processors.processor.Processor` instance was
+    defined, or ``False`` otherwise.
     """
-    return not not self.get_board()
+    return not not self.get_processor()
 
   def set_os_class(self, os_class):
     if not issubclass(os_class, bb.os.OS):
@@ -161,25 +175,21 @@ class Mapping(object):
     return self._os_class
 
   def gen_oses(self):
-    board = self.get_board()
-    if not board:
-      raise Exception("Board wasn't defined")
+    processor = self.get_processor()
+    if not processor:
+      raise Exception("Processor wasn't defined")
     if not self.get_num_threads():
       raise Exception("No threads. Nothing to do.")
     distributor = self.get_thread_distributor()
     if not distributor:
       raise Exception("Thread-distributor wasn't defined")
-    distribution = distributor(self.get_threads(),
-                               self.get_board().get_processors())
-    os_class = self.get_os_class()
-    oses = list()
-    for processor, core_distribution in distribution.items():
-      for core, threads in core_distribution.items():
-        if not threads:
-          continue
-        kernel = bb.os.Kernel(core=core, threads=threads)
-        core.set_kernel(kernel)
-      os = os_class(processor)
-      processor.set_os(os)
-      oses.append(os)
-    return oses
+    distribution = distributor(self.get_threads(), processor)
+    for core, threads in distribution.items():
+      if not threads:
+        continue
+      kernel_class = self._os_class.KERNEL_CLASS
+      kernel = kernel_class(core=core, threads=threads)
+      core.set_kernel(kernel)
+    os = self._os_class(processor=processor)
+    processor.set_os(os)
+    return (os,)

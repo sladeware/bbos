@@ -27,68 +27,19 @@ Or the same example, but as a class::
   class SerialMessenger(Messenger):
     NAME = 'SERIAL_MESSENGER'
     MESSAGE_HANDLERS = {
-      Message('SERIAL_OPEN', ('rx', 'tx')): 'serial_open_handler',
+      Message('SERIAL_OPEN', (('rx', 2), ('tx', 2))): 'serial_open_handler',
     }
 
-  When a :class:`SerialMessenger` object receives a ``SERIAL_OPEN`` message,
-  the message is directed to :func:`SerialMessenger.serial_open_handler`
-  handler for the actual processing.
+When a :class:`SerialMessenger` object receives a ``SERIAL_OPEN`` message,
+the message is directed to :func:`SerialMessenger.serial_open_handler`
+handler for the actual processing.
 """
 
 import logging
 
 from bb.os.thread import Thread
+from bb.os.message import Message
 from bb.lib.utils import typecheck
-
-class Argument(str):
-  def __init__(self, string):
-    str.__init__(self, string)
-    self._type = None
-
-  @property
-  def type(self):
-    return self._type
-
-  @type.setter
-  def type(self, type):
-    self._type = type
-
-class Message(object):
-  """This class describes message structure passed between threads for
-  communication purposes.
-  """
-
-  def __init__(self, id, arguments):
-    self._id = None
-    self._arguments = []
-    if id:
-      self.id = id
-    if arguments:
-      self.arguments = arguments
-
-  @property
-  def id(self):
-    return self._id
-
-  @id.setter
-  def id(self, id):
-    if not typecheck.is_string(id):
-      raise TypeError('`id` has to be a string')
-    self._id = id
-
-  @property
-  def arguments(self):
-    return self._arguments
-
-  @arguments.setter
-  def arguments(self, args):
-    self._arguments = []
-    if not typecheck.is_sequence(args):
-      raise TypeError('`args` has to be a sequence')
-    for arg in args:
-      if not isinstance(arg, Argument):
-        arg = Argument(arg)
-      self._arguments.append(arg)
 
 class Messenger(Thread):
   """This class is a special form of thread, which allows to automatically
@@ -104,8 +55,8 @@ class Messenger(Thread):
 
   MESSAGE_HANDLERS = {}
 
-  def __init__(self, name=None, message_handlers={}):
-    Thread.__init__(self, name)
+  def __init__(self, name=None, message_handlers={}, ports=[]):
+    Thread.__init__(self, name, ports=ports)
     self._message_handlers = {}
     if hasattr(self, 'MESSAGE_HANDLERS'):
       for message, handler in self.MESSAGE_HANDLERS.items():
@@ -114,22 +65,20 @@ class Messenger(Thread):
       self.add_message_handlers(message_handlers)
 
   def get_message_handler(self, message):
-    if not typecheck.is_string(message):
-      raise TypeError('message has to be a string')
+    if not isinstance(message, Message):
+      raise TypeError('message has to be derived from Message')
     return self._message_handlers.get(message, None)
-
-  def get_supported_commands(self):
-    """Return list of supported commands."""
-    return self._message_handlers.keys()
 
   def add_message_handler(self, message, handler):
     """Maps a command extracted from a message to the specified handler
     function. Note, handler's name should ends with '_handler'.
     """
-    if not typecheck.is_string(message) or not typecheck.is_string(handler):
-      raise TypeError('message and handler both have to be strings')
+    if not self.register_message(message):
+      return self
+    if not typecheck.is_string(handler):
+      raise TypeError('message handler has to be a string')
     if not handler.endswith('_handler'):
-      logging.warning("WARNING: Message handler '%s' that handles message '%s' "
+      logging.warning("Message handler '%s' that handles message '%s' "
                       "doesn't end with '_handler'" % (handler, message))
     self._message_handlers[message] = handler
     return self

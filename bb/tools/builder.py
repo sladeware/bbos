@@ -217,12 +217,17 @@ def extract_images():
       logging.warning('Mapping', mapping.get_name(), "doesn't have threads."
                       'Skip this mapping.')
       continue
-    print ' number of threads =', mapping.get_num_threads()
-    print ' board =', str(mapping.get_board())
+    print ' processor =', str(mapping.get_processor())
+    print ' ', mapping.get_num_threads(), 'threads =', \
+        [str(_) for _ in mapping.get_threads()]
+    print ' ', len(mapping.get_messages()), 'messages =', \
+        [str(_) for _ in mapping.get_messages()]
     print 'Generate OS'
     oses = mapping.gen_oses()
     for os in oses:
       print ' *', os
+      if not os.get_num_kernels():
+        raise Exception('OS should have atleast one kernel.')
       images.append(Image(os))
   return images
 

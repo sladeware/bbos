@@ -18,6 +18,7 @@ __author__ = 'Oleksandr Sviridenko'
 import bb
 from bb.lib.utils import typecheck
 from bb.os.port import Port
+from bb.os.message import Message
 
 class Thread(bb.Object):
   """The thread is an atomic unit action within the BB operating system, which
@@ -33,11 +34,12 @@ class Thread(bb.Object):
   RUNNER = None
   PORTS = []
 
-  def __init__(self, name=None, runner=None, ports=[]):
+  def __init__(self, name=None, runner=None, ports=[], messages=[]):
     bb.Object.__init__(self)
     self._name = None
     self._name_format = None
     self._runner = None
+    self._messages = {}
     self._ports = []
     if name:
       self.set_name(name)
@@ -55,6 +57,25 @@ class Thread(bb.Object):
       self.add_ports(ports)
     if hasattr(self, 'NAME_FORMAT'):
       self._name_format = getattr(self, 'NAME_FORMAT')
+
+  def register_message(self, message):
+    if not isinstance(message, Message):
+      raise TypeError('message has to be derived from class Message.')
+    if message.id in self._messages:
+      return False
+    self._messages[message.id] = message
+    return True
+
+  def get_supported_messages(self):
+    """Return list of supported messages."""
+    return self._messages.values()
+
+  def unregister_message(self, message):
+    if not isinstance(message, Message):
+      raise TypeError('message has to be derived from class Message.')
+    if message.id not in self._messages:
+      return
+    del self._messages[message.id]
 
   def get_name_format(self):
     return self._name_format
@@ -96,7 +117,7 @@ class Thread(bb.Object):
 
   def add_port(self, port, default=False):
     """Add port to the sequence of ports controled by this thread. Optionally
-    can be set as default port (by default is Flase). Note, the first port
+    can be set as default port (by default is `False`). Note, the first port
     always counts as default one.
 
     In case you need to make already added port as default, just add this port
@@ -120,16 +141,26 @@ class Thread(bb.Object):
   def get_default_port(self):
     """Return default port for this thread. Return None if no ports presented.
     """
-    if not self.get_num_ports():
-      return None
-    return self.get_ports()[0]
+    return self.get_port()
 
   def get_ports(self):
     return self._ports
+
+  def get_port(self, id=None):
+    """Returns port with specified identifier. If id wasn't specify, returns
+    default port (see get_default_port()).
+    """
+    if not self.get_num_ports():
+      return None
+    if not id:
+      return self.get_ports()[0]
+    return self._ports[id]
 
   def get_num_ports(self):
     return len(self.get_ports())
 
   def __str__(self):
-    return "%s[name=%s, runner=%s]" % (self.__class__.__name__, self.get_name(),
-                                       self.get_runner())
+    return "%s[name=%s, runner=%s, ports=%d]" % (self.__class__.__name__,
+                                                 self.get_name(),
+                                                 self.get_runner(),
+                                                 self.get_num_ports())
