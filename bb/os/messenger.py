@@ -15,36 +15,85 @@
 __copyright__ = 'Copyright (c) 2012 Sladeware LLC'
 __author__ = 'Oleksandr Sviridenko'
 
+"""The following example shows the most simple case how to define a new message
+handler by using :func:`Messenger.message_handler` decorator::
+
+  serial_open_msg = Message('SERIAL_OPEN', ('rx', 'tx'))
+  serial_messenger = Messenger('SERIAL_MESSENGER')
+                   .add_message_handler(serial_open_msg,  'serial_open_handler')
+
+Or the same example, but as a class::
+
+  class SerialMessenger(Messenger):
+    NAME = 'SERIAL_MESSENGER'
+    MESSAGE_HANDLERS = {
+      Message('SERIAL_OPEN', ('rx', 'tx')): 'serial_open_handler',
+    }
+
+  When a :class:`SerialMessenger` object receives a ``SERIAL_OPEN`` message,
+  the message is directed to :func:`SerialMessenger.serial_open_handler`
+  handler for the actual processing.
+"""
+
 import logging
 
 from bb.os.thread import Thread
 from bb.lib.utils import typecheck
 
+class Argument(str):
+  def __init__(self, string):
+    str.__init__(self, string)
+    self._type = None
+
+  @property
+  def type(self):
+    return self._type
+
+  @type.setter
+  def type(self, type):
+    self._type = type
+
+class Message(object):
+  """This class describes message structure passed between threads for
+  communication purposes.
+  """
+
+  def __init__(self, id, arguments):
+    self._id = None
+    self._arguments = []
+    if id:
+      self.id = id
+    if arguments:
+      self.arguments = arguments
+
+  @property
+  def id(self):
+    return self._id
+
+  @id.setter
+  def id(self, id):
+    if not typecheck.is_string(id):
+      raise TypeError('`id` has to be a string')
+    self._id = id
+
+  @property
+  def arguments(self):
+    return self._arguments
+
+  @arguments.setter
+  def arguments(self, args):
+    self._arguments = []
+    if not typecheck.is_sequence(args):
+      raise TypeError('`args` has to be a sequence')
+    for arg in args:
+      if not isinstance(arg, Argument):
+        arg = Argument(arg)
+      self._arguments.append(arg)
+
 class Messenger(Thread):
   """This class is a special form of thread, which allows to automatically
   provide an action for received message by using specified map of predefined
   handlers.
-
-  The following example shows the most simple case how to define a new message
-  handler by using :func:`Messenger.message_handler` decorator::
-
-    my_messenger = Messenger('MY_MESSENGER')
-                   .add_port(Port('P0', 10))
-                   .add_message_handler('SERIAL_OPEN',  'serial_open_handler')
-                   .add_message_handler('SERIAL_CLOSE', 'serial_close_handler')
-
-  Or the same example, but as a class::
-
-    class SerialMessenger(Messenger):
-      NAME = 'MY_MESSENGER'
-      MESSAGE_HANDLERS = {
-        'SERIAL_OPEN'  : 'serial_open_handler',
-        'SERIAL_CLOSE' : 'serial_close_handler'
-      }
-
-  When a :class:`SerialMessenger` object receives a ``SERIAL_OPEN`` message,
-  the message is directed to :func:`SerialMessenger.serial_open_handler`
-  handler for the actual processing.
 
   .. note::
 

@@ -29,18 +29,17 @@
 
 /* Prototypes */
 
-/*
- * Reads temperature (scratchpad) from sensor.
- *
- * The pin argument is the P8X32A GPIO pin that connects to the DS18B20's DQ
- * It starts at 0 and goes to 31.
- *
- * The *value argument contains the resulting temperature reading. It is an
- * integer that represents 1/100ths of degrees Celcius. For example:
- *   23.51C at the sensor => *value = 2351.
- *
- * The *value -54321 is set upon error and > 0 is returned. Returns 0 on success
- */
+/* Reads temperature (scratchpad) from sensor.
+
+ The pin argument is the P8X32A GPIO pin that connects to the DS18B20's DQ. It
+ starts at 0 and goes to 31.
+
+ The *value argument contains the resulting temperature reading. It is an
+ integer that represents 1/100ths of degrees Celcius. For example: 23.51C at the
+ sensor => *value = 2351.
+
+ The *value -54321 is set upon error and > 0 is returned. Returns 0 on
+ success. */
 int ds18b20_read_temperature(uint8_t pin, int* value);
 
 #endif /* __BB_OS_DRIVERS_ONEWIRE_SLAVES_DS18B20_H */

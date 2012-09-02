@@ -12,26 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import absolute_import
-
 __copyright__ = 'Copyright (c) 2012 Sladeware LLC'
 __author__ = 'Oleksandr Sviridenko'
 
-import unittest
+import bb
+from bb.testing import unittest
 
-class TestCase(unittest.TestCase):
-  assert_equal = unittest.TestCase.assertEqual
-  assert_not_equal = unittest.TestCase.assertNotEqual
-  assert_is_not = unittest.TestCase.assertIsNot
-  assert_is_none = unittest.TestCase.assertIsNone
-  assert_is_not_none = unittest.TestCase.assertIsNotNone
-  assert_true = unittest.TestCase.assertTrue
-  assert_false = unittest.TestCase.assertFalse
+from bb.os.messenger import Message, Messenger, Argument
 
+class MessageTest(unittest.TestCase):
   def setup(self):
-    pass
+    self._message = Message('SERIAL_OPEN', ('rx', 'tx'))
 
-  def setUp(self):
-    return self.setup()
+  def test_id(self):
+    self.assert_equal(self._message.id, 'SERIAL_OPEN')
 
-main = unittest.main
+  def test_arguments(self):
+    self.assert_equal(len(self._message.arguments), 2)
+    for arg in self._message.arguments:
+      self.assert_true(isinstance(arg, Argument))
+      self.assert_is_none(arg.type)
+    self.assert_equal(self._message.arguments[0], 'rx')
+    self.assert_equal(self._message.arguments[1], 'tx')
+
+class MessagingTest(unittest.TestCase):
+  pass
