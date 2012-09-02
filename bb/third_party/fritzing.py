@@ -46,18 +46,17 @@ import zipfile
 from bb.hardware import primitives
 from bb.hardware.devices import Device
 from bb.lib.crypto import md5
-from bb.utils.type_check import verify_list, verify_string, is_string, \
-    is_tuple, is_list
+from bb.lib.utils import typecheck
 
-# TODO(team): The tool has to be tread-safe. On this moment it doesn't.
+# TODO(team): The tool has to be tread-safe.
 
 # XML support primitives
 def extract_text_from_nodes(nodes):
-    rc = []
-    for node in nodes:
-        if node.nodeType == node.TEXT_NODE:
-            rc.append(node.data)
-    return ''.join(rc)
+  rc = []
+  for node in nodes:
+    if node.nodeType == node.TEXT_NODE:
+      rc.append(node.data)
+  return ''.join(rc)
 
 # List private module variables
 _home_dir = None
@@ -70,7 +69,7 @@ _logger = logging.getLogger('bb.tools.fritzing')
 _LOG_FILENAME = 'fritzing.log'
 # Open and clean log file for a new session
 with open(_LOG_FILENAME, 'w'):
-    pass
+  pass
 _log_hdlr = logging.FileHandler(_LOG_FILENAME)
 _log_formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 _log_hdlr.setFormatter(_log_formatter)
@@ -78,26 +77,26 @@ _logger.addHandler(_log_hdlr)
 _logger.setLevel(logging.DEBUG)
 
 def find_home_dir(ask=True):
-    """Find and return Fritzing home directory if it was not yet
-    provided. Otherwise you can set it with help of :func:`set_home_dir`.
+  """Find and return Fritzing home directory if it was not yet
+  provided. Otherwise you can set it with help of :func:`set_home_dir`.
 
-    .. note::
-       You can also set environment variable ``FRITZING_HOME``.
-    """
-    if get_home_dir():
-        return
-    home_dir = None
-    if 'FRITZING_HOME' in os.environ:
-        home_dir = os.environ['FRITZING_HOME']
-    elif not home_dir and ask:
-        home_dir = raw_input('Please provide Fritzing home dir: ')
-    set_home_dir(home_dir)
-    return dir
+  .. note::
+  You can also set environment variable ``FRITZING_HOME``.
+  """
+  if get_home_dir():
+    return
+  home_dir = None
+  if 'FRITZING_HOME' in os.environ:
+    home_dir = os.environ['FRITZING_HOME']
+  elif not home_dir and ask:
+    home_dir = raw_input('Please provide Fritzing home dir: ')
+  set_home_dir(home_dir)
+  return dir
 
 def get_home_dir():
-    """Return path to the directory with Fritzing distribution."""
-    global _home_dir
-    return _home_dir
+  """Return path to the directory with Fritzing distribution."""
+  global _home_dir
+  return _home_dir
 
 def set_home_dir(path):
     """Set Fritzing home directory."""
@@ -155,23 +154,23 @@ def get_search_pathes():
     return pathes
 
 def find_part_files(pathes, recursive=False):
-    """Search and return a list of Fritzing part files ``.fzp`` that can be
-    found at given `pathes`. List subdirectories recursively if flag
-    `recursive` is ``True``.
-    """
-    if not is_list(pathes):
-        pathes = [pathes]
-    files = list()
-    for path in pathes:
-        if os.path.isdir(path):
-            for name in os.listdir(path):
-                if name.startswith("."): # improve this
-                    continue
-                pathes.append(os.path.join(path, name))
-        elif os.path.isfile(path) and (path.endswith(PartHandler.FILE_EXT)
-                                       or path.endswith(PartHandler.ZFILE_EXT)):
-            files.append(os.path.abspath(path))
-    return files
+  """Search and return a list of Fritzing part files ``.fzp`` that can be
+  found at given `pathes`. List subdirectories recursively if flag
+  `recursive` is ``True``.
+  """
+  if not typecheck.is_list(pathes):
+    pathes = [pathes]
+  files = list()
+  for path in pathes:
+    if os.path.isdir(path):
+      for name in os.listdir(path):
+        if name.startswith("."): # improve this
+          continue
+        pathes.append(os.path.join(path, name))
+    elif os.path.isfile(path) and (path.endswith(PartHandler.FILE_EXT)
+                                   or path.endswith(PartHandler.ZFILE_EXT)):
+      files.append(os.path.abspath(path))
+  return files
 
 def set_index_filename(filename):
     """Set the name of the index file that will be used by Fritzing. If file
@@ -733,7 +732,7 @@ class PartHandler(Handler):
         # properties of the metadata instance for this part
         for src in self.METADATA_PROPERTIES:
             dst = None
-            if is_tuple(src):
+            if typecheck.is_tuple(src):
                 src, dst = src
             else:
                 dst = src
@@ -794,6 +793,3 @@ class PartHandler(Handler):
             text = extract_text_from_nodes(property_.childNodes)
             self._object.set_property(name, extract_text_from_nodes(
                     property_.childNodes))
-
-if __name__ == '__main__':
-    pass
