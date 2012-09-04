@@ -13,16 +13,12 @@
    See the License for the specific language governing permissions and
    limitations under the License. */
 
-#ifndef __BB_OS_H
-#define __BB_OS_H
+#ifndef __BB_OS_PORT_H
+#define __BB_OS_PORT_H
 
-#include <bb/os/config.h>
-#include <bb/os/kernel.h>
+#include "mm/mempool.h"
 
-PROTOTYPE(void bbos, ());
+typedef int8_t bbos_port_id_t;
+typedef void** bbos_port_t;
 
-/* The implementation of the following prototypes has to be generated and
-   presented in os_autogen.c */
-PROTOTYPE(void bbos_init, ());
-
-#endif /* __BB_OS_H */
+#endif /* __BB_OS_PORT_H */

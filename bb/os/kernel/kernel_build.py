@@ -33,7 +33,10 @@ def gen_main_c(kernel):
   file_path = os.path.join(bb.env['BB_HOME'], 'bb', 'os', 'main%d_autogen.c' %
                            kernel.get_core().get_id())
   g = CGenerator().create(file_path)
+  g.writeln('#define BBOS_KERNEL_ID %d' % kernel.get_core().get_id())
+  g.writeln('')
   g.writeln('#include <bb/os.h>')
+  g.writeln('#include BBOS_PROCESSOR_FILE(init.h)')
   g.writeln()
   # Generate necessary API for static scheduler
   if isinstance(kernel.get_scheduler(), StaticScheduler):
@@ -49,7 +52,7 @@ def gen_main_c(kernel):
   g.writeln('static void')
   g.writeln('init()')
   g.writeln('{')
-  g.writeln('  bbos_kernel_init();')
+  #g.writeln('  bbos_kernel_init();')
   #g.write('  BBOS_SET_NR_THREADS(%d);\n' % os.kernel.get_num_threads())
   #g.write('  BBOS_KERNEL_SET_RUNNING_TYPE(%d);\n' % 0)
   g.writeln('}')
@@ -57,7 +60,7 @@ def gen_main_c(kernel):
   g.writeln('static void')
   g.writeln('start()')
   g.writeln('{')
-  g.writeln('  bbos_kernel_start();\n')
+  #g.writeln('  bbos_kernel_start();\n')
   g.writeln('  loop();')
   g.writeln('}')
   g.writeln()

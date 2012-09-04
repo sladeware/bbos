@@ -132,8 +132,7 @@ class Mapping(object):
   def get_min_message_size(self):
     size = 0
     for message in self.get_messages():
-      for field in message.fields:
-        size += field.size
+      size += message.size
     return size
 
   def set_max_message_size(self, n_bytes):

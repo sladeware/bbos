@@ -10,7 +10,7 @@ from bb.tools.loaders import propler
 import vegimeter
 
 vegimeter = bb.application.get_mapping('Vegimeter')
-(processor,) =  vegimeter.get_board().get_processors()
+processor =  vegimeter.get_processor()
 with processor.get_os() as binary:
   # TODO(team): this is straight-forward implementation.
   #             Should be replaced soon.

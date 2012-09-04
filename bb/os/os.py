@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 #
+# Copyright (c) 2012 Sladeware LLC
+# http://www.bionicbunny.org/
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -62,6 +65,24 @@ class OS(bb.Object):
 
   def get_kernel(self, i=0):
     return self._kernels[i]
+
+  def get_num_threads(self):
+    """Returns number of threads within this operating system."""
+    return len(self.get_threads())
+
+  def get_threads(self):
+    threads = []
+    for kernel in self.get_kernels():
+      threads.extend(kernel.get_threads())
+    return threads
+
+  def get_messages(self):
+    all_messages = {}
+    for thread in self.get_threads():
+      messages = thread.get_supported_messages()
+      for message in messages:
+        all_messages[message.id] = message
+    return all_messages.values()
 
   def __str__(self):
     return '%s[processor=%s, kernels=%d]' % \

@@ -18,25 +18,17 @@
 #define __BB_OS_DRIVERS_PROCESSORS_PROPELLER_P8X32_CONFIG_H
 
 #if defined(__GNUC__)
-/*
- * We use the hubtext attribute to make sure functions
- * go into hub memory even with xmm code.
- *
- * This is a GCC super-power. Put code in HUB RAM.
- * Sometimes code in XMM programs is time sensitive.
- * Use HUBTEXT before a function declaration to make
- * sure code is run from HUB instead of external memory.
- * Performance of code run from external memory is
- * unpredictable across platforms.
- */
+/* We use the hubtext attribute to make sure functions go into hub memory even
+   with xmm code.
+
+   This is a GCC super-power. Put code in HUB RAM. Sometimes code in XMM
+   programs is time sensitive. Use HUBTEXT before a function declaration to
+   make sure code is run from HUB instead of external memory. Performance of
+   code run from external memory is unpredictable across platforms. */
 #define HUBTEXT_SEC __attribute__((section(".hubtext")))
-/*
- * Use these defines to tell compiler linker to put
- * data and code (.text) into HUB RAM.
- * This is mostly useful in XMM and XMMC modes
- * where data must be shared in hub or
- * where code must execute as fast as possible
- */
+/* Use these defines to tell compiler linker to put data and code (.text) into
+   HUB RAM.  This is mostly useful in XMM and XMMC modes where data must be
+   shared in hub or where code must execute as fast as possible. */
 #define HUBDATA_SEC __attribute__((section(".hub")))
 
 /* For variables that should go in cog memory. */
@@ -46,10 +38,8 @@
 /* For functions with no epilogue or prologue: these should never return. */
 #define NAKED __attribute__((naked))
 
-/*
- * Load 16 registers local to a cog: PAR, CNT, INA, INB, OUTA, OUTB,
- * DIRA, DIRB, CTRA, CTRB, FRQA, FRQB, PHSA, PHSB, VCFG, VSCL.
- */
+/* Load 16 registers local to a cog: PAR, CNT, INA, INB, OUTA, OUTB,
+   DIRA, DIRB, CTRA, CTRB, FRQA, FRQB, PHSA, PHSB, VCFG, VSCL. */
 #include <propeller.h>
 #else
 #define HUBCODE

@@ -164,7 +164,7 @@ class SPIUploaderInterface(object):
     for i in range(self.LFSR_REQUEST_LEN, self.LFSR_REQUEST_LEN + n):
       bit = self.receive_bit(False, 0.100) # 0.110?
       if bit != seq[i]:
-        print "%d/%d: %d <> %d" % (ok, n, bit, seq[i])
+        #print "%d/%d: %d <> %d" % (ok, n, bit, seq[i])
         raise Exception("No hardware found")
       ok += 1
     version = 0
@@ -591,6 +591,8 @@ def multicog_spi_upload(cogid_to_filename_mapping, serial_port,
     uploader.disconnect()
     return ok
 
+# TODO(d2rk): do we still need this?
+
 def upload_bootloader(port="/dev/ttyUSB0", config=None, rebuild=False):
     """Upload special bootloader `MULTICOG_BOOTLOADER_BINARY_FILENAME` by using
     :class:`SPIUploader`.
@@ -608,7 +610,8 @@ def upload_bootloader(port="/dev/ttyUSB0", config=None, rebuild=False):
         raise Exception("Cannot find catalina config for %s" %
                         config.__class__.__name__)
     bootloader_src = os.path.join(HOME_DIR, "multicog_spi_bootloader.spin")
-    bootloader_binary = os.path.join(os.path.dirname(__file__), "multicog_spi_bootloader.binary")
+    bootloader_binary = os.path.join(os.path.dirname(__file__),
+                                     "multicog_spi_bootloader.binary")
     if rebuild or not os.path.exists(bootloader_binary):
         spawn(["homespun", bootloader_src, "-b",
                "-L", "/usr/local/lib/catalina/target/",

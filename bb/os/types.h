@@ -18,41 +18,13 @@
 #ifndef __BB_OS_TYPES_H
 #define __BB_OS_TYPES_H
 
-typedef int16_t bbos_code_t;
-
-typedef unsigned bbos_port_id_t;
-
 typedef struct bbos_message {
-  bbos_port_id_t owner; /* who owns the message */
+  //bbos_port_id_t owner; /* who owns the message */
   int command; /* what kind of message is it */
   void* data; /* pointer to the message data */
 #ifdef BBOS_CONFIG_UNLIMIT_PORT_SIZE
   struct bbos_message* next; // pointer to the next message in the queue
 #endif
 } bbos_message_t;
-
-typedef struct {
-#ifdef BBOS_CONFIG_UNLIMIT_PORT_SIZE
-  bbos_message_t* head; // pointer to the last message in the list
-  bbos_message_t* tail; // pointer to the last message in the list
-#else
-  bbos_message_t** message_pool;
-  int head;
-  int tail;
-#endif /* BBOS_CONFIG_UNLIMIT_PORT_SIZE */
-  int counter;
-  unsigned size; /* TODO: size_t */
-} bbos_port_t;
-
-/* Thread identifier represents up to 255 threads. */
-typedef uint8_t bbos_thread_id_t;
-
-/* Thread execution data type. */
-typedef void (*bbos_thread_runner_t)(void);
-
-typedef struct bbos_thread {
-  bbos_port_id_t port_id; // port ID for communication
-  bbos_thread_runner_t runner; // pointer to the target function to be called
-} bbos_thread_t;
 
 #endif /* __BB_OS_TYPES_H */

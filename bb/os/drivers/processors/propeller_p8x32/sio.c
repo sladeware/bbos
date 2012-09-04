@@ -31,17 +31,17 @@
 
 #define SIO_CNT_DELTA 500
 
-HUBTEXT int8_t
+HUBTEXT char
 sio_wait_byte()
 {
   while (GET_INPUT(SIO_RX_PIN));
   return sio_get_byte();
 }
 
-HUBTEXT int8_t
+HUBTEXT char
 sio_wait_byte_with_timeout(int16_t secs)
 {
-  int8_t byte;
+  char byte;
   int32_t counts_delta = 0;
   int32_t start_counts;
 
@@ -55,7 +55,7 @@ sio_wait_byte_with_timeout(int16_t secs)
   return 0;
 }
 
-HUBTEXT int8_t
+HUBTEXT char
 sio_get_byte()
 {
   int8_t i;
@@ -72,7 +72,7 @@ sio_get_byte()
   }
   /* Fix and return byte. */
   byte >>= 1;
-  return (int8_t)byte;
+  return (char)byte;
 }
 
 /*
@@ -80,7 +80,7 @@ sio_get_byte()
  * Time critical functions like this can't live in external memory.
  */
 HUBTEXT void
-sio_put_byte(int8_t c)
+sio_put_byte(char c)
 {
   int frame = 0;
   //int i = 11;
@@ -187,7 +187,7 @@ sio_put_byte(int8_t c)
 
 #if defined(SIO_PRINTF_STRING_SUPPORT)
 void
-sio_put_string(int8_t* s)
+sio_put_string(char* s)
 {
   while (*s) {
     sio_put_byte(*s++);
@@ -249,7 +249,7 @@ sio_put_hex(unsigned n)
 #endif /* SIO_PRINTF_HEX_SUPPORT */
 
 static void
-_sio_multiarg_printf(const int8_t* format, va_list a)
+_sio_multiarg_printf(const char* format, va_list a)
 {
   int8_t c;
   int i;
@@ -262,11 +262,11 @@ _sio_multiarg_printf(const int8_t* format, va_list a)
       switch ((c = *format++)) {
 #if defined(SIO_PRINTF_STRING_SUPPORT)
       case 's': /* string */
-        sio_put_string(va_arg(a, int8_t*));
+        sio_put_string(va_arg(a, char*));
         break;
 #endif /* SIO_PRINTF_STRING_SUPPORT */
       case 'c': /* character */
-        sio_put_byte((int8_t)va_arg(a, int)); /* char? */
+        sio_put_byte((char)va_arg(a, int)); /* char? */
         break;
       case 'd': /* '%d' and '%i' are synonymous for output */
       case 'i': /* 16 bit integer */
@@ -313,7 +313,7 @@ _sio_multiarg_printf(const int8_t* format, va_list a)
 }
 
 void
-sio_printf(const int8_t* format, ...)
+sio_printf(const char* format, ...)
 {
   va_list a;
   va_start(a, format);
@@ -355,7 +355,7 @@ sio_init()
 #ifdef SIO_COGSAFE_PRINTING
 
 void
-sio_cogsafe_printf(const int8_t* format, ...)
+sio_cogsafe_printf(const char* format, ...)
 {
   va_list a;
   while (propeller_lockset(cogsafe_lock)); /* wait until we lock sio */
@@ -368,7 +368,7 @@ sio_cogsafe_printf(const int8_t* format, ...)
 
 #ifdef SIO_LOCK_PRINTING
 void
-sio_lock_printf(int lock, const int8_t* format, ...)
+sio_lock_printf(int lock, const char* format, ...)
 {
   va_list a;
   while (propeller_lockset(lock)); /* wait until we lock the serial */

@@ -29,9 +29,10 @@ const static char bbos_banner[] = "BBOS version " BBOS_VERSION_STR  \
 #endif /* BBOS_CONFIG_SKIP_BANNER_PRINTING */
 
 void
-bbos_init()
+bbos()
 {
 #ifndef BBOS_CONFIG_SKIP_BANNER_PRINTING
   bbos_printf("%s", bbos_banner);
 #endif /* BBOS_CONFIG_SKIP_BANNER_PRINTING */
+  //bbos_init();
 }

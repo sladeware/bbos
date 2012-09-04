@@ -32,11 +32,8 @@ control_panel_runner()
   uint16_t vegimeter_buttons;
   /* QuickStart board has P0 - P7 as buttons */
   int16_t button_mask = 0xFFUL;
-
-  /*
-   * Read, update and store pressed buttons on vegimeter device.
-   * We need just one byte from the button mask.
-   */
+  /* Read, update and store pressed buttons on vegimeter device.
+     We need just one byte from the button mask. */
   vegimeter_buttons = shmem_read_byte(VEGIMETER_BUTTONS_ADDR);
   vegimeter_buttons = (int8_t)are_buttons_pressed(button_mask); /* |=?*/
   shmem_write_byte(VEGIMETER_BUTTONS_ADDR, vegimeter_buttons);

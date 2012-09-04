@@ -45,20 +45,18 @@
 void sio_init();
 
 /* Receives a character to serial. Return 8-bit character. */
-int8_t sio_get_byte();
+char sio_get_byte();
 
-int8_t sio_wait_byte_with_timeout(int16_t secs);
+char sio_wait_byte_with_timeout(int16_t secs);
 
-int8_t sio_wait_byte();
+char sio_wait_byte();
 
-/*
- * Writes a character to the serial. This function is safe to changing of clock
- * frequency.
- */
-void sio_put_byte(int8_t c);
+/* Writes a character to the serial. This function is safe to changing of clock
+   frequency. */
+void sio_put_byte(char c);
 
 #if defined(SIO_PRINTF_STRING_SUPPORT)
-void sio_put_string(int8_t* s);
+void sio_put_string(char* s);
 #endif
 
 #if defined(SIO_PRINTF_HEX_SUPPORT)
@@ -66,23 +64,19 @@ void sio_put_hex(unsigned n);
 #endif
 
 /* See http://en.wikipedia.org/wiki/Printf#Format_placeholders */
-void sio_printf(const int8_t* format, ...);
+void sio_printf(const char* format, ...);
 
 #ifdef SIO_COGSAFE_PRINTING
-/*
- * NOTE: once SIO_COGSAFE_PRINTING was enabled, SIO_LOCK_PRINTING will
- * be also automatically enabled.
- */
+/* NOTE: once SIO_COGSAFE_PRINTING was enabled, SIO_LOCK_PRINTING will be also
+   automatically enabled. */
 #define SIO_LOCK_PRINTING
-void sio_cogsafe_printf(const int8_t* format, ...);
+void sio_cogsafe_printf(const char* format, ...);
 #endif /* SIO_COGSAFE_PRINTING */
 
 #ifdef SIO_LOCK_PRINTING
-/*
- * Lock printing routine. This routine assumes that
- * propeller_locknew() was used before.
- */
-void sio_lock_printf(int lock, const int8_t* format, ...);
+/* Lock printing routine. This routine assumes that propeller_locknew() was used
+   before. */
+void sio_lock_printf(int lock, const char* format, ...);
 #endif
 
 #endif /* __BB_OS_DRIVERS_PROCESSORS_PROPELLER_P8X32_SIO_H */

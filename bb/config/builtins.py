@@ -22,25 +22,25 @@
 # the compatibility code still since it doesn't hurt:
 
 try:
-    bool, True, False ## Introduced in 2.3
+  bool, True, False ## Introduced in 2.3
 except NameError:
-    class bool(int):
-        """Simple implementation of Booleans, as in PEP 285."""
-        def __init__(self, val): self.val = val
-        def __int__(self): return self.val
-        def __repr__(self): return ('False', 'True')[self.val]
+  class bool(int):
+    """Simple implementation of Booleans, as in PEP 285."""
+    def __init__(self, val): self.val = val
+    def __int__(self): return self.val
+    def __repr__(self): return ('False', 'True')[self.val]
 
-    True, False = bool(1), bool(0)
+  True, False = bool(1), bool(0)
 
 try:
-    sum ## Introduced in 2.3
+  sum ## Introduced in 2.3
 except NameError:
-    def sum(seq, start=0):
-        """Sum the elements of seq.
-        >>> sum([1, 2, 3])
-        6
-        """
-        return reduce(operator.add, seq, start)
+  def sum(seq, start=0):
+    """Sum the elements of seq.
+    >>> sum([1, 2, 3])
+    6
+    """
+    return reduce(operator.add, seq, start)
 
 try:
   enumerate ## Introduced in 2.3

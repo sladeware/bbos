@@ -31,9 +31,9 @@ void bbos_kernel_panic(const int8_t* fmt, ...)
   static int8_t buf[128];
   va_list args;
   va_start(args, fmt);
-  //vsnprintf(buf, sizeof(buf), fmt, args);
+  vsnprintf(buf, sizeof(buf), fmt, args);
   va_end(args);
-  //bbos_printf("Panic: %s\n", buf);
+  bbos_printf("Panic: %s\n", buf);
 #endif
   //exit(0);
 }
@@ -65,7 +65,8 @@ void bbos_kernel_init()
 #endif /* BBOS_KERNEL_ITC */
 }
 
-void bbos_kernel_main()
+void
+bbos_kernel_main()
 {
 }
 
@@ -78,7 +79,8 @@ void bbos_kernel_main()
     bbos_thread_run(bbos_sched_identify_myself());                   \
   } while (0)
 
-static void bbos_kernel_loop()
+static void
+bbos_kernel_loop()
 {
   while (TRUE) {
     bbos_sched_move();
@@ -87,14 +89,16 @@ static void bbos_kernel_loop()
   }
 }
 
-void bbos_thread_run(bbos_thread_id_t tid)
+void
+bbos_thread_run(bbos_thread_id_t tid)
 {
   bbos_validate_thread_id(tid);
   bbos_kernel_assert(bbos_thread_get_runner(tid) != NULL);
   (*bbos_thread_get_runner(tid))();
 }
 
-void bbos_kernel_enable_all_threads()
+void
+bbos_kernel_enable_all_threads()
 {
   bbos_thread_id_t tid;
   for (tid = 0; tid < BBOS_NR_THREADS; tid++) {
@@ -108,12 +112,12 @@ static void bbos_kernel_test()
 {
   // Check number of threads
   if (BBOS_NR_THREADS < 1) {
-    bbos_kernel_panic("System requires atleast one thread\n");
+    //bbos_kernel_panic("System requires atleast one thread\n");
   }
   // By default the number of ports in zero. In this case port interface wont be
   // supported.
   if (BBOS_NR_THREADS < 0) {
-    bbos_kernel_panic("Number of threads cannot be less than zero\n");
+    //bbos_kernel_panic("Number of threads cannot be less than zero\n");
   }
 }
 

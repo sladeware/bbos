@@ -30,7 +30,8 @@ def gen_main_c(processor):
   file_path = bb.host_os.path.join(bb.env['BB_HOME'], 'bb', 'os', 'main_autogen.c')
   g = CGenerator().create(file_path)
   # Do all necessary includes
-  g.writeln('#include "bb/os/main.h"')
+  g.writeln('#include <bb/os.h>')
+  g.writeln('#include "main.h"')
   g.writeln('#include <propeller.h>')
   g.writeln('#include <sys/thread.h>')
   g.writeln()
@@ -47,7 +48,7 @@ def gen_main_c(processor):
   g.writeln('int')
   g.writeln('main()')
   g.writeln('{')
-  g.writeln('  bbos_init();')
+  g.writeln('  bbos(); /* BBOS entry point */')
   for kernel in os.get_kernels():
     core = kernel.get_core()
     g.writeln('  _start_cog_thread(cog%d_stack + 16, main%d, (void*)0, '\
