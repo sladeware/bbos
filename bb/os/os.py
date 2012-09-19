@@ -31,18 +31,43 @@ class OS(bb.Object):
 
   KERNEL_CLASS = Kernel
 
-  def __init__(self, processor):
+  def __init__(self, processor, max_message_size=0):
     bb.Object.__init__(self)
-    if not isinstance(processor, Processor):
-      raise Exception('processor must be derived from Processor class.')
-    self._processor = processor
+    self._processor = None
+    self._set_processor(processor)
     self._kernels = []
+    self._messages = {}
+    self._max_message_size = 0
     for core in processor.get_cores():
       # Skip the core if we do not have a threads for it
       kernel = core.get_kernel()
       if not kernel:
         continue
       self._kernels.append(kernel)
+    self._extract_messages()
+    self._set_max_message_size(max_message_size)
+
+  def _set_processor(self, processor):
+    if not isinstance(processor, Processor):
+      raise Exception('processor must be derived from Processor class.')
+    self._processor = processor
+
+  def _set_max_message_size(self, max_size=0):
+    size = 0
+    # Compute min message size
+    for message in self.get_messages():
+      if message.size > size:
+        size = message.size
+    if max_size > size:
+      size = max_size
+    self._max_message_size = size
+
+  def _extract_messages(self):
+    self._messages = {}
+    for thread in self.get_threads():
+      messages = thread.get_supported_messages()
+      for message in messages:
+        self._messages[message.id] = message
 
   @property
   def processor(self):
@@ -76,13 +101,11 @@ class OS(bb.Object):
       threads.extend(kernel.get_threads())
     return threads
 
+  def get_max_message_size(self):
+    return self._max_message_size
+
   def get_messages(self):
-    all_messages = {}
-    for thread in self.get_threads():
-      messages = thread.get_supported_messages()
-      for message in messages:
-        all_messages[message.id] = message
-    return all_messages.values()
+    return self._messages.values()
 
   def __str__(self):
     return '%s[processor=%s, kernels=%d]' % \

@@ -18,9 +18,10 @@
 #define __BB_OS_DRIVERS_PROCESSORS_PROPELLER_P8X32_SIO_H
 
 #include <bb/config.h>
+#include BB_STDLIB_FILE(stdarg.h)
 
 /* Default definitions */
-#define SIO_PRINTF_STRING_SUPPORT
+#define BB_PRINTF_STRING_SUPPORT
 
 /* Receiving pin. */
 #ifndef SIO_RX_PIN
@@ -42,29 +43,28 @@
 
 /* Prototypes. */
 
-void sio_init();
-
 /* Receives a character to serial. Return 8-bit character. */
-char sio_get_byte();
+char bb_get_byte();
 
-char sio_wait_byte_with_timeout(int16_t secs);
+char bb_wait_byte_with_timeout(int16_t secs);
 
-char sio_wait_byte();
+char bb_wait_byte();
 
 /* Writes a character to the serial. This function is safe to changing of clock
    frequency. */
-void sio_put_byte(char c);
+void bb_put_byte(char c);
 
-#if defined(SIO_PRINTF_STRING_SUPPORT)
-void sio_put_string(char* s);
+#if defined(BB_PRINTF_STRING_SUPPORT)
+void bb_put_string(char* s);
 #endif
 
-#if defined(SIO_PRINTF_HEX_SUPPORT)
-void sio_put_hex(unsigned n);
+#if defined(BB_PRINTF_HEX_SUPPORT)
+void bb_put_hex(unsigned n);
 #endif
 
 /* See http://en.wikipedia.org/wiki/Printf#Format_placeholders */
-void sio_printf(const char* format, ...);
+void bb_printf(const char* format, ...);
+void bb_vprintf(const char* format, va_list a);
 
 #ifdef SIO_COGSAFE_PRINTING
 /* NOTE: once SIO_COGSAFE_PRINTING was enabled, SIO_LOCK_PRINTING will be also

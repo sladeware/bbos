@@ -17,9 +17,8 @@
 #include "vegimeter_config.h"
 
 #include <bb/os.h>
-#include <bb/os/kernel/delay.h>
+#include <bb/os/light_stdio.h>
 #include BBOS_PROCESSOR_FILE(shmem.h)
-#include BBOS_PROCESSOR_FILE(sio.h)
 
 void
 ui_runner()
@@ -31,7 +30,7 @@ ui_runner()
   if (vegimeter_buttons) {
     for (i = 0; i < 8; i++, vegimeter_buttons >>= 1) {
       if (vegimeter_buttons & 1) {
-        sio_printf("Button pressed: %d\n", i);
+        bb_printf("Button pressed: %d\n", i);
       }
     }
     /* Zero buttons state */

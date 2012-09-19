@@ -23,23 +23,21 @@
 /*
  * TODO: revise lock-safe routines.
  */
-
 #include "sio.h"
 #include "pins.h"
 #include "delay.h"
-#include <stdarg.h>
 
 #define SIO_CNT_DELTA 500
 
 HUBTEXT char
-sio_wait_byte()
+bb_wait_byte()
 {
   while (GET_INPUT(SIO_RX_PIN));
-  return sio_get_byte();
+  return bb_get_byte();
 }
 
 HUBTEXT char
-sio_wait_byte_with_timeout(int16_t secs)
+bb_wait_byte_with_timeout(int16_t secs)
 {
   char byte;
   int32_t counts_delta = 0;
@@ -48,7 +46,7 @@ sio_wait_byte_with_timeout(int16_t secs)
   counts_delta = secs * propeller_get_clockfreq();
   start_counts = propeller_get_cnt();
   while ((propeller_get_cnt() - start_counts) < counts_delta) {
-    if ((byte = sio_get_byte())) {
+    if ((byte = bb_get_byte())) {
       return byte;
     }
   }
@@ -56,7 +54,7 @@ sio_wait_byte_with_timeout(int16_t secs)
 }
 
 HUBTEXT char
-sio_get_byte()
+bb_get_byte()
 {
   int8_t i;
   int16_t byte;
@@ -75,12 +73,10 @@ sio_get_byte()
   return (char)byte;
 }
 
-/*
- * NOTE: We need sio_put_byte() to always be in HUB memory for speed.
- * Time critical functions like this can't live in external memory.
- */
+/* NOTE: We need bb_put_byte() to always be in HUB memory for speed.
+   Time critical functions like this can't live in external memory. */
 HUBTEXT void
-sio_put_byte(char c)
+bb_put_byte(char c)
 {
   int frame = 0;
   //int i = 11;
@@ -185,15 +181,15 @@ sio_put_byte(char c)
 #endif
 }
 
-#if defined(SIO_PRINTF_STRING_SUPPORT)
+#if defined(BB_PRINTF_STRING_SUPPORT)
 void
-sio_put_string(char* s)
+bb_put_string(char* s)
 {
   while (*s) {
-    sio_put_byte(*s++);
+    bb_put_byte(*s++);
   }
 }
-#endif /* SIO_PRINTF_STRING_SUPPORT */
+#endif /* BB_PRINTF_STRING_SUPPORT */
 
 static const unsigned long dv[] = {
 #if 0
@@ -228,45 +224,45 @@ xtoa(unsigned long x, const unsigned long *dp)
       d = *dp++;
       c = '0';
       while (x >= d) ++c, x -= d;
-      sio_put_byte(c);
+      bb_put_byte(c);
     }
     while (!(d & 1));
   } else {
-    sio_put_byte('0');
+    bb_put_byte('0');
   }
 }
 
-#if defined(SIO_PRINTF_HEX_SUPPORT)
+#if defined(BB_PRINTF_HEX_SUPPORT)
 void
-sio_put_hex(unsigned n)
+bb_put_hex(unsigned n)
 {
   static const int8_t hex[16] = {
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
     'A','B','C','D','E','F'
   };
-  sio_put_byte(hex[n & 15]);
+  bb_put_byte(hex[n & 15]);
 }
-#endif /* SIO_PRINTF_HEX_SUPPORT */
+#endif /* BB_PRINTF_HEX_SUPPORT */
 
-static void
-_sio_multiarg_printf(const char* format, va_list a)
+void
+bb_vprintf(const char* format, va_list a)
 {
   int8_t c;
   int i;
-#if defined(SIO_PRINTF_LONG_SUPPORT)
+#if defined(BB_PRINTF_LONG_SUPPORT)
   long n;
 #endif
 
   while ((c = *format++)) {
     if (c == '%') {
       switch ((c = *format++)) {
-#if defined(SIO_PRINTF_STRING_SUPPORT)
+#if defined(BB_PRINTF_STRING_SUPPORT)
       case 's': /* string */
-        sio_put_string(va_arg(a, char*));
+        bb_put_string(va_arg(a, char*));
         break;
-#endif /* SIO_PRINTF_STRING_SUPPORT */
+#endif /* BB_PRINTF_STRING_SUPPORT */
       case 'c': /* character */
-        sio_put_byte((char)va_arg(a, int)); /* char? */
+        bb_put_byte((char)va_arg(a, int)); /* char? */
         break;
       case 'd': /* '%d' and '%i' are synonymous for output */
       case 'i': /* 16 bit integer */
@@ -274,50 +270,50 @@ _sio_multiarg_printf(const char* format, va_list a)
         i = va_arg(a, int);
         if (c == 'i' && i < 0) {
           i = -i;
-          sio_put_byte('-');
+          bb_put_byte('-');
         }
         xtoa((unsigned)i, dv + 5);
         break;
-#if defined(SIO_PRINTF_LONG_SUPPORT)
+#if defined(BB_PRINTF_LONG_SUPPORT)
       case 'l': /* 32 bit long */
       case 'n': /* 32 bit unsigned long */
         n = va_arg(a, long);
         if (c == 'l' &&  n < 0) {
           n = -n;
-          sio_put_byte('-');
+          bb_put_byte('-');
         }
         xtoa((unsigned long)n, dv);
         break;
-#endif /* SIO_PRINTF_LONG_SUPPORT */
-#if defined(SIO_PRINTF_HEX_SUPPORT)
+#endif /* BB_PRINTF_LONG_SUPPORT */
+#if defined(BB_PRINTF_HEX_SUPPORT)
       case 'x': /* 16 bit hexadecimal */
         i = va_arg(a, int);
-        sio_put_hex(i >> 12);
-        sio_put_hex(i >> 8);
-        sio_put_hex(i >> 4);
-        sio_put_hex(i);
+        bb_put_hex(i >> 12);
+        bb_put_hex(i >> 8);
+        bb_put_hex(i >> 4);
+        bb_put_hex(i);
         break;
-#endif /* SIO_PRINTF_HEX_SUPPORT */
+#endif /* BB_PRINTF_HEX_SUPPORT */
       case 0:
         return;
       case '%':
-        sio_put_byte('%');
+        bb_put_byte('%');
         break;
       default:
         goto bad_fmt;
       }
     } else {
-    bad_fmt: sio_put_byte(c);
+    bad_fmt: bb_put_byte(c);
     }
   }
 }
 
 void
-sio_printf(const char* format, ...)
+bb_printf(const char* format, ...)
 {
   va_list a;
   va_start(a, format);
-  _sio_multiarg_printf(format, a);
+  bb_vprintf(format, a);
   va_end(a);
 }
 
@@ -334,7 +330,7 @@ static int16_t cogsafe_lock;
 #endif
 
 void
-sio_init()
+bb_sio_init()
 {
   DIR_OUTPUT(SIO_TX_PIN);
   //BBOS_DELAY_MSEC(1);

@@ -1,5 +1,5 @@
 /*
- * Bionic Bunny OS config
+ * Bionic Bunny OS config.
  *
  * Copyright (c) 2011-2012 Sladeware LLC
  * Author: Oleksandr Sviridenko

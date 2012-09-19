@@ -32,6 +32,8 @@ class PropGCCCompiler(UnixCCompiler):
   to learn more about Propeller specific options.
   """
 
+  NAME = 'propgcc'
+
   EXECUTABLES = {
     "compiler"     : ["propeller-elf-gcc"],
     "linker_exe"   : ["propeller-elf-gcc"],
@@ -54,7 +56,11 @@ class PropGCCCompiler(UnixCCompiler):
   def __init__(self, *args, **kargs):
     UnixCCompiler.__init__(self, *args, **kargs)
     self.__memory_model = None
-    self.define_macro("__linux__")
+    self.define_macro('__linux__')
+    self.define_macro("BB_HAS_STDINT_H")
+    self.define_macro("printf", "__simple_printf")
+    self.set_memory_model("LMM") # case insensetive
+    self.set_extra_preopts(["-Os", "-Wall"])
 
   def set_memory_model(self, model):
     """Set memory model (not case sensetive). Available models:

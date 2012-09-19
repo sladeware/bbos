@@ -22,53 +22,57 @@ import bb
 from bb.os import OS
 from bb.tools.generators import CGenerator
 
-with OS as bundle:
-  def dependency_resolver(self, os):
-    """Decomposes OS instances derived from OS class."""
-    return [os.get_processor()] + os.get_kernels()
-  bundle.decomposer = dependency_resolver
-
 # TODO(team): the following code has to be moved with all C files, once C
 # implementation will be separated.
 
+_CFG = {
+  'BBOS_MAX_MESSAGE_SIZE': 0,
+  'BBOS_NR_THREADS': 0,
+  'BBOS_NR_PORTS': 0
+}
+
 def gen_os_c(os):
+  sorted_threads = filter(lambda thread: thread.has_port(),
+                          sorted(os.get_threads(),
+                                 key=lambda thread: thread.has_port(),
+                                 reverse=True))
   file_path = bb.host_os.path.join(bb.env.pwd(), '..', 'os_autogen.c')
   g = CGenerator().create(file_path)
   g.writeln('#include "os.h"')
   g.writeln()
-  for i, thread in enumerate(os.get_threads()):
-    if not thread.get_num_ports():
-      continue
-    for j, port in enumerate(thread.get_ports()):
-      g.writeln('MEMPOOL_PARTITION(thread%d_port%d_part, %d, %s);' % \
-                  (i, j, port.get_capacity(), 'BBOS_MAX_MESSAGE_SIZE'))
+  for i, thread in enumerate(sorted_threads):
+    g.writeln('MEMPOOL_PARTITION(port%d_part, %d, BBOS_MAX_PACKET_SIZE);' % (i, thread.get_port().get_capacity()))
+    g.writeln('bbos_message_record_t* port%d_stack[%d];' % (i, thread.get_port().get_capacity()))
   g.writeln()
-  g.writeln('bbos_thread_t bbos_threads[BBOS_NR_THREADS] = {')
-  for i, thread in enumerate(os.get_threads()):
-    g.writeln('  {%s, %s},' % (thread.get_runner(), 'NULL'))
-  g.writeln('};')
+  g.writeln('bbos_port_t bbos_ports[BBOS_NR_PORTS];')
   g.writeln()
   g.writeln('void')
   g.writeln('bbos_init()')
   g.writeln('{')
-  for i, thread in enumerate(os.get_threads()):
-    if not thread.get_num_ports():
-      continue
-    for j, port in enumerate(thread.get_ports()):
-      v = 'thread%d_port%d' % (i, j)
-      g.writeln('  bbos_port_t %s = mempool_init(%s_part, %d, %s);' % \
-                  (v, v, port.get_capacity(), 'BBOS_MAX_MESSAGE_SIZE'))
-      g.writeln('  bbos_threads[%d].default_port = %s;' % (i, v))
+  for i, thread in enumerate(sorted_threads):
+    port = thread.get_port()
+    g.writeln('  mempool_t port%d_pool = mempool_init(port%d_part, %d, %s);' % \
+                  (i, i, port.get_capacity(), 'BBOS_MAX_PACKET_SIZE'))
+    g.writeln('  bbos_port_init(%d, %d, port%d_pool, port%d_stack);' % (i, port.get_capacity(), i, i))
   g.writeln('}')
   return file_path
 
 def gen_config_h(os):
+  """Generate bb/os/config_autogen.h header file. Will be included by
+  bb/os/config.h header file.
+  """
+  _CFG.update(
+    BBOS_NR_THREADS=os.get_num_threads(),
+    BBOS_NR_PORTS=sum([thread.has_port() for thread in os.get_threads()]),
+    BBOS_MAX_MESSAGE_SIZE=2
+    )
   file_path = bb.host_os.path.join(bb.env.pwd(), 'config_autogen.h')
   g = CGenerator().create(file_path)
-  g.writeln('#define BBOS_MAX_MESSAGE_SIZE 10')
-  g.writeln('#define BBOS_NR_THREADS %d' % os.get_num_threads())
+  for key, value in _CFG.items():
+    g.writeln('#define %s %d' % (key, value))
   g.writeln("/* Thread id's and runners */")
-  for i, thread in enumerate(os.get_threads()):
+  sorted_threads = sorted(os.get_threads(), key=lambda thread: thread.has_port(), reverse=True)
+  for i, thread in enumerate(sorted_threads):
     g.writeln("#define %s %d" % (thread.get_name(), i))
     g.writeln("#define %s_RUNNER %s" % \
                 (thread.get_name(), thread.get_runner()))
@@ -81,6 +85,6 @@ with OS as bundle:
   bundle.build_cases.update({
     # Propeller GCC compiler support
     'propeller' : {
-      'sources': ('../os.c', 'mm/mempool.c', gen_os_c, gen_config_h,)
+      'sources': ('../os.c', 'port.c', 'mm/mempool.c', gen_os_c, gen_config_h,)
     }
   })

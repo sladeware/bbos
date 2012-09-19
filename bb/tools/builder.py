@@ -31,26 +31,18 @@ BINARIES = []
 BUILD_SCRIPTS = []
 
 import networkx
-from networkx import bfs_edges
 
-class Image(networkx.Graph):
-  def __init__(self, root):
-    networkx.Graph.__init__(self)
-    self._root = root
-    self._build(root)
-
-  def _build(self, node, parent=None):
-    """Build the image graph."""
-    with node as bundle:
-      self.add_node(node)
-      if parent:
-        self.add_edge(parent, node)
-      if bundle.decomposer:
-        children = bundle.decomposer(node)
-        if not children:
-          return
-        for child in children:
-          self._build(child, node)
+class Image(networkx.DiGraph):
+  def __init__(self, os):
+    networkx.DiGraph.__init__(self)
+    self._root = os
+    self.add_node(os)
+    self.add_edge(os, os.get_processor())
+    for kernel in os.get_kernels():
+      self.add_edge(os, kernel)
+      self.add_edge(kernel, kernel.get_scheduler())
+      for thread in kernel.get_threads():
+        self.add_edge(kernel, thread)
 
   def __str__(self):
     return '%s[objects=%d]' % (self.__class__.__name__, len(self))
@@ -83,17 +75,21 @@ class Binary(object):
 
   def get_available_toolchains(self):
     """Return list of available toolchains for this image."""
+    # TODO: check the logic.
     if not self._image:
       return
     if not self._image.get_bundles():
       raise Exception("Image doesn't have bundles")
-    first_bundle = self._image.get_bundles()[0]
+    first_bundle = None
+    with self._image.get_root() as bundle:
+      first_bundle = bundle
     available = set(first_bundle.build_cases.get_supported_toolchains())
     for bundle in self._image.get_bundles():
       supported = set(bundle.build_cases.get_supported_toolchains())
       if not supported:
         logging.warning("Bundle of '%s' does not have supported toolchains" % bundle)
         continue
+      old = available
       available = available.intersection(supported)
       if not available:
         print "No common toolchains for an objects were found"
@@ -177,7 +173,7 @@ class Binary(object):
     print " selected toolchain =", toolchain
     self.use_toolchain(toolchain)
     self._build_object(self._image.get_root())
-    edges = bfs_edges(self._image, self._image.get_root())
+    edges = networkx.dfs_edges(self._image, self._image.get_root())
     for edge in edges:
       parent, obj = edge
       self._build_object(obj)
@@ -217,18 +213,17 @@ def extract_images():
       logging.warning('Mapping', mapping.get_name(), "doesn't have threads."
                       'Skip this mapping.')
       continue
-    print ' processor =', str(mapping.get_processor())
-    print ' ', mapping.get_num_threads(), 'threads =', \
-        [str(_) for _ in mapping.get_threads()]
-    print ' ', len(mapping.get_messages()), 'messages =', \
-        [str(_) for _ in mapping.get_messages()]
     print 'Generate OS'
-    oses = mapping.gen_oses()
-    for os in oses:
-      print ' *', os
-      if not os.get_num_kernels():
-        raise Exception('OS should have atleast one kernel.')
-      images.append(Image(os))
+    os = mapping.gen_os()
+    print ' processor =', str(os.get_processor())
+    print ' ', os.get_num_threads(), 'threads =', \
+        [str(_) for _ in os.get_threads()]
+    print ' ', len(os.get_messages()), 'messages =', \
+        [str(_) for _ in os.get_messages()]
+    print ' max message size =', os.get_max_message_size(), 'byte(s)'
+    if not os.get_num_kernels():
+      raise Exception('OS should have atleast one kernel.')
+    images.append(Image(os))
   return images
 
 def build(build_images=True):

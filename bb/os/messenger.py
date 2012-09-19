@@ -54,9 +54,11 @@ class Messenger(Thread):
   """
 
   MESSAGE_HANDLERS = {}
+  IDLE_ACTION = None
+  DEFAULT_ACTION = None
 
-  def __init__(self, name=None, message_handlers={}, ports=[]):
-    Thread.__init__(self, name, ports=ports)
+  def __init__(self, name=None, message_handlers={}, port=None):
+    Thread.__init__(self, name, port=port)
     self._message_handlers = {}
     if hasattr(self, 'MESSAGE_HANDLERS'):
       for message, handler in self.MESSAGE_HANDLERS.items():

@@ -74,6 +74,12 @@ class Mapping(object):
     # within existed application. See issue #16.
     bb.application.register_mapping(self)
 
+  def set_max_message_size(self, size):
+    self._max_message_size = size
+
+  def get_max_message_size(self):
+    return self._max_message_size
+
   def set_name(self, name):
     if not typecheck.is_string(name):
       raise Exception("name must be string")
@@ -81,14 +87,6 @@ class Mapping(object):
 
   def get_name(self):
     return self._name
-
-  def get_messages(self):
-    all_messages = {}
-    for thread in self.get_threads():
-      messages = thread.get_supported_messages()
-      for message in messages:
-        all_messages[message.id] = message
-    return all_messages.values()
 
   def set_thread_distributor(self, f):
     self._thread_distributor = f
@@ -129,18 +127,6 @@ class Mapping(object):
     """Return list of threads handled by this mapping."""
     return self._threads.values()
 
-  def get_min_message_size(self):
-    size = 0
-    for message in self.get_messages():
-      size += message.size
-    return size
-
-  def set_max_message_size(self, n_bytes):
-    self._max_message_size = n_bytes
-
-  def get_max_message_size(self):
-    return self._max_message_size
-
   def set_simulation_mode(self):
     self._is_simulation_mode = True
 
@@ -173,7 +159,7 @@ class Mapping(object):
   def get_os_class(self):
     return self._os_class
 
-  def gen_oses(self):
+  def gen_os(self):
     processor = self.get_processor()
     if not processor:
       raise Exception("Processor wasn't defined")
@@ -189,6 +175,7 @@ class Mapping(object):
       kernel_class = self._os_class.KERNEL_CLASS
       kernel = kernel_class(core=core, threads=threads)
       core.set_kernel(kernel)
-    os = self._os_class(processor=processor)
+    os = self._os_class(processor=processor,
+                        max_message_size=self.get_max_message_size())
     processor.set_os(os)
-    return (os,)
+    return os

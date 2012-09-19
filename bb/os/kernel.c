@@ -19,29 +19,15 @@
 
 #include <bb/os/kernel.h>
 
-void bbos_kernel_init_thread(bbos_thread_id_t tid, bbos_thread_runner_t runner)
+void
+bbos_kernel_init_thread(bbos_thread_id_t tid, bbos_thread_runner_t runner)
 {
   //bbos_validate_thread_id(tid);
   //bbos_thread_set_runner(tid, runner);
 }
 
-void bbos_kernel_panic(const int8_t* fmt, ...)
-{
-#ifdef BBOS_DEBUG
-  static int8_t buf[128];
-  va_list args;
-  va_start(args, fmt);
-  vsnprintf(buf, sizeof(buf), fmt, args);
-  va_end(args);
-  bbos_printf("Panic: %s\n", buf);
-#endif
-  //exit(0);
-}
-
-/*
- * NOTE: A requirement of BBOS is that you call bbos_kenrel_init() before
- * you invoke any of its other services.
- */
+/* NOTE: A requirement of BBOS is that you call bbos_kenrel_init() before
+   you invoke any of its other services. */
 void bbos_kernel_init()
 {
 #if 0

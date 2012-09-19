@@ -1,5 +1,8 @@
 /*
+ * This file implements port.h interface.
+ *
  * Copyright (c) 2012 Sladeware LLC
+ * Author: Oleksand Sviridenko
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +16,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __BB_ASSERT_H
-#define __BB_ASSERT_H
+#include <bb/os.h>
 
-#undef BB_ASSERT
+void
+bbos_port_init(bbos_port_id_t id, size_t capacity, mempool_t pool,
+               bbos_message_record_t** stack)
+{
+  BBOS_ASSERT(id < BBOS_NR_PORTS);
+  bbos_ports[id].capacity = capacity;
+  bbos_ports[id].pool = pool;
+  bbos_ports[id].counter = 0;
+  bbos_ports[id].stack = stack;
+}
 
-#include <assert.h>
-#define BB_ASSERT(expr) assert(expr)
-
-#endif // __BB_ASSERT_H
+int8_t
+bbos_port_is_full(bbos_port_id_t pid)
+{
+  BBOS_ASSERT(pid < BBOS_NR_PORTS);
+  return BBOS_PORT_IS_FULL(pid);
+}

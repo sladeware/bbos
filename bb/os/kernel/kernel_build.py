@@ -22,11 +22,6 @@ from bb.os import Kernel
 from bb.os.kernel.schedulers import StaticScheduler
 from bb.tools.generators import CGenerator
 
-with Kernel as bundle:
-  def dependency_resolver(x, kernel):
-    return kernel.get_threads() + [kernel.get_scheduler()]
-  bundle.decomposer = dependency_resolver
-
 def gen_main_c(kernel):
   if not kernel.get_core():
     raise Exception("Core wasn't assigned to the this kernel!")

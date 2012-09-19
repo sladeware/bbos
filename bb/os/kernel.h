@@ -17,15 +17,12 @@
 #ifndef __BB_OS_KERNEL_H
 #define __BB_OS_KERNEL_H
 
-#include <bb/os/config.h>
-#if 0
-#include <bb/os/kernel/mm.h>
-#endif
-
+#include "config.h"
 #include "port.h"
 #include "thread.h"
-
-#include <assert.h>
+#if 0
+#include "kernel/mm.h"
+#endif
 
 typedef int16_t bbos_code_t;
 
@@ -37,8 +34,19 @@ enum {
 
 struct bbos_kernel_data {
   int16_t nr_threads;
-  int16_t nr_ports;
+  bbos_thread_t* threads;
+  bbos_thread_id_t running_thread;
 };
+
+//BBOS_CORE
+
+#define bbos_kernel_assert(expr) assert(expr)
+
+void bbos_kernel_main();
+
+/******************************************************************************
+ Thread management
+ ******************************************************************************/
 
 /* Scheduler selection logic. */
 
@@ -59,12 +67,10 @@ struct bbos_kernel_data {
 #endif /* BBOS_CONFIG_SCHED_H */
 #include BBOS_CONFIG_SCHED_H
 
-#define bbos_kernel_assert(expr) assert(expr)
-
-void bbos_kernel_main();
-
 /* Returns thread structure by its identifier. */
 #define bbos_kernel_get_thread(tid) bbos_kernel_threads[tid]
+
+#define bbos_kernel_set_running_thread(tid) .running_thread = tid
 
 /* Initialize thread. */
 PROTOTYPE(void bbos_kernel_init_thread, (bbos_thread_id_t tid,
@@ -85,7 +91,9 @@ PROTOTYPE(void bbos_kernel_init_thread, (bbos_thread_id_t tid,
   } while (0)
 
 PROTOTYPE(void bbos_kernel_enable_all_threads, ());
+
 PROTOTYPE(void bbos_kernel_disable_all_threads, ());
+
 PROTOTYPE(void bbos_thread_run, (bbos_thread_id_t tid));
 
 /*
@@ -118,36 +126,18 @@ PROTOTYPE(void bbos_thread_run, (bbos_thread_id_t tid));
 #endif /* BBOS_CONFIG_USE_STATIC_SCHED */
 
 /* Compares thread id with max supported number of threads BBOS_NR_THREADS. */
-#define bbos_validate_thread_id(tid) assert(tid < BBOS_NR_THREADS)
-
-// Specify the port identifier that will be used by the system for ITC.
-#define bbos_thread_set_port_id(tid, pid)         \
-  do {                                            \
-    bbos_kernel_get_thread(tid).port_id = pid;    \
-  } while (0)
-
-#define bbos_thread_get_port_id(tid)            \
-  bbos_kernel_get_thread(tid).port_id
+#define bbos_validate_thread_id(tid) BBOS_ASSERT(tid < BBOS_NR_THREADS)
 
 /* Gets thread runner. */
 #define bbos_thread_get_runner(tid)             \
   bbos_kernel_get_thread(tid).runner
 
-// ITC will be provided only if number of ports is greater than zero.
-#if BBOS_NR_PORTS > 0
-#include <bb/os/kernel/itc.h>
-#endif // BBOS_NR_PORTS > 0
 
-////////////////////////////////////////////////////////////////////////////////
-// System Management                                                          //
-////////////////////////////////////////////////////////////////////////////////
+/* System Management */
 
 #ifndef bbos_printf
 //#define bbos_printf printf
 #endif /* bbos_printf */
-
-/* Halt the system. Display a message, then perform cleanups with exit. */
-PROTOTYPE(void bbos_kernel_panic, (const int8_t* fmt, ...));
 
 /* The first function that system calls, while will initialize the kernel. */
 PROTOTYPE(void bbos_kernel_init, ());

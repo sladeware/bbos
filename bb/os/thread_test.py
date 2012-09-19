@@ -23,20 +23,13 @@ class ThreadTest(unittest.TestCase):
   def setup(self):
     pass
 
-  def test_port_management(self):
-    p0 = bbos.Port("P0", 1)
-    p1 = bbos.Port("P1", 1)
-    p2 = bbos.Port("P2", 1)
-    ports = [p0, p1, p2]
-    t0 = bbos.Thread("T0", ports=ports)
-    self.assert_equal(t0.get_num_ports(), 3)
-    t0.remove_all_ports()
-    self.assert_equal(t0.get_num_ports(), 0)
-    # Test default port
-    for port in ports:
-      t0.add_port(port)
-    t0.add_port(p1, default=True)
-    self.assert_equal(t0.get_default_port(), p1)
+  def test_port(self):
+    t0 = bbos.Thread("T0")
+    self.assert_false(t0.has_port())
+    t0.set_port(bbos.Port(10))
+    self.assert_true(t0.has_port())
+    t0.remove_port()
+    self.assert_false(t0.has_port())
 
   def test_name(self):
     t0 = bbos.Thread("T0")

@@ -87,15 +87,23 @@ class ProgramHandler(object):
         raise ExecutionError("executable '%s' can not be found" % cmd[0])
 
 class Compiler(ProgramHandler):
-  """The basic compiler class."""
+  """The base compiler class."""
+
+  NAME = None
 
   def __init__(self, verbose=0, dry_run=False):
     ProgramHandler.__init__(self)
+    if not self.get_name():
+      raise Exception('Name has to be provided')
     self.verbose = verbose
     self.dry_run = dry_run
     # A common output directory for objects, libraries, etc.
     self.output_dir = ""
     self.output_filename = ""
+
+  @classmethod
+  def get_name(klass):
+    return getattr(klass, 'NAME', None)
 
   def get_language(self, *arg_list, **arg_dict):
     raise NotImplemented

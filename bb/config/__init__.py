@@ -17,8 +17,8 @@ import sys
 import platform
 
 import bb
-import bb.config.importing # override standard __import__
-import bb.config.builtins
+#import bb.config.importing # override standard __import__
+import bb.config.compilers.python.builtins
 
 # Compatibility with Python 2.5 through 2.7.
 assert (2,5) <= sys.version_info < (3,), """\
@@ -39,7 +39,7 @@ class _Environment(object):
     print self.get(key)
 
   def pwd(self):
-    f = bb.config.builtins.caller(n=2)
+    f = caller(n=2)
     return bb.host_os.path.dirname(inspect.getfile(f))
 
   def __setitem__(self, key, value):
