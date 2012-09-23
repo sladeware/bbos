@@ -30,7 +30,7 @@ __author__ = 'Oleksandr Sviridenko'
 
 import bb
 from bb.hardware.devices.processors import Processor
-from bb.lib.utils import typecheck
+from bb.utils import typecheck
 
 def roundrobin_thread_distributor(threads, processor):
   """Default thread distributor provides round-robin distribution of threads

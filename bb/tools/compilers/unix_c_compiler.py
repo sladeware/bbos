@@ -18,8 +18,8 @@ __author__ = 'Oleksandr Sviridenko'
 import bb
 from bb.tools.compilers.custom_c_compiler import CustomCCompiler
 from bb.tools.compilers.gcc import LD
-from bb.lib.utils import spawn
-from bb.lib.utils.host_os.path import mkpath
+from bb.utils import spawn
+from bb.utils.host_os.path import mkpath
 
 class UnixCCompiler(CustomCCompiler):
   """This class is subclass of

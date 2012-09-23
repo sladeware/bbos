@@ -39,7 +39,7 @@ import logging
 
 from bb.os.thread import Thread
 from bb.os.message import Message
-from bb.lib.utils import typecheck
+from bb.utils import typecheck
 
 class Messenger(Thread):
   """This class is a special form of thread, which allows to automatically

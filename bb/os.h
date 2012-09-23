@@ -31,16 +31,10 @@
 #endif
 
 #if BBOS_ITC_ENABLED
-#define BBOS_MAX_PACKET_SIZE (sizeof(bbos_message_header_t) + BBOS_MAX_MESSAGE_SIZE)
+#define BBOS_MESSAGE_SIZE (sizeof(bbos_message_t) + BBOS_MAX_MESSAGE_PAYLOAD_SIZE)
 
 extern bbos_port_t bbos_ports[];
-
-bbos_message_t* bbos_alloc_message(bbos_thread_id_t id);
-void bbos_send_message(bbos_message_t* msg);
-bbos_message_t* bbos_receive_message();
-void bbos_free_message(bbos_message_t* msg);
-
-#endif /* BBOS_ITC_ENABLED > 0 */
+#endif /* BBOS_ITC_ENABLED */
 
 #define BBOS_ASSERT(expr)                       \
   do {                                          \
@@ -48,6 +42,13 @@ void bbos_free_message(bbos_message_t* msg);
       bbos_assert(__FILE__, __LINE__, #expr);   \
     }                                           \
   } while (0)
+
+extern bbos_thread_id_t bbos_running_threads[BBOS_NUM_KERNELS];
+
+#define bbos_set_running_thread(id) \
+  bbos_running_threads[ bbos_get_core_id() ] = (id)
+
+/* Prototypes */
 
 PROTOTYPE(void bbos_assert, (char* filename, int line, char* expr));
 
@@ -61,5 +62,12 @@ PROTOTYPE(void bbos_panic, (const int8_t* fmt, ...));
  * presented in os_autogen.c
  */
 PROTOTYPE(void bbos_init, ());
+
+#if BBOS_ITC_ENABLED
+bbos_message_t* bbos_alloc_message(bbos_thread_id_t id);
+void bbos_send_message(bbos_message_t* msg);
+bbos_message_t* bbos_receive_message();
+void bbos_free_message(bbos_message_t* msg);
+#endif /* BBOS_ITC_ENABLED */
 
 #endif /* __BB_OS_H */

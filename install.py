@@ -1,4 +1,4 @@
-#!/usr/bib/env python
+#!/usr/bin/env python
 
 """Initially based on sysconfig.py from distutils package, with
 a few improvements.
@@ -8,6 +8,7 @@ __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __author__ = "Oleksandr Sviridenko"
 
 import os
+import shutil
 import sys
 
 REQUIRED_PYTHON_MODULES = {
@@ -223,7 +224,7 @@ def banner():
   print " ____  ____    ___           _        _ _ "
   print "| __ )| __ )  |_ _|_ __  ___| |_ __ _| | |"
   print "|  _ \|  _ \   | || '_ \/ __| __/ _` | | |"
-  print "| |_) | |_) |  | || | | \__ \ || (_| | | |"
+  print "| |_) | |_) |  | || | | \__ \  ||(_| | | |"
   print "|____/|____/  |___|_| |_|___/\__\__,_|_|_|"
   print
 
@@ -273,7 +274,8 @@ def main():
   if os.path.exists(bb_script_link_path) or os.path.lexists(bb_script_link_path):
     print "Removing old link:", bb_script_link_path
     os.unlink(bb_script_link_path)
-  os.link('./scripts/bionicbunny.py', bb_script_link_path)
+  print 'Copy', './scripts/bionicbunny.py', 'to', bb_script_link_path
+  shutil.copyfile('./scripts/bionicbunny.py', bb_script_link_path)
   return 0
 
 if __name__ == '__main__':

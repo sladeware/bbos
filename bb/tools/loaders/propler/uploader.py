@@ -31,11 +31,11 @@ except ImportError:
   print >>sys.stderr, "Please install pyserial."
   exit(0)
 
-from bb.lib.utils.spawn import spawn
 from bb.tools.loaders.propler.image import *
 from bb.tools.loaders.propler.chips import *
 from bb.tools.loaders.propler.bitwise_op import *
 from bb.tools.loaders.propler.boards import *
+from bb.utils.spawn import spawn
 
 DEFAULT_SERIAL_PORTS = {
   "posix": "/dev/ttyUSB0",

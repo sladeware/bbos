@@ -16,7 +16,7 @@ __copyright__ = 'Copyright (c) 2012 Sladeware LLC'
 __author__ = 'Oleksandr Sviridenko'
 
 import bb
-from bb.lib.utils import typecheck
+from bb.utils import typecheck
 from bb.os.port import Port
 from bb.os.message import Message
 

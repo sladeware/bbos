@@ -45,7 +45,7 @@
 #endif /* BB_CONFIG_HOST_PLATFORM_H */
 
 /* Include some magic tricks */
-#include <bb/lib/utils/tricks.h>
+#include <bb/utils/tricks.h>
 
 /*
  * Makes path to compiler's standard library file. Please use this macro,

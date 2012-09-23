@@ -17,7 +17,7 @@ __author__ = 'Oleksandr Sviridenko'
 
 from bb.hardware import primitives
 from bb.hardware.devices import Device
-from bb.lib.utils import typecheck
+from bb.utils import typecheck
 
 class Processor(Device):
   DESIGNATOR_FORMAT = "PROCESSOR%d"

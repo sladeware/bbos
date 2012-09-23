@@ -21,6 +21,8 @@
 #include <bb/os/light_stdio.h>
 #include BB_STDLIB_FILE(stdlib.h)
 
+bbos_thread_id_t bbos_running_threads[BBOS_NUM_KERNELS];
+
 #ifndef BBOS_CONFIG_SKIP_BANNER_PRINTING
 const static char bbos_banner[] = "BBOS version " BBOS_VERSION_STR  \
   " (" BB_HOST_PLATFORM_NAME ")"                                    \
@@ -31,42 +33,45 @@ const static char bbos_banner[] = "BBOS version " BBOS_VERSION_STR  \
 #if BBOS_ITC_ENABLED
 
 bbos_message_t*
-bbos_alloc_message(bbos_thread_id_t id)
+bbos_alloc_message(bbos_thread_id_t tid)
 {
-  bbos_message_record_t* record;
-  BBOS_ASSERT(id < BBOS_NR_PORTS);
-  if (BBOS_PORT_IS_FULL(id)) {
+  bbos_message_t* msg;
+  BBOS_ASSERT_THREAD_ID(tid);
+  if (BBOS_PORT_IS_FULL(tid)) {
     return NULL;
   }
-  record = (bbos_message_record_t*)mempool_alloc(bbos_ports[id].pool);
+  msg = (bbos_message_t*)mempool_alloc(bbos_ports[tid].pool);
   /* Just for testing; if port is not full, we always have memory. */
-  BBOS_ASSERT(record != NULL);
-  record->owner = id;
-  record->message.payload = &record->message.payload + 1;
-  return &record->message;
+  BBOS_ASSERT(msg != NULL);
+  msg->owner = tid;
+  return msg;
 }
 
 void
 bbos_send_message(bbos_message_t* msg)
 {
-  //BBOS_ASSERT(id < BBOS_NR_PORTS);
-  //bbos_ports[id].stack[ bbos_ports[id].counter ] = BBOS_GET_MESSAGE_PACKET(msg);
-  //bbos_ports[id].counter++;
+  bbos_thread_id_t tid = msg->owner;
+  BBOS_ASSERT_THREAD_ID(owner);
+  bbos_ports[tid].stack[ ++bbos_ports[tid].counter ] = msg;
 }
+
+#define BBOS_PORT_IS_EMPTY(id) (bbos_ports[(id)].counter == 0)
 
 bbos_message_t*
 bbos_receive_message()
 {
-  //bbos_ports[id].counter--;
-  //return bbos_ports[id].stack[ bbos_ports[id].counter ];
-  return NULL;
+  bbos_thread_id_t tid = bbos_get_running_thread();
+  if (BBOS_PORT_IS_EMPTY(tid)) {
+    return NULL;
+  }
+  return bbos_ports[tid].stack[ bbos_ports[tid].counter-- ];
 }
 
 void
 bbos_free_message(bbos_message_t* msg)
 {
-  //BBOS_ASSERT(id < BBOS_NR_PORTS);
-  //mempool_free(bbos_ports[id].pool, BBOS_GET_MESSAGE_PACKET(msg));
+  BBOS_ASSERT_THREAD_ID(msg->owner);
+  mempool_free(bbos_ports[ msg->owner ].pool, msg);
 }
 
 #endif /* BBOS_ITC_ENABLED */

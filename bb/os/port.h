@@ -27,10 +27,12 @@ struct bbos_port {
   mempool_t pool;
   int16_t counter; /* count number of unread messages. */
   int16_t capacity;
-  bbos_message_record_t** stack;
+  bbos_message_t** stack;
 };
 
 typedef struct bbos_port bbos_port_t;
+
+extern bbos_port_t bbos_ports[BBOS_NUM_PORTS];
 
 /* Macros */
 
@@ -41,8 +43,6 @@ typedef struct bbos_port bbos_port_t;
 /* Prototypes */
 
 void bbos_port_init(bbos_port_id_t id, size_t capacity, mempool_t pool,
-                    bbos_message_record_t** stack);
-
-int8_t bbos_port_is_full(bbos_port_id_t id);
+                    bbos_message_t** stack);
 
 #endif /* __BB_OS_PORT_H */

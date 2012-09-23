@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from bb.lib.utils import typecheck
+from bb.utils import typecheck
 
 class _BuildCase(object):
   def __init__(self, owner, toolchain, params):

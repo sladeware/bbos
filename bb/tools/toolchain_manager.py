@@ -17,7 +17,7 @@ import sys
 
 import bb
 from bb.tools.toolchains import Toolchain
-from bb.lib.utils import typecheck
+from bb.utils import typecheck
 
 _toolchain_classes = dict()
 

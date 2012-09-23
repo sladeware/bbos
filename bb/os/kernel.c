@@ -26,16 +26,15 @@ bbos_kernel_init_thread(bbos_thread_id_t tid, bbos_thread_runner_t runner)
   //bbos_thread_set_runner(tid, runner);
 }
 
-/* NOTE: A requirement of BBOS is that you call bbos_kenrel_init() before
-   you invoke any of its other services. */
-void bbos_kernel_init()
+void
+bbos_kernel_init()
 {
 #if 0
   bbos_thread_id_t tid;
   //bbos_printf("Initialize kernel\n");
 
   /* Initialize threads. */
-  for (tid = 0; tid < BBOS_NR_THREADS; tid++) {
+  for (tid = 0; tid < BBOS_NUM_THREADS; tid++) {
     bbos_kernel_init_thread(tid, NULL);
   }
 #endif
@@ -87,7 +86,7 @@ void
 bbos_kernel_enable_all_threads()
 {
   bbos_thread_id_t tid;
-  for (tid = 0; tid < BBOS_NR_THREADS; tid++) {
+  for (tid = 0; tid < BBOS_NUM_THREADS; tid++) {
     bbos_kernel_enable_thread(tid);
   }
 }
@@ -97,12 +96,12 @@ bbos_kernel_enable_all_threads()
 static void bbos_kernel_test()
 {
   // Check number of threads
-  if (BBOS_NR_THREADS < 1) {
+  if (BBOS_NUM_THREADS < 1) {
     //bbos_kernel_panic("System requires atleast one thread\n");
   }
   // By default the number of ports in zero. In this case port interface wont be
   // supported.
-  if (BBOS_NR_THREADS < 0) {
+  if (BBOS_NUM_THREADS < 0) {
     //bbos_kernel_panic("Number of threads cannot be less than zero\n");
   }
 }

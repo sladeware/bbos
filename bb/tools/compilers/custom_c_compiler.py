@@ -23,8 +23,8 @@ import sys
 import time
 
 import bb
-from bb.lib.utils.host_os.path import mkpath
-from bb.lib.utils import typecheck
+from bb.utils.host_os.path import mkpath
+from bb.utils import typecheck
 from bb.tools.compilers.compiler import Compiler
 
 class Linker(object):

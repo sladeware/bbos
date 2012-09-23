@@ -23,8 +23,8 @@ import inspect
 import md5
 
 import bb
-from bb.lib.utils import pyimport
-from bb.lib.utils import typecheck
+from bb.utils import pyimport
+from bb.utils import typecheck
 from bb.tools import toolchain_manager
 
 BINARIES = []

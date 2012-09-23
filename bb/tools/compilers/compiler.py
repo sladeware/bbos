@@ -17,8 +17,8 @@ __author__ = 'Oleksandr Sviridenko'
 
 import logging
 
-from bb.lib.utils.spawn import which, ExecutionError
-from bb.lib.utils import typecheck
+from bb.utils.spawn import which, ExecutionError
+from bb.utils import typecheck
 
 class ProgramHandler(object):
   EXECUTABLES = dict()

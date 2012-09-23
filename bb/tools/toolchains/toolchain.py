@@ -18,7 +18,7 @@ __author__ = 'Oleksandr Sviridenko'
 import logging
 
 import bb
-from bb.lib.utils import typecheck
+from bb.utils import typecheck
 from bb.tools.compilers import Compiler
 
 class Toolchain(object):

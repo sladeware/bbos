@@ -16,7 +16,7 @@ __copyright__ = 'Copyright (c) 2012 Sladeware LLC'
 __author__ = 'Oleksandr Sviridenko'
 
 from bb.hardware.devices import Device
-from bb.lib.utils import typecheck
+from bb.utils import typecheck
 
 class Board(Device):
   """Base class representing a board -- i.e. computing hardware.

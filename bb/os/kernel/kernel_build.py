@@ -40,6 +40,7 @@ def gen_main_c(kernel):
     g.writeln('{')
     g.writeln('  while (1) {')
     for thread in kernel.get_threads():
+      g.writeln('    bbos_set_running_thread(%s);' % thread.get_name())
       g.writeln('    %s();' % thread.get_runner())
     g.writeln('  }')
     g.writeln('}')

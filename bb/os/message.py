@@ -35,7 +35,7 @@ will be available within an OS can be obtained with help of
 Mapping.get_messages().
 """
 
-from bb.lib.utils import typecheck
+from bb.utils import typecheck
 
 # TODO(d2rk): put ID under the other fields.
 

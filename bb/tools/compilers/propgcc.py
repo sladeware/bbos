@@ -12,11 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Propeller GCC (propgcc) is GCC for the Parallax Propeller Microcontroller.
+
+Download compiler: <http://code.google.com/p/propgcc/downloads/list>. Read
+INSTALL.txt for further instructions.
+"""
+
 __copyright__ = 'Copyright (c) 2012 Sladeware LLC'
 __author__ = 'Oleksandr Sviridenko'
 
-from bb.lib.utils import typecheck
 from bb.tools.compilers.unix_c_compiler import UnixCCompiler
+from bb.utils import typecheck
 
 class PropGCCCompiler(UnixCCompiler):
   """PropGCC is a GCC port for the Parallax Propeller P8X32A

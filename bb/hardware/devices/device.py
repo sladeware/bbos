@@ -18,7 +18,7 @@ __author__ = 'Oleksandr Sviridenko'
 import networkx
 
 from bb.hardware import primitives
-from bb.lib.utils import typecheck
+from bb.utils import typecheck
 
 class Sketch(object):
   G = networkx.Graph()

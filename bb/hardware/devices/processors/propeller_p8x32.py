@@ -23,7 +23,7 @@ Each of the eight 32-bit cores (called a cog) has a CPU which has access to 512
 """
 
 from bb.hardware.devices.processors.processor import Processor
-from bb.lib.utils import typecheck
+from bb.utils import typecheck
 
 class PropellerP8X32A(Processor):
   """Parallax Propeller P8X32A processor.

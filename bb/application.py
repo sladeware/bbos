@@ -31,7 +31,7 @@ __author__ = 'Oleksandr Sviridenko'
 
 import bb
 from bb import networking
-from bb.lib.utils import typecheck
+from bb.utils import typecheck
 
 network = networking.Network()
 
