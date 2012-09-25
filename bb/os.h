@@ -25,7 +25,7 @@
 
 #define BBOS_ITC_ENABLED 0
 /* ITC will be provided only if number of ports is greater than zero. */
-#if BBOS_NR_PORTS > 0
+#if BBOS_NUM_PORTS > 0
 #undef BBOS_ITC_ENABLED
 #define BBOS_ITC_ENABLED 1
 #endif
@@ -45,16 +45,22 @@ extern bbos_port_t bbos_ports[];
 
 extern bbos_thread_id_t bbos_running_threads[BBOS_NUM_KERNELS];
 
+/**
+ * Returns ID of the thread that is currently running.
+ */
+#define bbos_get_running_thread() \
+  bbos_running_threads[ bbos_get_core_id() ]
+
 #define bbos_set_running_thread(id) \
   bbos_running_threads[ bbos_get_core_id() ] = (id)
-
-/* Prototypes */
 
 PROTOTYPE(void bbos_assert, (char* filename, int line, char* expr));
 
 PROTOTYPE(void bbos, ());
 
-/* Halt the system. Display a message, then perform cleanups with exit. */
+/**
+ * Halt the system. Display a message, then perform cleanups with exit.
+ */
 PROTOTYPE(void bbos_panic, (const int8_t* fmt, ...));
 
 /*
@@ -64,10 +70,8 @@ PROTOTYPE(void bbos_panic, (const int8_t* fmt, ...));
 PROTOTYPE(void bbos_init, ());
 
 #if BBOS_ITC_ENABLED
-bbos_message_t* bbos_alloc_message(bbos_thread_id_t id);
-void bbos_send_message(bbos_message_t* msg);
+bbos_message_t* bbos_send_message(bbos_thread_id_t tid);
 bbos_message_t* bbos_receive_message();
-void bbos_free_message(bbos_message_t* msg);
 #endif /* BBOS_ITC_ENABLED */
 
 #endif /* __BB_OS_H */

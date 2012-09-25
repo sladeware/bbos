@@ -32,46 +32,30 @@ const static char bbos_banner[] = "BBOS version " BBOS_VERSION_STR  \
 
 #if BBOS_ITC_ENABLED
 
-bbos_message_t*
-bbos_alloc_message(bbos_thread_id_t tid)
+bbos_message_t* msg
+bbos_send_message(bbos_thread_id_t tid)
 {
   bbos_message_t* msg;
   BBOS_ASSERT_THREAD_ID(tid);
   if (BBOS_PORT_IS_FULL(tid)) {
     return NULL;
   }
-  msg = (bbos_message_t*)mempool_alloc(bbos_ports[tid].pool);
-  /* Just for testing; if port is not full, we always have memory. */
-  BBOS_ASSERT(msg != NULL);
-  msg->owner = tid;
+  msg = (bbos_message_t*)mempool_alloc(bbos_port[tid].pool);
+  /* Store message as pending and the end of the port's stack. */
+  *(--bbos_port[tid].pending_cursor) = msg;
   return msg;
 }
-
-void
-bbos_send_message(bbos_message_t* msg)
-{
-  bbos_thread_id_t tid = msg->owner;
-  BBOS_ASSERT_THREAD_ID(owner);
-  bbos_ports[tid].stack[ ++bbos_ports[tid].counter ] = msg;
-}
-
-#define BBOS_PORT_IS_EMPTY(id) (bbos_ports[(id)].counter == 0)
 
 bbos_message_t*
 bbos_receive_message()
 {
-  bbos_thread_id_t tid = bbos_get_running_thread();
+  bbos_thread_id_t tid;
+  bbos_message_t msg;
+  tid = bbos_get_running_thread();
   if (BBOS_PORT_IS_EMPTY(tid)) {
     return NULL;
   }
-  return bbos_ports[tid].stack[ bbos_ports[tid].counter-- ];
-}
-
-void
-bbos_free_message(bbos_message_t* msg)
-{
-  BBOS_ASSERT_THREAD_ID(msg->owner);
-  mempool_free(bbos_ports[ msg->owner ].pool, msg);
+  return *(++bbos_port[tid].garbage_cursor);
 }
 
 #endif /* BBOS_ITC_ENABLED */

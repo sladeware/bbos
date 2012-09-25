@@ -21,6 +21,11 @@ import fnmatch
 import logging
 import inspect
 import md5
+import networkx
+
+if networkx.__version__ < '1.6':
+  raise Exception('networkx version %s is found, 1.6 or higher is required.' \
+                      % networkx.__version__)
 
 import bb
 from bb.utils import pyimport
@@ -29,8 +34,6 @@ from bb.tools import toolchain_manager
 
 BINARIES = []
 BUILD_SCRIPTS = []
-
-import networkx
 
 class Image(networkx.DiGraph):
   def __init__(self, os):

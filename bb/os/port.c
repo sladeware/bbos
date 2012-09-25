@@ -23,8 +23,9 @@ bbos_port_init(bbos_port_id_t id, size_t capacity, mempool_t pool,
 	       bbos_message_t** stack)
 {
   BBOS_ASSERT(id < BBOS_NUM_PORTS);
-  bbos_ports[id].capacity = capacity;
-  bbos_ports[id].pool = pool;
-  bbos_ports[id].counter = 0;
-  bbos_ports[id].stack = stack;
+  bbos_ports[tid].capacity = capacity;
+  bbos_ports[tid].counter = 0;
+  bbos_ports[tid].pool = pool;
+  bbos_ports[tid].garbage_cursor = stack;
+  bbos_ports[tid].pending_cursor = stack + (size - 1);
 }
