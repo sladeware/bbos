@@ -22,9 +22,8 @@ import logging
 import inspect
 import md5
 import networkx
-
-if networkx.__version__ < '1.6':
-  raise Exception('networkx version %s is found, 1.6 or higher is required.' \
+if networkx.__version__ < '1.5':
+  raise Exception('networkx version %s is found, 1.5 or higher is required.' \
                       % networkx.__version__)
 
 import bb
@@ -82,21 +81,24 @@ class Binary(object):
     if not self._image:
       return
     if not self._image.get_bundles():
-      raise Exception("Image doesn't have bundles")
-    first_bundle = None
-    with self._image.get_root() as bundle:
-      first_bundle = bundle
-    available = set(first_bundle.build_cases.get_supported_toolchains())
-    for bundle in self._image.get_bundles():
-      supported = set(bundle.build_cases.get_supported_toolchains())
+      raise Exception("Image doesn't have targets")
+    first_target = None
+    with self._image.get_root() as target:
+      first_target = target
+    available = set(first_target.build_cases.get_supported_toolchains())
+    if not available:
+      logging.warning("First target %s doesn't have build-cases" % target)
+      return None
+    for target in self._image.get_bundles():
+      supported = set(target.build_cases.get_supported_toolchains())
       if not supported:
-        logging.warning("Bundle of '%s' does not have supported toolchains" % bundle)
+        logging.warning("%s does not have supported toolchains" % target)
         continue
       old = available
       available = available.intersection(supported)
       if not available:
         print "No common toolchains for an objects were found"
-        print "Stoped on object", bundle
+        print "Stoped on target", target
         return None
     return list(available)
 
@@ -218,11 +220,19 @@ def extract_images():
       continue
     print 'Generate OS'
     os = mapping.gen_os()
+    # TODO(team): make different information available in different
+    # verbose modes.
     print ' processor =', str(os.get_processor())
-    print ' ', os.get_num_threads(), 'threads =', \
-        [str(_) for _ in os.get_threads()]
-    print ' ', len(os.get_messages()), 'messages =', \
-        [str(_) for _ in os.get_messages()]
+    print ' num threads =', os.get_num_threads()
+    print ' threads = ['
+    for thread in os.get_threads():
+      print '  ', str(thread)
+    print ' ]'
+    print ' num messages =', len(os.get_messages())
+    print ' messages = ['
+    for message in os.get_messages():
+      print '  ', str(message)
+    print ' ]'
     print ' max message size =', os.get_max_message_size(), 'byte(s)'
     if not os.get_num_kernels():
       raise Exception('OS should have atleast one kernel.')

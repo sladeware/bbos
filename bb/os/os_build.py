@@ -83,8 +83,8 @@ def gen_config_h(os):
     g.writeln('#define %s %d' % (message.label, i))
   g.close()
 
-with OS as bundle:
-  bundle.build_cases.update({
+with OS as target:
+  target.build_cases.update({
     # Propeller GCC compiler support
     'propeller' : {
       'sources': ('../os.c', 'port.c', 'mm/mempool.c', gen_os_c, gen_config_h,)

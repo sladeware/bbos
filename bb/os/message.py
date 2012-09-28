@@ -128,6 +128,6 @@ class Message(object):
       self._output_fields.append(field)
 
   def __str__(self):
-    return '%s[label=%s,size=%d,input_fields=(%s)]' % \
+    return '%s[label=%s, size=%d, input_fields=(%s)]' % \
         (self.__class__.__name__, self.label, self.size,
          ','.join([_.name for _ in self.input_fields]))

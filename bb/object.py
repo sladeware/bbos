@@ -18,19 +18,22 @@ __author__ = 'Oleksandr Sviridenko'
 import bb
 from bb.utils import typecheck
 
-class _MetaObject(type):
+class MetaObject(type):
   """Meta-class for all application objects. You have to use this class as
   meta-class for you classes in order to build or load your object on the late
   stages.
   """
 
   def __new__(mcs, name, bases, dictionary):
-    dictionary['BUNDLE_CLASS'] = bb.buildtime.object_factory(name)
+    dictionary['TARGET_CLASS'] = None # bb.buildtime.object_factory(name)
     return type.__new__(mcs, name, bases, dictionary)
 
   def __enter__(klass):
     if bb.is_build_time_stage():
-      return klass.BUNDLE_CLASS
+      print '>>>>'
+      if not klass.TARGET_CLASS:
+        klass.TARGET_CLASS = MetaObject.TARGET_CLASS
+      return klass.TARGET_CLASS
     else:
       raise Exception()
 
@@ -38,19 +41,23 @@ class _MetaObject(type):
     pass
 
 class Object(object):
+  """The main object class."""
 
-  __metaclass__ = _MetaObject
+  __metaclass__ = MetaObject
 
   def __init__(self):
-    self._bundle = self.BUNDLE_CLASS()
+    self._target = None # self.TARGET_CLASS()
 
   def __enter__(self):
+    if not self._target:
+      print '<<<<', self.TARGET_CLASS
+      self._target = Object.TARGET_CLASS(self)
     if bb.is_build_time_stage():
-      return self._bundle
+      return self._target
     elif bb.is_load_time_stage():
-      if not self._bundle.binary:
+      if not self._target.binary:
         raise Exception('No binary associated with this object')
-      return self._bundle.binary
+      return self._target.binary
     else:
       raise Exception()
 
