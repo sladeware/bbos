@@ -17,7 +17,7 @@ import sys
 import platform
 
 import bb
-#import bb.config.importing # override standard __import__
+import bb.config.compilers.python.importer # override standard __import__
 import bb.config.compilers.python.builtins
 
 # Compatibility with Python 2.5 through 2.7.
