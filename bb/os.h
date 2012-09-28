@@ -1,4 +1,6 @@
 /*
+ * BB operating system interface
+ *
  * Copyright (c) 2012 Sladeware LLC
  * Author: Oleksand Sviridenko
  *
@@ -22,6 +24,7 @@
 #include "os/thread.h"
 #include "os/message.h"
 #include "os/port.h"
+#include BBOS_PROCESSOR_FILE(core.h)
 
 #define BBOS_ITC_ENABLED 0
 /* ITC will be provided only if number of ports is greater than zero. */
@@ -72,6 +75,7 @@ PROTOTYPE(void bbos_init, ());
 #if BBOS_ITC_ENABLED
 bbos_message_t* bbos_send_message(bbos_thread_id_t tid);
 bbos_message_t* bbos_receive_message();
+void bbos_deliver_messages();
 #endif /* BBOS_ITC_ENABLED */
 
 #endif /* __BB_OS_H */

@@ -66,51 +66,68 @@ class Message(object):
     def size(self, size):
       self._size = size
 
-  def __init__(self, id, fields):
-    self._id = None
-    self._fields = []
-    if id:
-      self.id = id
-    if fields:
-      self.fields = fields
+  def __init__(self, label, input_fields=[], output_fields=[]):
+    self._label = None
+    self._input_fields = []
+    self._output_fields = []
+    if label:
+      self.label = label
+    if input_fields:
+      self.input_fields = input_fields
+    if output_fields:
+      self.output_fields = output_fields
 
   @property
-  def id(self):
-    return self._id
+  def label(self):
+    return self._label
 
-  @id.setter
-  def id(self, id):
-    if not typecheck.is_string(id):
-      raise TypeError('`id` has to be a string')
-    self._id = id
+  @label.setter
+  def label(self, label):
+    if not typecheck.is_string(label):
+      raise TypeError('`label` has to be a string')
+    self._label = label
 
   @property
   def size(self):
     return self.get_size()
 
   def get_size(self):
-    size = 0
-    for field in self.fields:
-      size += field.size
-    return size
+    return max(sum([_.size for _ in self.input_fields]),
+               sum([_.size for _ in self.output_fields]))
 
   @property
-  def fields(self):
-    return self._fields
+  def input_fields(self):
+    return self._input_fields
 
-  @fields.setter
-  def fields(self, fields):
-    self._fields = []
-    if not typecheck.is_sequence(fields):
-      raise TypeError('`fields` has to be a sequence')
-    for field in fields:
+  @input_fields.setter
+  def input_fields(self, input_fields):
+    self._input_fields = []
+    if not typecheck.is_sequence(input_fields):
+      raise TypeError('`input_fields` has to be a sequence')
+    for field in input_fields:
       if typecheck.is_sequence(field):
         field = self.Field(field[0], field[1])
       elif not isinstance(field, Field):
         field = self.Field(field)
-      self._fields.append(field)
+      self._input_fields.append(field)
+
+  @property
+  def output_fields(self):
+    return self._output_fields
+
+  @output_fields.setter
+  def output_fields(self, output_fields):
+    self._output_fields = []
+    if not typecheck.is_sequence(output_fields):
+      raise TypeError('`output_fields` has to be a sequence')
+    for field in output_fields:
+      if typecheck.is_sequence(field):
+        field = self.Field(field[0], field[1])
+      elif not isinstance(field, Field):
+        field = self.Field(field)
+      self._output_fields.append(field)
 
   def __str__(self):
-    return '%s[id=%s,size=%d,fields=(%s)]' % \
-        (self.__class__.__name__, self.id, self.size,
-         ','.join([_.name for _ in self.fields]))
+    return '%s[label=%s,size=%d,input_fields=(%s)]' % \
+        (self.__class__.__name__, self.label, self.size,
+         ','.join([_.name for _ in self.input_fields]))

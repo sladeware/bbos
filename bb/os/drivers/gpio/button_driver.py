@@ -22,6 +22,6 @@ class ButtonDriver(Driver):
   NAME_FORMAT = 'BUTTON_DRIVER_%d'
   RUNNER = 'button_driver_runner'
   MESSAGE_HANDLERS = {
-    Message('IS_BUTTON_PRESSED', [('pin', 1)]): 'is_button_pressed_handler',
-    Message('ARE_BUTTONS_PRESSED', [('mask', 2)]): 'are_buttons_pressed_handler'
+    Message('IS_BUTTON_PRESSED', [('pin', 1)]): 'is_button_pressed',
+    Message('ARE_BUTTONS_PRESSED', [('mask', 2)]): 'are_buttons_pressed'
   }

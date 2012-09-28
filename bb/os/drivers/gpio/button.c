@@ -1,4 +1,6 @@
 /*
+ * This file implements button.h interface
+ *
  * Copyright (c) 2012 Sladeware LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,15 +16,27 @@
  * limitations under the License.
  */
 
-#include <bb/os/drivers/gpio/button.h>
+#include "button.h"
+
 #include <bb/os/kernel/delay.h>
 #include <bb/os/drivers/processors/propeller_p8x32/pins.h>
 
-uint8_t
-is_button_pressed(uint8_t pin)
+#define BUTTON_DELAY 4 /* ms */
+#define BUTTON_FINAL_DELAY 100 /* ms */
+#define DEBOUNCE_LOOPS 60
+#define DEBOUNCE_TOLERANCE 15
+
+/*
+ * Input argument is the button pin scanned. Returns 1 when the button is
+ * pressed and 0 otherwise.
+ */
+void
+is_button_pressed(void* args)
 {
+  uint8_t pin;
   uint8_t result;
   uint8_t count;
+  pin = ((struct is_button_pressed_args*)args)->pin;
   /* Read the push button state */
   for (count = 0, result = 0; count < DEBOUNCE_LOOPS; count++) {
     OUT_HIGH(pin);
@@ -32,16 +46,28 @@ is_button_pressed(uint8_t pin)
     result += GET_INPUT(pin);
   }
   BBOS_DELAY_MSEC(BUTTON_FINAL_DELAY);
-  return (result < (DEBOUNCE_LOOPS - DEBOUNCE_TOLERANCE));
+  *((struct is_button_pressed_args*)args)->is_pressed = (result < (DEBOUNCE_LOOPS - DEBOUNCE_TOLERANCE));
 }
 
-uint16_t
-are_buttons_pressed(uint16_t mask)
+/*
+ * Input argument is a bit mask of buttons scanned. Returns a bit
+ * mask of the buttons that were pressed.
+ *
+ * TODO: run this function from HUB if compiled for LMM.
+ *
+ * NOTE(Slade): see another implementation from demos for propgcc in
+ * demos/forumists/jazzed/QSwam/qswam.c
+ */
+void
+are_buttons_pressed(void* args)
 {
   uint32_t result[32];
   uint32_t output;
   uint8_t count;
   uint8_t pin;
+  uint16_t mask;
+
+  mask = ((struct are_buttons_pressed_args*)args)->input_mask;
 
   for (pin = 0; pin < 32; pin++) {
     result[pin] = 0;
@@ -73,5 +99,7 @@ are_buttons_pressed(uint16_t mask)
       output >>= 1;
     }
   }
-  return output;
+  *((struct are_buttons_pressed_args*)args)->output_mask = output;
 }
+
+#include "button_driver_runner_autogen.c"

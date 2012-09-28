@@ -15,21 +15,19 @@
 __copyright__ = 'Copyright (c) 2012 Sladeware LLC'
 __author__ = 'Oleksander Sviridenko'
 
+import logging
 import os
 import os.path
-import time
-import sys
-import types
-import optparse
 import operator
-import logging
-import threading
-from ctypes import *
 try:
   import serial
 except ImportError:
-  print >>sys.stderr, "Please install pyserial."
+  print >>sys.stderr, 'Please install pyserial.'
   exit(0)
+import signal
+import sys
+import time
+import types
 
 from bb.tools.loaders.propler.image import *
 from bb.tools.loaders.propler.chips import *
@@ -285,25 +283,21 @@ class SPIUploader(SPIUploaderInterface):
       image = self.bin_to_eeprom(image)
     count_bytes = len(image)
     count_longs = count_bytes // 4
-    print "Ready to transmit", count_bytes, "bytes"
+    print 'Ready to transmit', count_bytes, 'byte(s)'
     command = BootloaderCommands.get_code_list()[eeprom * 2 + run]
     self.send_long(command)
     self.send_long(count_longs)
-    #time.sleep(0.05)
     for i in range(0, count_bytes, 4):
-      #chunk = map(ord, image[i:i+4])
-      #chunk = chunk[0] | (chunk[1] << 8) | (chunk[2] << 16) | (chunk[3] << 24)
-      #self.send_long(chunk)
       self.send_long(ord(image[i]) | (ord(image[i + 1]) << 8) |
                      (ord(image[i + 2]) << 16) | (ord(image[i + 3]) << 24))
       done = float(i + 4) / float(count_bytes)
-      sys.stdout.write("Downloading [{0:50s}] {1:.1f}%".format('#' * int(done * 50), done * 100))
-      sys.stdout.write("\r")
+      sys.stdout.write('Downloading [{0:50s}] {1:.1f}%'.format('#' * int(done * 50), done * 100))
+      sys.stdout.write('\r')
       sys.stdout.flush()
-    print # escape from progress bar
-    # wait for checksum calculation on Propeller ... 95ms is minimum
+    print # Escape from progress bar.
+    # Wait for checksum calculation on Propeller ... 95ms is minimum.
     time.sleep(0.15)
-    sys.stdout.write("Verifying... ")
+    sys.stdout.write('Verifying... ')
     sys.stdout.flush()
     if self.receive_bit(True, 8):
       print "RAM checksum error"
@@ -323,204 +317,197 @@ class SPIUploader(SPIUploaderInterface):
       result.append(chr(0x92 | (value & 0x01) | ((value & 2) << 2) | ((value & 4) << 4)))
       value >>= 3
     result.append(chr(0xf2 | (value & 0x01) | ((value & 2) << 2)))
-    return "".join(result)
+    return ''.join(result)
 
 class MulticogBootloaderCommands(BootloaderCommands):
-    pass
+  pass
 
 class MulticogSPIUploader(SPIUploaderInterface):
-    """See :func:`multicog_spi_upload`.
+  """See :func:`multicog_spi_upload`."""
 
-    TODO: what do we need to do with binary images that have different
-    clock speeds and modes?"""
-    def __init__(self, *args, **kargs):
-        SPIUploaderInterface.__init__(self, *args, **kargs)
-        self.__offset = 0
-        self.__total_upload_size = 0
+  # TODO(team): what do we need to do with binary images that have different
+  # clock speeds and modes?
 
-    def upload(self, cogid_to_filename_mapping, run=True, eeprom=False):
-        # Very important to select right timeout.
-        # Non-blocking mode is not allowed.
-        self.serial.timeout = 5
-        self.__total_upload_size = 0
-        # Extract and sort a list of target COG id's in increase order
-        target_cogids = cogid_to_filename_mapping.keys()
-        target_cogids.sort()
-        # Put a little bit of useful information to the log
-        # if it's required
-        if True:
-            logging.info("Task:")
-            for cogid in target_cogids:
-                path = cogid_to_filename_mapping[cogid]
-                logging.info("\t%s => COG #%d", path, cogid)
-                self.__total_upload_size += Image.get_file_size(path)
-            print "Total upload size: %d (bytes)" % self.__total_upload_size
-        # Send the command that will describe the further steps
-        command = MulticogBootloaderCommands.get_code_list()[eeprom * 2 + run]
-        #self.send_byte(command)
-        # Send synch signal in order to describe target
-        # number of images to be sent
-        self.__send_sync_signal(len(cogid_to_filename_mapping))
-        # Start uploading images on cogs one by one
-        i = 0
-        for cogid in target_cogids:
-            filename = cogid_to_filename_mapping.get(cogid)
-            if not self.__upload_to_cog(i, cogid, filename):
-                raise UploadingError("Uploading has been broken.")
-            i += 1
+  def __init__(self, *args, **kargs):
+    SPIUploaderInterface.__init__(self, *args, **kargs)
+    self.__offset = 0
+    self.__total_upload_size = 0
 
-    def __send_sync_signal(self, byte):
-        """Send two-bytes sync signal: [0xFF|BYTE]. These sequences can never
-        be generated accidentally because during normal sending 0xFF is stuffed
-        to 0xFF 0x00, so we can wait for this without the risk of accidentally
-        being triggered by a program being sent to another cog."""
-        assert(byte < 256)
-        logging.info("Sending sync signal: 0x%4x" % ((0xFF << 8) + byte))
-        #print "Sending sync signal: 0x%4x" % ((0xFF << 8) + byte)
-        self.send_byte(chr(0xFF))
-        self.send_byte(chr(byte))
+  def upload(self, cogid_to_filename_mapping, run=True, eeprom=False):
+    # Very important to select right timeout. Non-blocking mode is not allowed.
+    self.serial.timeout = 5
+    self.__total_upload_size = 0
+    # Extract and sort a list of target COG id's in increase order
+    target_cogids = cogid_to_filename_mapping.keys()
+    target_cogids.sort()
+    # Put a little bit of useful information to the log if it's
+    # required
+    if True:
+      logging.info("Task:")
+      for cogid in target_cogids:
+        path = cogid_to_filename_mapping[cogid]
+        logging.info("\t%s => COG #%d", path, cogid)
+        self.__total_upload_size += Image.get_file_size(path)
+      print "Total upload size: %d (bytes)" % self.__total_upload_size
+    # Send the command that will describe the further steps
+    command = MulticogBootloaderCommands.get_code_list()[eeprom * 2 + run]
+    # self.send_byte(command)
+    # Send synch signal in order to describe target
+    # number of images to be sent
+    self.__send_sync_signal(len(cogid_to_filename_mapping))
+    # Start uploading images on cogs one by one
+    i = 0
+    for cogid in target_cogids:
+      filename = cogid_to_filename_mapping.get(cogid)
+      if not self.__upload_to_cog(i, cogid, filename):
+        raise UploadingError("Uploading has been broken.")
+      i += 1
 
-    def stuff_and_send_byte(self, byte, timeout=None):
-        if not type(byte) is types.StringType:
-            byte = chr(byte)
-        self.send_byte(byte, timeout)
-        if byte == chr(0xFF):
-            self.send_byte(chr(0), timeout)
+  def __send_sync_signal(self, byte):
+    """Send two-bytes sync signal: [0xFF|BYTE]. These sequences can
+    never be generated accidentally because during normal sending 0xFF
+    is stuffed to 0xFF 0x00, so we can wait for this without the risk
+    of accidentally being triggered by a program being sent to another
+    cog.
+    """
+    assert(byte < 256)
+    logging.info("Sending sync signal: 0x%4x" % ((0xFF << 8) + byte))
+    self.send_byte(chr(0xFF))
+    self.send_byte(chr(byte))
 
-    def stuff_and_send_long(self, x):
-        bytes = x
-        if type(x) is types.IntType or type(x) is types.LongType:
-            bytes = Long.split_bytes(x)
-        for byte in bytes:
-            self.stuff_and_send_byte(byte)
+  def stuff_and_send_byte(self, byte, timeout=None):
+    if not type(byte) is types.StringType:
+      byte = chr(byte)
+    self.send_byte(byte, timeout)
+    if byte == chr(0xFF):
+      self.send_byte(chr(0), timeout)
 
-    def __upload_to_cog(self, i, cogid, filename):
-        # Extract image from the file
-        data = Image.extract_from_file(filename)
-        sz = len(data)
-        if sz % 4 != 0:
-            raise Exception("Invalid code size: must be a multiple of 4")
-        logging.info("Uploading %s (%d bytes) on COG#%d" \
-                         % (filename, sz, cogid))
-        print "Uploading %s (%d bytes) on COG#%d to 0x%08x" \
-            % (filename, sz, cogid, self.__offset)
-        # The following blocks aims to edit binary image
-        vars_size = 512 # 16
-        stack_size = 1024 # 128
-        # Compute an offset for working space for our program
-        offset = self.__total_upload_size + i * (vars_size + stack_size)
+  def stuff_and_send_long(self, x):
+    bytes = x
+    if type(x) is types.IntType or type(x) is types.LongType:
+      bytes = Long.split_bytes(x)
+    for byte in bytes:
+      self.stuff_and_send_byte(byte)
 
-        # Read and fix header
-        # XXX: do we need to recalculate checksum value once the
-        #      header has been updated?
-        data_p = c_char_p(data)
-        hdr_p = cast(data_p, POINTER(SpinHeader))
-        hdr_p.contents.pbase = self.__offset + hdr_p.contents.pbase
-        hdr_p.contents.vbase = offset + 0
-        hdr_p.contents.dbase = offset + vars_size
-        hdr_p.contents.pcurr = self.__offset + hdr_p.contents.pcurr
-        hdr_p.contents.dcurr = offset + vars_size + 4 #offset + (vars_size + stack_size)
-        #print str(hdr_p.contents)
-        logging.info(str(hdr_p.contents))
-        data = list(data)
+  def __upload_to_cog(self, i, cogid, filename):
+    # Extract image from the file
+    data = Image.extract_from_file(filename)
+    sz = len(data)
+    if sz % 4 != 0:
+      raise Exception("Invalid code size: must be a multiple of 4")
+    logging.info("Uploading %s (%d bytes) on COG#%d" % (filename, sz, cogid))
+    print "Uploading %s (%d bytes) on COG#%d to 0x%08x" \
+        % (filename, sz, cogid, self.__offset)
+    # The following blocks aims to edit binary image
+    vars_size = 512 # 16
+    stack_size = 1024 # 128
+    # Compute an offset for working space for our program
+    offset = self.__total_upload_size + i * (vars_size + stack_size)
+    # Read and fix header
+    # XXX: do we need to recalculate checksum value once the
+    #      header has been updated?
+    data_p = c_char_p(data)
+    hdr_p = cast(data_p, POINTER(SpinHeader))
+    hdr_p.contents.pbase = self.__offset + hdr_p.contents.pbase
+    hdr_p.contents.vbase = offset + 0
+    hdr_p.contents.dbase = offset + vars_size
+    hdr_p.contents.pcurr = self.__offset + hdr_p.contents.pcurr
+    hdr_p.contents.dcurr = offset + vars_size + 4
+    logging.info(str(hdr_p.contents))
+    data = list(data)
+    # The data may be changed till this point, thus we have to double
+    # check its size
+    assert(len(data) == sz)
+    # Sorry, but checksum can be broken since we'are trying to hack
+    # the header. Thus assert(is_valid_image(data)) is not working
+    # anymore here.
+    #
+    # OK. Now we're starting to transmit the data...
+    #
+    # Send sync signal to start binary transmitting
+    self.__send_sync_signal(cogid)
+    # Note, that only a max of PAGE_SIZE will actually get loaded, thus
+    # we split data on chunks and send them in pages
+    chunks = [PAGE_SIZE] * (sz / PAGE_SIZE)
+    if sz % PAGE_SIZE:
+      chunks.append(sz % PAGE_SIZE)
+    i = 1
+    addr = 0
+    page_sending_delay = 0.050
+    try:
+      for size in chunks:
+        page = data[addr:addr + size]
+        done = float(i) / float(len(chunks))
+        sys.stdout.write("Downloading [{0:50s}] {1:.1f}%".format('#' * int(done * 50), done * 100))
+        sys.stdout.write("\r")
+        sys.stdout.flush()
+        # Do not forget about total offset
+        time.sleep(page_sending_delay)
+        self.__send_page(cogid, i, self.__offset + addr, page, size)
+        i += 1
+        addr += size
+      print
+      self.__send_page(cogid, i, MARKER, '', 0)
+    except UploadingError:
+      return False
+    finally:
+      self.__offset += sz
+    return True
 
-        # The data may be changed till this point, thus we have to
-        # double check its size
-        assert(len(data) == sz)
-        # Sorry, but checksum can be broken since we'are trying to
-        # hack the header. Thus assert(is_valid_image(data)) is not
-        # working anymore here.
-        #
-        # OK. Now we're starting to transmit the data...
-        #
-        # Send sync signal to start binary transmitting
-        self.__send_sync_signal(cogid)
-        # Note, that only a max of PAGE_SIZE will actually get loaded, thus
-        # we split data on chunks and send them in pages
-        chunks = [PAGE_SIZE] * (sz / PAGE_SIZE)
-        if sz % PAGE_SIZE:
-            chunks.append(sz % PAGE_SIZE)
-        i = 1
-        addr = 0
-        page_sending_delay = 0.050
-        try:
-            for size in chunks:
-                page = data[addr:addr + size]
-                done = float(i) / float(len(chunks))
-                sys.stdout.write("Downloading [{0:50s}] {1:.1f}%".format('#' * int(done * 50), done * 100))
-                sys.stdout.write("\r")
-                sys.stdout.flush()
-                # Do not forget about total offset
-                time.sleep(page_sending_delay)
-                self.__send_page(cogid, i, self.__offset + addr, page, size)
-                i += 1
-                addr += size
-            print
-            self.__send_page(cogid, i, MARKER, "", 0)
-        except UploadingError:
-            return False
-        finally:
-            self.__offset += sz
-        return True
-
-    def __send_page(self, cogid, seq_no, addr, buf, size):
-        """Send bytes that have to be stored to Hub RAM. Return True
-        it the data from was successfully transmitted (data
-        LRC-checksum should be equal to result LRC-checksum recevied
-        from device)."""
-        logging.info("Sending packet #%d [COG=%d, ADDR=0x%08x, SIZE=%d]" \
-                        % (seq_no, cogid, addr, size))
-        # 4-bytes address: [COG_ID |    ADDR   ]
-        addr_hdr = (addr & 0xFFFFFF) | (cogid << 24)
-        logging.info("Sending header: 0x%08x 0x%08x"
-                    % (Long.reverse_bytes(addr_hdr), Long.reverse_bytes(size)))
-        #print "Sending header: 0x%08x 0x%08x" \
-            #% (Long.reverse_bytes(addr_hdr), Long.reverse_bytes(size))
-        self.stuff_and_send_long(Long.reverse_bytes(addr_hdr))
-        # Sending page 4 bytes size
-        self.stuff_and_send_long(Long.reverse_bytes(size))
-        # IF
-        if addr == MARKER:
-            self.send_byte(chr(cogid))
-            return
-        # LRC-checksum value (xor of each byte)
-        lrc_checksum = 0x00
-        # Start transmitting page bytes
-        i = 0
-        while i < size:
-            self.stuff_and_send_byte(buf[i], timeout=BYTE_DELAY)
-            # Calculate the XOR value for this byte
-            lrc_checksum = operator.xor(lrc_checksum, ord(buf[i]))
-            i += 1
-        # Wait for calculation LRC value
-        # Waiting for sync
-        logging.info("Waiting for sync...")
-        # Receive and verify first sync byte, should be 0xFF
-        ff = self.receive(1, None)
-        if not ff:
-            logging.error("Timeout while expecting for '0xFF' value.")
-            raise UploadingError()
-        elif not ord(ff) == 0xFF:
-            logging.error("PACKET#%d: expecting '0xFF' value as the first byte of sync signal, "
-                         "but received '%d'", seq_no, ord(ff))
-            raise UploadingError()
-        # Receive and verify second sync byte. Should be our COG id.
-        result_cog_id = self.receive(1) # timeout=None <== wait
-        if ord(result_cog_id) != cogid:
-            logging.error("Waiting for %d but received %d", cogid, ord(result_cog_id))
-            raise UploadingError()
-        # Receive and verify LRC value
-        logging.info("Waiting for result LRC checksum value... ")
-        result_lrc_checksum = ord(self.receive(1))
-        logging.info("Result LRC checksum value: %d", result_lrc_checksum)
-        # Compare our LRC value and result LRC value from device
-        logging.info("Verifying LRC-checksum: %d and %d"
-                    % (lrc_checksum, result_lrc_checksum))
-        if not lrc_checksum == result_lrc_checksum:
-            logging.error("LRC-checksum didn't match.")
-            raise UploadingError()
-
-import signal
+  def __send_page(self, cogid, seq_no, addr, buf, size):
+    """Send bytes that have to be stored to Hub RAM. Return True it
+    the data from was successfully transmitted (data LRC-checksum
+    should be equal to result LRC-checksum recevied from device).
+    """
+    logging.info('Sending packet #%d [COG=%d, ADDR=0x%08x, SIZE=%d]' \
+                   % (seq_no, cogid, addr, size))
+    # 4-bytes address: [COG_ID |    ADDR   ]
+    addr_hdr = (addr & 0xFFFFFF) | (cogid << 24)
+    logging.info("Sending header: 0x%08x 0x%08x"
+                 % (Long.reverse_bytes(addr_hdr), Long.reverse_bytes(size)))
+    self.stuff_and_send_long(Long.reverse_bytes(addr_hdr))
+    # Sending page 4 bytes size
+    self.stuff_and_send_long(Long.reverse_bytes(size))
+    # IF
+    if addr == MARKER:
+      self.send_byte(chr(cogid))
+      return
+    # LRC-checksum value (xor of each byte)
+    lrc_checksum = 0x00
+    # Start transmitting page bytes
+    i = 0
+    while i < size:
+      self.stuff_and_send_byte(buf[i], timeout=BYTE_DELAY)
+      # Calculate the XOR value for this byte
+      lrc_checksum = operator.xor(lrc_checksum, ord(buf[i]))
+      i += 1
+    # Wait for calculation LRC value
+    # Waiting for sync
+    logging.info("Waiting for sync...")
+    # Receive and verify first sync byte, should be 0xFF
+    ff = self.receive(1, None)
+    if not ff:
+      logging.error("Timeout while expecting for '0xFF' value.")
+      raise UploadingError()
+    elif not ord(ff) == 0xFF:
+      logging.error("PACKET#%d: expecting '0xFF' value as the first byte of sync signal, "
+                    "but received '%d'", seq_no, ord(ff))
+      raise UploadingError()
+    # Receive and verify second sync byte. Should be our COG id.
+    result_cog_id = self.receive(1) # timeout=None <== wait
+    if ord(result_cog_id) != cogid:
+      logging.error("Waiting for %d but received %d", cogid, ord(result_cog_id))
+      raise UploadingError()
+    # Receive and verify LRC value
+    logging.info("Waiting for result LRC checksum value... ")
+    result_lrc_checksum = ord(self.receive(1))
+    logging.info("Result LRC checksum value: %d", result_lrc_checksum)
+    # Compare our LRC value and result LRC value from device
+    logging.info("Verifying LRC-checksum: %d and %d" \
+                   % (lrc_checksum, result_lrc_checksum))
+    if not lrc_checksum == result_lrc_checksum:
+      logging.error("LRC-checksum didn't match.")
+      raise UploadingError()
 
 def ctrlc(sig, frame):
     raise KeyboardInterrupt("CTRL-C!")
@@ -545,7 +532,8 @@ def multicog_spi_upload(cogid_to_filename_mapping, serial_port,
     uploading images until success.
 
     Note, the multicog bootloader has to be uploaded first before you
-    will start transmitting images. See :func:`upload_bootloader`."""
+    will start transmitting images. See :func:`upload_bootloader`.
+    """
 
     print "+--------+----------------------------------------------+----------------------+"
     print "| %6s | %44s | %20s |" % ("COG ID", "IMAGE", "SIZE")

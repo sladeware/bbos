@@ -26,7 +26,7 @@ from bb.tools.generators import CGenerator
 # implementation will be separated.
 
 _CFG = {
-  'BBOS_MESSAGE_SIZE': 0,
+  'BBOS_MAX_MESSAGE_PAYLOAD_SIZE': 0,
   'BBOS_NUM_THREADS': 0,
   'BBOS_NUM_PORTS': 0,
   'BBOS_NUM_KERNELS': 0,
@@ -42,7 +42,7 @@ def gen_os_c(os):
   g.writeln('#include "os.h"')
   g.writeln()
   for i, thread in enumerate(sorted_threads):
-    g.writeln('MEMPOOL_PARTITION(port%d_part, %d, BBOS_MESSAGE_SIZE);' % (i, thread.get_port().get_capacity()))
+    g.writeln('MEMPOOL_PARTITION(port%d_part, %d, BBOS_MAX_MESSAGE_PAYLOAD_SIZE);' % (i, thread.get_port().get_capacity()))
     g.writeln('bbos_message_t* port%d_stack[%d];' % (i, thread.get_port().get_capacity()))
   g.writeln()
   g.writeln('bbos_port_t bbos_ports[BBOS_NUM_PORTS];')
@@ -53,7 +53,7 @@ def gen_os_c(os):
   for i, thread in enumerate(sorted_threads):
     port = thread.get_port()
     g.writeln('  mempool_t port%d_pool = mempool_init(port%d_part, %d, %s);' % \
-                  (i, i, port.get_capacity(), 'BBOS_MESSAGE_SIZE'))
+                  (i, i, port.get_capacity(), 'BBOS_MAX_MESSAGE_PAYLOAD_SIZE'))
     g.writeln('  bbos_port_init(%d, %d, port%d_pool, port%d_stack);' % (i, port.get_capacity(), i, i))
   g.writeln('}')
   return file_path
@@ -65,7 +65,7 @@ def gen_config_h(os):
   _CFG.update(
     BBOS_NUM_THREADS=os.get_num_threads(),
     BBOS_NUM_PORTS=sum([thread.has_port() for thread in os.get_threads()]),
-    BBOS_MESSAGE_SIZE=2,
+    BBOS_MAX_MESSAGE_PAYLOAD_SIZE=2,
     BBOS_NUM_KERNELS=os.get_num_kernels()
     )
   file_path = bb.host_os.path.join(bb.env.pwd(), 'config_autogen.h')
@@ -80,7 +80,7 @@ def gen_config_h(os):
                 (thread.get_name(), thread.get_runner()))
   g.writeln('/* Supported messages */')
   for i, message in enumerate(os.get_messages()):
-    g.writeln('#define %s %d' % (message.id, i))
+    g.writeln('#define %s %d' % (message.label, i))
   g.close()
 
 with OS as bundle:

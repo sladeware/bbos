@@ -25,7 +25,7 @@ typedef bbos_thread_id_t bbos_port_id_t;
 
 struct bbos_port {
   mempool_t pool;
-  uint16_t size;
+  uint16_t capacity;
   int16_t counter; /* count number of unread messages. */
   bbos_message_t** stack;
   bbos_message_t** pending_cursor;
@@ -40,7 +40,7 @@ extern bbos_port_t bbos_ports[BBOS_NUM_PORTS];
 
 /* NOTE: for internal use only */
 #define BBOS_PORT_IS_EMPTY(id) (bbos_ports[id].counter == 0)
-#define BBOS_PORT_IS_FULL(id) (bbos_port[id].capacity == bbos_port[id].counter)
+#define BBOS_PORT_IS_FULL(id) (bbos_ports[id].capacity == bbos_ports[id].counter)
 
 /* Prototypes */
 

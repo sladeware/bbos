@@ -17,26 +17,8 @@
 #ifndef __BB_OS_DRIVERS_PROCESSORS_PROPELLER_P8X32_SHMEM_H
 #define __BB_OS_DRIVERS_PROCESSORS_PROPELLER_P8X32_SHMEM_H
 
-#include <bb/os/config.h>
+#include <bb/os.h>
 
-/* Reads and returns a byte from provided address of HUB RAM. */
-int8_t shmem_read_byte(int32_t addr);
-
-/*
- * Reads n bytes from HUB RAM address to the buffer. Caller has to manage
- * buffer memory.
- */
-void shmem_read(int32_t addr, void* buf, size_t n);
-
-/* Writes a byte to the HUB RAM. */
-void shmem_write_byte(int32_t addr, int8_t byte);
-
-/*
- * Writes n bytes to the HUB RAM.
- *
- * NOTE: a single long in the hub will be updated in one hub turn. Thus the
- * routine will use the locks, since we are updating a multi-long structure.
- */
-void shmem_write(int32_t addr, void* buf, size_t n);
+#include "shmem_driver_runner_autogen.h"
 
 #endif /* __BB_OS_DRIVERS_PROCESSORS_PROPELLER_P8X32_SHMEM_H */

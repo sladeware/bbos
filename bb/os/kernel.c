@@ -106,7 +106,9 @@ static void bbos_kernel_test()
   }
 }
 
-// Start the kernel.
+/**
+ * Start the kernel.
+ */
 void bbos_kernel_start()
 {
   //bbos_printf("Start kernel\n");

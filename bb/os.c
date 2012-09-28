@@ -32,7 +32,7 @@ const static char bbos_banner[] = "BBOS version " BBOS_VERSION_STR  \
 
 #if BBOS_ITC_ENABLED
 
-bbos_message_t* msg
+bbos_message_t*
 bbos_send_message(bbos_thread_id_t tid)
 {
   bbos_message_t* msg;
@@ -40,9 +40,9 @@ bbos_send_message(bbos_thread_id_t tid)
   if (BBOS_PORT_IS_FULL(tid)) {
     return NULL;
   }
-  msg = (bbos_message_t*)mempool_alloc(bbos_port[tid].pool);
+  msg = (bbos_message_t*)mempool_alloc(bbos_ports[tid].pool);
   /* Store message as pending and the end of the port's stack. */
-  *(--bbos_port[tid].pending_cursor) = msg;
+  *(--bbos_ports[tid].pending_cursor) = msg;
   return msg;
 }
 
@@ -55,7 +55,12 @@ bbos_receive_message()
   if (BBOS_PORT_IS_EMPTY(tid)) {
     return NULL;
   }
-  return *(++bbos_port[tid].garbage_cursor);
+  return *(++bbos_ports[tid].garbage_cursor);
+}
+
+void
+bbos_deliver_messages()
+{
 }
 
 #endif /* BBOS_ITC_ENABLED */

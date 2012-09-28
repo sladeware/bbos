@@ -35,44 +35,49 @@
 #include <bb/config/stdlib/stdio.h>
 #include <bb/config/stdlib/stddef.h>
 
-/* By default BBOS_CONFIG_DEBUG macro equals to the ANSI standrad NDEBUG macro
-   value. */
+/*
+ * By default BBOS_CONFIG_DEBUG macro equals to the ANSI standrad
+ * NDEBUG macro value.
+ */
 #ifndef BBOS_CONFIG_DEBUG
 #define BBOS_CONFIG_DEBUG NDEBUG
 #endif
-
-////////////////////////////////////////////////////////////////////////////////
-//  Hardware                                                                  //
-////////////////////////////////////////////////////////////////////////////////
 
 #ifndef BBOS_CONFIG_PROCESSOR
 #error Processor name has to be provided.
 #endif
 
-/* This macro builds path for the proper driver header file, e.g.
-   BBOS_DRIVER_FILE(gpio/buttons.h) becomes bb/os/drivers/gpio/buttons.h. */
+/**
+ * This macro builds path for the proper driver header file, e.g.
+ * BBOS_DRIVER_FILE(gpio/buttons.h) becomes bb/os/drivers/gpio/buttons.h.
+ */
 #define BBOS_DRIVER_FILE(relative_file)               \
   BB_STR(BB_PATH_JOIN2(bb/os/drivers, relative_file))
 
-/* This macro builds path for the proper processor header file. Allows to find
-   files related to processor in use. For example, if you are using the
-   propeller_p8x32a processor and you would like to include time.h file, the
-   BBOS_PROCESSOR_FILE(time.h) will produce
-   bb/os/drivers/processors/propeller_p8x32a/time.h.
-
-   NOTE: this macro can be redefined in order to load files from different
-   places. */
+/**
+ * This macro builds path for the proper processor header file. Allows
+ * to find files related to processor in use. For example, if you are
+ * using the propeller_p8x32a processor and you would like to include
+ * time.h file, the BBOS_PROCESSOR_FILE(time.h) will produce
+ * bb/os/drivers/processors/propeller_p8x32a/time.h.
+ *
+ * NOTE: this macro can be redefined in order to load files from different
+ * places.
+ */
 #ifndef BBOS_PROCESSOR_FILE
 #define BBOS_PROCESSOR_FILE(relative_file)                              \
   BBOS_DRIVER_FILE(BB_PATH_JOIN3(processors, BBOS_CONFIG_PROCESSOR,     \
                                  relative_file))
 #endif /* BBOS_PROCESSOR_FILE */
 
-/* Include BBOS_CONFIG_PROCESSOR_H header file with processor configurations. If
-   BBOS_CONFIG_PROCESSOR_H macro was not defined, BBOS_CONFIG_PROCESSOR can be
-   defined as a processor's name in order to find it in standard driver library
-   by using selection logic. For a standard processors this name equals the
-   directory name where the processor's configuration is located. */
+/**
+ * Include BBOS_CONFIG_PROCESSOR_H header file with processor
+ * configurations. If BBOS_CONFIG_PROCESSOR_H macro was not defined,
+ * BBOS_CONFIG_PROCESSOR can be defined as a processor's name in order
+ * to find it in standard driver library by using selection logic. For
+ * a standard processors this name equals the directory name where the
+ * processor's configuration is located.
+ */
 #if defined(BBOS_CONFIG_PROCESSOR_H)
 #include BBOS_CONFIG_PROCESSOR_H
 #elif defined(BBOS_CONFIG_PROCESSOR)

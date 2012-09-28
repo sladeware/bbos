@@ -58,9 +58,9 @@ class Thread(bb.Object):
   def register_message(self, message):
     if not isinstance(message, Message):
       raise TypeError('message has to be derived from class Message.')
-    if message.id in self._messages:
+    if message.label in self._messages:
       return False
-    self._messages[message.id] = message
+    self._messages[message.label] = message
     return True
 
   def get_supported_messages(self):
@@ -70,9 +70,9 @@ class Thread(bb.Object):
   def unregister_message(self, message):
     if not isinstance(message, Message):
       raise TypeError('message has to be derived from class Message.')
-    if message.id not in self._messages:
+    if message.label not in self._messages:
       return
-    del self._messages[message.id]
+    del self._messages[message.label]
 
   def get_name_format(self):
     return self._name_format

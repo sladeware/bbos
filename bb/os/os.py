@@ -67,7 +67,7 @@ class OS(bb.Object):
     for thread in self.get_threads():
       messages = thread.get_supported_messages()
       for message in messages:
-        self._messages[message.id] = message
+        self._messages[message.label] = message
 
   @property
   def processor(self):

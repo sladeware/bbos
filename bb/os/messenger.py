@@ -57,14 +57,37 @@ class Messenger(Thread):
   IDLE_ACTION = None
   DEFAULT_ACTION = None
 
-  def __init__(self, name=None, message_handlers={}, port=None):
-    Thread.__init__(self, name, port=port)
+  def __init__(self, name=None, runner=None, message_handlers={},
+               idle_action=None, default_action=None, port=None):
+    Thread.__init__(self, name, runner=runner, port=port)
+    self._default_action = None
+    self._idle_action = None
     self._message_handlers = {}
+    if not default_action:
+      default_action = getattr(self, 'DEFAULT_ACTION', None)
+    if default_action:
+      self.set_default_action(default_action)
+    if not idle_action:
+      idle_action = getattr(self, 'IDLE_ACTION', None)
+    if idle_action:
+      self.get_idle_action(idle_action)
     if hasattr(self, 'MESSAGE_HANDLERS'):
       for message, handler in self.MESSAGE_HANDLERS.items():
         self.add_message_handler(message, handler)
     if message_handlers:
       self.add_message_handlers(message_handlers)
+
+  def get_default_action(self):
+    return self._default_action
+
+  def set_default_action(self, action):
+    self._default_action = action
+
+  def get_idle_action(self):
+    return self._idle_action
+
+  def set_idle_action(self, action):
+    self._idle_action = action
 
   def get_message_handler(self, message):
     if not isinstance(message, Message):

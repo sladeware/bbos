@@ -38,15 +38,9 @@ struct bbos_kernel_data {
   bbos_thread_id_t running_thread;
 };
 
-//BBOS_CORE
-
 #define bbos_kernel_assert(expr) assert(expr)
 
 void bbos_kernel_main();
-
-/******************************************************************************
- Thread management
- ******************************************************************************/
 
 /* Scheduler selection logic. */
 
@@ -58,8 +52,10 @@ void bbos_kernel_main();
 #define BBOS_CONFIG_SCHED_H "bb/os/kernel/schedulers/staticscheduler.h"
 #endif
 #endif /* BBOS_CONFIG_SCHED_H */
-/* Static scheduling will be taken if scheduler wasn't selected. Use default
-   scheduler header BBOS_DEFAULT_SCHED_H. */
+/*
+ * Static scheduling will be taken if scheduler wasn't selected. Use default
+ * scheduler header BBOS_DEFAULT_SCHED_H.
+ */
 #define BBOS_DEFAULT_SCHED_H "bb/os/kernel/schedulers/staticscheduler.h"
 #ifndef BBOS_CONFIG_SCHED_H
 #define BBOS_CONFIG_USE_STATIC_SCHED
@@ -76,15 +72,19 @@ void bbos_kernel_main();
 PROTOTYPE(void bbos_kernel_init_thread, (bbos_thread_id_t tid,
                                          bbos_thread_runner_t runner));
 
-/* Disable thread scheduling primitives in case of static scheduling policy. The
-   kernel doesn't have contol over the threads. */
+/*
+ * Disable thread scheduling primitives in case of static scheduling
+ * policy. The kernel doesn't have contol over the threads.
+ */
 #ifndef BBOS_CONFIG_USE_STATIC_SCHED
 
-/* Sets thread runner. The runner is a function to be invoked by the
-   bbos_thread_run() function.
-
-   NOTE: you cannot use this primitive in static scheduling since it doesn't
-   make any sense. */
+/**
+ * Sets thread runner. The runner is a function to be invoked by the
+ * bbos_thread_run() function.
+ *
+ * NOTE: you cannot use this primitive in static scheduling since it
+ * doesn't make any sense.
+ */
 #define bbos_thread_set_runner(tid, runner)                  \
   do {                                                       \
     bbos_kernel_get_thread(tid).runner = runner;             \
@@ -96,7 +96,7 @@ PROTOTYPE(void bbos_kernel_disable_all_threads, ());
 
 PROTOTYPE(void bbos_thread_run, (bbos_thread_id_t tid));
 
-/*
+/**
  * Enables thread and makes it active. The system will use scheduler to schedule
  * thread by its identifier. Use bbos_kernel_disable_thread() in order to
  * disable thread. See also bbos_kernel_enable_all_threads() and
@@ -110,17 +110,23 @@ PROTOTYPE(void bbos_thread_run, (bbos_thread_id_t tid));
     }                                                \
   while (0)
 
-/* Stop thread's activity and dequeue it from schedule. Use
-   bbos_kernel_enable_thread() in order to enable thread back. See also
-   bbos_kernel_disable_all_threads() and bbos_sched_dequeue(). */
+/**
+ * Stops thread's activity and dequeue it from schedule. Use
+ * bbos_kernel_enable_thread() in order to enable thread back. See also
+ * bbos_kernel_disable_all_threads() and bbos_sched_dequeue().
+ */
 #define bbos_kernel_disable_thread(tid) bbos_sched_dequeue(tid)
 
-/* Suspends thread until it is manually resumed again via
-   bbos_kernel_resume_thread(). See also bbos_sched_suspend(). */
+/**
+ * Suspends thread until it is manually resumed again via
+ * bbos_kernel_resume_thread(). See also bbos_sched_suspend().
+ */
 #define bbos_kernel_suspend_thread(tid) sched_suspend(tid)
 
-/* Resumes suspended thread. See also bbos_sched_resume() and
-   bbos_sched_suspend(). */
+/**
+ * Resumes suspended thread. See also bbos_sched_resume() and
+ * bbos_sched_suspend().
+ */
 #define bbos_kernel_resume_thread(tid) bbos_sched_resume(tid)
 
 #endif /* BBOS_CONFIG_USE_STATIC_SCHED */
@@ -132,12 +138,7 @@ PROTOTYPE(void bbos_thread_run, (bbos_thread_id_t tid));
 #define bbos_thread_get_runner(tid)             \
   bbos_kernel_get_thread(tid).runner
 
-
 /* System Management */
-
-#ifndef bbos_printf
-//#define bbos_printf printf
-#endif /* bbos_printf */
 
 /* The first function that system calls, while will initialize the kernel. */
 PROTOTYPE(void bbos_kernel_init, ());

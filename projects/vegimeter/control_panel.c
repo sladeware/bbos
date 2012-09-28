@@ -23,19 +23,25 @@
 #include BBOS_PROCESSOR_FILE(sio.h)
 #include BBOS_PROCESSOR_FILE(pins.h)
 
+#include "control_panel_runner_autogen.c"
+
 static int8_t buttons_state = 0;
 
 void
-control_panel_runner()
+collect_data()
 {
   int8_t i;
   uint16_t vegimeter_buttons;
   /* QuickStart board has P0 - P7 as buttons */
   int16_t button_mask = 0xFFUL;
-  /* Read, update and store pressed buttons on vegimeter device.
-     We need just one byte from the button mask. */
+  /*
+   * Read, update and store pressed buttons on vegimeter device.
+   * We need just one byte from the button mask.
+   */
   vegimeter_buttons = shmem_read_byte(VEGIMETER_BUTTONS_ADDR);
-  vegimeter_buttons = (int8_t)are_buttons_pressed(button_mask); /* |=?*/
+
+  vegimeter_buttons = (int8_t)are_buttons_pressed(button_mask);
+
   shmem_write_byte(VEGIMETER_BUTTONS_ADDR, vegimeter_buttons);
   for (i = 0; i < 8; i++) {
     if (vegimeter_buttons & GET_MASK(i)) {

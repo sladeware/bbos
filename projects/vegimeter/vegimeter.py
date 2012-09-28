@@ -54,14 +54,17 @@ if not vegimeter_board:
 
 vegimeter = bb.Mapping('Vegimeter',
                        processor=vegimeter_board.find_element('U1'))
-vegimeter.register_thread(bb.os.Thread('UI', 'ui_runner', port=bb.os.Port(10)))
-vegimeter.register_thread(bb.os.Thread('CONTROL_PANEL', 'control_panel_runner'))
+vegimeter.register_threads([
+    bb.os.Thread('UI', runner='ui_runner', port=bb.os.Port(10)),
+    bb.os.Messenger('CONTROL_PANEL', runner='control_panel_runner',
+                    default_action='collect_data')
+    ])
 # TODO(team): the following (and others) drivers has to be connected
 # automatically.
 from bb.os.drivers.gpio.button_driver import ButtonDriver
 from bb.os.drivers.processors.propeller_p8x32 import ShMemDriver
 from bb.os.drivers.onewire.slaves import DS18B20Driver
-vegimeter.register_threads([ButtonDriver(), ShMemDriver()])
+vegimeter.register_threads([ButtonDriver(), ShMemDriver(), DS18B20Driver()])
 
 def bill_of_materials():
   bill_of_materials = dict()
