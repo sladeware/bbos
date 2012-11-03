@@ -14,8 +14,8 @@
 
 from __future__ import absolute_import
 
-__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
-__author__ = 'Oleksandr Sviridenko'
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
 
 from bb.os.os import OS
 from bb.os.kernel import Kernel

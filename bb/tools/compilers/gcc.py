@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from bb.tools.compilers import custom_c_compiler
+from bb.tools.compilers.cc import CC
 
-class LD(custom_c_compiler.Linker):
-  pass
+class GCC(CC):
+
+  def __init__(self, *args, **kwargs):
+    CC.__init__(self, *args, **kwargs)

@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 
-__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
-__author__ = 'Oleksandr Sviridenko'
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
 
-from bb.os.drivers.processors.propeller_p8x32 import shmem
+from bb.tools.compilers import PropGCC
 
-with shmem.ShMemDriver as target:
-  target.build_cases.update({
-      'propeller': {
-        'sources': ('shmem.c',)
-        }
-      })
+import shmem
+
+shmem.ShMemDriver.Builder += PropGCC.Parameters(
+  sources=('shmem.c',)
+)

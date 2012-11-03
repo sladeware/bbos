@@ -12,5 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from bb.tools.compilers.compiler import Compiler
-from bb.tools.compilers.custom_c_compiler import CustomCCompiler
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
+
+from bb.tools.compilers.cc import CC
+from bb.tools.compilers.propgcc import PropGCC
+from bb.tools.compilers.python import Python

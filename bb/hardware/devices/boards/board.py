@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
-__author__ = 'Oleksandr Sviridenko'
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
 
 from bb.hardware.devices import Device
+from bb.hardware.devices.processors import Processor
 from bb.utils import typecheck
 
 class Board(Device):
@@ -27,11 +28,13 @@ class Board(Device):
   the board, but BB does not explicitly refer to them.
   """
 
-  def __init__(self, processors=[]):
+  def __init__(self, elements=[], processors=[]):
     Device.__init__(self)
     self._processors = []
     if processors:
       self.add_processors(processors)
+    if elements:
+      self.add_elements(elements)
 
   def add_processors(self, processors):
     if not typecheck.is_sequence(processors):
@@ -39,10 +42,18 @@ class Board(Device):
     for processor in processors:
       self.add_processor(processor)
 
+  def add_element(self, element):
+    if isinstance(element, Processor):
+      self._processors.append(element)
+    Device.add_element(self, element)
+
   def add_processor(self, processor):
-    # Add a new element to the device/board and start tracking it as a processor
+    """Adds a new element to the device/board and start tracking it as a
+    processor.
+    """
+    if not isinstance(processor, Processor):
+      raise TypeError("'processor' must be derived from Processor class.")
     self.add_element(processor)
-    self._processors.append(processor)
 
   def get_processors(self):
     return self._processors
@@ -58,8 +69,8 @@ class Breadboard(Board):
 
   DESIGNATOR_FORMAT="PROTOBOARD_%d"
 
-  def __init__(self):
-    Device.__init__(self)
+  def __init__(self, *args, **kwargs):
+    Board.__init__(self, *args, **kwargs)
 
 # Make Protoboard to be an alias of Breadboard
 Protoboard = Breadboard

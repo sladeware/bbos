@@ -12,15 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
-__author__ = 'Oleksandr Sviridenko'
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
 
 import types
 from ctypes import *
 
 from bb.tools.loaders.propler.chips import *
 
-__all__ = ['Image', 'SpinHeader', 'ElfHeader', 'ElfContext', 'ElfSectionHeader']
+__all__ = ["Image", "SpinHeader", "ElfHeader", "ElfContext", "ElfSectionHeader"]
 
 class Image(object):
   """This class represents binary image."""
@@ -371,9 +371,9 @@ ident = [
 class ElfHeader(Structure):
   """ELF header.
 
-  ============== ===========
+  ============== ==============================================================
   Name           Description
-  ============== ===========
+  ============== ==============================================================
   `e_ident`      The initial bytes mark the file as an object file and provide
                  machine-independent data with which to decode and interpret
                  the file's contents.
@@ -409,7 +409,7 @@ class ElfHeader(Structure):
                  no section header table, `e_shnum` holds the value zero.
   `e_shstrndx`   This member holds the section header table index of the entry
                  associated with the section name string table.
-  ============== ===========
+  ============== ==============================================================
   """
   MACHINE_MAP = {
     0x5072: "Parallax Propeller",

@@ -12,98 +12,98 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
-__author__ = 'Oleksandr Sviridenko'
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
 
 import logging
 
-from bb.utils.spawn import which, ExecutionError
+import bb
+from bb.utils import executable
 from bb.utils import typecheck
 
-class ProgramHandler(object):
-  EXECUTABLES = dict()
-  """Default executables."""
+class CompilerParameters(executable.ExecutableOptions):
+  """A CompilerParameters object represents the settings and options for an
+  Compiler interface.
+  """
+  COMPILER_CLASS = None
 
-  def __init__(self):
-    self._executables = dict()
-    self.set_executables(self.EXECUTABLES)
+class CompilerMetaclass(type):
 
-  def set_executables(self, *args, **kargs):
-    """Define the executables (and options for them) that will be run to perform
-    the various stages of compilation. The exact set of executables that may be
-    specified here depends on the compiler class (via the
-    :const:`ProgramHandler.EXECUTABLES` class attribute). For example they may
-    have the following view:
+  def __new__(metaclass, name, bases, dictionary):
+    class_ = type.__new__(metaclass, name, bases, dictionary)
+    # Initialize CompilerParameters class (aka Parameters attribute)
+    Parameters = getattr(class_, "Parameters", None)
+    if not Parameters or \
+          (Parameters and Parameters in [base.Parameters for base in bases]):
+      class_.Parameters = type("%sParameters" % class_.__name__,
+                               (CompilerParameters,), {})
+      class_.Parameters.COMPILER_CLASS = class_
+    return class_
 
-    * `compiler` --- the C/C++ compiler
-    * `linker_so` --- linker used to create shared objects and libraries
-    * `linker_exe` --- linker used to create binary executables
-    * `archiver` --- static library creator
-
-    On platforms with a command-line (Unix, DOS/Windows), each of these is a
-    string that will be split into executable name and (optional) list of
-    arguments. (Splitting the string is done similarly to how Unix shells
-    operate: words are delimited by spaces, but quotes and backslashes can
-    override this.)
-    """
-    if typecheck.is_dict(args[0]):
-      kargs.update(args[0])
-    # Note that some CCompiler implementation classes will define class
-    # attributes 'cpp', 'cc', etc. with hard-coded executable names; this is
-    # appropriate when a compiler class is for exactly one compiler/OS
-    # combination (e.g. MSVCCompiler). Other compiler classes (UnixCCompiler, in
-    # particular) are driven by information discovered at run-time, since there
-    # are many different ways to do basically the same things with Unix C
-    # compilers.
-    for key in kargs.keys():
-      self.set_executable(key, kargs[key])
-
-  def set_executable(self, key, value):
-    """Define the executable (and options for it) that will be run to perform
-    some compilation stage.
-    """
-    if isinstance(value, str):
-      self._executables[key] = split_quoted(value)
-    else:
-      self._executables[key] = value
-
-  def get_executable(self, name):
-    """Return executable by its `name`. If it does not exist
-    return ``None``.
-    """
-    return self._executables.get(name, None)
-
-  def check_executables(self):
-    """Check compiler executables. All of them has to exist. Print warning if
-    some executable was specified but not defined.
-    """
-    if not self._executables:
-      return
-    for (name, cmd) in self._executables.items():
-      if not cmd:
-        logging.warning("Undefined executable '%s'" % name)
-        continue
-      if not which(cmd[0]):
-        raise ExecutionError("executable '%s' can not be found" % cmd[0])
-
-class Compiler(ProgramHandler):
+class Compiler(executable.ExecutableWrapper):
   """The base compiler class."""
 
-  NAME = None
+  __metaclass__ = CompilerMetaclass
 
-  def __init__(self, verbose=0, dry_run=False):
-    ProgramHandler.__init__(self)
-    if not self.get_name():
-      raise Exception('Name has to be provided')
+  Parameters = None
+
+  def __init__(self, verbose=0, sources=[], dry_run=False):
+    executable.ExecutableWrapper.__init__(self)
     self.verbose = verbose
-    self.dry_run = dry_run
+    self._dry_run = False
     # A common output directory for objects, libraries, etc.
     self.output_dir = ""
     self.output_filename = ""
+    self._sources = []
+    if dry_run:
+      self.set_dry_run_mode(dry_run)
+    if sources:
+      self.add_sources(sources)
 
-  @classmethod
-  def get_name(klass):
-    return getattr(klass, 'NAME', None)
+  def get_sources(self):
+    return self._sources
+
+  def add_sources(self, sources):
+    if not typecheck.is_sequence(sources):
+      raise TypeError("Sources must be a sequence.")
+    for source in sources:
+      self.add_source(source)
+
+  def add_source(self, source):
+    """Add a source to the project. In the case when source is a path, it will
+    be normalized by using :func:`os.path.abspath`.
+    """
+    if not source:
+      raise TypeError("WTF!")
+    elif typecheck.is_string(source):
+      source = bb.host_os.path.abspath(source)
+      if not bb.host_os.path.exists(source):
+        raise Exception("Source doesn't exist: %s" % source)
+      logging.debug("Add source %s" % source)
+      if not source in self._sources:
+        self._sources.append(source)
+      return source
+    elif typecheck.is_callable(source):
+      result = source()
+      if typecheck.is_sequence(result):
+        self.add_sources(result)
+      else:
+        self.add_source(result)
+    else:
+      raise TypeError("Unknown source type '%s' of '%s'" %
+                      (type(source), source))
+
+  def enable_dry_run_mode(self):
+    self._dry_run = True
+
+  def disable_dry_run_mode(self):
+    self._dry_run = False
+
+  def set_dry_run_mode(self, value):
+    self._dry_run = value
+
+  def is_dry_run_mode_enabled(self):
+    return self._dry_run
 
   def get_language(self, *arg_list, **arg_dict):
     raise NotImplemented

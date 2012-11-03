@@ -12,14 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
-__author__ = 'Oleksandr Sviridenko'
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
 
 import inspect
 
 import bb
 from bb.os.messenger import Messenger
 from bb.tools.generators import CGenerator
+from bb.tools.compilers import PropGCC
 
 def gen_runner_h(messenger):
   """Generates runner's header file. The file will be stored in the
@@ -67,9 +68,6 @@ def gen_runner_c(messenger):
   g.writeln('}')
   g.close()
 
-with Messenger as target:
-  target.build_cases.update({
-      'propeller': {
-        'sources': (gen_runner_c, gen_runner_h)
-        }
-      })
+Messenger.Builder += PropGCC.Parameters(
+  sources=(gen_runner_c, gen_runner_h),
+  )

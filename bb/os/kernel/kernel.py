@@ -19,19 +19,20 @@ customizable time sharing scheduler algorithm.
 The kernel is represented by :class:`bb.os.kernel.Kernel`.
 """
 
-__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
-__author__ = 'Oleksandr Sviridenko'
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
 
-import bb
-from bb.utils import typecheck
+from bb.application import Object
+from bb.os.port import Port
 from bb.os.thread import Thread
 from bb.os.kernel.schedulers import Scheduler, StaticScheduler
+from bb.utils import typecheck
 
-class Kernel(bb.Object):
+class Kernel(Object, Object.Buildable):
   """The heart of BB operating system."""
 
   def __init__(self, core=None, threads=[], scheduler=StaticScheduler()):
-    bb.Object.__init__(self)
+    Object.__init__(self)
     self._core = None
     self._ports = dict()
     self._threads = dict()
@@ -99,7 +100,7 @@ class Kernel(bb.Object):
       self.register_port(port)
 
   def register_port(self, port):
-    if not isinstance(port, bb.Port):
+    if not isinstance(port, Port):
       raise TypeError()
     if port.get_name() in self._ports:
       raise Exception("Port '%s' was already registered." % port.get_name())

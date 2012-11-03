@@ -1,7 +1,10 @@
 # Initialization
-AC_INIT([bb], [0.1], [], [], [mail@bionicbunny.org])
-AC_CONFIG_AUX_DIR([.])
-AM_INIT_AUTOMAKE([foreign no-define])
+AC_INIT([bb], [0.1], [], [], [info@bionicbunny.org])
+AM_MAINTAINER_MODE([enable])
+AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_MACRO_DIR([m4])
+#AC_CONFIG_AUX_DIR([.])
+AM_INIT_AUTOMAKE
 
 AX_CHECK_GNU_MAKE()
 
@@ -12,6 +15,6 @@ PY_PYTHON_VERSION()
 PY_PYTHON_PREFIX()
 PY_PYTHON_IMPORT_CHECK([networkx])
 
-AC_CONFIG_FILES([Makefile])
-
+AC_PROG_LIBTOOL
+AC_CONFIG_FILES([Makefile scripts/bb.sh])
 AC_OUTPUT

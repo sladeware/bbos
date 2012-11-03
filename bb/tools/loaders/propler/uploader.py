@@ -579,7 +579,7 @@ def multicog_spi_upload(cogid_to_filename_mapping, serial_port,
     uploader.disconnect()
     return ok
 
-# TODO(d2rk): do we still need this?
+# TODO(d2rk): do we still need the following code?
 
 def upload_bootloader(port="/dev/ttyUSB0", config=None, rebuild=False):
     """Upload special bootloader `MULTICOG_BOOTLOADER_BINARY_FILENAME` by using

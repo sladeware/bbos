@@ -12,15 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
-__author__ = 'Oleksandr Sviridenko'
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
 
-import bb
 from bb.os.drivers.gpio.button_driver import ButtonDriver
+from bb.tools.compilers import PropGCC
 
-with ButtonDriver as target:
-  target.build_cases.update({
-    'propeller': {
-      'sources': ('button.c',)
-      }
-    })
+ButtonDriver.Builder += PropGCC.Parameters(
+  sources=('button.c',)
+  )

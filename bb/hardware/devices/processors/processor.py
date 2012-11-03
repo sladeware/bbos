@@ -12,40 +12,44 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
-__author__ = 'Oleksandr Sviridenko'
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
 
 from bb.hardware import primitives
 from bb.hardware.devices import Device
 from bb.utils import typecheck
 
+class Core(primitives.ElectronicPrimitive):
+
+  DESIGNATOR_FORMAT="CORE%d"
+
+  def __init__(self, processor, id_=None):
+    primitives.ElectronicPrimitive.__init__(self)
+    self._processor = None
+    self._set_processor(processor)
+    self._kernel = None
+    if not id_ is None:
+      self.set_id(id_)
+
+  def set_kernel(self, kernel):
+    self._kernel = kernel
+
+  def get_kernel(self):
+    return self._kernel
+
+  def get_processor(self):
+    return self._processor
+
+  def _set_processor(self, processor):
+    if not isinstance(processor, Processor):
+      raise Exception("Requires Processor class")
+    self._processor = processor
+
 class Processor(Device):
-  DESIGNATOR_FORMAT = "PROCESSOR%d"
+  """Base class for all kind of processors."""
 
-  class Core(primitives.ElectronicPrimitive):
-    DESIGNATOR_FORMAT = "CORE%d"
-
-    def __init__(self, processor, id_=None):
-      primitives.ElectronicPrimitive.__init__(self)
-      self._processor = None
-      self._set_processor(processor)
-      self._kernel = None
-      if not id_ is None:
-        self.set_id(id_)
-
-    def set_kernel(self, kernel):
-      self._kernel = kernel
-
-    def get_kernel(self):
-      return self._kernel
-
-    def get_processor(self):
-      return self._processor
-
-    def _set_processor(self, processor):
-      if not isinstance(processor, Processor):
-        raise Exception("Requires Processor class")
-      self._processor = processor
+  DESIGNATOR_FORMAT="PROCESSOR%d"
+  CORE_CLASS=Core
 
   def __init__(self, num_cores=0, cores=None):
     self._os = None
@@ -84,8 +88,9 @@ class Processor(Device):
     return self._cores[id_]
 
   def verify_core(self, core):
-    if not isinstance(core, Processor.Core):
-      raise TypeError('core "%s" must be bb.os.Core sub-class' % core)
+    if not isinstance(core, self.CORE_CLASS):
+      raise TypeError('core "%s" must be %s sub-class' % \
+                        (core, self.CORE_CLASS.__class__.__name__))
     return core
 
   def validate_core(self, core):

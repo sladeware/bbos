@@ -16,15 +16,37 @@
 etc. and other hardware primitives such as notes.
 """
 
-__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
-__author__ = 'Oleksandr Sviridenko'
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
 
 import bb
+from bb.object import Object, Cloneable
 from bb.utils import typecheck
 
-__all__ = ['Primitive', 'ElectronicPrimitive', 'Pin', 'Wire', 'Bus', 'Note']
+__all__ = ["Primitive", "Property", "ElectronicPrimitive", "Pin", "Wire",
+           "Bus", "Note"]
 
-class Primitive(bb.Object):
+class Property(object):
+  """This class represents property of a primitive. Each property consists of
+  `name` and `value`.
+  """
+  def __init__(self, name, value=None):
+    self._name = name
+    self._value = value
+
+  @property
+  def name(self):
+    return self._name
+
+  @property
+  def value(self):
+    return self._value
+
+  @value.setter
+  def value(self, new_value):
+    self._value = new_value
+
+class Primitive(Object, Cloneable):
   """This class is basic for any primitive.
 
   Each primitive has unique ID -- designator for identification that can be
@@ -57,28 +79,10 @@ class Primitive(bb.Object):
   inherit this class.
   """
 
-  class Property(object):
-    """This class represents property of a primitive. Each property consists of
-    `name` and `value`.
-    """
-    def __init__(self, name, value=None):
-      self._name = name
-      self._value = value
-
-    @property
-    def name(self):
-      return self._name
-
-    @property
-    def value(self):
-      return self._value
-
-    @value.setter
-    def value(self, new_value):
-      self._value = new_value
+  Property = Property
 
   def __init__(self, designator=None, designator_format=None):
-    bb.Object.__init__(self)
+    Object.__init__(self)
     self._properties = dict()
     self._id = id(self)
     self._designator_format = None
@@ -166,14 +170,24 @@ class Primitive(bb.Object):
   def add_properties(self, properties):
     if not typecheck.is_sequence(properties):
       raise TypeError("Has to be list")
-    for property in properties:
-      self.add_property(property)
+    for property_ in properties:
+      self.add_property(property_)
 
-  def add_property(self, property):
-    """Add a new property for the primitive."""
-    if not isinstance(property, Primitive.Property):
-      raise Exception("Not a Property")
-    self._properties[property.name] = property
+  def add_property(self, property_):
+    """Add a new property for the primitive. Primitive can be described with
+    help of class Property or with tuple:
+
+      myprimitive.add_property(Property("name", "Foo"))
+
+    or
+
+      myprimitive.add_properties(("name", "Foo"), ("color", "black"))
+    """
+    if typecheck.is_sequence(property_):
+      property_ = Primitive.Property(*property_)
+    if not isinstance(property_, Primitive.Property):
+      raise TypeError("Not a Property or sequence")
+    self._properties[property_.name] = property_
 
   def has_property(self, property_):
     """Return whether or not the primitive has a property `property_`. The

@@ -12,13 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
-__author__ = 'Oleksandr Sviridenko'
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
 
 import networkx
 
 from bb.hardware import primitives
 from bb.utils import typecheck
+from bb.os.drivers import Driver
 
 class Sketch(object):
   G = networkx.Graph()
@@ -27,19 +28,33 @@ class Sketch(object):
     pass
 
 class Device(primitives.ElectronicPrimitive):
-  """Base device class."""
+  """Base device class for any kind of devices. It also keeps driver instance
+  that manages this device for OS.
+  """
 
-  DRIVER_CLASS=None
-  DESIGNATOR_FORMAT="D%d"
+  DRIVER_CLASS = None
+  DESIGNATOR_FORMAT = "D%d"
 
   def __init__(self, designator=None, designator_format=None):
     primitives.ElectronicPrimitive.__init__(self, designator, designator_format)
+    self._driver = None
+    if self.DRIVER_CLASS:
+      self._set_driver(self.DRIVER_CLASS())
+
+  # TODO: temporary soluiton. Do we need to make it public?
+  def _set_driver(self, driver):
+    if not isinstance(driver, Driver):
+      raise TypeError("'driver' must be derived from Driver.")
+    self._driver = driver
+
+  def get_driver(self):
+    return self._driver
 
   @property
   def G(self):
     return self._g
 
-  def is_connected_to_element(self, element):
+  def is_connected_to(self, element):
     return Sketch.G.has_edge(self, element)
 
   def add_elements(self, elements):
@@ -49,7 +64,7 @@ class Device(primitives.ElectronicPrimitive):
 
   def add_element(self, element):
     if not isinstance(element, primitives.ElectronicPrimitive):
-      raise TypeError('Must be primitives.ElectronicPrimitive')
+      raise TypeError("Must be derived from primitives.ElectronicPrimitive")
     self.connect_to(element)
     return element
 
@@ -91,4 +106,5 @@ class Device(primitives.ElectronicPrimitive):
     return clone
 
   def __str__(self):
-    return "Device <%s>" % self.get_designator()
+    return "%s[designator=%s]" % (self.__class__.__name__,
+                                  self.get_designator())

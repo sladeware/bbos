@@ -45,8 +45,8 @@ import zipfile
 
 from bb.hardware import primitives
 from bb.hardware.devices import Device
-from bb.lib.crypto import md5
-from bb.lib.utils import typecheck
+from bb.crypto import md5
+from bb.utils import typecheck
 
 # TODO(team): The tool has to be tread-safe.
 

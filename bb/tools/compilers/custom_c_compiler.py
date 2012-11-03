@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
-__author__ = 'Oleksandr Sviridenko'
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
 
 # TODO: Move linker specific API from Compiler class to Linker class and start
 # using it.
@@ -23,6 +23,7 @@ import sys
 import time
 
 import bb
+import bb.host_os
 from bb.utils.host_os.path import mkpath
 from bb.utils import typecheck
 from bb.tools.compilers.compiler import Compiler
@@ -31,7 +32,6 @@ class Linker(object):
   """Base linker class."""
 
   def __init__(self):
-    self._output_dir = ""
     self._output_filename = ""
     self._opts = list()
 
@@ -50,15 +50,6 @@ class Linker(object):
 
   def get_output_filename(self):
     return self._output_filename
-
-  def get_output_dir(self):
-    return self._output_dir
-
-  def set_output_dir(self, output_dir):
-    if not output_dir or not typecheck.is_string(output_dir):
-      raise types.TypeError("'output_dir' must be a string or None")
-    else:
-      self._output_dir = output_dir
 
   def link(self, objects, output_filename, *list_args, **dict_args):
     # Adopt output file name to output directory
@@ -93,39 +84,14 @@ class CustomCCompiler(Compiler):
   Learn more about GCC options:
   http://gcc.gnu.org/onlinedocs/gcc/Option-Summary.html
   """
-
-  LANGUAGE_PRECEDENCE_ORDER = ["c++", "objc", "c"]
-  """Language precedence order: ``c++``, ``objc``, ``c``."""
-
+  DEFAULT_OUTPUT_FILE_NAME = "a.out"
   SOURCE_EXTENSIONS = None
-  """Source extensions."""
-
   OBJECT_EXTENSION = None
-  """Object file extension."""
-
-  EXT_TO_LANGUAGE_MAPPING = {
-    ".c"   : "c",
-    ".cc"  : "c++",
-    ".cpp" : "c++",
-    ".cxx" : "c++",
-    ".m"   : "objc",
-    }
-  """This mapping is used to detect a source file target language, by checking
-  thier filenames.
-
-  =========  ========
-  Extension  Language
-  =========  ========
-  .c         c
-  .cc        c++
-  .cpp       c++
-  .cxx       c++
-  .m         objc
-  =========  ========
-  """
 
   def __init__(self, verbose=0, dry_run=False):
     Compiler.__init__(self, verbose, dry_run)
+    self._output_dir_path = None
+    self._output_file_path = None
     # A list of macro definitions (we are using list since the order is
     # important). A macro definition is a 2-tuple (name, value), where the value
     # is either a string or None. A macro undefinition is a 1-tuple (name, ).
@@ -143,26 +109,34 @@ class CustomCCompiler(Compiler):
     self.set_object_extension(self.OBJECT_EXTENSION)
     self._source_extensions = list()
     self.set_source_extensions(self.SOURCE_EXTENSIONS)
-    self._language_by_ext_mapping = dict()
-    self.set_ext_to_language_mapping(self.EXT_TO_LANGUAGE_MAPPING)
-    self._language_precedence_order = list()
-    self.set_language_precedence_order(self.LANGUAGE_PRECEDENCE_ORDER)
     self._extra_preopts = list()
     self._extra_postopts = list()
     self._linker = None
-    self.add_include_dir(bb.env['BB_PACKAGE_HOME'])
-    self.add_include_dir(bb.env['BB_APPLICATION_HOME'])
+    self.add_include_dir(bb.host_os.env['BB_PACKAGE_HOME'])
+    self.add_include_dir(bb.host_os.env['BB_APPLICATION_HOME'])
 
-  def show_compilers():
-    """Print list of available compilers."""
-    from bb.apps.fancy_getopt import FancyGetop
-    compilers = []
-    for compiler in COMPILERS.keys():
-      compilers.append(("compiler="+compiler, None,
-                        COMPILERS[compiler][2]))
-    compilers.sort()
-    pretty_printer = FancyGetopt(compilers)
-    pretty_printer.print_help("List of available compilers:")
+  def set_output_dir_path(self, path):
+    if not typecheck.is_string(path):
+      raise TypeError("'path' must be a string")
+    self._output_dir_path = path
+
+  def get_output_dir_path(self):
+    if self._output_dir_path:
+      return self._output_dir_path
+    return bb.host_os.env.pwd()
+
+  def set_output_file_path(self, path):
+    if not typecheck.is_string(path):
+      raise TypeError("'path' must be a string")
+    self._output_file_path = path
+    self.set_output_dir_path(bb.host_os.path.dirname(path))
+
+  def get_output_file_path(self):
+    if not self._output_file_path:
+      return bb.host_os.path.abspath(
+        bb.host_os.path.join(self.get_output_dir_path(),
+                             self.DEFAULT_OUTPUT_FILE_NAME))
+    return self._output_file_path
 
   def get_default_ccompiler(osname=None, platform=None):
     """Determine the default compiler to use for the given `platform`.
@@ -205,19 +179,6 @@ class CustomCCompiler(Compiler):
   def add_source_extension(self, extension):
     self._source_extensions.append(extension)
 
-  def bind_ext_to_language(self, extension, language):
-    """Maps the given filename `extension` to the specified content
-    `language`.
-    """
-    self._language_by_ext_mapping[extension] = language
-
-  def set_ext_to_language_mapping(self, mapping):
-    """Set file extension to language mapping.
-    See also :const:`CustomCCompiler.LANGUAGE_BY_EXT_MAPPING`.
-    """
-    for ext, language in mapping.items():
-      self.bind_ext_to_language(ext, language)
-
   def get_object_extension(self):
     """Return object file extension."""
     return self._object_extension
@@ -227,17 +188,6 @@ class CustomCCompiler(Compiler):
     specified with or without a leading dot.
     """
     self._object_extension = extension
-
-  def set_language_precedence_order(self, order):
-    """Set language precedence order. This order will be used by
-    :func:`CCompiler.identify_language` to identify language name. See also
-    :const:`CustomCCompiler.LANGUAGE_PRECEDENCE_ORDER`.
-    """
-    self._language_precedence_order = order
-
-  def get_language_precedence_order(self):
-    """Return language precedence order."""
-    return self._language_precedence_order
 
   def _find_macro(self, name):
     """Return position of the macro 'name' in the list of macros."""
@@ -252,10 +202,10 @@ class CustomCCompiler(Compiler):
     """Add a list of dirs 'dirs' to the list of directories that will be
     searched for header files. See :func:`CCompiler.add_include_dir`.
     """
-    if typecheck.is_list(dirs):
-      for dir in dirs:
-        self.add_include_dir(dir)
-    raise TypeError
+    if not typecheck.is_list(dirs):
+      raise TypeError
+    for dir in dirs:
+      self.add_include_dir(dir)
 
   def get_include_dirs(self):
     return self.include_dirs
@@ -394,16 +344,13 @@ class CustomCCompiler(Compiler):
     with some compiler (depending on the two format strings passed in).
     """
     lib_options = []
-
     for dir in library_dirs:
       lib_options.append(self.get_library_dir_option(dir))
-
     # XXX it's important that we *not* remove redundant library mentions!
     # sometimes you really do have to say "-lfoo -lbar -lfoo" in order to
     # resolve all symbols.  I just hope we never have to say "-lfoo obj.o
     # -lbar" to get things to work -- that's certainly a possibility, but a
     # pretty nasty way to arrange your C code.
-
     for lib in libraries:
       (lib_dir, lib_name) = os.path.split(lib)
       if lib_dir:
@@ -444,8 +391,10 @@ class CustomCCompiler(Compiler):
     header file search path (-I).
     """
     options = []
-    for dir in include_dirs:
-      options.append ("-I%s" % dir)
+    for include_dir in include_dirs:
+      if not include_dir:
+        continue
+      options.append ("-I%s" % include_dir)
     return options
 
   def _gen_preprocess_options(self, macros, include_dirs):
@@ -474,20 +423,21 @@ class CustomCCompiler(Compiler):
       ld_opts[:0] = before
     return ld_opts
 
-  def get_object_filenames(self, src_filenames, output_dir=""):
-    if output_dir is None:
-      output_dir = ""
+  def get_build_dir_path(self):
+    return bb.host_os.path.join(self.get_output_dir_path(),
+                                bb.host_os.env['BB_BUILD_DIR_NAME'])
+
+  def get_object_filenames(self, src_filenames):
     obj_filenames = []
     for src_filename in src_filenames:
       base, ext = bb.host_os.path.splitext(src_filename)
       base = bb.host_os.path.splitdrive(base)[1]
       base = base[bb.host_os.path.isabs(base):]
       if ext not in self.get_source_extensions():
-        raise UnknownFileError("unknown file type '%s' (from '%s')" \
-                                 % (ext, src_filename))
+        raise Exception("unknown file type '%s' of '%s'" % (ext, src_filename))
       obj_filenames.append(
-        bb.host_os.path.join(bb.env['BB_BUILD_DIR_NAME'], output_dir,
-                          base + self.get_object_extension()))
+        bb.host_os.path.join(self.get_build_dir_path(),
+                             base + self.get_object_extension()))
     return obj_filenames
 
   def set_extra_preopts(self, extra_preopts):
@@ -502,14 +452,16 @@ class CustomCCompiler(Compiler):
   def get_extra_postopts(self):
     return self._extra_postopts
 
-  def compile(self, sources, output_dir=None, macros=None, include_dirs=None,
-              debug=0, extra_preopts=None, extra_postopts=None, depends=None):
+  def compile(self, sources, output_file_path=None, macros=None, include_dirs=None,
+              debug=0, extra_preopts=None, extra_postopts=None, depends=None, link=True):
     # Play with extra preopts and postopts
     extra_preopts = self.get_extra_preopts()
     extra_postopts = self.get_extra_postopts()
     # Setup compilation process first
+    if output_file_path:
+      self.set_output_file_path(output_file_path)
     macros, objects, extra_postopts, pp_options, build = \
-        self._setup_compile(sources, output_dir, macros, include_dirs, extra_postopts, depends)
+        self._setup_compile(sources, macros, include_dirs, extra_postopts, depends)
     cc_options = self._gen_cc_options(pp_options, debug, extra_preopts)
 
     for obj in objects:
@@ -525,24 +477,20 @@ class CustomCCompiler(Compiler):
         print "Compiling '%s'\r" % src
       # Note: we pass a copy of sources, options, etc. since we
       # need to privent their modification
-      if not self.dry_run:
+      if not self.is_dry_run_mode_enabled():
         self._compile(obj, src, ext, list(cc_options), extra_postopts, pp_options)
     if not self.verbose:
       print
+    if link is True:
+      self.link(objects, self.get_output_file_path())
     return objects
 
   def _compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts):
     """Compile source to product objects."""
     raise NotImplemented
 
-  def _setup_compile(self, sources, output_dir, macros, include_dirs, extra,
-                     depends):
+  def _setup_compile(self, sources, macros, include_dirs, extra, depends):
     """Process arguments and decide which source files to compile."""
-    if output_dir is None:
-      outputdir = self.output_dir
-    elif not typecheck.is_string(output_dir):
-      raise TypeError("'output_dir' must be a string or None")
-
     if macros is None:
       macros = self.macros
     elif typecheck.is_list(macros):
@@ -558,7 +506,7 @@ class CustomCCompiler(Compiler):
     if extra is None:
       extra = []
     # List of expected output files
-    objects = self.get_object_filenames(sources, output_dir)
+    objects = self.get_object_filenames(sources)
     assert len(objects) == len(sources)
     pp_options = self._gen_preprocess_options(macros, include_dirs)
     build = {}
@@ -585,7 +533,7 @@ class CustomCCompiler(Compiler):
     print "Binary %s, %d byte(s)" % (binary_filename,
                                      os.path.getsize(binary_filename))
 
-  def _link(self, objects, output_filename, output_dir=None, debug=False,
+  def _link(self, objects, output_file_name, output_dir=None, debug=False,
             extra_preargs=None, extra_postargs=None, target_lang=None):
     raise NotImplementedError
 

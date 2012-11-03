@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import inspect
+
 #______________________________________________________________________________
 # Compatibility with Python 2.2, 2.3, and 2.4
 
@@ -22,7 +24,7 @@
 # the compatibility code still since it doesn't hurt:
 
 try:
-  bool, True, False ## Introduced in 2.3
+  bool, True, False # Introduced in 2.3
 except NameError:
   class bool(int):
     """Simple implementation of Booleans, as in PEP 285."""
@@ -33,7 +35,7 @@ except NameError:
   True, False = bool(1), bool(0)
 
 try:
-  sum ## Introduced in 2.3
+  sum # Introduced in 2.3
 except NameError:
   def sum(seq, start=0):
     """Sum the elements of seq.
@@ -43,14 +45,14 @@ except NameError:
     return reduce(operator.add, seq, start)
 
 try:
-  enumerate ## Introduced in 2.3
+  enumerate # Introduced in 2.3
 except NameError:
   def enumerate(collection):
     """Return an iterator that enumerates pairs of (i, c[i]). PEP 279.
     >>> list(enumerate('abc'))
     [(0, 'a'), (1, 'b'), (2, 'c')]
     """
-    ## Copied from PEP 279
+    # Copied from PEP 279
     i = 0
     it = iter(collection)
     while 1:
@@ -58,19 +60,19 @@ except NameError:
       i += 1
 
 try:
-    reversed ## Introduced in 2.4
+  reversed # Introduced in 2.4
 except NameError:
-    def reversed(seq):
-        """Iterate over x in reverse order.
-        >>> list(reversed([1,2,3]))
-        [3, 2, 1]
-        """
-        if hasattr(seq, 'keys'):
-            raise TypeError("mappings do not support reverse iteration")
-        i = len(seq)
-        while i > 0:
-            i -= 1
-            yield seq[i]
+  def reversed(seq):
+    """Iterate over x in reverse order.
+    >>> list(reversed([1,2,3]))
+    [3, 2, 1]
+    """
+    if hasattr(seq, 'keys'):
+      raise TypeError("mappings do not support reverse iteration")
+    i = len(seq)
+    while i > 0:
+      i -= 1
+      yield seq[i]
 
 try:
     sorted ## Introduced in 2.4
@@ -227,18 +229,21 @@ def caller(n=1):
   >>> caller(0)
   'caller'
   >>> def f():
-  ...     return caller()
+  ...   return caller()
   >>> f()
   'f'
   """
-  import inspect
   mod = inspect.getmodule(inspect.getouterframes(inspect.currentframe())[n][0])
+  #print ">", inspect.stack(1)
   if not mod:
     frms = inspect.stack(1)
     mod = inspect.getmodule(frms[n][0])
   name = inspect.getouterframes(inspect.currentframe())[n][3]
-  if name == '<module>':
-    return mod
-  return getattr(mod, name)
+  if not mod:
+    raise Exception()
+  return mod
+  #if name == '<module>':
+  #  return mod
+  #return getattr(mod, name)
 
 __builtins__['caller'] = caller

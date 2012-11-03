@@ -1,41 +1,21 @@
 .. _api:
 
-*************************
+***********
 Application
-*************************
+***********
 
-:mod:`bb.app` --- Application
-=============================
+:mod:`bb.application` --- Application
+=====================================
 
 
-:mod:`bb.app.application` --- Application
+:mod:`bb.application.application` --- Application
+=================================================
+
+.. automodule:: bb.application.application
+   :members:
+
+:mod:`bb.application.mapping` --- Mapping
 =========================================
 
-.. automodule:: bb.app.application
+.. automodule:: bb.application.mapping
    :members:
-
-:mod:`bb.app.manager` --- AppManager
-====================================
-
-.. automodule:: bb.app.manager
-   :members:
-   
-:mod:`bb.app.mapping` --- Mapping
-=================================
-
-.. automodule:: bb.app.mapping
-   :members:
-
-
-:mod:`bb.app.network` --- Network
-=================================
-
-.. automodule:: bb.app.network
-
-.. autoclass:: Edge
-   :members:
-   
-.. autoclass:: Network
-   :members:
-   
-   

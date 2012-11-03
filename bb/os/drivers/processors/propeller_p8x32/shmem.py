@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
-__author__ = 'Oleksandr Sviridenko'
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
 
-from bb.os.drivers import Driver
+from bb.os.drivers.driver import Driver
 
 class ShMemDriver(Driver):
   NAME = 'SHMEM_DRIVER'

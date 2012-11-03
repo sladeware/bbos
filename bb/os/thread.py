@@ -12,27 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
-__author__ = 'Oleksandr Sviridenko'
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
 
-import bb
+from bb.application import Object
 from bb.utils import typecheck
 from bb.os.port import Port
 from bb.os.message import Message
 
-class Thread(bb.Object):
+class Thread(Object, Object.Buildable):
   """The thread is an atomic unit action within the BB operating system, which
   describes application specific actions wrapped into a single context of
   execution.
   """
 
   NAME = None
-  NAME_FORMAT = 'THREAD_%d'
+  NAME_FORMAT = "THREAD_%d"
   RUNNER = None
   PORT = None
 
   def __init__(self, name=None, runner=None, port=None, messages=[]):
-    bb.Object.__init__(self)
+    Object.__init__(self)
     self._name = None
     self._name_format = None
     self._runner = None
@@ -40,8 +40,8 @@ class Thread(bb.Object):
     self._port = None
     if name:
       self.set_name(name)
-    elif getattr(self, 'NAME', None) is not None:
-      self.set_name(getattr(self, 'NAME'))
+    elif getattr(self, "NAME", None) is not None:
+      self.set_name(getattr(self, "NAME"))
     if runner:
       self.set_runner(runner)
     elif hasattr(self, "RUNNER"):
@@ -118,7 +118,7 @@ class Thread(bb.Object):
     return self._port
 
   def __str__(self):
-    return "%s[name=%s, runner=%s, port=%s]" % (self.__class__.__name__,
+    return "%s[name=%s,runner=%s,has_port=%s]" % (self.__class__.__name__,
                                                  self.get_name(),
                                                  self.get_runner(),
-                                                 self.get_port())
+                                                 self.has_port())

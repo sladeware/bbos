@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
-__author__ = 'Oleksandr Sviridenko'
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
 
 import os.path
 
@@ -21,6 +21,7 @@ import bb
 from bb.os import Kernel
 from bb.os.kernel.schedulers import StaticScheduler
 from bb.tools.generators import CGenerator
+from bb.tools.compilers import PropGCC
 
 def gen_main_c(kernel):
   if not kernel.get_core():
@@ -75,10 +76,6 @@ def update_bbos_config_h(kernel):
     g.writeln('void %s();' % thread.get_runner())
   g.close()
 
-with Kernel as bundle:
-  bundle.build_cases.update({
-    'propeller': {
-      'sources': (gen_main_c, update_bbos_config_h,
-                  './../kernel.c')
-      }
-    })
+Kernel.Builder += PropGCC.Parameters(
+  sources=(gen_main_c, update_bbos_config_h, './../kernel.c')
+  )

@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
-__author__ = 'Oleksandr Sviridenko'
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
 
 """The Parallax P8X32A Propeller chip is a multi-core architecture parallel
 microcontroller with eight 32-bit RISC CPU cores.
@@ -22,8 +22,28 @@ Each of the eight 32-bit cores (called a cog) has a CPU which has access to 512
 32-bit long words (2 KB) of instructions and data.
 """
 
-from bb.hardware.devices.processors.processor import Processor
+from bb.os.drivers.processors import PropellerP8X32ADriver
+from bb.hardware.devices.processors.processor import Processor, Core
 from bb.utils import typecheck
+
+class PropellerCore(Core):
+  """Parallax Propeller processor's core/cog.
+
+  A "cog" is a CPU contained within the Propeller processor. Cogs are designed
+  to run independently and concurrently within the same silicon die. They have
+  their own internal memory, configurable counters, video generators and access
+  to I/O pins as well as the system clock. All the cogs in the processor share
+  access to global resources sych as the main RAM/ROM, synchronization resources
+  and specialized monitoring capabilities to know what the other cogs are doing.
+  """
+
+  def __init__(self, *args, **kwargs):
+    Core.__init__(self, *args, **kwargs)
+
+  def __str__(self):
+    return "Cog[i=%d]" % self.get_id()
+
+PropellerCog = PropellerCore
 
 class PropellerP8X32A(Processor):
   """Parallax Propeller P8X32A processor.
@@ -35,37 +55,19 @@ class PropellerP8X32A(Processor):
   using a multiplexed system bus. There are 32 IO pins.
   """
 
-  PROPERTIES = (Processor.Property("name", "Propeller P8X32A"),)
-
-  class Core(Processor.Core):
-    """Parallax Propeller processor's cog core.
-
-    A "cog" is a CPU contained within the Propeller processor. Cogs are designed
-    to run independently and concurrently within the same silicon die. They have
-    their own internal memory, configurable counters, video generators and
-    access to I/O pins as well as the system clock. All the cogs in the
-    processor share access to global resources sych as the main RAM/ROM,
-    synchronization resources and specialized monitoring capabilities to know
-    what the other cogs are doing.
-    """
-
-    def __init__(self, *args, **kwargs):
-      Processor.Core.__init__(self, *args, **kwargs)
-
-    def __str__(self):
-      return "Cog%d" % self.get_id()
-
-  Cog = Core
+  DRIVER_CLASS = PropellerP8X32ADriver
+  CORE_CLASS = PropellerCog
+  PROPERTIES = (("name", "Propeller P8X32A"),)
 
   def __init__(self):
     cores = list()
-    cores = [self.Core(self, id_=_) for _ in range(8)]
+    cores = [PropellerCog(self, id_=_) for _ in range(8)]
     Processor.__init__(self, 8, cores)
 
   def __str__(self):
-    return "%s[cores=%d]" % (self.__class__.__name__, self.get_num_cores())
+    return "%s[num_cogs=%d]" % (self.__class__.__name__, self.get_num_cores())
 
-# A few aliases to provide termin "cog"
+# A few aliases for the new "cog" teminalogy
 PropellerP8X32A.get_cog = PropellerP8X32A.get_core
 PropellerP8X32A.get_cogs = PropellerP8X32A.get_cores
 
@@ -74,4 +76,4 @@ class PropellerP8X32A_Q44(PropellerP8X32A):
   package.
   """
 
-  PROPERTIES = (Processor.Property("name", "Propeller P8X32A-Q44"),)
+  PROPERTIES = (("name", "Propeller P8X32A-Q44"),)

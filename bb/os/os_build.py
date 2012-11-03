@@ -15,12 +15,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
-__author__ = 'Oleksandr Sviridenko'
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
 
 import bb
 from bb.os import OS
 from bb.tools.generators import CGenerator
+from bb.tools.compilers import PropGCC
 
 # TODO(team): the following code has to be moved with all C files, once C
 # implementation will be separated.
@@ -42,7 +43,8 @@ def gen_os_c(os):
   g.writeln('#include "os.h"')
   g.writeln()
   for i, thread in enumerate(sorted_threads):
-    g.writeln('MEMPOOL_PARTITION(port%d_part, %d, BBOS_MAX_MESSAGE_PAYLOAD_SIZE);' % (i, thread.get_port().get_capacity()))
+    g.writeln('MEMPOOL_PARTITION(port%d_part, %d, BBOS_MAX_MESSAGE_PAYLOAD_SIZE);' \
+                % (i, thread.get_port().get_capacity()))
     g.writeln('bbos_message_t* port%d_stack[%d];' % (i, thread.get_port().get_capacity()))
   g.writeln()
   g.writeln('bbos_port_t bbos_ports[BBOS_NUM_PORTS];')
@@ -54,12 +56,13 @@ def gen_os_c(os):
     port = thread.get_port()
     g.writeln('  mempool_t port%d_pool = mempool_init(port%d_part, %d, %s);' % \
                   (i, i, port.get_capacity(), 'BBOS_MAX_MESSAGE_PAYLOAD_SIZE'))
-    g.writeln('  bbos_port_init(%d, %d, port%d_pool, port%d_stack);' % (i, port.get_capacity(), i, i))
+    g.writeln('  bbos_port_init(%d, %d, port%d_pool, port%d_stack);' \
+                % (i, port.get_capacity(), i, i))
   g.writeln('}')
   return file_path
 
 def gen_config_h(os):
-  """Generate bb/os/config_autogen.h header file. Will be included by
+  """Generates bb/os/config_autogen.h header file. Will be included by
   bb/os/config.h header file.
   """
   _CFG.update(
@@ -71,22 +74,19 @@ def gen_config_h(os):
   file_path = bb.host_os.path.join(bb.env.pwd(), 'config_autogen.h')
   g = CGenerator().create(file_path)
   for key, value in _CFG.items():
-    g.writeln('#define %s %d' % (key, value))
+    g.writeln("#define %s %d" % (key, value))
   g.writeln("/* Thread id's and runners */")
-  sorted_threads = sorted(os.get_threads(), key=lambda thread: thread.has_port(), reverse=True)
+  sorted_threads = sorted(os.get_threads(), key=lambda thread: thread.has_port(),
+                          reverse=True)
   for i, thread in enumerate(sorted_threads):
     g.writeln("#define %s %d" % (thread.get_name(), i))
     g.writeln("#define %s_RUNNER %s" % \
                 (thread.get_name(), thread.get_runner()))
-  g.writeln('/* Supported messages */')
+  g.writeln("/* Supported messages */")
   for i, message in enumerate(os.get_messages()):
-    g.writeln('#define %s %d' % (message.label, i))
+    g.writeln("#define %s %d" % (message.label, i))
   g.close()
 
-with OS as target:
-  target.build_cases.update({
-    # Propeller GCC compiler support
-    'propeller' : {
-      'sources': ('../os.c', 'port.c', 'mm/mempool.c', gen_os_c, gen_config_h,)
-    }
-  })
+OS.Builder += PropGCC.Parameters(
+  sources=("../os.c", "port.c", "mm/mempool.c", gen_os_c, gen_config_h,)
+  )

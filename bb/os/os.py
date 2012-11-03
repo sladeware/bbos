@@ -19,20 +19,22 @@
 microprocessors.
 """
 
-__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
-__author__ = 'Oleksandr Sviridenko'
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
 
 import bb
+from bb.application import Object
 from bb.os.kernel import Kernel
+from bb.os.drivers import Driver
 from bb.hardware.devices.processors import Processor
 
-class OS(bb.Object):
+class OS(Object, Object.Buildable):
   """This class is container/environment for Kernel's."""
 
   KERNEL_CLASS = Kernel
 
   def __init__(self, processor, max_message_size=0):
-    bb.Object.__init__(self)
+    Object.__init__(self)
     self._processor = None
     self._set_processor(processor)
     self._kernels = []
@@ -48,6 +50,7 @@ class OS(bb.Object):
     self._set_max_message_size(max_message_size)
 
   def _set_processor(self, processor):
+    """Set processor."""
     if not isinstance(processor, Processor):
       raise Exception('processor must be derived from Processor class.')
     self._processor = processor
@@ -101,6 +104,13 @@ class OS(bb.Object):
       threads.extend(kernel.get_threads())
     return threads
 
+  def get_drivers(self):
+    drivers = []
+    for thread in self.get_threads():
+      if isinstance(thread, Driver):
+        drivers.append(thread)
+    return drivers
+
   def get_max_message_size(self):
     return self._max_message_size
 
@@ -108,6 +118,7 @@ class OS(bb.Object):
     return self._messages.values()
 
   def __str__(self):
-    return '%s[processor=%s, kernels=%d]' % \
-        (self.__class__.__name__, self.get_processor(),
+    return '%s[processor=%s, num_kernels=%d]' % \
+        (self.__class__.__name__,
+         self._processor and self._processor.__class__.__name__ or None,
          self.get_num_kernels())

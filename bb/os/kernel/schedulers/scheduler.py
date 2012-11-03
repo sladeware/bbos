@@ -12,15 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
-__author__ = 'Oleksandr Sviridenko'
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
 
-import bb
+from bb.application import Object
 
-class Scheduler(bb.Object):
+class Scheduler(Object, Object.Buildable):
   """Provides the algorithms to select the threads for execution. Interface for
   base scheduler class.
   """
 
   def __init__(self):
-    bb.Object.__init__(self)
+    Object.__init__(self)
+
+  def __str__(self):
+    return "%s[]" % (self.__class__.__name__,)

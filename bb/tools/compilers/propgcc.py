@@ -14,17 +14,19 @@
 
 """Propeller GCC (propgcc) is GCC for the Parallax Propeller Microcontroller.
 
-Download compiler: <http://code.google.com/p/propgcc/downloads/list>. Read
+How to install
+
+Download compiler <http://code.google.com/p/propgcc/downloads/list> and read
 INSTALL.txt for further instructions.
 """
 
-__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
-__author__ = 'Oleksandr Sviridenko'
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
 
-from bb.tools.compilers.unix_c_compiler import UnixCCompiler
+from bb.tools.compilers.gcc import GCC
 from bb.utils import typecheck
 
-class PropGCCCompiler(UnixCCompiler):
+class PropGCC(GCC):
   """PropGCC is a GCC port for the Parallax Propeller P8X32A
   Microcontroller. Project page: http://code.google.com/p/propgcc/.
 
@@ -34,34 +36,16 @@ class PropGCCCompiler(UnixCCompiler):
   defining `-mlmm` option. Otherwise you may have conflicts between symbols in
   the main C program and symbols in the local cog C program.
 
-  Please visit `Common GCC Options <http://code.google.com/p/propgcc/wiki/PropGccCompileOptions>`_
-  to learn more about Propeller specific options.
+  Please visit `Common GCC Options
+  <http://code.google.com/p/propgcc/wiki/PropGccCompileOptions>`_ to learn more
+  about Propeller specific options.
   """
 
-  NAME = 'propgcc'
-
-  EXECUTABLES = {
-    "compiler"     : ["propeller-elf-gcc"],
-    "linker_exe"   : ["propeller-elf-gcc"],
-    "objcopy"      : ["propeller-elf-objcopy"]
-    }
-  """PropGCC compiler specific executables:
-
-  ============  ================
-  Name          Command
-  ============  ================
-  compiler      **propeller-elf-gcc**
-  linker_exe    **propeller-elf-gcc**
-  objdump       **propeller-elf-objdump**
-  ============  ================
-
-  Do we need to replace **propeller-elf-gcc** from linker_exe to
-  **propeller-elf-ld**?
-  """
+  EXECUTABLE = ["propeller-elf-gcc"]
 
   def __init__(self, *args, **kargs):
-    UnixCCompiler.__init__(self, *args, **kargs)
-    self.__memory_model = None
+    GCC.__init__(self, *args, **kargs)
+    self._memory_model = None
     self.define_macro('__linux__')
     self.define_macro("BB_HAS_STDINT_H")
     self.define_macro("printf", "__simple_printf")
@@ -94,16 +78,16 @@ class PropGCCCompiler(UnixCCompiler):
     """
     if not typecheck.is_string(model):
       raise TypeError("Must be string.")
-    self.__memory_model = model.lower()
+    self._memory_model = model.lower()
 
   def get_memory_model(self):
     """Return memory model. See :func:`set_memory_model`."""
-    return self.__memory_model
+    return self._memory_model
 
   def _compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts):
     if self.get_memory_model():
       cc_args.append("-m%s" % self.get_memory_model())
-    UnixCCompiler._compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts)
+    GCC._compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts)
 
   def _link(self, objects, output_dir=None, libraries=None, library_dirs=None,
             debug=False, extra_preargs=None, extra_postargs=None,
@@ -113,6 +97,6 @@ class PropGCCCompiler(UnixCCompiler):
     if self.get_memory_model():
       extra_preargs.append("-m%s" % self.get_memory_model())
     extra_preargs.extend(self.get_linker().get_opts()) # remove this!
-    UnixCCompiler._link(self, objects, output_dir, libraries,
-                        library_dirs, debug, extra_preargs,
-                        extra_postargs, target_lang)
+    GCC._link(self, objects, output_dir, libraries,
+              library_dirs, debug, extra_preargs,
+              extra_postargs, target_lang)

@@ -55,6 +55,7 @@ def spawn(cmd, search_path=True, debug=False, dry_run=False):
   Raise :class:`ExecutionError` if running the program fails in any way; just
   return on success.
   """
+  debug = False
   if not type(cmd) is types.ListType:
     raise types.TypeError("'cmd' must be a list")
   # Fix cmd first
@@ -77,14 +78,11 @@ def _spawn_posix(cmd, search_path=True, debug=False, dry_run=False):
   if dry_run:
     return
   exec_fn = search_path and os.execvp or os.execcv
-
   if not debug:
     child_stdin, parent_stdout = os.pipe()
     parent_stdin, child_stdout = os.pipe()
     (_, child_stderr) = os.pipe()
-
   pid = os.fork()
-
   if not pid: # in a new child
     # Redirect STDIN, STDOUT and STDERR
     if not debug:

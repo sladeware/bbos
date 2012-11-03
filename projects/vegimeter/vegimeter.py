@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
 
 import re
 import os.path
@@ -52,19 +52,24 @@ if not vegimeter_board:
   print "Board <QSP1> cannot be found!"
   exit(0)
 
-vegimeter = bb.Mapping('Vegimeter',
-                       processor=vegimeter_board.find_element('U1'))
-vegimeter.register_threads([
-    bb.os.Thread('UI', runner='ui_runner', port=bb.os.Port(10)),
-    bb.os.Messenger('CONTROL_PANEL', runner='control_panel_runner',
-                    default_action='collect_data')
-    ])
-# TODO(team): the following (and others) drivers has to be connected
-# automatically.
+# TODO(team): remove these imports once drivers will be connected automatically
+# by devices
 from bb.os.drivers.gpio.button_driver import ButtonDriver
 from bb.os.drivers.processors.propeller_p8x32 import ShMemDriver
 from bb.os.drivers.onewire.slaves import DS18B20Driver
-vegimeter.register_threads([ButtonDriver(), ShMemDriver(), DS18B20Driver()])
+
+class Vegimeter(bb.application.Mapping):
+  processor=vegimeter_board.find_element('U1'),
+  threads=(
+    bb.os.Thread('UI', runner='ui_runner', port=bb.os.Port(10)),
+    bb.os.Messenger('CONTROL_PANEL', runner='control_panel_runner',
+                    default_action='collect_data'),
+    # TODO(team): the following (and others) drivers has to be connected
+    # automatically.
+    ButtonDriver(),
+    ShMemDriver(),
+    DS18B20Driver()
+    )
 
 def bill_of_materials():
   bill_of_materials = dict()
@@ -76,7 +81,7 @@ def bill_of_materials():
   return bill_of_materials
 
 if __name__ == '__main__':
-  print 'Vegimeter bill of materials:'
+  print 'Vegimeter device bill of materials:'
   for name, amount in bill_of_materials().items():
     print " %3d %s(s)" % (amount, name)
 
