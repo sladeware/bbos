@@ -1,0 +1,32 @@
+/*
+ * Implements {{ messenger.runner }}_autogen.h interface
+ *
+ * {{ copyright }}
+ */
+
+void {{ messenger.runner }}()
+{
+  bbos_message_t* request;
+  bbos_message_t* response;
+  if ((request = bbos_receive_message()) == NULL) {
+  {% if messenger.get_default_action %}
+    {{ messenger.get_default_action }}();
+  {% endif %}
+    return;
+  }
+  switch (request->label) {
+  {% for message, handler in messenger.get_message_handlers.items %}
+    case {{ message.label }}:
+    {% if message.output_fields %}
+      if ((response = bbos_send_message(request->sender)) == NULL) {
+        break;
+      }
+      {{ handler }}(&request->payload, &response->payload);
+    {% else %}
+      {{ handler }}(&request->payload);
+    {% endif %}
+      break;
+  {% endfor %}
+  }
+  bbos_deliver_messages();
+}
