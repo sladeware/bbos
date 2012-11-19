@@ -12,16 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
-__author__ = 'Oleksandr Sviridenko'
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
 
 import bb
-from bb.os import Driver, Message
+from bb.app.os import Driver, Message
 
 class ButtonDriver(Driver):
+
   NAME_FORMAT = 'BUTTON_DRIVER_%d'
   RUNNER = 'button_driver_runner'
   MESSAGE_HANDLERS = {
-    Message('IS_BUTTON_PRESSED', [('pin', 1)]): 'is_button_pressed',
-    Message('ARE_BUTTONS_PRESSED', [('mask', 2)]): 'are_buttons_pressed'
+    Message("IS_BUTTON_PRESSED", [("pin", 1)]): "is_button_pressed",
+    Message("ARE_BUTTONS_PRESSED", [("mask", 2)]): "are_buttons_pressed"
   }

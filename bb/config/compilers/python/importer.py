@@ -22,5 +22,4 @@ class Importer(pyimport.ModuleImporter):
   def __init__(self, *args, **kargs):
     pyimport.ModuleImporter.__init__(self, *args, **kargs)
 
-
 pyimport.install_importer(Importer())

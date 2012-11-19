@@ -46,7 +46,7 @@ class PropGCC(GCC):
   def __init__(self, *args, **kargs):
     GCC.__init__(self, *args, **kargs)
     self._memory_model = None
-    self.define_macro('__linux__')
+    self.define_macro("__linux__")
     self.define_macro("BB_HAS_STDINT_H")
     self.define_macro("printf", "__simple_printf")
     self.set_memory_model("LMM") # case insensetive

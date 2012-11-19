@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 #
+# http://bionicbunny.org/
+# Copyright (c) 2012 Sladeware LLC
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -17,10 +20,11 @@ from __future__ import absolute_import
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __author__ = "Oleksandr Sviridenko"
 
-from bb.os.os import OS
-from bb.os.kernel import Kernel
-from bb.os.thread import Thread
-from bb.os.port import Port
-from bb.os.message import Message
-from bb.os.messenger import Messenger
-from bb.os.drivers.driver import Driver
+from bb.app.os.os import OS
+from bb.app.os import kernel
+from bb.app.os.kernel import Kernel
+from bb.app.os.thread import Thread
+from bb.app.os.port import Port
+from bb.app.os.message import Message
+from bb.app.os.messenger import Messenger
+from bb.app.os.drivers.driver import Driver

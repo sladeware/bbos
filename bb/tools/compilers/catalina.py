@@ -12,16 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
-__author__ = 'Oleksandr Sviridenko'
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
 
 import types
 
-from bb.builder.compilers.unixc import UnixCCompiler
+from bb.tools.compilers.cc import CC
 
 # TODO(team): review catalina compiler support.
 
-class CatalinaCompiler(UnixCCompiler):
+class CatalinaCompiler(CC):
   """Catalina is based upon LCC (a robust, widely used and portable C compiler
   front-end), with a custom back-end that generates Large Memory Model (LMM)
   PASM code for the Propeller.
@@ -35,7 +35,7 @@ class CatalinaCompiler(UnixCCompiler):
     }
 
   def __init__(self, verbose=False, dry_run=False):
-    UnixCCompiler.__init__(self, verbose, dry_run)
+    CC.__init__(self, verbose, dry_run)
 
   def define_macro(self, name, value=None, c_symbol=False):
     """Define a preprocessor macro for all compilations driven by this compiler

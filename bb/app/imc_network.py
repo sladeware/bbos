@@ -17,14 +17,14 @@ __author__ = "Oleksandr Sviridenko"
 
 import networkx
 
-import bb.application
+from bb.app.mapping import Mapping
 from bb.utils import typecheck
 
 class Network(networkx.MultiDiGraph):
 
   class Edge(object):
     """This class represents an edge between two nodes in a graph, where each
-    node is represented by :class:`bb.application.mapping.Mapping`. Each edge
+    node is represented by :class:`bb.app.mapping.Mapping`. Each edge
     has a direction (from `sender` to `receiver`, or back and forth), plus a set
     of attributes such as label (a text associated with it), etc.
 
@@ -106,8 +106,8 @@ class Network(networkx.MultiDiGraph):
 
   def has_node(self, node):
     """Return whether the requested mapping belongs to the application."""
-    if not isinstance(node, bb.application.Mapping):
-      raise TypeError("Has to be bb.application.mapping.Mapping")
+    if not isinstance(node, Mapping):
+      raise TypeError("Has to be bb.app.mapping.Mapping")
     return networkx.MultiDiGraph.has_node(self, node)
 
   def add_node(self, mapping):
@@ -119,13 +119,13 @@ class Network(networkx.MultiDiGraph):
     return mapping
 
   def remove_node(self, node):
-    if not isinstance(node, bb.application.Mapping):
-      raise TypeError("Must be bb.application.mapping.Mapping")
+    if not isinstance(node, Mapping):
+      raise TypeError("Must be bb.app.mapping.Mapping")
     networkx.MultiDiGraph.remove_node(self, node)
 
   def neighbors(self, node):
-    if not isinstance(node, bb.application.Mapping):
-      raise TypeError("Must be bb.application.mapping.Mapping")
+    if not isinstance(node, Mapping):
+      raise TypeError("Must be bb.app.mapping.Mapping")
     return networkx.MultiDiGraph.neighbors(node)
 
   def get_edge(self, sender, receiver, key):

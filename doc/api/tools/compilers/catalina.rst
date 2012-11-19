@@ -1,5 +1,5 @@
-:mod:`bb.builder.compilers.catalina` --- Catalina Compiler
-==========================================================
+:mod:`bb.tools.compilers.catalina` --- Catalina Compiler
+========================================================
 
-.. automodule:: bb.builder.compilers.catalina
+.. automodule:: bb.tools.compilers.catalina
    :members:

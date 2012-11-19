@@ -1,15 +1,15 @@
-*************************
+****************
 Operating System
-*************************
+****************
 
-:mod:`bb.os` --- BBOS
-=====================
+:mod:`bb.application.os` --- BBOS
+=================================
 
-.. automodule:: bb.os
+.. automodule:: bb.application.os
    :members:
 
-:mod:`bb.os.kernel` --- Kernel
-===================================
+:mod:`bb.application.os.kernel` --- Kernel
+==========================================
 
-.. automodule:: bb.os.kernel
+.. automodule:: bb.application.os.kernel
    :members:

@@ -7,15 +7,13 @@ Application
 :mod:`bb.application` --- Application
 =====================================
 
+.. automodule:: bb.application.builder
 
-:mod:`bb.application.application` --- Application
-=================================================
+.. toctree::
+   :maxdepth: 2
 
-.. automodule:: bb.application.application
-   :members:
-
-:mod:`bb.application.mapping` --- Mapping
-=========================================
-
-.. automodule:: bb.application.mapping
-   :members:
+   application.rst
+   builder.rst
+   mapping.rst
+   object.rst
+   os/index.rst

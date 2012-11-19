@@ -211,6 +211,8 @@ class _Config(dict):
                       "on platform '%s'" % os.name)
 
 class Python(Compiler):
+  """Python compiler."""
+
   config = _Config()
 
   @classmethod

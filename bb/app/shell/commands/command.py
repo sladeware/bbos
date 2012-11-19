@@ -1,6 +1,22 @@
 #!/usr/bin/env python
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
 
 class Command(object):
+
   USAGE = None
   SHORT_DESC = None
   LONG_DESC = ''
@@ -16,14 +32,14 @@ class Command(object):
     self.uses_basepath = self.USES_BASEPATH
     self.hidden = self.HIDDEN
 
-  def __call__(self):
-    return self.function()
+  def __call__(self, *args, **kwargs):
+    return self.run(*args, **kwargs)
 
   def options(self, config, optparser):
     pass
 
-  def function(self):
-    raise NotImplementedError
+  def run(self):
+    raise NotImplementedError()
 
   def get_descriptions(self):
     """Returns a formatted string containing the short_descs for all commands.

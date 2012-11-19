@@ -1,5 +1,5 @@
-:mod:`bb.builder.compilers.c` --- C Compiler
-==========================================================
+:mod:`bb.tools.compilers.custom_c_compiler` --- Custom C Compiler
+=================================================================
 
-.. automodule:: bb.builder.compilers.c
+.. automodule:: bb.tools.compilers.custom_c_compiler
    :members:

@@ -15,5 +15,5 @@
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __author__ = "Oleksandr Sviridenko"
 
-from bb.shell.shell import Shell
-import bb.shell.commands
+from bb.app.shell.shell import Shell
+import bb.app.shell.commands

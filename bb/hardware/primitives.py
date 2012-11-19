@@ -20,7 +20,8 @@ __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __author__ = "Oleksandr Sviridenko"
 
 import bb
-from bb.object import Object, Cloneable
+from bb.object import Cloneable
+from bb.app.object import Object
 from bb.utils import typecheck
 
 __all__ = ["Primitive", "Property", "ElectronicPrimitive", "Pin", "Wire",
@@ -58,13 +59,13 @@ class Primitive(Object, Cloneable):
 
   A primitive may also have properties where each property is represented by
   :class:`Primitive.Property`. For example, if you would like to add weight of
-  your primitive ``my_primitive``, you can do this as follows::
+  your primitive ``primitive``, you can do this as follows::
 
-    my_primitive.add_property(Primitive.Property("weight", 87))
+    primitive.add_property(Primitive.Property("weight", 87))
 
   Now people will be able to define the weight of the primitive::
 
-    print my_primitive.get_primitive("weight").value
+    print primitive.get_primitive("weight").value
   """
 
   DESIGNATOR_FORMAT="P%d"
@@ -157,6 +158,7 @@ class Primitive(Object, Cloneable):
     return self._designator
 
   def set_designator(self, text):
+    """Sets designator manually."""
     # TODO(team): designator should be unique within its graph
     self._designator = text
     return self
@@ -167,6 +169,10 @@ class Primitive(Object, Cloneable):
   def set_id(self, value):
     self._id = value
 
+  @property
+  def id(self):
+    return self.get_id()
+
   def add_properties(self, properties):
     if not typecheck.is_sequence(properties):
       raise TypeError("Has to be list")
@@ -175,13 +181,13 @@ class Primitive(Object, Cloneable):
 
   def add_property(self, property_):
     """Add a new property for the primitive. Primitive can be described with
-    help of class Property or with tuple:
+    help of class Property or with tuple::
 
-      myprimitive.add_property(Property("name", "Foo"))
+      primitive.add_property(Property("name", "Foo"))
 
-    or
+    or::
 
-      myprimitive.add_properties(("name", "Foo"), ("color", "black"))
+      primitive.add_properties(("name", "Foo"), ("color", "black"))
     """
     if typecheck.is_sequence(property_):
       property_ = Primitive.Property(*property_)

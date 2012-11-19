@@ -12,9 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__copyright__ = "Copyright (c) 2012 Sladeware LLC"
-__author__ = "Oleksandr Sviridenko"
-
 """The following example shows the most simple case how to define a new message
 handler by using :func:`Messenger.message_handler` decorator::
 
@@ -35,10 +32,13 @@ the message is directed to :func:`SerialMessenger.serial_open_handler`
 handler for the actual processing.
 """
 
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
+
 import logging
 
-from bb.os.thread import Thread
-from bb.os.message import Message
+from bb.app.os.thread import Thread
+from bb.app.os.message import Message
 from bb.utils import typecheck
 
 class Messenger(Thread):
@@ -93,6 +93,9 @@ class Messenger(Thread):
     if not isinstance(message, Message):
       raise TypeError('message has to be derived from Message')
     return self._message_handlers.get(message, None)
+
+  def get_message_handlers(self):
+    return self._message_handlers
 
   def add_message_handler(self, message, handler):
     """Maps a command extracted from a message to the specified handler

@@ -11,33 +11,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This module provides support for BSTL loader. BSTL is the command
-line loader which can be found here
-http://www.fnarfbargle.com/bst.html
+"""This module provides support for BSTL loader. BSTL is the command line loader
+which can be found here http://www.fnarfbargle.com/bst.html
 
-This little application simply allows to load pre-compiled ``.binary``
-and ``.eeprom`` files into your propeller. It is a command line
-application that takes optional parameters and a file name.
+This little application simply allows to load pre-compiled ``.binary`` and
+``.eeprom`` files into your propeller. It is a command line application that
+takes optional parameters and a file name.
 
-The following example shows how to upload ``helloworld.binary`` image
-to propeller device via ``/dev/ttyUSB0`` serial port::
+The following example shows how to upload ``helloworld.binary`` image to
+propeller device via ``/dev/ttyUSB0`` serial port::
 
-    from bb.builder.loaders import BSTLLoader
+    from bb.tools.loaders import BSTLLoader
     loader = BSTLLoader(verbose=True,
                         mode=BSTLLoader.Modes.EEPROM_AND_RUN,
                         device_filename="/dev/ttyUSB0")
     loader.load("helloworld.binary")
 """
 
-__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
-__author__ = 'Oleksandr Sviridenko'
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
 
 from bb.utils.spawn import spawn
 from bb.tools.loaders import Loader
 
 class BSTLLoader(Loader):
   """This class represents BSTL loader and derived from
-  :class:`bb.builder.loaders.loader.Loader` class.
+  :class:`bb.tools.loaders.loader.Loader` class.
 
   By default `device_filename` is ``None``, which forces BSTL to use
   ``/dev/ttyUSB0`` device. You can change device manually later by

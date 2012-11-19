@@ -15,12 +15,12 @@
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __author__ = "Oleksandr Sviridenko"
 
-from bb.application import Object
+from bb.app.object import Object
+from bb.app.os.port import Port
+from bb.app.os.message import Message
 from bb.utils import typecheck
-from bb.os.port import Port
-from bb.os.message import Message
 
-class Thread(Object, Object.Buildable):
+class Thread(Object):
   """The thread is an atomic unit action within the BB operating system, which
   describes application specific actions wrapped into a single context of
   execution.
@@ -90,6 +90,10 @@ class Thread(Object, Object.Buildable):
   def get_runner(self):
     return self._runner
 
+  @property
+  def runner(self):
+    return self.get_runner()
+
   def set_name(self, name):
     if not name:
       raise TypeError('Name cannot be None value')
@@ -99,6 +103,10 @@ class Thread(Object, Object.Buildable):
 
   def get_name(self):
     return self._name
+
+  @property
+  def name(self):
+    return self.get_name()
 
   def has_port(self):
     return not self.get_port() is None

@@ -275,7 +275,7 @@ class BasicModuleImporter(object):
   def set_hooks(self, hooks):
     return self.loader.set_hooks(hooks)
 
-  def import_module(self, name, globals={}, locals={}, fromlist=[]):
+  def import_module(self, name, globals={}, locals={}, fromlist=[], level=-1):
     name = str(name)
     if name in self.modules:
       return self.modules[name] # Fast path
@@ -392,18 +392,19 @@ class ModuleImporter(BasicModuleImporter):
       q = self.import_it(head, qname, parent)
       if q:
         return q, tail
-    raise ImportError, "No module 2named '%s'" % qname
+    raise ImportError("No module named '%s'" % qname)
 
   def load_tail(self, q, tail):
     m = q
     while tail:
       i = tail.find('.')
-      if i < 0: i = len(tail)
+      if i < 0:
+        i = len(tail)
       head, tail = tail[:i], tail[i+1:]
       mname = "%s.%s" % (m.__name__, head)
       m = self.import_it(head, mname, m)
       if not m:
-        raise ImportError, "No module 3named '%s'" % mname
+        raise ImportError("No module named '%s' in %s" % (mname, q.__file__))
     return m
 
   def ensure_fromlist(self, m, fromlist, recursive=0):

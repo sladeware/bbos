@@ -15,7 +15,7 @@
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __author__ = "Oleksandr Sviridenko"
 
-from bb.os.kernel.schedulers.scheduler import Scheduler
+from bb.app.os.kernel.schedulers.scheduler import Scheduler
 
 class StaticScheduler(Scheduler):
   """Static scheduling is widely used with dependable real-time systems in

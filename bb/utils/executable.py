@@ -1,41 +1,34 @@
 #!/usr/bin/env python
 
-import types
-
-from bb.utils import typecheck
-from bb.utils import spawn
-
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __author__ = "Oleksandr Sviridenko"
 
-class ExecutableOptions(dict):
+import inspect
+import types
+
+from bb.containers import DictWrapper
+from bb.utils import typecheck
+from bb.utils import spawn
+
+class ExecutableOptions(DictWrapper):
+
   def __init__(self, *args, **kwargs):
-    dict.__init__(self)
-    self.update(*args, **kwargs)
-
-  def update(self, *args, **kwargs):
-    if args:
-      for arg in args:
-        if not isinstance(arg, dict):
-          print type(arg), arg
-          raise TypeError("argument must be a dict object: %s" % arg)
-        self.update(**arg)
-    if kwargs:
-      for key, value in kwargs.items():
-        self[key] = value
-
-  def __setitem__(self, key, value):
-    if key in self:
-      if not type(value) is type(self[key]):
-        raise TypeError("Value of '%s' has to be of type %s not %s" % \
-                          (key, type(self[key]).__name__, type(value).__name__))
-    dict.__setitem__(self, key, value)
+    DictWrapper.__init__(self, *args, **kwargs)
+    caller_frame = inspect.getouterframes(inspect.currentframe(), 2)
+    self.__file__ = inspect.getsourcefile(caller_frame[1][0])
 
 class OptionsReaderInterface(object):
 
   OPTION_HANDLERS = {}
 
+  def __init__(self):
+    self.__processing_options = None
+
+  def get_processing_options(self):
+    return self.__processing_options
+
   def read_options(self, options):
+    self.__processing_options = options
     if self.OPTION_HANDLERS:
       for option, handler_name in self.OPTION_HANDLERS.items():
         if not option in options:
@@ -43,8 +36,11 @@ class OptionsReaderInterface(object):
         value = options[option]
         handler = getattr(self, handler_name)
         handler(value)
+    self.__processing_options = None
 
 class ExecutableWrapper(object):
+  """This class is wrapper for an executable."""
+
   EXECUTABLE = []
 
   def __init__(self, executable=[]):
@@ -62,10 +58,11 @@ class ExecutableWrapper(object):
     self._executable = executable
 
   def get_executable(self):
+    """Returns handled executable."""
     return self._executable
 
   def check_executable(self):
-    """Check executable. All of them has to exist. Print warning if some
+    """Checks executable. All of them has to exist. Print warning if some
     executable was specified but not defined.
     """
     if not self._executable or not spawn.which(self._executable):

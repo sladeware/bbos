@@ -15,9 +15,11 @@
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __author__ = "Oleksandr Sviridenko"
 
-from bb.os.drivers.gpio.button_driver import ButtonDriver
+import bb
+from bb.app.os.drivers.gpio.button_driver import ButtonDriver
 from bb.tools.compilers import PropGCC
 
-ButtonDriver.Builder += PropGCC.Parameters(
+builder = bb.get_bldr(ButtonDriver)
+builder += PropGCC.Parameters(
   sources=('button.c',)
   )

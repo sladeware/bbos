@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 #
+# http://bionicbunny.org/
+# Copyright (c) 2012 Sladeware LLC
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -15,67 +18,48 @@
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __author__ = "Oleksandr Sviridenko"
 
-import os.path
+from django.template import Template, Context
 
 import bb
-from bb.os import Kernel
-from bb.os.kernel.schedulers import StaticScheduler
+from bb import host_os
+from bb.app.os.kernel.schedulers import StaticScheduler
 from bb.tools.generators import CGenerator
-from bb.tools.compilers import PropGCC
 
+kernel_builder = bb.get_bldr(bb.os.Kernel)
+
+@kernel_builder
 def gen_main_c(kernel):
-  if not kernel.get_core():
-    raise Exception("Core wasn't assigned to the this kernel!")
-  file_path = os.path.join(bb.env['BB_HOME'], 'bb', 'os', 'main%d_autogen.c' %
-                           kernel.get_core().get_id())
-  g = CGenerator().create(file_path)
-  g.writeln('#define BBOS_KERNEL_ID %d' % kernel.get_core().get_id())
-  g.writeln('')
-  g.writeln('#include <bb/os.h>')
-  g.writeln('#include BBOS_PROCESSOR_FILE(init.h)')
-  g.writeln()
-  # Generate necessary API for static scheduler
-  if isinstance(kernel.get_scheduler(), StaticScheduler):
-    g.writeln('static void')
-    g.writeln('loop()')
-    g.writeln('{')
-    g.writeln('  while (1) {')
-    for thread in kernel.get_threads():
-      g.writeln('    bbos_set_running_thread(%s);' % thread.get_name())
-      g.writeln('    %s();' % thread.get_runner())
-    g.writeln('  }')
-    g.writeln('}')
-  # Init
-  g.writeln('static void')
-  g.writeln('init()')
-  g.writeln('{')
-  #g.writeln('  bbos_kernel_init();')
-  #g.write('  BBOS_SET_NR_THREADS(%d);\n' % os.kernel.get_num_threads())
-  #g.write('  BBOS_KERNEL_SET_RUNNING_TYPE(%d);\n' % 0)
-  g.writeln('}')
-  g.writeln()
-  g.writeln('static void')
-  g.writeln('start()')
-  g.writeln('{')
-  #g.writeln('  bbos_kernel_start();\n')
-  g.writeln('  loop();')
-  g.writeln('}')
-  g.writeln()
-  g.writeln('void')
-  g.writeln('main%d(void* arg)' % kernel.get_core().get_id())
-  g.writeln('{')
-  g.writeln('  init();')
-  g.writeln('  start();')
-  g.writeln('}')
-  return file_path
+  core = kernel.get_core()
+  if not core:
+    raise Exception("Core wasn't assigned to the the kernel!")
+  out = host_os.path.touch([bb.get_app().get_build_dir(), "bb", "os",
+                            "main%d_autogen.c" % core.id], recursive=True)
+  in_ = host_os.path.join(host_os.path.dirname(__file__), "main_autogen.c.in")
+  with open(in_) as fh:
+    template = Template(fh.read())
+    ctx = Context({
+      "core": core,
+      "threads": kernel.get_threads(),
+    })
+    g = CGenerator(out, "w")
+    g.write(template.render(ctx))
+    g.close()
+  return out
 
-def update_bbos_config_h(kernel):
-  file_path = os.path.join(bb.env['BB_HOME'], 'bb', 'os', 'config_autogen.h')
-  g = CGenerator().edit(file_path)
+@kernel_builder
+def update_config_h(kernel):
+  app = bb.get_app()
+  h = host_os.path.join(app.get_build_dir(), "bb", "os", "config_autogen.h")
+  g = CGenerator(h, "a")
+  # Add prototypes of runner functions
   for thread in kernel.get_threads():
-    g.writeln('void %s();' % thread.get_runner())
+    g.writeln("void %s();" % thread.runner)
   g.close()
 
-Kernel.Builder += PropGCC.Parameters(
-  sources=(gen_main_c, update_bbos_config_h, './../kernel.c')
-  )
+kernel_builder.read_compiler_params(
+  {
+    "propgcc": {
+      "sources": (gen_main_c, update_config_h, "../kernel.c")
+     }
+  }
+)

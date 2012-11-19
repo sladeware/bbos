@@ -19,7 +19,7 @@ import logging
 import os
 
 import bb
-from bb.shell.commands.command import Command
+from bb.app.shell.commands.command import Command
 
 def set_verbose_level(option, opt_str, value, parser):
   logger = logging.getLogger()
@@ -29,22 +29,37 @@ def set_verbose_level(option, opt_str, value, parser):
   setattr(parser.values, option.dest, value)
 
 class build(Command):
+
   USAGE = '%prog build'
   SHORT_DESC = 'Build an application'
   USES_BASEPATH = False
 
-  def function(self):
-    (_, name) = os.path.split(bb.Application.get_home_dir())
-    home = __import__("bb.application.home", globals(), locals(), [name], -1)
+  def run(self, name=None):
+    app = bb.get_app()
+    if not app:
+      print "Application cannot be identified."
+      exit(0)
+    if not name:
+      (_, name) = os.path.split(app.get_home_dir())
+    name = list(os.path.split(name))
+    if not name[0]:
+      name.pop(0)
+    (name[-1], _) = os.path.splitext(name[-1])
+    name = ".".join(name)
+    try:
+      home = __import__("bb.app.home", globals(), locals(), [name], -1)
+    except ImportError, e:
+      print "Cannot build application."
+      print e
+      exit(0)
     mod = getattr(home, name)
-    app = bb.Application.identify_instance(mod)
     app.build()
 
   def options(self, config, optparser):
-    optparser.add_option('--list-toolchains',
-                         dest='list_toolchains',
-                         action='store_true',
-                         help='List supported toolchains.')
+    #optparser.add_option('--list-compilers',
+    #                     action="callback",
+    #                     callback=list_compilers,
+    #                     help='List supported compilers.')
     optparser.add_option('--verbose',
                          dest='verbose',
                          type='int',
@@ -52,8 +67,8 @@ class build(Command):
                          action="callback",
                          callback=set_verbose_level,
                          help='Verbose level.')
-    optparser.add_option('--dry-run',
+    optparser.add_option("--dry-run",
                          action='store_true',
-                         dest='dry_run',
-                         help='Show only messages that would be printed in a ' \
-                           'real run.')
+                         dest="dry_run",
+                         help="Show only messages that would be printed in a " \
+                           "real run.")

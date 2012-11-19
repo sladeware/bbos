@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
+
 from bb.testing import unittest
 from bb.utils import executable
 
@@ -14,6 +17,7 @@ def ProgramOptions():
 
 class Program(executable.ExecutableWrapper,
               executable.OptionsReaderInterface):
+
   OPTION_HANDLERS = {
     "verbose": "be_verbose"
     }

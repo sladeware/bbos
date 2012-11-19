@@ -16,19 +16,19 @@
 cases simply a core of a microcontroller. Threads run within a kernel using a
 customizable time sharing scheduler algorithm.
 
-The kernel is represented by :class:`bb.os.kernel.Kernel`.
+The kernel is represented by :class:`bb.app.os.kernel.Kernel`.
 """
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __author__ = "Oleksandr Sviridenko"
 
-from bb.application import Object
-from bb.os.port import Port
-from bb.os.thread import Thread
-from bb.os.kernel.schedulers import Scheduler, StaticScheduler
+from bb.app.object import Object
+from bb.app.os.port import Port
+from bb.app.os.thread import Thread
+from bb.app.os.kernel.schedulers import Scheduler, StaticScheduler
 from bb.utils import typecheck
 
-class Kernel(Object, Object.Buildable):
+class Kernel(Object):
   """The heart of BB operating system."""
 
   def __init__(self, core=None, threads=[], scheduler=StaticScheduler()):
@@ -52,6 +52,10 @@ class Kernel(Object, Object.Buildable):
 
   def get_core(self):
     return self._core
+
+  @property
+  def core(self):
+    return self.get_core()
 
   def set_scheduler(self, scheduler):
     """Select scheduler."""

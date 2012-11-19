@@ -12,9 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
+
 from bb.tools.compilers.cc import CC
 
 class GCC(CC):
+  """Base class for GCC compilers. See propgcc."""
 
   def __init__(self, *args, **kwargs):
     CC.__init__(self, *args, **kwargs)

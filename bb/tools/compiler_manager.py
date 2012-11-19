@@ -37,6 +37,8 @@ def identify_compiler(object_):
   elif typecheck.is_class(object_):
     if _fix_compiler_name(object_.__name__) in _COMPILER_CLASSES:
       return _COMPILER_CLASSES[_fix_compiler_name(object_.__name__)]
+  elif isinstance(object_, Compiler):
+    return identify_compiler(object_.__class__)
   return None
 
 def new_compiler(name, args={}):

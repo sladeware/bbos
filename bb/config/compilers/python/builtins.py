@@ -246,4 +246,4 @@ def caller(n=1):
   #  return mod
   #return getattr(mod, name)
 
-__builtins__['caller'] = caller
+__builtins__["caller"] = caller

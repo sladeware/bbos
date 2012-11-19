@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# http://bionicbunny.org
+# http://bionicbunny.org/
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,11 +16,18 @@
 
 """Contains high-level classes encapsulating the overall BB application
 model.
+
+BB application combines all of the build systems of all of the defined
+processes. Therefore the application includes the models of processes, their
+communication, hardware description, simulation and build specifications. At the
+same time the processes inside of an application can be segmented into
+`clusters`, or a group of CPUs.
 """
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __author__ = "Oleksandr Sviridenko"
 
-from bb.application.object import Object
-from bb.application.application import Application
-from bb.application.mapping import Mapping, mapping_class_factory
+from bb.app.app import Application
+from bb.app.object import Object
+from bb.app.mapping import Mapping, mapping_class_factory
+from bb.app.shell import Shell

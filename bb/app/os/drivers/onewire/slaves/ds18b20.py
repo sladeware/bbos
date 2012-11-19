@@ -15,11 +15,13 @@
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __author__ = "Oleksandr Sviridenko"
 
-from bb.os import Message, Driver
+import bb
 
-read_temp_msg = Message("READ_TEMPERATURE", [("dq_pin", 2)], [("value", 2)])
+read_temp_msg = bb.os.Message("READ_TEMPERATURE", [("dq_pin", 2)],
+                              [("value", 2)])
 
-class DS18B20Driver(Driver):
+class DS18B20Driver(bb.os.Driver):
+
   NAME = "DS18B20_DRIVER"
   RUNNER = "ds18b20_driver_runner"
   MESSAGE_HANDLERS = {

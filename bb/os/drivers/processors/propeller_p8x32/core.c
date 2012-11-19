@@ -1,9 +1,11 @@
-//  Copyright (c) 2012 Sladeware LLC
-//
-// Author Oleksandr Sviridenko
+/*
+ * Copyright (c) 2012 Sladeware LLC
+ *
+ * Author: Oleksandr Sviridenko
+ */
 
 #include "time.h"
-#include "cog.h"
+#include "core.h"
 
 #define NR_COGS 8
 
@@ -29,7 +31,9 @@ count_free_cogs()
   return c & 0x0000003F;
 }
 
-// Return bitset of free cogs, where each free cog is marked as 1.
+/**
+ * Returns bitset of free cogs, where each free cog is marked as 1.
+ */
 int
 detect_free_cogs()
 {

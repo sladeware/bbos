@@ -16,15 +16,16 @@ __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __author__ = "Oleksandr Sviridenko"
 
 import bb
+from bb import host_os
 from bb.tools.compilers.custom_c_compiler import CustomCCompiler, Linker
 from bb.utils import spawn
 from bb.utils import executable
-from bb.utils.host_os.path import mkpath
 
 class LD(Linker):
   pass
 
 class Archiver(executable.ExecutableWrapper):
+
   EXECUTABLE=["ar"]
 
 class CC(CustomCCompiler):
@@ -53,7 +54,7 @@ class CC(CustomCCompiler):
     compiler = self.get_executable()
     try:
       spawn.spawn(compiler + cc_args + [src, '-o', obj] + extra_postargs,
-                  debug=self.verbose, dry_run=self.is_dry_run_mode_enabled())
+                  debug=self._verbose, dry_run=self.is_dry_run_mode_enabled())
     except spawn.ExecutionError, msg:
       raise Exception(msg) # CompileError
 
@@ -69,7 +70,7 @@ class CC(CustomCCompiler):
     if extra_postargs:
       ld_options.extend(extra_postargs)
     ld_options += (objects + lib_options + ['-o', self.get_output_filename()])
-    mkpath(bb.host_os.path.dirname(self.get_output_filename()))
+    host_os.path.mkpath(bb.host_os.path.dirname(self.get_output_filename()))
     try:
       linker = self.get_executable()
       # skip over environment variable settings if /usr/bin/env is used to set

@@ -12,13 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
-__author__ = 'Oleksander Sviridenko'
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksander Sviridenko"
 
 import os
 import sys
 import types
 import logging
+
+class PlatformError(Exception):
+  """Platform error."""
+
+class ExecutionError(Exception):
+  """Execution error."""
 
 def which(program):
   def is_exe(fpath):
@@ -34,20 +40,13 @@ def which(program):
         return exe_file
   return None
 
-class PlatformError(Exception):
-  """Platform error."""
-
-class ExecutionError(Exception):
-  """Execution error."""
-
 def spawn(cmd, search_path=True, debug=False, dry_run=False):
-  """Run another program, specified as a command list 'cmd', in a new
-  process. 'cmd' is just the argument list for the new process, ie.
-  cmd[0] is the program to run and cmd[1:] are the rest of its arguments.
-  There is no way to run a program with a name different from that of its
-  executable.
+  """Run another program, specified as a command list `cmd`, in a new
+  process. `cmd` is just the argument list for the new process, ie. ``cmd[0]``
+  is the program to run and ``cmd[1:]`` are the rest of its arguments. There is
+  no way to run a program with a name different from that of its executable.
 
-  If 'search_path' is true (the default), the system's executable
+  If `search_path` is true (the default), the system's executable
   search path will be used to find the program; otherwise, cmd[0]
   must be the exact path to the executable.  If 'dry_run' is true,
   the command will not actually be run.
@@ -62,8 +61,8 @@ def spawn(cmd, search_path=True, debug=False, dry_run=False):
   for i in range(len(cmd)):
     if not type(cmd[i]) is types.StringType:
       cmd[i] = str(cmd[i])
-  logging.debug(' '.join(cmd))
-  if os.name == 'posix':
+  logging.debug(" ".join(cmd))
+  if os.name == "posix":
     _spawn_posix(cmd, search_path, debug, dry_run)
   else:
     raise PlatformError("Don't know how to spawn programs on platform '%s'" %
@@ -77,6 +76,7 @@ _stderr_fd = sys.stderr.fileno()
 def _spawn_posix(cmd, search_path=True, debug=False, dry_run=False):
   if dry_run:
     return
+  debug = True
   exec_fn = search_path and os.execvp or os.execcv
   if not debug:
     child_stdin, parent_stdout = os.pipe()
@@ -111,17 +111,15 @@ def _spawn_posix(cmd, search_path=True, debug=False, dry_run=False):
         os.close(child_stdout)
         os.close(child_stderr)
       if os.WIFSIGNALED(status):
-        raise ExecutionError(
-          "command '%s' terminated by signal %d"
-          % (cmd[0], os.WTERMSIG(status)))
+        raise ExecutionError("command '%s' terminated by signal %d"
+                             % (cmd[0], os.WTERMSIG(status)))
       elif os.WIFEXITED(status):
         exit_status = os.WEXITSTATUS(status)
         if exit_status == 0:
           return # hey, it succeeded!
         else:
-          raise ExecutionError(
-            "command '%s' failed with exit status %d"
-            % (cmd[0], exit_status))
+          raise ExecutionError("command '%s' failed with exit status %d"
+                               % (cmd[0], exit_status))
       elif os.WIFSTOPPED(status):
         continue
       else:

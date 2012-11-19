@@ -12,9 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__copyright__ = "Copyright (c) 2012 Sladeware LLC"
-__author__ = "Oleksandr Sviridenko"
-
 """The Parallax P8X32A Propeller chip is a multi-core architecture parallel
 microcontroller with eight 32-bit RISC CPU cores.
 
@@ -22,7 +19,9 @@ Each of the eight 32-bit cores (called a cog) has a CPU which has access to 512
 32-bit long words (2 KB) of instructions and data.
 """
 
-from bb.os.drivers.processors import PropellerP8X32ADriver
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
+
 from bb.hardware.devices.processors.processor import Processor, Core
 from bb.utils import typecheck
 
@@ -55,7 +54,6 @@ class PropellerP8X32A(Processor):
   using a multiplexed system bus. There are 32 IO pins.
   """
 
-  DRIVER_CLASS = PropellerP8X32ADriver
   CORE_CLASS = PropellerCog
   PROPERTIES = (("name", "Propeller P8X32A"),)
 

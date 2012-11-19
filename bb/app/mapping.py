@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 #
+# http://bionicbunny.org/
+# Copyright (c) 2012 Sladeware LLC
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -16,14 +19,14 @@
 processes, threads, queues and pools is determined at compile time. Thereby
 permitting system integrators to cleanly separate the concept of what the
 software does and where it does it. This mapping is represented by class
-:class:`Mapping`.
+:class:`bb.application.mapping.Mapping`.
 
 Compile time mapping is critical for tuning a system based on application
-requirements. It is useful when faced with an existing software application
-that must run on a new or updated hardware platform, thus requiring
-re-tuning of the application. Equally important is the flexibility afforded
-by compile time mapping to system integrators that need to incorporate new
-software features as applications inevitably grow in complexity.
+requirements. It is useful when faced with an existing software application that
+must run on a new or updated hardware platform, thus requiring re-tuning of the
+application. Equally important is the flexibility afforded by compile time
+mapping to system integrators that need to incorporate new software features as
+applications inevitably grow in complexity.
 """
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
@@ -32,11 +35,13 @@ __author__ = "Oleksandr Sviridenko"
 import logging
 
 import bb
-import bb.os
+from bb.app import os as bbos
 from bb.hardware.devices.processors import Processor
 from bb.utils import typecheck
 
 class ThreadDistributor(object):
+  """Base class for thread distributors."""
+
   def distribute(self, threads, processor):
     raise NotImplementedError()
 
@@ -49,13 +54,14 @@ class RoundrobinThreadDistributor(ThreadDistributor):
   """
 
   def distribute(self, threads, processor):
+    """Distributes `threads` over `processor`'s cores."""
     distribution = {}
     for core in processor.get_cores():
       distribution[core] = []
     c = 0
     for thread in threads:
-      if not isinstance(thread, bb.os.Thread):
-        raise TypeError("thread must be derived from bb.os.Thread")
+      if not isinstance(thread, bbos.Thread):
+        raise TypeError("thread must be derived from bbos.Thread")
       core = processor.get_cores()[c]
       c = (c + 1) % len(processor.get_cores())
       distribution[core].append(thread)
@@ -74,15 +80,15 @@ class Mapping(object):
   """The mapping of hardware resources to software runtime components such as
   processes, threads, queues and pools is determined at compile time.
 
-  NOTE, on this moment device drivers for controlled devices will not be added
-  automatically as threads. They should be added manually.
+  .. note::
+  On this moment device drivers for controlled devices will not be
+  added automatically as threads. They should be added manually.
   """
 
-  OS_CLASS = bb.os.OS
+  OS_CLASS = bbos.OS
 
-  def __init__(self, name=None, processor=None, os_class=None,
-               threads=[],
-               thread_distributor=RoundrobinThreadDistributor()):
+  def __init__(self, name=None, processor=None, os_class=None, threads=[],
+               thread_distributor=None):
     self._name = None
     self._threads = dict()
     self._os_class = None
@@ -90,6 +96,8 @@ class Mapping(object):
     self._is_simulation_mode = False
     self._processor = None
     self._thread_distributor = None
+    if not thread_distributor:
+      thread_distributor = RoundrobinThreadDistributor()
     if thread_distributor:
       self.set_thread_distributor(thread_distributor)
     if name:
@@ -126,6 +134,7 @@ class Mapping(object):
     return self._name
 
   def set_thread_distributor(self, distributor):
+    """Sets thread-distributor that will be used in OS generation process."""
     if not isinstance(distributor, ThreadDistributor):
       raise Exception("Distributor must be derived from ThreadDistributor.")
     self._thread_distributor = distributor
@@ -136,10 +145,10 @@ class Mapping(object):
   def register_thread(self, thread):
     """Registers thread by its name. The name has to be unique within this
     mapping. If thread doesn't have a name, mapping will try to use its name
-    format (see Thread.get_name_format()) to generate one.
+    format (see :func:`Thread.get_name_format`) to generate one.
     """
-    if not isinstance(thread, bb.os.Thread):
-      raise Exception("Must be derived from bb.os.Thread: %s", thread)
+    if not isinstance(thread, bbos.Thread):
+      raise Exception("Must be derived from bbos.Thread: %s", thread)
     if thread.get_name() is None:
       frmt = thread.get_name_format()
       if not frmt:
@@ -152,7 +161,7 @@ class Mapping(object):
 
   def get_thread(self, name):
     if not typecheck.is_string(name):
-      raise TypeError('name must be a string')
+      raise TypeError("'name' must be a string")
     return self._threads.get(name, None)
 
   def register_threads(self, threads):
@@ -160,10 +169,11 @@ class Mapping(object):
       self.register_thread(thread)
 
   def get_num_threads(self):
+    """Returns number of thread within this mapping."""
     return len(self.get_threads())
 
   def get_threads(self):
-    """Return list of threads handled by this mapping."""
+    """Returns complete list of threads handled by this mapping."""
     return self._threads.values()
 
   def set_simulation_mode(self):
@@ -173,7 +183,7 @@ class Mapping(object):
     return self._is_simulation_mode
 
   def get_processor(self):
-    """Return :class:`bb.hardware.devices.processors.processor.Processor`
+    """Returns :class:`bb.hardware.devices.processors.processor.Processor`
     instance.
     """
     return self._processor
@@ -192,23 +202,26 @@ class Mapping(object):
     self.register_thread(driver)
 
   def is_processor_defined(self):
-    """Whether or not a processor was defined. Return ``True`` value if the
-    :class:`bb.hardware.devices.processors.processor.Processor` instance was
+    """Returns whether or not a processor was defined. Returns ``True`` if
+    the :class:`bb.hardware.devices.processors.processor.Processor` instance was
     defined, or ``False`` otherwise.
     """
     return not not self.get_processor()
 
   def set_os_class(self, os_class):
-    if not issubclass(os_class, bb.os.OS):
-      raise TypeError("Must be derived from bb.os.OS class: %s" % os_class)
+    """Sets OS class that will be used by :func:`gen_os` to generate OS
+    instance.
+    """
+    if not issubclass(os_class, bbos.OS):
+      raise TypeError("Must be derived from bbos.OS class: %s" % os_class)
     self._os_class = os_class
 
   def get_os_class(self):
     return self._os_class
 
   def gen_os(self):
-    """Generates OS based on mapping analysis. Returns bb.os.os.OS based
-    instance.
+    """Generates OS based on mapping analysis. Returns :class:`bb.os.os.OS`
+    based instance.
     """
     processor = self.get_processor()
     if not processor:

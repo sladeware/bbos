@@ -5,9 +5,9 @@
  * Author: Oleksandr Sviridenko
  */
 
-#include "ds18b20.h"
-
 #include <bb/os/drivers/onewire/onewire_bus.h>
+
+#include "ds18b20.h"
 
 /* Read scratch pad. */
 #define DS18B20_READ_SCRATCHPAD 0xBE
@@ -28,8 +28,7 @@
  * The value DEFAULT_TEMP_READING is set upon error and > 0 is returned. Returns 0
  * on success.
  */
-void
-ds18b20_read_temperature(void* input, void* output)
+void ds18b20_read_temperature(void* input, void* output)
 {
   int16_t pin;
   int* value;

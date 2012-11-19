@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 #
+# http://bionicbunny.org/
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -12,17 +14,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import absolute_import
+"""This module is wrapper for internal :mod:`os` and provides a portable way of
+using host operating system dependent functionality.
+
+To make :mod:`os` package available, BB creates an alias such as
+:mod:`bb.host_os`.
+"""
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __author__ = "Oleksandr Sviridenko"
 
 import inspect
-# TODO: use bb.utils.module instead of the following implementation.
+# TODO: use bb.utils.module instead of the implementation below.
 from os import *
+import platform
+import sys
 
-class _Environment(dict):
-  """Another version of os.environ with a few features."""
+from bb.host_os import path
+
+BB_HOME_DIR = path.absjoin(path.dirname(path.realpath(__file__)), "..")
+BB_PKG_FILE = inspect.getsourcefile(sys.modules["bb"])
+BB_PKG_DIR = path.absjoin(path.dirname(BB_PKG_FILE), "..", "bb")
+
+class Environment(dict):
+  """Another version of :var:`os.environ` with a few features."""
 
   def __init__(self):
     dict.__init__(self)
@@ -43,4 +58,10 @@ class _Environment(dict):
   def __getitem__(self, key):
     return self.get(key)
 
-env = _Environment()
+env = Environment()
+
+env["OS_NAME"] = platform.system() # NOTE: what about os.name?
+env["PROCESSOR_NAME"] = platform.processor()
+env["ARCH_NAME"] = platform.machine()
+env.setdefault("BB_HOME_DIR", BB_HOME_DIR)
+env["BB_PKG_DIR"] = BB_PKG_DIR

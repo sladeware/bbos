@@ -23,12 +23,12 @@ __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __author__ = "Oleksandr Sviridenko"
 
 import bb
-from bb.application import Object
-from bb.os.kernel import Kernel
-from bb.os.drivers import Driver
+from bb.app.object import Object
+from bb.app.os.kernel import Kernel
+from bb.app.os.drivers import Driver
 from bb.hardware.devices.processors import Processor
 
-class OS(Object, Object.Buildable):
+class OS(Object):
   """This class is container/environment for Kernel's."""
 
   KERNEL_CLASS = Kernel

@@ -11,12 +11,16 @@ def trace_exception_and_exit():
   print
   print "EXCEPTION"
   print "_" * 70
+  print
   traceback.print_exc(file=sys.stdout)
   print "_" * 70
   sys.exit(0)
 
 def main():
-  shell = bb.Shell()
+  app = bb.get_app()
+  if not app:
+    raise Exception()
+  shell = app.get_shell()
   try:
     shell.run()
   except SystemExit, e:

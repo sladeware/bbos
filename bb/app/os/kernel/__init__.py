@@ -15,4 +15,4 @@
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __author__ = "Oleksandr Sviridenko"
 
-from bb.os.kernel.kernel import Kernel
+from bb.app.os.kernel.kernel import Kernel

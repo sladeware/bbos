@@ -23,8 +23,7 @@ import sys
 import time
 
 import bb
-import bb.host_os
-from bb.utils.host_os.path import mkpath
+from bb import host_os
 from bb.utils import typecheck
 from bb.tools.compilers.compiler import Compiler
 
@@ -54,9 +53,9 @@ class Linker(object):
   def link(self, objects, output_filename, *list_args, **dict_args):
     # Adopt output file name to output directory
     if self.get_output_dir() is not None:
-      self.set_output_filename(bb.host_os.path.join(self.get_output_dir(),
+      self.set_output_filename(host_os.path.join(self.get_output_dir(),
                                                  output_filename))
-    binary_filename = bb.host_os.path.relpath(output_filename, self.output_dir)
+    binary_filename = host_os.path.relpath(output_filename, self.output_dir)
     print "Linking executable:", binary_filename
     self._link(objects, *list_args, **dict_args)
 
@@ -112,8 +111,9 @@ class CustomCCompiler(Compiler):
     self._extra_preopts = list()
     self._extra_postopts = list()
     self._linker = None
-    self.add_include_dir(bb.host_os.env['BB_PACKAGE_HOME'])
-    self.add_include_dir(bb.host_os.env['BB_APPLICATION_HOME'])
+    self.add_include_dir(host_os.path.absjoin(host_os.env['BB_PKG_DIR'], ".."))
+    self.add_include_dir(bb.get_app().get_home_dir())
+    self.add_include_dir(bb.get_app().get_build_dir())
 
   def set_output_dir_path(self, path):
     if not typecheck.is_string(path):
@@ -123,18 +123,18 @@ class CustomCCompiler(Compiler):
   def get_output_dir_path(self):
     if self._output_dir_path:
       return self._output_dir_path
-    return bb.host_os.env.pwd()
+    return host_os.env.pwd()
 
   def set_output_file_path(self, path):
     if not typecheck.is_string(path):
       raise TypeError("'path' must be a string")
     self._output_file_path = path
-    self.set_output_dir_path(bb.host_os.path.dirname(path))
+    self.set_output_dir_path(host_os.path.dirname(path))
 
   def get_output_file_path(self):
     if not self._output_file_path:
-      return bb.host_os.path.abspath(
-        bb.host_os.path.join(self.get_output_dir_path(),
+      return host_os.path.abspath(
+        host_os.path.join(self.get_output_dir_path(),
                              self.DEFAULT_OUTPUT_FILE_NAME))
     return self._output_file_path
 
@@ -149,7 +149,7 @@ class CustomCCompiler(Compiler):
     parameters are not given.
     """
     if osname is None:
-      osname = bb.host_os.name
+      osname = host_os.name
     if platform is None:
       platform = sys.platform
     for pattern, compiler in CCOMPILERS:
@@ -304,7 +304,7 @@ class CustomCCompiler(Compiler):
     lang = None
     index = len(self.language_order)
     for source in sources:
-      base, ext = bb.host_os.path.splitext(source)
+      base, ext = host_os.path.splitext(source)
       extlang = self.language_map.get(ext)
       try:
         extindex = self.language_order.index(extlang)
@@ -424,19 +424,19 @@ class CustomCCompiler(Compiler):
     return ld_opts
 
   def get_build_dir_path(self):
-    return bb.host_os.path.join(self.get_output_dir_path(),
-                                bb.host_os.env['BB_BUILD_DIR_NAME'])
+    return host_os.path.join(self.get_output_dir_path(),
+                             bb.get_app().get_build_dir())
 
   def get_object_filenames(self, src_filenames):
     obj_filenames = []
     for src_filename in src_filenames:
-      base, ext = bb.host_os.path.splitext(src_filename)
-      base = bb.host_os.path.splitdrive(base)[1]
-      base = base[bb.host_os.path.isabs(base):]
+      base, ext = host_os.path.splitext(src_filename)
+      base = host_os.path.splitdrive(base)[1]
+      base = base[host_os.path.isabs(base):]
       if ext not in self.get_source_extensions():
         raise Exception("unknown file type '%s' of '%s'" % (ext, src_filename))
       obj_filenames.append(
-        bb.host_os.path.join(self.get_build_dir_path(),
+        host_os.path.join(self.get_build_dir_path(),
                              base + self.get_object_extension()))
     return obj_filenames
 
@@ -452,8 +452,12 @@ class CustomCCompiler(Compiler):
   def get_extra_postopts(self):
     return self._extra_postopts
 
-  def compile(self, sources, output_file_path=None, macros=None, include_dirs=None,
-              debug=0, extra_preopts=None, extra_postopts=None, depends=None, link=True):
+  def compile(self, sources=[], output_file_path=None, macros=None,
+              include_dirs=None, debug=False, extra_preopts=None,
+              extra_postopts=None, depends=None, link=True):
+    if not typecheck.is_list(sources):
+      raise TypeError("'sources' must be a list")
+    sources = sources + self.get_sources()
     # Play with extra preopts and postopts
     extra_preopts = self.get_extra_preopts()
     extra_postopts = self.get_extra_postopts()
@@ -463,13 +467,12 @@ class CustomCCompiler(Compiler):
     macros, objects, extra_postopts, pp_options, build = \
         self._setup_compile(sources, macros, include_dirs, extra_postopts, depends)
     cc_options = self._gen_cc_options(pp_options, debug, extra_preopts)
-
     for obj in objects:
       try:
         src, ext = build[obj]
       except KeyError:
         continue
-      if not self.verbose:
+      if not self._verbose:
         sys.stdout.flush()
         sys.stdout.write("Compiling '%s'\r" % src)
         time.sleep(0.010)
@@ -479,7 +482,7 @@ class CustomCCompiler(Compiler):
       # need to privent their modification
       if not self.is_dry_run_mode_enabled():
         self._compile(obj, src, ext, list(cc_options), extra_postopts, pp_options)
-    if not self.verbose:
+    if not self._verbose:
       print
     if link is True:
       self.link(objects, self.get_output_file_path())
@@ -513,8 +516,8 @@ class CustomCCompiler(Compiler):
     for i in range(len(sources)):
       src = sources[i]
       obj = objects[i]
-      ext = bb.host_os.path.splitext(src)[1]
-      mkpath(bb.host_os.path.dirname(obj), 0777)
+      ext = host_os.path.splitext(src)[1]
+      host_os.path.mkpath(host_os.path.dirname(obj), 0777)
       build[obj] = (src, ext)
     return macros, objects, extra, pp_options, build
 
@@ -524,10 +527,9 @@ class CustomCCompiler(Compiler):
     if not output_filename:
       raise Exception("output_filename must be provided")
     if self.get_output_dir() is not None:
-      output_filename = bb.host_os.path.join(self.get_output_dir(),
-                                          output_filename)
+      output_filename = host_os.path.join(self.get_output_dir(),output_filename)
       self.set_output_filename(output_filename)
-    binary_filename = bb.host_os.path.relpath(output_filename, self.output_dir)
+    binary_filename = host_os.path.relpath(output_filename, self.output_dir)
     print "Linking executable '%s'" % binary_filename
     self._link(objects, *list_args, **dict_args)
     print "Binary %s, %d byte(s)" % (binary_filename,

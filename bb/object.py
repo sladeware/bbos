@@ -28,7 +28,7 @@ METHODS = {}
 def get_all_subclasses(cls):
   """Returns all subclasses."""
   if not typecheck.is_class(cls):
-    return []
+    return get_all_subclasses(cls.__class__)
   return list(cls.__bases__) + [g for s in cls.__bases__
                                 for g in get_all_subclasses(s)]
 
@@ -52,13 +52,13 @@ class methodwrapper(object):
       method = self
     self._cases[method.__class__] = func
 
-  def __get__(self, object_, class_=None):
-    if object_:
-      func = self._cases[instancemethod]
-      return types.MethodType(func, object_, class_)
+  def __get__(self, obj, cls=None):
+    if obj:
+      func = self._cases.get(instancemethod, self._cases[classmethod])
+      return types.MethodType(func, obj, cls)
     else:
       func = self._cases[classmethod]
-      return types.MethodType(func, class_)
+      return types.MethodType(func, cls)
 
 class classmethod(methodwrapper):
   """New :func:`classmethod`."""
@@ -89,6 +89,9 @@ class Object(object):
   """The main object class of the BB hierarchy."""
 
   Cloneable = Cloneable
+
+  def __init__(self):
+    pass
 
   def get_class(self):
     """Returns the unique instance of class that represents this object's

@@ -16,58 +16,56 @@ __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __author__ = "Oleksandr Sviridenko"
 
 import inspect
+from django.template import Template, Context
 
 import bb
-from bb.os.messenger import Messenger
-from bb.tools.generators import CGenerator
-from bb.tools.compilers import PropGCC
+from bb import host_os
 
+msngr_builder = bb.get_bldr(bb.os.Messenger)
+
+@msngr_builder
 def gen_runner_h(messenger):
   """Generates runner's header file. The file will be stored in the
   same directory, where the build file is located or in the current
   directory.
   """
-  dir_path = '.'
-  if messenger.__class__ is not Messenger:
-    dir_path = bb.host_os.path.dirname(inspect.getmodule(messenger).__file__)
-  file_path = bb.host_os.path.join(dir_path, messenger.get_runner() + '_autogen.h')
-  g = CGenerator().create(file_path)
-  g.writeln('#include <bb/os.h>')
-  g.writeln()
-  g.writeln('void %s();' % messenger.get_runner())
+  template = None
+  in_ = host_os.path.join(host_os.path.dirname(__file__),
+                          "messenger_autogen.h.in")
+  with open(in_) as fh:
+    template = Template(fh.read())
+  out = host_os.path.touch([bb.get_app().get_build_dir(), "bb", "os",
+                            "%s_autogen.h" % messenger.get_runner()],
+                           recursive=True)
+  with open(out, "w") as fh:
+    context = Context({
+      "messenger": messenger,
+      "copyright": __copyright__,
+    })
+    fh.write(template.render(context))
 
+@msngr_builder
 def gen_runner_c(messenger):
-  dir_path = '.'
-  if messenger.__class__ is not Messenger:
-    dir_path = bb.host_os.path.dirname(inspect.getmodule(messenger).__file__)
-  file_path = bb.host_os.path.join(dir_path, messenger.get_runner() + '_autogen.c')
-  g = CGenerator().create(file_path)
-  g.writeln('void %s()' % messenger.get_runner())
-  g.writeln('{')
-  g.writeln('  bbos_message_t* request;')
-  g.writeln('  bbos_message_t* response;')
-  g.writeln('  if ((request = bbos_receive_message()) == NULL) {')
-  if messenger.get_default_action():
-    g.writeln('    %s();' % messenger.get_default_action())
-  g.writeln('    return;')
-  g.writeln('  }')
-  g.writeln('  switch (request->label) {')
-  for message in messenger.get_supported_messages():
-    handler = messenger.get_message_handler(message)
-    g.writeln('   case %s:' % message.label)
-    if message.output_fields:
-      g.writeln('     if ((response = bbos_send_message(request->sender)) == NULL) {')
-      g.writeln('       break;')
-      g.writeln('     }')
-      g.writeln('     %s(&request->payload, &response->payload);' % handler)
-    else:
-      g.writeln('     %s(&request->payload);' % handler)
-    g.writeln('     break;')
-  g.writeln('  }')
-  g.writeln('  bbos_deliver_messages();')
-  g.writeln('}')
-  g.close()
+  template = None
+  in_ = host_os.path.join(host_os.path.dirname(__file__),
+                          "messenger_autogen.c.in")
+  with open(in_) as fh:
+    template = Template(fh.read())
+  out = host_os.path.touch([bb.get_app().get_build_dir(), "bb", "os",
+                            "%s_autogen.c" % messenger.get_runner()],
+                           recursive=True)
+  with open(out, "w") as fh:
+    context = Context({
+      "messenger": messenger,
+      "copyright": __copyright__,
+    })
+    fh.write(template.render(context))
+  return out
 
-Messenger.Builder += PropGCC.Parameters(
-  sources=(gen_runner_c, gen_runner_h),
-  )
+msngr_builder.read_compiler_params(
+  {
+    "propgcc": {
+      "sources": (gen_runner_c, gen_runner_h),
+    }
+  }
+)

@@ -14,8 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
-__author__ = 'Oleksandr Sviridenko'
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
 
 class Port(object):
   """Thread communication technique. At some point, this is just a protected
@@ -30,6 +30,10 @@ class Port(object):
 
   def get_capacity(self):
     return self._capacity
+
+  @property
+  def capacity(self):
+    return self.get_capacity()
 
   def __str__(self):
     return "%s[capacity=%d]" % (self.__class__.__name__, self.get_capacity())

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2012 Sladeware LLC
 # http://www.bionicbunny.org/
+# Copyright (c) 2012 Sladeware LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,75 +18,69 @@
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __author__ = "Oleksandr Sviridenko"
 
+from django.template import Template, Context
+
 import bb
-from bb.os import OS
-from bb.tools.generators import CGenerator
-from bb.tools.compilers import PropGCC
+from bb import host_os
+from bb.app.os import OS
 
-# TODO(team): the following code has to be moved with all C files, once C
-# implementation will be separated.
+os_builder = bb.get_bldr(OS)
 
-_CFG = {
-  'BBOS_MAX_MESSAGE_PAYLOAD_SIZE': 0,
-  'BBOS_NUM_THREADS': 0,
-  'BBOS_NUM_PORTS': 0,
-  'BBOS_NUM_KERNELS': 0,
-}
-
+@os_builder
 def gen_os_c(os):
-  sorted_threads = filter(lambda thread: thread.has_port(),
-                          sorted(os.get_threads(),
-                                 key=lambda thread: thread.has_port(),
-                                 reverse=True))
-  file_path = bb.host_os.path.join(bb.env.pwd(), '..', 'os_autogen.c')
-  g = CGenerator().create(file_path)
-  g.writeln('#include "os.h"')
-  g.writeln()
-  for i, thread in enumerate(sorted_threads):
-    g.writeln('MEMPOOL_PARTITION(port%d_part, %d, BBOS_MAX_MESSAGE_PAYLOAD_SIZE);' \
-                % (i, thread.get_port().get_capacity()))
-    g.writeln('bbos_message_t* port%d_stack[%d];' % (i, thread.get_port().get_capacity()))
-  g.writeln()
-  g.writeln('bbos_port_t bbos_ports[BBOS_NUM_PORTS];')
-  g.writeln()
-  g.writeln('void')
-  g.writeln('bbos_init()')
-  g.writeln('{')
-  for i, thread in enumerate(sorted_threads):
-    port = thread.get_port()
-    g.writeln('  mempool_t port%d_pool = mempool_init(port%d_part, %d, %s);' % \
-                  (i, i, port.get_capacity(), 'BBOS_MAX_MESSAGE_PAYLOAD_SIZE'))
-    g.writeln('  bbos_port_init(%d, %d, port%d_pool, port%d_stack);' \
-                % (i, port.get_capacity(), i, i))
-  g.writeln('}')
-  return file_path
+  """Generates `bb/os_autogen.c` and returns its name."""
+  ports = [_.get_port() for _ in \
+             filter(lambda thread: thread.has_port(),
+                    sorted(os.get_threads(),
+                           key=lambda thread: thread.has_port(),
+                           reverse=True))]
+  template = None
+  in_ = host_os.path.join(host_os.path.dirname(__file__), "os_autogen.c.in")
+  with open(in_) as fh:
+    template = Template(fh.read())
+  out = host_os.path.touch([bb.get_app().get_build_dir(), "bb", "os_autogen.c"],
+                           recursive=True)
+  with open(out, "w") as fh:
+    context = Context({
+      "ports": ports,
+      "copyright": __copyright__,
+    })
+    fh.write(template.render(context))
+  return out
 
+@os_builder
 def gen_config_h(os):
-  """Generates bb/os/config_autogen.h header file. Will be included by
-  bb/os/config.h header file.
+  """Generates `bb/os/config_autogen.h` header filem which will be included by
+  `bb/os/config.h` header file.
   """
-  _CFG.update(
-    BBOS_NUM_THREADS=os.get_num_threads(),
-    BBOS_NUM_PORTS=sum([thread.has_port() for thread in os.get_threads()]),
-    BBOS_MAX_MESSAGE_PAYLOAD_SIZE=2,
-    BBOS_NUM_KERNELS=os.get_num_kernels()
-    )
-  file_path = bb.host_os.path.join(bb.env.pwd(), 'config_autogen.h')
-  g = CGenerator().create(file_path)
-  for key, value in _CFG.items():
-    g.writeln("#define %s %d" % (key, value))
-  g.writeln("/* Thread id's and runners */")
-  sorted_threads = sorted(os.get_threads(), key=lambda thread: thread.has_port(),
-                          reverse=True)
-  for i, thread in enumerate(sorted_threads):
-    g.writeln("#define %s %d" % (thread.get_name(), i))
-    g.writeln("#define %s_RUNNER %s" % \
-                (thread.get_name(), thread.get_runner()))
-  g.writeln("/* Supported messages */")
-  for i, message in enumerate(os.get_messages()):
-    g.writeln("#define %s %d" % (message.label, i))
-  g.close()
+  template = None
+  in_ = host_os.path.join(host_os.path.dirname(__file__), "config_autogen.h.in")
+  with open(in_) as fh:
+    template = Template(fh.read())
+  out = host_os.path.touch([bb.get_app().get_build_dir(), "bb", "os",
+                            "config_autogen.h"], recursive=True)
+  with open(out, "w") as fh:
+    context = Context({
+      "BBOS_NUM_THREADS": os.get_num_threads(),
+      "BBOS_NUM_PORTS": sum([thread.has_port() for thread in os.get_threads()]),
+      "BBOS_MAX_MESSAGE_PAYLOAD_SIZE": 2,
+      "BBOS_NUM_KERNELS": os.get_num_kernels(),
+      "sorted_threads": sorted(os.get_threads(),
+                               key=lambda thread: thread.has_port(),
+                               reverse=True),
+      "messages": os.get_messages(),
+      "copyright": __copyright__,
+    })
+    fh.write(template.render(context))
 
-OS.Builder += PropGCC.Parameters(
-  sources=("../os.c", "port.c", "mm/mempool.c", gen_os_c, gen_config_h,)
-  )
+os_builder.read_compiler_params(
+  {
+    "propgcc": {
+      "sources": (
+        "../os.c", "port.c", "mm/mempool.c",
+        gen_os_c,
+        gen_config_h,
+      )
+    }
+  }
+)

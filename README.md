@@ -17,8 +17,8 @@ applications.
 
 ## Installing on Linux
 
-First, of all, you need to install prerequisites. BB requires Python 2.5 or
-higher and a few other basic tools:
+First, of all, you need to install prerequisites. BB requires
+[Python](http://www.python.org/) 2.5 or higher and a few other basic tools:
 
     $ sudo apt-get install make git python python-networkx automake autoconf
 

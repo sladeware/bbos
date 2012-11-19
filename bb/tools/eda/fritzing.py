@@ -80,7 +80,6 @@ def find_home_dir(ask=True):
   """Find and return Fritzing home directory if it was not yet
   provided. Otherwise you can set it with help of :func:`set_home_dir`.
 
-  .. note::
   You can also set environment variable ``FRITZING_HOME``.
   """
   if get_home_dir():

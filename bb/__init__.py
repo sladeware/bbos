@@ -17,6 +17,8 @@ __author__ = "Oleksandr Sviridenko"
 
 import bb.config # sorry, bus this goes first
 from bb.object import Object
-from bb import application
-from bb.shell import Shell
-from bb.application import Application, Mapping
+from bb import app
+from bb.app import Application, Mapping
+from bb.app import os
+
+bbos = os

@@ -8,7 +8,6 @@
 #define __BB_OS_DRIVERS_ONEWIRE_SLAVES_DS18B20_H
 
 #include <bb/os/config.h>
-#include "ds18b20_driver_runner_autogen.h"
 
 #define DS18B20_1_100TH_CELCIUS(value) (100 * (value))
 

@@ -16,17 +16,17 @@ __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __author__ = "Oleksandr Sviridenko"
 __all__ = ["build", "help", "load", "init"]
 
-from bb.shell.commands.init import init
-from bb.shell.commands.build import build
-from bb.shell.commands.help import help
-from bb.shell.commands.load import load
+from bb.app.shell.commands.init import init
+from bb.app.shell.commands.build import build
+from bb.app.shell.commands.help import help
+from bb.app.shell.commands.load import load
 
 DEFAULT_COMMANDS = []
 
 def register_default_commands():
   import sys
   for name in __all__:
-    klass = getattr(sys.modules['bb.shell.commands'], name, None)
+    klass = getattr(sys.modules["bb.app.shell.commands"], name, None)
     if not klass:
       raise Exception("command cannot be found")
     cmd = klass()

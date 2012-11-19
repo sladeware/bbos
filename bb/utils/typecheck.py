@@ -1,4 +1,20 @@
 #!/usr/bin/env python
+#
+# http://bionicbunny.org/
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""This module provides set of type cheching utils."""
 
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __author__ = "Oleksandr Sviridenko"
@@ -6,47 +22,50 @@ __author__ = "Oleksandr Sviridenko"
 import inspect
 import types
 
-def is_class(var):
-  return inspect.isclass(var)
+def is_class(obj):
+  """Returns ``True`` if the specified object is class."""
+  return inspect.isclass(obj)
 
-def is_int(var):
-  """Returns ``True`` if the specified object is an integer."""
-  return type(var) is types.IntType
+def is_int(obj):
+  """Returns ``True`` if the specified object is integer."""
+  return type(obj) is types.IntType
 
-def is_long(var):
-  """Returns true if the specified object is a long integer."""
-  return type(var) is types.LongType
+def is_long(obj):
+  """Returns ``True`` if the specified object is long integer."""
+  return type(obj) is types.LongType
 
-def is_boolean(var):
-  """Returns true if the specified object is a boolean."""
-  return type(var) is types.BooleanType
+def is_boolean(obj):
+  """Returns ``True`` if the specified object is boolean."""
+  return type(obj) is types.BooleanType
 
 is_bool = is_boolean
 
-def is_string(var):
+def is_string(obj):
   """Returns ``True`` if the specified object is a string."""
-  return type(var) is types.StringType
+  return type(obj) is types.StringType
 
-def is_list(var):
-  """Returns ``True`` if the specified variable is a list."""
-  return type(var) is types.ListType
+def is_list(obj):
+  """Returns ``True`` if the specified object is a list."""
+  return type(obj) is types.ListType
 
-def is_function(var):
-  return type(var) is types.FunctionType
+def is_function(obj):
+  """Returns ``True`` if object is a function."""
+  return type(obj) is types.FunctionType
 
 is_callable = callable
 
-def is_tuple(var):
-  return type(var) is types.TupleType
+def is_tuple(obj):
+  """Returns ``True`` if object is a tuple."""
+  return type(obj) is types.TupleType
 
-def is_dict(var):
-  """Return true if the specified variable is a dictionary."""
-  return type(var) is types.DictType
+def is_dict(obj):
+  """Returns ``True`` if the specified object is a dictionary."""
+  return type(obj) is types.DictType
 
 def is_number(x):
-  """Is x a number? We say it is if it has a __int__ method."""
-  return hasattr(x, '__int__')
+  """Is `x` a number? We say it is if it has a ``__int__`` method."""
+  return hasattr(x, "__int__")
 
 def is_sequence(x):
-  """Is x a sequence? We say it is if it has a __getitem__ method."""
-  return hasattr(x, '__getitem__')
+  """Is `x` a sequence? We say it is if it has a ``__getitem__`` method."""
+  return hasattr(x, "__getitem__")

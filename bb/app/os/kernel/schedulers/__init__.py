@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
-__author__ = 'Oleksandr Sviridenko'
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
 
-from bb.os.kernel.schedulers.scheduler import Scheduler
-from bb.os.kernel.schedulers.staticscheduler import StaticScheduler
-from bb.os.kernel.schedulers.fcfsscheduler import FCFSScheduler
+from bb.app.os.kernel.schedulers.scheduler import Scheduler
+from bb.app.os.kernel.schedulers.staticscheduler import StaticScheduler
+from bb.app.os.kernel.schedulers.fcfsscheduler import FCFSScheduler

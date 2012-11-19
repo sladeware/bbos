@@ -19,17 +19,19 @@ import logging
 import optparse
 import sys
 
-from bb.shell.commands import DEFAULT_COMMANDS
+from bb.app.shell.commands import DEFAULT_COMMANDS
 
 class OptionError(optparse.OptionError):
   pass
 
 class OptionParser(optparse.OptionParser):
+
   def error(self, msg):
     raise Exception(msg)
 
 class Shell(object):
-  """Attributes:
+  """Application shell.
+
   optparser: An instnace of :class:`OptionParser`
   argv: The original command line as a list.
   args: The positional command line args left over after parsing
@@ -87,15 +89,11 @@ class Shell(object):
     sys.exit(exit_code)
 
   def _make_specific_parser(self, command):
-    """Creates a new parser with documentation specific to 'command'.
+    """Creates a new parser with documentation specific to `command` -- an
+    Command instance to be used when initializing the new parser.
 
-    Args:
-    command: An Command instance to be used when initializing the new parser.
-
-    Returns:
-    A tuple containing:
-    parser: An instance of OptionsParser customized to 'command'.
-    options: The command line options after re-parsing.
+    Returns a tuple containing parser -- an instance of OptionsParser customized
+    to 'command', and options -- the command line options after re-parsing.
     """
     parser = self._get_optparser()
     parser.set_usage(command.usage)
@@ -127,7 +125,7 @@ class Shell(object):
 
   def run(self):
     self.parse_command_line()
-    self.command()
+    self.command(*self.args[1:])
 
   def get_commands(self):
     return self._commands.values()
@@ -157,7 +155,7 @@ class Shell(object):
     for cmd_name in cmd_names:
       if len(cmd_name) > max_cmd_name_len:
         max_cmd_name_len = len(cmd_name)
-    cmd_desc_frmt = '  %{0}s  %s\n'.format(max_cmd_name_len)
+    cmd_desc_frmt = "  %{0}s  %s\n".format(max_cmd_name_len)
     for cmd_name in cmd_names:
       if not self._commands[cmd_name].hidden:
         desc += cmd_desc_frmt % (cmd_name, self._commands[cmd_name].short_desc)

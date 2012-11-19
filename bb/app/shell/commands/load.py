@@ -15,10 +15,7 @@
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __author__ = "Oleksandr Sviridenko"
 
-import bb
-from bb.shell.commands.command import Command
-#from bb.tools import builder
-#from bb.tools import uploader
+from bb.app.shell.commands.command import Command
 
 class load(Command):
   USAGE = '%prog load'

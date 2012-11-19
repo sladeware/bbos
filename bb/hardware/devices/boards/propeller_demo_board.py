@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
-__author__ = 'Oleksandr Sviridenko'
-
 """Propeller demo board from Parallax."""
+
+__copyright__ = "Copyright (c) 2012 Sladeware LLC"
+__author__ = "Oleksandr Sviridenko"
 
 from bb.hardware.devices.boards import Board, Breadboard
 from bb.hardware.devices.processors.propeller_p8x32 import PropellerP8X32A

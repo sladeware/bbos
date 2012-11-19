@@ -15,9 +15,9 @@
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __author__ = "Oleksandr Sviridenko"
 
-from bb.application import Object
+from bb.app.object import Object
 
-class Scheduler(Object, Object.Buildable):
+class Scheduler(Object):
   """Provides the algorithms to select the threads for execution. Interface for
   base scheduler class.
   """

@@ -18,8 +18,8 @@
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __author__ = "Oleksandr Sviridenko"
 
-from bb.application.images.image import Image
-from bb.os import OS
+from bb.app.images.image import Image
+from bb.app.os import OS
 
 class OSImage(Image):
 
