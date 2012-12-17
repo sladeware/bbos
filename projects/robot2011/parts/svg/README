@@ -1,3 +1,0 @@
-You need to copy all of these images to your local installation of fritzing under : <YOUR_LOCAL_FRITZING>/parts/svg/core/<breadboard|icon|pcb|schematic>
-
-The reason to do this is so that the custom parts you are importing are able to point to their respective images, otherwise Fritzing won't work :(
