@@ -1,7 +1,0 @@
-#!/bin/sh
-#
-# Copyright (c) 2012 Sladeware LLC
-
-BB_HOME_DIR=@abs_top_srcdir@
-
-python ${BB_HOME_DIR}/scripts/bionicbunny.py $@
