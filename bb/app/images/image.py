@@ -54,8 +54,7 @@ class Image(networkx.DiGraph):
   def get_objects(self):
     return self.nodes()
 
-  def eliminate_object(self, obj):
-    # TODO: should be "eliminate" it?
+  def remove_object(self, obj):
     self.remove_node(obj)
 
   def get_common_compilers(self):
@@ -74,8 +73,8 @@ class Image(networkx.DiGraph):
       supported_compilers = set(builder.get_supported_compilers())
       if not supported_compilers:
         logging.warning("%s cannot be built, since does not have supported "
-                        "compilers. The object will be eliminated." % obj)
-        self.eliminate_object(obj)
+                        "compilers. The object will be removed." % obj)
+        self.remove_object(obj)
         continue
       common_compilers = common_compilers.intersection(supported_compilers)
       if not common_compilers:

@@ -85,6 +85,7 @@ class Mapping(object):
   added automatically as threads. They should be added manually.
   """
 
+  PROCESSOR = None
   OS_CLASS = bbos.OS
 
   def __init__(self, name=None, processor=None, os_class=None, threads=[],
@@ -108,6 +109,8 @@ class Mapping(object):
       self.set_os_class(self.OS_CLASS)
     if processor:
       self.set_processor(processor)
+    elif self.PROCESSOR:
+      self.set_processor(self.PROCESSOR)
     if threads:
       self.register_threads(threads)
     bb.Application.identify_instance_or_die().add_mapping(self)

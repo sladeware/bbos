@@ -163,6 +163,8 @@ class Application(bb.Object):
   def get_network(self):
     return self._network
 
+  # Begin mapping management
+
   def get_mappings(self):
     return self._network.get_nodes()
 
@@ -212,6 +214,8 @@ class Application(bb.Object):
       if mapping.get_name() == name:
         return mapping
     return None
+
+  # end mapping management
 
   def get_binaries(self):
     pass
@@ -280,6 +284,8 @@ class Application(bb.Object):
         mod = imp.load_source(name, path)
       except ImportError, e:
         ok = False
+      except IOError, e:
+        ok = False
         logging.critical("Cannot import build-script `%s': %s" % (name, e))
     if not ok:
       exit(0)
@@ -324,3 +330,4 @@ _home_import_hook()
 # Add bb primitives
 setattr(bb, "get_app", Application.identify_instance)
 setattr(bb, "get_bldr", Application.get_builder)
+setattr(bb, "get_builder", Application.get_builder)

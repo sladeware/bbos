@@ -83,14 +83,15 @@ class CustomCCompiler(Compiler):
   Learn more about GCC options:
   http://gcc.gnu.org/onlinedocs/gcc/Option-Summary.html
   """
+
   DEFAULT_OUTPUT_FILE_NAME = "a.out"
   SOURCE_EXTENSIONS = None
   OBJECT_EXTENSION = None
 
   def __init__(self, verbose=0, dry_run=False):
     Compiler.__init__(self, verbose, dry_run)
-    self._output_dir_path = None
-    self._output_file_path = None
+    self._output_dir = None
+    self._output_file = None
     # A list of macro definitions (we are using list since the order is
     # important). A macro definition is a 2-tuple (name, value), where the value
     # is either a string or None. A macro undefinition is a 1-tuple (name, ).
@@ -115,28 +116,27 @@ class CustomCCompiler(Compiler):
     self.add_include_dir(bb.get_app().get_home_dir())
     self.add_include_dir(bb.get_app().get_build_dir())
 
-  def set_output_dir_path(self, path):
+  def set_output_dir(self, path):
     if not typecheck.is_string(path):
       raise TypeError("'path' must be a string")
-    self._output_dir_path = path
+    self._output_dir = path
 
-  def get_output_dir_path(self):
-    if self._output_dir_path:
-      return self._output_dir_path
+  def get_output_dir(self):
+    if self._output_dir:
+      return self._output_dir
     return host_os.env.pwd()
 
-  def set_output_file_path(self, path):
+  def set_output_file(self, path):
     if not typecheck.is_string(path):
       raise TypeError("'path' must be a string")
-    self._output_file_path = path
-    self.set_output_dir_path(host_os.path.dirname(path))
+    self._output_file = path
+    self.set_output_dir(host_os.path.dirname(path))
 
-  def get_output_file_path(self):
-    if not self._output_file_path:
+  def get_output_file(self):
+    if not self._output_file:
       return host_os.path.abspath(
-        host_os.path.join(self.get_output_dir_path(),
-                             self.DEFAULT_OUTPUT_FILE_NAME))
-    return self._output_file_path
+        host_os.path.join(self.get_output_dir(), self.DEFAULT_OUTPUT_FILE_NAME))
+    return self._output_file
 
   def get_default_ccompiler(osname=None, platform=None):
     """Determine the default compiler to use for the given `platform`.
@@ -423,8 +423,8 @@ class CustomCCompiler(Compiler):
       ld_opts[:0] = before
     return ld_opts
 
-  def get_build_dir_path(self):
-    return host_os.path.join(self.get_output_dir_path(),
+  def get_build_dir(self):
+    return host_os.path.join(self.get_output_dir(),
                              bb.get_app().get_build_dir())
 
   def get_object_filenames(self, src_filenames):
@@ -436,7 +436,7 @@ class CustomCCompiler(Compiler):
       if ext not in self.get_source_extensions():
         raise Exception("unknown file type '%s' of '%s'" % (ext, src_filename))
       obj_filenames.append(
-        host_os.path.join(self.get_build_dir_path(),
+        host_os.path.join(self.get_build_dir(),
                              base + self.get_object_extension()))
     return obj_filenames
 
@@ -452,7 +452,7 @@ class CustomCCompiler(Compiler):
   def get_extra_postopts(self):
     return self._extra_postopts
 
-  def compile(self, sources=[], output_file_path=None, macros=None,
+  def compile(self, sources=[], output_file=None, macros=None,
               include_dirs=None, debug=False, extra_preopts=None,
               extra_postopts=None, depends=None, link=True):
     if not typecheck.is_list(sources):
@@ -462,8 +462,8 @@ class CustomCCompiler(Compiler):
     extra_preopts = self.get_extra_preopts()
     extra_postopts = self.get_extra_postopts()
     # Setup compilation process first
-    if output_file_path:
-      self.set_output_file_path(output_file_path)
+    if output_file:
+      self.set_output_file(output_file)
     macros, objects, extra_postopts, pp_options, build = \
         self._setup_compile(sources, macros, include_dirs, extra_postopts, depends)
     cc_options = self._gen_cc_options(pp_options, debug, extra_preopts)
@@ -485,7 +485,7 @@ class CustomCCompiler(Compiler):
     if not self._verbose:
       print
     if link is True:
-      self.link(objects, self.get_output_file_path())
+      self.link(objects, self.get_output_file())
     return objects
 
   def _compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts):
@@ -529,7 +529,7 @@ class CustomCCompiler(Compiler):
     if self.get_output_dir() is not None:
       output_filename = host_os.path.join(self.get_output_dir(),output_filename)
       self.set_output_filename(output_filename)
-    binary_filename = host_os.path.relpath(output_filename, self.output_dir)
+    binary_filename = host_os.path.relpath(output_filename, self.get_output_dir())
     print "Linking executable '%s'" % binary_filename
     self._link(objects, *list_args, **dict_args)
     print "Binary %s, %d byte(s)" % (binary_filename,
@@ -549,7 +549,7 @@ class CustomCCompiler(Compiler):
       raise TypeError("'objects' must be a list or tuple of strings")
     objects = list(objects)
     if output_dir is None:
-      output_dir = self.output_dir
+      output_dir = self.get_output_dir()
     elif type (output_dir) is not StringType:
       raise TypeError("'output_dir' must be a string or None")
     if libraries is None:

@@ -21,62 +21,64 @@ __author__ = "Oleksandr Sviridenko"
 from django.template import Template, Context
 
 import bb
-from bb import host_os
+from bb.utils.func import partials
+from bb.host_os.path import join, touch, dirname, exists
 from bb.app.os import OS
 from bb.hardware.devices.processors.propeller_p8x32 import PropellerP8X32A
-from bb.tools.generators import CGenerator
 
-os_builder = bb.get_bldr(OS)
-
-@os_builder
-def update_config_h(os):
-  in_ = host_os.path.join(bb.get_app().get_build_dir(), "bb", "os",
-                          "config_autogen.h")
-  if not host_os.path.exists(in_):
-    raise Exception("%s cannot be found" % in_)
-  with open(in_, "a") as fh:
+def update_config_h(os, compiler_params):
+  input_file = join(bb.get_app().get_build_dir(), "bb", "os", "config_autogen.h")
+  if not exists(input_file):
+    raise Exception("%s cannot be found" % input_file)
+  with open(input_file, "a") as fh:
     fh.write("#define BBOS_CONFIG_PROCESSOR propeller_p8x32\n")
 
-@os_builder
-def gen_main_c(os):
+def gen_main_c(os, compiler_params):
   """Generates ``bb/os/main_autogen.c`` file."""
-  in_ = host_os.path.join(host_os.path.dirname(__file__), "main_autogen.c.in")
   template = None
-  with open(in_) as fh:
+  input_file = join(dirname(__file__), "main_autogen.c.in")
+  with open(input_file) as fh:
     template = Template(fh.read())
-    ctx = Context({
-      "kernels": os.get_kernels(),
-      # TODO(team): the stack size has to be consider for each thread
-      # individually
-      "stack_size": 16,
+    ctx = Context(
+      {
+        "kernels": os.get_kernels(),
+        # TODO(team): the stack size has to be consider for each thread
+        # individually
+        "stack_size": 16,
+        "copyright": __copyright__,
+      }
+    )
+  output_file = touch([bb.get_app().get_build_dir(), "bb", "os",
+                       "main_autogen.c"], recursive=True)
+  with open(output_file, "w") as fh:
+    fh.write(template.render(ctx))
+  return output_file
+
+def gen_main_h(os, compiler_params):
+  template = None
+  input_file = join(dirname(__file__), "main_autogen.h.in")
+  with open(input_file) as fh:
+    template = Template(fh.read())
+  output_file = join(bb.get_app().get_build_dir(), "bb", "os", "main_autogen.h")
+  with open(output_file, "w") as fh:
+    context = Context({
+      "os": os,
       "copyright": __copyright__,
     })
-  out = host_os.path.touch([bb.get_app().get_build_dir(), "bb", "os",
-                            "main_autogen.c"], recursive=True)
-  with open(out, "w") as fh:
-    fh.write(template.render(ctx))
-  return out
+    fh.write(template.render(context))
 
-@os_builder
-def gen_main_h(os):
-  app = bb.get_app()
-  path = host_os.path.join(bb.get_app().get_build_dir(), "bb", "os",
-                           "main_autogen.h")
-  g = CGenerator().create(path)
-  for kernel in os.get_kernels():
-    core = kernel.get_core()
-    g.writeln("void main%d(void* arg);" % core.get_id());
-  g.close()
-
-os_builder.read_compiler_params({
+os_builder = bb.get_bldr(OS)
+os_builder.read_compiler_params(
+  {
     "propgcc": {
-      "sources": (gen_main_c, gen_main_h, update_config_h,)
+      "sources": partials((gen_main_c, gen_main_h, update_config_h,)), os
     }
-})
+  }
+)
 
-builder = bb.get_bldr(PropellerP8X32A)
-builder.read_compiler_params({
-    "propgcc": {
+propeller_builder = bb.get_bldr(PropellerP8X32A)
+propeller_builder.read_compiler_params({
+  "propgcc": {
       "sources": ("core.c", "delay.c", "sio.c",)
-    }
+  }
 })

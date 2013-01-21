@@ -44,7 +44,7 @@ class CC(CustomCCompiler):
 
   SOURCE_EXTENSIONS = [".c", ".C", ".cc", ".cxx", ".cpp"]
   OBJECT_EXTENSION = ".o"
-  EXECUTABLE = ["cc"]
+  EXECUTABLE = "cc"
 
   def __init__(self, verbose=None, dry_run=False):
     CustomCCompiler.__init__(self, verbose, dry_run)
@@ -53,8 +53,9 @@ class CC(CustomCCompiler):
   def _compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts):
     compiler = self.get_executable()
     try:
-      spawn.spawn(compiler + cc_args + [src, '-o', obj] + extra_postargs,
-                  debug=self._verbose, dry_run=self.is_dry_run_mode_enabled())
+      spawn.spawn([compiler] + cc_args + [src, '-o', obj] + extra_postargs,
+                  debug=self.get_verbosity_level(),
+                  dry_run=self.is_dry_run_mode_enabled())
     except spawn.ExecutionError, msg:
       raise Exception(msg) # CompileError
 
@@ -80,11 +81,11 @@ class CC(CustomCCompiler):
       i = 0
       if bb.host_os.path.basename(linker[0]) == "env":
         i = 1
-        while '=' in linker[i]:
+        while "=" in linker[i]:
           i = i + 1
       # TODO: resolve this
       #linker[i] = self.get_executable('compiler_cxx')[i]
-      spawn.spawn(linker + ld_options, debug=self.verbose,
+      spawn.spawn([linker] + ld_options, debug=self.get_verbosity_level(),
                   dry_run=self.is_dry_run_mode_enabled())
     except Exception, e:
       raise Exception, e

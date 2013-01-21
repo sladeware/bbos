@@ -41,7 +41,7 @@ class PropGCC(GCC):
   about Propeller specific options.
   """
 
-  EXECUTABLE = ["propeller-elf-gcc"]
+  EXECUTABLE = "propeller-elf-gcc"
 
   def __init__(self, *args, **kargs):
     GCC.__init__(self, *args, **kargs)

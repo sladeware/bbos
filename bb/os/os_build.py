@@ -24,9 +24,9 @@ import bb
 from bb import host_os
 from bb.app.os import OS
 
-os_builder = bb.get_bldr(OS)
+os_builder = bb.get_builder(OS)
 
-@os_builder
+@os_builder.trigger
 def gen_os_c(os):
   """Generates `bb/os_autogen.c` and returns its name."""
   ports = [_.get_port() for _ in \
@@ -48,7 +48,7 @@ def gen_os_c(os):
     fh.write(template.render(context))
   return out
 
-@os_builder
+@os_builder.trigger
 def gen_config_h(os):
   """Generates `bb/os/config_autogen.h` header filem which will be included by
   `bb/os/config.h` header file.
@@ -60,17 +60,19 @@ def gen_config_h(os):
   out = host_os.path.touch([bb.get_app().get_build_dir(), "bb", "os",
                             "config_autogen.h"], recursive=True)
   with open(out, "w") as fh:
-    context = Context({
-      "BBOS_NUM_THREADS": os.get_num_threads(),
-      "BBOS_NUM_PORTS": sum([thread.has_port() for thread in os.get_threads()]),
-      "BBOS_MAX_MESSAGE_PAYLOAD_SIZE": 2,
-      "BBOS_NUM_KERNELS": os.get_num_kernels(),
-      "sorted_threads": sorted(os.get_threads(),
+    context = Context(
+      {
+        "BBOS_NUM_THREADS": os.get_num_threads(),
+        "BBOS_NUM_PORTS": sum([thread.has_port() for thread in os.get_threads()]),
+        "BBOS_MAX_MESSAGE_PAYLOAD_SIZE": 2,
+        "BBOS_NUM_KERNELS": os.get_num_kernels(),
+        "sorted_threads": sorted(os.get_threads(),
                                key=lambda thread: thread.has_port(),
                                reverse=True),
-      "messages": os.get_messages(),
-      "copyright": __copyright__,
-    })
+        "messages": os.get_messages(),
+        "copyright": __copyright__,
+      }
+    )
     fh.write(template.render(context))
 
 os_builder.read_compiler_params(

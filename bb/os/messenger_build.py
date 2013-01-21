@@ -15,57 +15,63 @@
 __copyright__ = "Copyright (c) 2012 Sladeware LLC"
 __author__ = "Oleksandr Sviridenko"
 
-import inspect
 from django.template import Template, Context
 
 import bb
-from bb import host_os
+from bb.utils.func import partials
+from bb.host_os.path import join, touch, dirname
 
-msngr_builder = bb.get_bldr(bb.os.Messenger)
+messenger_builder = bb.get_builder(bb.os.Messenger)
 
-@msngr_builder
-def gen_runner_h(messenger):
+@messenger_builder.trigger
+def gen_runner_h(builder, compiler_params):
   """Generates runner's header file. The file will be stored in the
   same directory, where the build file is located or in the current
   directory.
   """
   template = None
-  in_ = host_os.path.join(host_os.path.dirname(__file__),
-                          "messenger_autogen.h.in")
-  with open(in_) as fh:
+  input_file = join(dirname(__file__), "messenger_autogen.h.in")
+  with open(input_file) as fh:
     template = Template(fh.read())
-  out = host_os.path.touch([bb.get_app().get_build_dir(), "bb", "os",
-                            "%s_autogen.h" % messenger.get_runner()],
-                           recursive=True)
-  with open(out, "w") as fh:
-    context = Context({
-      "messenger": messenger,
-      "copyright": __copyright__,
-    })
+  output_file = touch([bb.get_app().get_build_dir(), "bb", "os",
+                       "%s_autogen.h" % messenger.get_runner()], recursive=True)
+  with open(output_file, "w") as fh:
+    context = Context(
+      {
+        "messenger": messenger,
+        "copyright": __copyright__,
+      }
+    )
     fh.write(template.render(context))
 
-@msngr_builder
-def gen_runner_c(messenger):
+@messenger_builder.trigger
+def gen_runner_c(builder, compiler_params):
+  # Read template
   template = None
-  in_ = host_os.path.join(host_os.path.dirname(__file__),
-                          "messenger_autogen.c.in")
-  with open(in_) as fh:
+  input_file = join(dirname(__file__), "messenger_autogen.c.in")
+  with open(input_file) as fh:
     template = Template(fh.read())
-  out = host_os.path.touch([bb.get_app().get_build_dir(), "bb", "os",
-                            "%s_autogen.c" % messenger.get_runner()],
-                           recursive=True)
-  with open(out, "w") as fh:
-    context = Context({
-      "messenger": messenger,
-      "copyright": __copyright__,
-    })
+  # Render template and generate output file
+  output_file = touch([bb.get_app().get_build_dir(), "bb", "os",
+                       "%s_autogen.c" % messenger.get_runner()], recursive=True)
+  with open(output_file, "w") as fh:
+    context = Context(
+      {
+        "messenger": messenger,
+        "copyright": __copyright__,
+      }
+    )
     fh.write(template.render(context))
-  return out
+  return output_file
 
-msngr_builder.read_compiler_params(
-  {
+@messenger_builder.trigger
+def incapsulate(builder, compiler_params, files):
+  return files
+
+class MessengerBuild(Build):
+  OBJECT = bb.os.Messenger
+  COMPILER_PARAMS = {
     "propgcc": {
       "sources": (gen_runner_c, gen_runner_h),
     }
   }
-)

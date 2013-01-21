@@ -24,21 +24,8 @@ import bb
 from bb import host_os
 from bb.app.object import Object
 from bb.tools import compiler_manager
-from bb.tools.compilers.compiler import Compiler, CompilerParameters
+from bb.tools.compilers.compiler import Compiler
 from bb.utils import typecheck
-
-class ObjectHandler(object):
-
-  def __init__(self, f):
-    self._function = f
-    self._object = None
-
-  def set_object(self, obj):
-    self._object = obj
-
-  def __call__(self, *args, **kwargs):
-    ext_args = args + (self._object,)
-    return self._function(*ext_args, **kwargs)
 
 class Builder(bb.Object, bb.Object.Cloneable):
   """Builder builds particular :class:`bb.app.object.Object`."""
@@ -50,14 +37,14 @@ class Builder(bb.Object, bb.Object.Cloneable):
     self._object = None
     self._selected_compiler = None
     self._compiler_params = {}
-    self._object_handlers = []
+    self.triggers = {}
     for compiler_class, params in self.COMPILER_PARAMS.items():
       self.add_compiler_params(params)
     if obj:
       self.set_object(obj)
 
   def __iadd__(self, obj):
-    if isinstance(obj, CompilerParameters):
+    if isinstance(obj, Compiler.Parameters):
       self.add_compiler_params(obj)
     return self
 
@@ -66,24 +53,30 @@ class Builder(bb.Object, bb.Object.Cloneable):
         (self.__class__.__name__,
          self._object and self._object.__class__.__name__ or None)
 
-  def __call__(self, f):
-    # TODO: provide additional method, so user will be able manually bind
-    # function to builder, e.g. builder.add_object_handler(f).
-    handler = ObjectHandler(f)
-    self.add_object_handler(handler)
-    return handler
+  def trigger(self, *args):
+    def gen_injector(f):
+      if not callable(f):
+        raise Exception()
+      def injector(*x_args, **x_kwargs):
+        def do_trigger(*y_args, **y_kwargs):
+          final_kwargs = x_kwargs.copy()
+          final_kwargs.update(y_kwargs)
+          return f(*((self,) + y_args + x_args), **final_kwargs)
+        return do_trigger
+      # Register trigger
+      self.triggers[f.__name__] = injector
+      return injector
+    if not len(args):
+      # @builder.trigger()
+      def wrapper(f):
+        return gen_injector(f)
+      return wrapper
+    elif len(args):
+      # @builder.trigger
+      return gen_injector(*args)
 
-  def add_object_handlers(self, handlers):
-    for handler in handlers:
-      self.add_object_handler(handler)
-
-  def add_object_handler(self, handler):
-    if handler in self._object_handlers:
-      return
-    self._object_handlers.append(handler)
-
-  def get_object_handlers(self):
-    return self._object_handlers
+  def get_triggers(self):
+    return self._triggers
 
   def set_object(self, obj):
     if typecheck.is_class(obj):
@@ -105,7 +98,9 @@ class Builder(bb.Object, bb.Object.Cloneable):
     if self.get_selected_compiler():
       builder.select_compiler(self.get_selected_compiler())
     builder.read_compiler_params(self.get_compilers_params())
-    builder.add_object_handlers(self.get_object_handlers())
+    print builder, self
+    exit(0)
+    builder.triggers.update(self.triggers)
     return builder
 
   def _read_compiler_params_from_dict(self, d):
@@ -126,7 +121,16 @@ class Builder(bb.Object, bb.Object.Cloneable):
       self.add_compiler_params(params)
 
   def read_compiler_parameters(self, *args, **kwargs):
-    """Reads compiler params in different ways."""
+    """Reads compiler params in different ways::
+
+      builder.read_compiler_parameters(
+        {
+          "gcc":
+            "sources": ("foo.c",)
+        }
+      )
+
+    """
     caller_frame = inspect.getouterframes(inspect.currentframe(), 2)
     basedir = host_os.path.dirname(inspect.getsourcefile(caller_frame[1][0]))
     if not len(kwargs) and len(args) == 1:
@@ -167,7 +171,7 @@ class Builder(bb.Object, bb.Object.Cloneable):
     for handler in self.get_object_handlers():
       handler.set_object(obj)
     params = self.get_compiler_params()
-    compiler.read_options(params)
+    compiler.read_params(params)
 
   def get_supported_compilers(self):
     """Returns list of supported compilers. See also
@@ -179,11 +183,11 @@ class Builder(bb.Object, bb.Object.Cloneable):
     return supported_compilers
 
   def add_compiler_params(self, params):
-    """Adds compiler params derived from :class:`CompilerParameters`."""
-    if not params or not isinstance(params, CompilerParameters):
-      raise TypeError("'params' has to be derived from CompilerParameters: %s" %
-                      params)
-    compiler_class = params.COMPILER_CLASS
+    """Adds compiler params derived from :class:`Compiler.Parameters`."""
+    if not params or not isinstance(params, Compiler.Parameters):
+      raise TypeError("'params' has to be derived from Compiler.Parameters: %s" %
+                      type(params))
+    compiler_class = params.EXECUTABLE_CLASS
     if compiler_class in self._compiler_params:
       self._compiler_params[compiler_class].merge(params)
     else:

@@ -18,11 +18,12 @@ __author__ = "Oleksandr Sviridenko"
 import bb
 from bb.app.os.drivers.onewire.slaves.ds18b20 import DS18B20Driver
 
-ds18b20_builder = bb.get_bldr(DS18B20Driver)
-ds18b20_builder.read_compiler_params(
+ds18b20_builder = bb.get_builder(DS18B20Driver)
+incapsulate = ds18b20_builder.triggers["incapsulate"]
+builder.read_compiler_params(
   {
     "propgcc": {
-      "sources": ("ds18b20.c", "../onewire_bus.c")
-     }
+      "sources": (incapsulate("ds18b20.c"), "../onewire_bus.c")
+    }
   }
 )

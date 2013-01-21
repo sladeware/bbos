@@ -61,9 +61,11 @@ def spawn(cmd, search_path=True, debug=False, dry_run=False):
   for i in range(len(cmd)):
     if not type(cmd[i]) is types.StringType:
       cmd[i] = str(cmd[i])
-  logging.debug(" ".join(cmd))
+  print " ".join(cmd)
+  if dry_run:
+    return
   if os.name == "posix":
-    _spawn_posix(cmd, search_path, debug, dry_run)
+    _spawn_posix(cmd, search_path, debug)
   else:
     raise PlatformError("Don't know how to spawn programs on platform '%s'" %
                         os.name)
@@ -73,9 +75,7 @@ _stdin_fd = sys.stdin.fileno()
 _stdout_fd = sys.stdout.fileno()
 _stderr_fd = sys.stderr.fileno()
 
-def _spawn_posix(cmd, search_path=True, debug=False, dry_run=False):
-  if dry_run:
-    return
+def _spawn_posix(cmd, search_path=True, debug=False):
   debug = True
   exec_fn = search_path and os.execvp or os.execcv
   if not debug:
