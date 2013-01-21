@@ -26,3 +26,6 @@ Installation
 2. Go to this directory and initiate setup process:
 
         $ python setup.py
+
+> **NOTE:** while BB is in development mode, BBAPP will not be installed
+> automatically.
