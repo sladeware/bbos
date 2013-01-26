@@ -1,8 +1,7 @@
 /*
  * Bionic Bunny OS config.
  *
- * Copyright (c) 2011-2012 Sladeware LLC
- * Author: Oleksandr Sviridenko
+ * Copyright (c) 2011-2013 Sladeware LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +14,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * Author: Oleksandr Sviridenko
  */
 
 #ifndef __BB_OS_CONFIG_H
@@ -55,10 +56,10 @@
   BB_STR(BB_PATH_JOIN2(bb/os/drivers, relative_file))
 
 /**
- * This macro builds path for the proper processor header file. Allows
- * to find files related to processor in use. For example, if you are
- * using the propeller_p8x32a processor and you would like to include
- * time.h file, the BBOS_PROCESSOR_FILE(time.h) will produce
+ * This macro builds path for the proper processor header file. Allows to find
+ * files related to processor in use. For example, if you are using the
+ * propeller_p8x32a processor and you would like to include time.h file, the
+ * BBOS_PROCESSOR_FILE(time.h) will produce
  * bb/os/drivers/processors/propeller_p8x32a/time.h.
  *
  * NOTE: this macro can be redefined in order to load files from different
@@ -71,12 +72,11 @@
 #endif /* BBOS_PROCESSOR_FILE */
 
 /**
- * Include BBOS_CONFIG_PROCESSOR_H header file with processor
- * configurations. If BBOS_CONFIG_PROCESSOR_H macro was not defined,
- * BBOS_CONFIG_PROCESSOR can be defined as a processor's name in order
- * to find it in standard driver library by using selection logic. For
- * a standard processors this name equals the directory name where the
- * processor's configuration is located.
+ * Include BBOS_CONFIG_PROCESSOR_H header file with processor configurations. If
+ * BBOS_CONFIG_PROCESSOR_H macro was not defined, BBOS_CONFIG_PROCESSOR can be
+ * defined as a processor's name in order to find it in standard driver library
+ * by using selection logic. For a standard processors this name equals the
+ * directory name where the processor's configuration is located.
  */
 #if defined(BBOS_CONFIG_PROCESSOR_H)
 #include BBOS_CONFIG_PROCESSOR_H

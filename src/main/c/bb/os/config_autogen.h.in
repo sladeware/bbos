@@ -9,13 +9,13 @@
 
 /* Thread id's and runners */
 {% for thread in sorted_threads %}
-#define {{ thread.name }} {{ forloop.counter0 }}
-#define {{ thread.name }}_RUNNER {{ thread.runner }}
+#define {{ thread.get_name }} {{ forloop.counter0 }}
+#define {{ thread.get_name }}_RUNNER {{ thread.get_runner }}
 {% endfor %}
 
 /* Supported messages */
 {% for message in messages %}
 #define {{ message.label }} {{ forloop.counter0 }}
 {% empty %}
-/* NO MESSAGES */
+/* No messages */
 {% endfor %}
