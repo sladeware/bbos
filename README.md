@@ -18,10 +18,11 @@ applications.
 Installation
 ------------
 
-1. Download the latest version of BB platform (see <http://www.bionicbunny.org>)
-   to the place where it will live (e.g. `/opt/bbos/`):
+1. Download the latest version of the BB platform (see
+   <http://www.bionicbunny.org>) to the place where it will live
+   (e.g. `/opt/bbos/`):
 
-        $ git clone git@github.com:sladeware/bbos.git bbos
+        $ git clone git@github.com:sladeware/bbos.git
 
 2. Go to this directory and initiate setup process:
 
