@@ -67,7 +67,7 @@ bbos_deliver_messages()
 #endif /* BBOS_ITC_ENABLED */
 
 void
-bbos_panic(const int8_t* frmt, ...)
+bbos_panic(const char* frmt, ...)
 {
   //#ifdef BBOS_DEBUG
   va_list args;

@@ -20,12 +20,11 @@
 from django.template import Template, Context
 
 import bb
-from bb.utils.func import partials
 from bb.host_os.path import join, touch, dirname, exists
 from bb.app.os import OS
 from bb.hardware.devices.processors.propeller_p8x32 import PropellerP8X32A
 
-def update_config_h(os, compiler_params):
+def update_config_h(os):
   input_file = join(bb.get_app().get_build_dir(), "bb", "os", "config_autogen.h")
   if not exists(input_file):
     raise Exception("%s cannot be found" % input_file)

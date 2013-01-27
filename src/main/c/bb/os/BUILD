@@ -86,9 +86,9 @@ def gen_config_h(rule, os):
   input_fn = localpath("config_autogen.h.in")
   output_fn = rule.buildpath(["bb", "os", "config_autogen.h"])
   with open(input_fn) as input_fh, open(output_fn, "w") as output_fh:
-    print(">>", os.get_processor())
     template = Template(input_fh.read())
     context = Context({
+      "BBOS_CONFIG_PROCESSOR": os.get_processor().properties.family,
       "BBOS_NUM_THREADS": os.get_num_threads(),
       "BBOS_NUM_PORTS": sum([thread.has_port() for thread in os.get_threads()]),
       "BBOS_MAX_MESSAGE_PAYLOAD_SIZE": 2,
@@ -104,4 +104,6 @@ def gen_config_h(rule, os):
 cc_library_factory(target = OS,
                    srcs = ["../os.c", "port.c", "mm/mempool.c",
                            gen_os_c, gen_config_h],
+                   # TODO: the following includes have to be fixed. This is
+                   # temporary solution to include main/c directory.
                    includes = [localpath("../..")])

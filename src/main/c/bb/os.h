@@ -64,7 +64,7 @@ PROTOTYPE(void bbos, ());
 /**
  * Halt the system. Display a message, then perform cleanups with exit.
  */
-PROTOTYPE(void bbos_panic, (const int8_t* fmt, ...));
+PROTOTYPE(void bbos_panic, (const char* fmt, ...));
 
 /*
  * The implementation of the following prototypes has to be generated and
