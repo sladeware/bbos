@@ -1,0 +1,26 @@
+/*
+ * {{ copyright }}
+ */
+
+#include <bb/os.h>
+
+{% for port in ports %}
+MEMPOOL_PARTITION(port{{ forloop.counter0 }}_part, {{ port.capacity }},
+                  BBOS_MAX_MESSAGE_PAYLOAD_SIZE);
+bbos_message_t* port{{ forloop.counter0 }}_stack[{{ port.capacity }}];
+{% endfor %}
+
+bbos_port_t bbos_ports[BBOS_NUM_PORTS];
+
+void bbos_init()
+{
+  {% for port in ports %}
+  mempool_t port{{ forloop.counter0 }}_pool = mempool_init(
+                port{{ forloop.counter0 }}_part,
+                {{ port.capacity }},
+                BBOS_MAX_MESSAGE_PAYLOAD_SIZE);
+  bbos_port_init({{ forloop.counter0 }}, {{ port.capacity }},
+                 port{{ forloop.counter0 }}_pool,
+                 port{{ forloop.counter0 }}_stack);
+  {% endfor %}
+}

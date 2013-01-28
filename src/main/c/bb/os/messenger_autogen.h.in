@@ -1,0 +1,8 @@
+/*
+ * {{ messenger.runner }}'s runner interface
+ *
+ * {{ copyright }}
+ */
+#include <bb/os.h>
+
+void {{ messenger.runner }}();

@@ -1,0 +1,23 @@
+/*
+ * {{ copyright }}
+ */
+
+#define BBOS_CONFIG_PROCESSOR {{ BBOS_CONFIG_PROCESSOR }}
+
+#define BBOS_NUM_THREADS {{ BBOS_NUM_THREADS }}
+#define BBOS_NUM_PORTS {{ BBOS_NUM_PORTS }}
+#define BBOS_MAX_MESSAGE_PAYLOAD_SIZE {{ BBOS_MAX_MESSAGE_PAYLOAD_SIZE }}
+#define BBOS_NUM_KERNELS {{ BBOS_NUM_KERNELS }}
+
+/* Thread id's and runners */
+{% for thread in sorted_threads %}
+#define {{ thread.get_name }} {{ forloop.counter0 }}
+#define {{ thread.get_name }}_RUNNER {{ thread.get_runner }}
+{% endfor %}
+
+/* Supported messages */
+{% for message in messages %}
+#define {{ message.label }} {{ forloop.counter0 }}
+{% empty %}
+/* No messages */
+{% endfor %}
