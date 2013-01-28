@@ -1,13 +1,13 @@
-Copyright (c) 2011-2012 Sladeware LLC
+<!--- -*- coding: utf-8; mode: markdown; -*- --->
 
-Bionic Bunny <http://bionicbunny.org>
+Bionic Bunny Operating System
 
-## Contents
+Copyright (c) 2011-2013 Sladeware LLC
 
- * What is Bionic Bunny?
- * Installing on Linux
+http://www.bionicbunny.org/
 
-## What is Bionic Bunny?
+What is Bionic Bunny?
+---------------------
 
 Bionic Bunny (BB) is a platform for embedded systems development, providing
 microkernel operating system-like functionality. It provides
@@ -15,29 +15,18 @@ language-independent, hardware-independent and network-transparent communication
 for power efficient computing in heterogeneous microcontroller robotics
 applications.
 
-## Installing on Linux
+Installation
+------------
 
-First, of all, you need to install the prerequisites. BB requires Python 2.5 or
-higher and a few other basic tools:
+1. Download the latest version of the BB platform (see
+   <http://www.bionicbunny.org>) to the place where it will live
+   (e.g. `/opt/bbos/`):
 
-    $ sudo apt-get install make git python python-networkx automake autoconf
+        $ git clone git@github.com:sladeware/bbos.git
 
-Next, download the latest version the BB platform (see <http://bionicbunny.org>)
-to the place where it will live (e.g. `/opt/bbos/`):
+2. Go to this directory and initiate setup process:
 
-    $ git clone git@github.com:sladeware/bbos.git bbos
+        $ python setup.py
 
-Go to this directory and initiate configuration process:
-
-    $ cd /opt/bbos/
-    $ ./configure
-
-After configuration is successful, run the installation as root:
-
-    $ sudo make install
-
-## Development
-
-To run BB tests, go to the root BB directory and execute:
-
-    $ python test.py
+> **NOTE:** while BB is in development mode, BBAPP will not be installed
+> automatically.
