@@ -16,15 +16,17 @@
 
 from __future__ import print_function
 
-print("BBOS SETUP")
-print()
+import sys
 
 # Skip bbapp automatic installation for now
+try:
+  import bb.config
+  from bb.utils import path_utils
+except ImportError:
+  print("Please install bbapp.", file=sys.stderr)
+  sys.exit(0)
 
-import bb
-from bb.utils import path_utils
-
-location = path_utils.dirname(path_utils.realpath(__file__))
+homedir = path_utils.dirname(path_utils.realpath(__file__))
 print("Update user config")
-bb.user_config.set("bbos", "location", location)
-bb.user_config.write()
+bb.config.user_settings.set("bbos", "homedir", homedir)
+bb.config.user_settings.write()
