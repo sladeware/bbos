@@ -24,7 +24,12 @@ Installation
 
         $ git clone git@github.com:sladeware/bbos.git
 
-2. Go to this directory and initiate setup process:
+2. To install bbos, make sure you have [Python](http://www.python.org/) 2.6 or
+   greater installed. If you're in doubt, run:
+
+        $ python -V
+
+3. Initiate setup process:
 
         $ python setup.py
 
