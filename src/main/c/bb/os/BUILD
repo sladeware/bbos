@@ -21,7 +21,7 @@ from django.template import Template, Context
 
 from bb import __copyright__
 from bb.app.meta_os import OS
-from bb.utils.path_utils import join, touch, dirname, localpath
+from bb.utils.path_utils import localpath
 from bb.utils import logging
 
 logger = logging.get_logger("bb")
