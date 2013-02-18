@@ -1,12 +1,13 @@
 /*
  * Time management
  *
- * Copyright (c) 2011 Sladeware LLC
+ * Copyright (c) 2011-2013 Sladeware LLC
+ * http://www.bionicbunny.org/
  */
-#ifndef __BBOS_TIME_H
-#define __BBOS_TIME_H
+#ifndef __BB_OS_KERNEL_TIME_H
+#define __BB_OS_KERNEL_TIME_H
 
 #include <time.h>
 #define bbos_delay_sec(sec) sleep(sec)
 
-#endif /* __BBOS_TIME_H */
+#endif /* __BB_OS_KERNEL_TIME_H */

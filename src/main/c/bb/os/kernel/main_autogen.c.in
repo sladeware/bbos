@@ -12,8 +12,8 @@ loop()
 {
   while (1) {
   {% for thread in threads %}
-    bbos_set_running_thread({{ thread.name }});
-    {{ thread.runner }}();
+    bbos_set_running_thread({{ thread.get_name }});
+    {{ thread.get_runner }}();
   }
   {% endfor %}
 }
@@ -21,7 +21,7 @@ loop()
 static void
 init()
 {
-  bbos_kernel_init();
+  //bbos_kernel_init();
 }
 
 static void
