@@ -18,3 +18,7 @@ def require(spec):
 subdirs = filter(os.path.isdir, os.listdir(os.path.dirname(__file__)))
 for subdir in subdirs:
   require(os.path.join(subdir, "bb", "os"))
+
+# FIXME:
+require(os.path.join(os.path.dirname(__file__), "c", "bb", "os", "drivers",
+                     "processors", "propeller_p8x32"))
