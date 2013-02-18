@@ -106,7 +106,6 @@ def gen_config_h(rule, os):
         output_fh.write("void %s();\n" % thread.get_runner())
 
 def gen_main_c(rule, os):
-  print ">>>>>>"
   result_outputs = []
   for kernel in os.get_kernels():
     core = kernel.get_core()
@@ -114,7 +113,6 @@ def gen_main_c(rule, os):
       raise Exception("Core wasn't assigned to the the kernel!")
     input_fn = localpath("kernel/main_autogen.c.in")
     output_fn = rule.buildpath(["bb", "os", "main%d_autogen.c" % core.id])
-    print ">>", output_fn
     with open(input_fn) as input_fh, open(output_fn, "w") as output_fh:
       template = Template(input_fh.read())
       context = Context({
