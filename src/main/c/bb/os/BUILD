@@ -100,10 +100,46 @@ def gen_config_h(rule, os):
       "copyright": __copyright__,
     })
     output_fh.write(template.render(context))
+    # Add prototypes of thread runners
+    for kernel in os.get_kernels():
+      for thread in kernel.get_threads():
+        output_fh.write("void %s();\n" % thread.get_runner())
+
+def gen_main_c(rule, os):
+  print ">>>>>>"
+  result_outputs = []
+  for kernel in os.get_kernels():
+    core = kernel.get_core()
+    if not core:
+      raise Exception("Core wasn't assigned to the the kernel!")
+    input_fn = localpath("kernel/main_autogen.c.in")
+    output_fn = rule.buildpath(["bb", "os", "main%d_autogen.c" % core.id])
+    print ">>", output_fn
+    with open(input_fn) as input_fh, open(output_fn, "w") as output_fh:
+      template = Template(input_fh.read())
+      context = Context({
+        "core": core,
+        "threads": kernel.get_threads(),
+      })
+      output_fh.write(template.render(context))
+    result_outputs.append(output_fn)
+  return result_outputs
+
+def gen_main_h(rule, os):
+  input_fn = localpath("main_autogen.h.in")
+  output_fn = rule.buildpath(["bb", "os", "main_autogen.h"])
+  with open(input_fn) as input_fh, open(output_fn, "w") as output_fh:
+    template = Template(input_fh.read())
+    context = Context({
+      "os": os,
+      "copyright": __copyright__,
+    })
+    output_fh.write(template.render(context))
 
 cc_library_factory(target = OS,
                    srcs = ["../os.c", "port.c", "mm/mempool.c",
-                           gen_os_c, gen_config_h],
+                           gen_os_c, gen_config_h, gen_main_h,
+                           gen_main_c],
                    # TODO: the following includes have to be fixed. This is
                    # temporary solution to include main/c directory.
                    includes = [localpath("../..")])
