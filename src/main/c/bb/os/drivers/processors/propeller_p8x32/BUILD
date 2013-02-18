@@ -47,19 +47,9 @@ def gen_main_c(rule, os):
     output_fh.write(template.render(context))
   return output_fn
 
-def gen_main_h(rule, os):
-  input_fn = localpath("main_autogen.h.in")
-  output_fn = rule.buildpath(["bb", "os", "main_autogen.h"])
-  with open(input_fn) as input_fh, open(output_fn, "w") as output_fh:
-    template = Template(input_fh.read())
-    context = Context({
-      "os": os,
-      "copyright": __copyright__,
-    })
-    output_fh.write(template.render(context))
 
 cc_library_factory(target = OS,
-                   srcs = [gen_main_c, gen_main_h, update_config_h],
+                   srcs = [gen_main_c, update_config_h],
                    # TODO: the following includes have to be fixed. This is
                    # temporary solution to include main/c directory.
                    includes = [localpath("../../../../../")])
