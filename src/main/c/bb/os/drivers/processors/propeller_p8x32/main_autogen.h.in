@@ -1,0 +1,7 @@
+/*
+ * {{ copyright }}
+ */
+
+{% for kernel in os.get_kernels %}
+void main{{ kernel.core.id }}(void* arg);
+{% endfor %}
