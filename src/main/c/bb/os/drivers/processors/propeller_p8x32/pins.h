@@ -1,7 +1,7 @@
 /*
  * Parallax Propeller P8X32A GPIO pin support interface
  *
- * Copyright (c) 2012 Sladeware LLC
+ * Copyright (c) 2012-2013 Sladeware LLC
  * Author: Oleksandr Sviridenko
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
