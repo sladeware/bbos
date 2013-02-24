@@ -1,7 +1,7 @@
 /*
  * BB operating system interface
  *
- * Copyright (c) 2012 Sladeware LLC
+ * Copyright (c) 2012-2013 Sladeware LLC
  * Author: Oleksand Sviridenko
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

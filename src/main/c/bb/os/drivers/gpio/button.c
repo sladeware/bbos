@@ -18,8 +18,8 @@
 
 #include "button.h"
 
-#include <bb/os/kernel/delay.h>
-#include <bb/os/drivers/processors/propeller_p8x32/pins.h>
+#include "bb/os/kernel/delay.h"
+#include BBOS_PROCESSOR_FILE(pins.h)
 
 #define BUTTON_DELAY 4 /* ms */
 #define BUTTON_FINAL_DELAY 100 /* ms */
@@ -101,5 +101,3 @@ are_buttons_pressed(void* args)
   }
   *((struct are_buttons_pressed_args*)args)->output_mask = output;
 }
-
-#include "button_driver_runner_autogen.c"

@@ -16,8 +16,7 @@
 #ifndef __BB_OS_DRIVERS_GPIO_BUTTON_H
 #define __BB_OS_DRIVERS_GPIO_BUTTON_H
 
-#include <bb/os.h>
-#include "button_driver_runner_autogen.h"
+#include "bb/os.h"
 
 struct is_button_pressed_args {
   uint8_t pin;
