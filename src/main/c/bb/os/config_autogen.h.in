@@ -10,7 +10,7 @@
 #define BBOS_NUM_KERNELS {{ BBOS_NUM_KERNELS }}
 
 /* Thread id's and runners */
-{% for thread in sorted_threads %}
+{% for thread in threads %}
 #define {{ thread.get_name }} {{ forloop.counter0 }}
 #define {{ thread.get_name }}_RUNNER {{ thread.get_runner }}
 {% endfor %}
