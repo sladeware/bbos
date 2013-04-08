@@ -22,27 +22,10 @@
 #define BBOS
 
 #include "bb/os/config.h"
+#include "bb/os/types.h"
 #include "bb/os/kernel.h"
-#include "bb/os/thread.h"
 #include "bb/os/mm/mempool.h"
 #include BBOS_PROCESSOR_FILE(core.h)
-
-/**
- * Message structure passed between threads.
- */
-struct bbos_message {
-  bbos_port_id_t receiver;
-  bbos_port_id_t sender;
-  bbos_message_label_t label; /* what kind of message is it */
-  void* payload;
-};
-
-struct bbos_port {
-  mempool pool;
-  struct bbos_message** inbox;
-  size_t capacity;
-  size_t counter; /* count number of unread messages. */
-};
 
 /**
  * This array keeps an ID of running thread per kernel/core.
@@ -77,8 +60,7 @@ extern bbos_thread_id_t bbos_running_threads[BBOS_NUM_KERNELS];
 #endif
 
 #define BBOS_MAX_MESSAGE_SIZE                                   \
-  (10)
-//(sizeof(struct bbos_message) + BBOS_MAX_MESSAGE_PAYLOAD_SIZE)
+  (sizeof(struct bbos_message) + BBOS_MAX_MESSAGE_PAYLOAD_SIZE)
 
 /**
  * Receives a new message for the running thread. See also

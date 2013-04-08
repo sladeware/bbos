@@ -19,18 +19,7 @@
 
 #define BBOS_KERNEL
 
-#include "bb/os/config.h"
-#include "bb/os/thread.h"
-
-struct bbos_kernel_data {
-  int16_t nr_threads;
-  struct bbos_thread* threads;
-  bbos_thread_id_t running_thread;
-};
-
-#define bbos_kernel_assert(expr) assert(expr)
-
-void bbos_kernel_main();
+#include "bb/os/types.h"
 
 /* Scheduler selection logic. */
 
@@ -58,6 +47,12 @@ void bbos_kernel_main();
 
 #define bbos_kernel_set_running_thread(tid) .running_thread = tid
 
+/******************************************************************************
+ * PROTOTYPES                                                                 *
+ ******************************************************************************/
+
+PROTOTYPE(void bbos_kernel_main, ());
+
 /* Initialize thread. */
 PROTOTYPE(void bbos_kernel_init_thread, (bbos_thread_id_t id,
                                          bbos_thread_runner_t runner));
@@ -81,9 +76,7 @@ PROTOTYPE(void bbos_kernel_init_thread, (bbos_thread_id_t id,
   } while (0)
 
 PROTOTYPE(void bbos_kernel_enable_all_threads, ());
-
 PROTOTYPE(void bbos_kernel_disable_all_threads, ());
-
 PROTOTYPE(void bbos_thread_run, (bbos_thread_id_t id));
 
 /**
@@ -93,12 +86,10 @@ PROTOTYPE(void bbos_thread_run, (bbos_thread_id_t id));
  * bbos_sched_enqueue().
  */
 #define bbos_kernel_enable_thread(id)                \
-  do                                                 \
-    {                                                \
-      /* bbos_printf("Enable thread '%d'\n", tid);*/ \
-      bbos_sched_enqueue(id);                        \
-    }                                                \
-  while (0)
+  do {                                               \
+    /* bbos_printf("Enable thread '%d'\n", tid);*/   \
+    bbos_sched_enqueue(id);                          \
+  } while (0)
 
 /**
  * Stops thread's activity and dequeue it from schedule. Use

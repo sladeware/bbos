@@ -88,25 +88,4 @@
 #endif /* BBOS_CONFIG_PROCESSOR_H */
 #include BBOS_CONFIG_PROCESSOR_H
 
-/* Types */
-
-/*
- * TODO: generate port id at buildtime
- */
-#ifndef bbos_port_id_t
-typedef uint8_t bbos_port_id_t;
-#endif
-
-/**
- * Buildtime defined type for thread identifier. By default represents up to 255
- * threads.
- */
-#ifndef bbos_thread_id_t
-typedef uint8_t bbos_thread_id_t;
-#endif
-
-#ifndef bbos_message_label_t
-typedef uint8_t bbos_message_label_t;
-#endif /* bbos_message_label_t */
-
 #endif /* __BB_OS_CONFIG_H */
