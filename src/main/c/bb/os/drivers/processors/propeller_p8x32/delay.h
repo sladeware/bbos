@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 Sladeware LLC
+ * Copyright (c) 2012-2013 Sladeware LLC
  * Author: Oleksandr Sviridenko
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +17,7 @@
 #ifndef __BB_OS_DRIVERS_PROCESSORS_PROPELLER_P8X32_DELAY_H
 #define __BB_OS_DRIVERS_PROCESSORS_PROPELLER_P8X32_DELAY_H
 
-#include <bb/os/drivers/processors/propeller_p8x32/config.h>
+#include "bb/os/drivers/processors/propeller_p8x32/config.h"
 
 /*
  * The minimal waitcnt() windows value must always be at least 381 to
@@ -38,8 +38,11 @@ static int int_max(int a, int b)
                             MIN_WAITCNT_WINDOW) +                       \
                     propeller_get_cnt())
 
-/* Catalina compiler specific interface. */
 #if defined(__CATALINA__)
+
+/****************************************
+ * Catalina compiler specific interface *
+ ****************************************/
 
 #include <catalina_icc.h>
 
@@ -53,8 +56,12 @@ void bbos_delay_usec(int usec);
 
 #define bbos_delay_sec(sec) sleep(sec)
 
-/* GNUC compiler specific interface. */
 #elif defined(__GNUC__)
+
+/************************************
+ * GNUC compiler specific interface *
+ ************************************/
+
 #include <sys/unistd.h>
 
 /* Delay for a specified number of milliseconds. */
@@ -67,7 +74,12 @@ void bbos_delay_usec(int usec);
 #define bbos_delay_sec(sec) sleep(sec)
 
 #else
+
+/************************
+ * Unsupported compiler *
+ ************************/
+
 #error Not supported compiler, please report support team
-#endif /* __CATALINA__ */
+#endif
 
 #endif /* __BB_OS_DRIVERS_PROCESSORS_PROPELLER_P8X32_DELAY_H */

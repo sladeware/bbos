@@ -1,13 +1,13 @@
 /*
  * A portable <stdint.h> header file.
  *
- * Copyright (c) 2012 Sladeware LLC
+ * Copyright (c) 2012-2013 Sladeware LLC
  */
 
 #ifndef __BB_CONFIG_STDLIB_STDINT_H
 #define __BB_CONFIG_STDLIB_STDINT_H
 
-#include <bb/config.h>
+#include "bb/config.h"
 
 #if defined(BB_HAS_STDINT_H)
 #include <stdint.h>
@@ -48,9 +48,6 @@ typedef long long uint64_t;
 #else
 #error Defaults not correct; please hand modify bb/config/stdlib/stdint.h
 #endif /* defined(BB_HAS_LONG_LONG) */
-
-/* Boolean type with values TRUE and FALSE. */
-typedef unsigned char bool_t;
 
 #endif /* defined(BB_HAS_STDINT_H) */
 

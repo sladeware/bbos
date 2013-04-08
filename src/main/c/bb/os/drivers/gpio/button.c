@@ -1,7 +1,8 @@
 /*
  * This file implements button.h interface
  *
- * Copyright (c) 2012 Sladeware LLC
+ * Copyright (c) 2012-2013 Sladeware LLC
+ * http://www.bionicbunny.org/
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +17,9 @@
  * limitations under the License.
  */
 
-#include "button.h"
-
-#include <bb/os/kernel/delay.h>
-#include <bb/os/drivers/processors/propeller_p8x32/pins.h>
+#include "bb/os.h"
+#include "bb/os/kernel/delay.h"
+#include BBOS_PROCESSOR_FILE(pins.h)
 
 #define BUTTON_DELAY 4 /* ms */
 #define BUTTON_FINAL_DELAY 100 /* ms */
@@ -31,12 +31,12 @@
  * pressed and 0 otherwise.
  */
 void
-is_button_pressed(void* args)
+is_button_pressed(void* input_pin, void* is_pressed)
 {
   uint8_t pin;
   uint8_t result;
   uint8_t count;
-  pin = ((struct is_button_pressed_args*)args)->pin;
+  pin = *((int8_t*)input_pin);
   /* Read the push button state */
   for (count = 0, result = 0; count < DEBOUNCE_LOOPS; count++) {
     OUT_HIGH(pin);
@@ -46,7 +46,7 @@ is_button_pressed(void* args)
     result += GET_INPUT(pin);
   }
   BBOS_DELAY_MSEC(BUTTON_FINAL_DELAY);
-  *((struct is_button_pressed_args*)args)->is_pressed = (result < (DEBOUNCE_LOOPS - DEBOUNCE_TOLERANCE));
+  *((int8_t*)is_pressed) = (result < (DEBOUNCE_LOOPS - DEBOUNCE_TOLERANCE));
 }
 
 /*
@@ -59,26 +59,23 @@ is_button_pressed(void* args)
  * demos/forumists/jazzed/QSwam/qswam.c
  */
 void
-are_buttons_pressed(void* args)
+are_buttons_pressed(void* input_arg, void* output_arg)
 {
   uint32_t result[32];
   uint32_t output;
   uint8_t count;
   uint8_t pin;
   uint16_t mask;
-
-  mask = ((struct are_buttons_pressed_args*)args)->input_mask;
-
+  mask = *((uint16_t*)input_arg);
   for (pin = 0; pin < 32; pin++) {
     result[pin] = 0;
   }
   /* Read the push button state */
+  OUT_HIGH_MASK(mask); /* bring high */
   for (output = 0, count = 0; count < DEBOUNCE_LOOPS; count++) {
-    OUT_HIGH_MASK(mask);
     DIR_OUTPUT_MASK(mask);
     DIR_INPUT_MASK(mask);
-    BBOS_DELAY_MSEC(BUTTON_DELAY);
-
+    BBOS_DELAY_MSEC(BUTTON_DELAY); /* wait for RC time */
     output = GET_INPUT_MASK(mask);
     for (pin = 0; (output > 0) && (pin < 32); pin++, output >>= 1) {
       if (output & 1UL) {
@@ -86,20 +83,15 @@ are_buttons_pressed(void* args)
       }
     }
   }
-  BBOS_DELAY_MSEC(BUTTON_FINAL_DELAY);
-  OUT_LOW_MASK(mask);
-  DIR_INPUT_MASK(mask);
+  //BBOS_DELAY_MSEC(BUTTON_FINAL_DELAY);
   /* Process the results and return the mask of pressed buttons */
   for (pin = 0, output = 0; pin < 32; pin++) {
-    if ((result[pin] > 0)
-        && (result[pin] < (DEBOUNCE_LOOPS - DEBOUNCE_TOLERANCE))) {
+    if ((result[pin] > 0)&&(result[pin] < (DEBOUNCE_LOOPS - DEBOUNCE_TOLERANCE))) {
       output |= 0x80000000UL;
     }
     if (pin < 31) {
       output >>= 1;
     }
   }
-  *((struct are_buttons_pressed_args*)args)->output_mask = output;
+  *((uint32_t*)output_arg) = (uint32_t)output;
 }
-
-#include "button_driver_runner_autogen.c"

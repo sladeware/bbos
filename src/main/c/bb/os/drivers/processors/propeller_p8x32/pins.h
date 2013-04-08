@@ -1,7 +1,7 @@
 /*
  * Parallax Propeller P8X32A GPIO pin support interface
  *
- * Copyright (c) 2012 Sladeware LLC
+ * Copyright (c) 2012-2013 Sladeware LLC
  * Author: Oleksandr Sviridenko
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -52,10 +52,10 @@
 #define GET_INPUT(pin) ((propeller_get_ina_bits() >> (pin)) & 1)
 #define DIR_OUTPUT(pin) (propeller_set_dira_bits(GET_MASK(pin)))
 #define DIR_INPUT(pin) (propeller_clr_dira_bits(GET_MASK(pin)))
-#define DIR_TO(pin, state) (propeller_set_dira_bit(GET_MASK(pin), (state) << (pin)))
+#define DIR_TO(pin, state) (propeller_set_dira_bit(GET_MASK(pin), (state)<<(pin)))
 #define OUT_LOW(pin) (propeller_clr_outa_bits(GET_MASK(pin)))
 #define OUT_HIGH(pin) (propeller_set_outa_bits(GET_MASK(pin)))
-#define OUT_TO(pin, state) (propeller_set_outa_bit(GET_MASK(pin), (state) << (pin)))
+#define OUT_TO(pin, state) (propeller_set_outa_bit(GET_MASK(pin), (state)<<(pin)))
 
 #define GET_INPUT_MASK(mask) (propeller_get_ina_bits() & (unsigned)mask)
 #define DIR_OUTPUT_MASK(mask) (propeller_set_dira_bits((unsigned)mask))
