@@ -5,7 +5,7 @@
 #ifndef __BB_OS_LIGHT_IO_H
 #define __BB_OS_LIGHT_IO_H
 
-#include <bb/config.h>
+#include "bb/config.h"
 #include BBOS_PROCESSOR_FILE(sio.h)
 
 #ifndef bb_printf

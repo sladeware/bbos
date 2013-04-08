@@ -98,7 +98,7 @@ def gen_config_h(rule, os):
       "BBOS_CONFIG_PROCESSOR": os.get_processor().properties.family,
       "BBOS_NUM_THREADS": os.get_num_threads(),
       "BBOS_NUM_PORTS": sum([thread.has_port() for thread in os.get_threads()]),
-      "BBOS_MAX_MESSAGE_PAYLOAD_SIZE": 2,
+      "BBOS_MAX_MESSAGE_PAYLOAD_SIZE": os.get_max_message_size(),
       "BBOS_NUM_KERNELS": os.get_num_kernels(),
       "threads": sorted(os.get_threads(), key=lambda thread: thread.has_port(),
                         reverse=True),
@@ -141,7 +141,7 @@ def gen_main_h(rule, os):
     output_fh.write(template.render(context))
 
 cc_library_factory(target = OS,
-                   srcs = ["../os.c", "port.c", "mm/mempool.c",
+                   srcs = ["../os.c", "mm/mempool.c",
                            gen_os_c, gen_config_h, gen_main_h,
                            gen_main_c],
                    # TODO: the following includes have to be fixed. This is

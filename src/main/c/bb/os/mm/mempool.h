@@ -3,8 +3,7 @@
  * access to dynamic allocation for fixed-size chunks of memory. No footprint,
  * just one void pointer to keep the pool.
  *
- * Copyright (c) 2012 Sladeware LLC
- * Author: Oleksandr Sviridenko
+ * Copyright (c) 2012-2013 Sladeware LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +16,20 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * Author: Oleksandr Sviridenko
  */
 #ifndef __BB_OS_MM_MEMPOOL_H
 #define __BB_OS_MM_MEMPOOL_H
 
-#include <bb/os/config.h>
+#include "bb/os/config.h"
 #include BB_STDLIB_FILE(stddef.h)
 
-typedef void* mempool_t;
+typedef void* mempool;
+
+/******************************************************************************
+ * MACROS                                                                     *
+ ******************************************************************************/
 
 /**
  * Create new memory partition name with size n * sz bytes.
@@ -59,7 +64,9 @@ typedef void* mempool_t;
     }                                           \
   } while (0)
 
-/* Prototypes */
+/******************************************************************************
+ * PROTOTYPES                                                                 *
+ ******************************************************************************/
 
 /**
  * Initializes memory pool. Returns pointer to the first free memory block.
@@ -72,21 +79,21 @@ typedef void* mempool_t;
  * the application must prevent use of a deleted pool or memory previously
  * allocated from it.
  */
-PROTOTYPE(mempool_t mempool_init, (const int8_t* p, uint16_t n, uint16_t sz));
+PROTOTYPE(mempool mempool_init, (const int8_t* p, uint16_t n, uint16_t sz));
 
 /**
  * Resizes an existed memory pool.
  */
-PROTOTYPE(void mempool_resize, (mempool_t p, uint16_t n, uint16_t sz));
+PROTOTYPE(void mempool_resize, (mempool p, uint16_t n, uint16_t sz));
 
 /**
  * Allocates next free memory block from the memory pool.
  */
-PROTOTYPE(void* mempool_alloc, (mempool_t* p));
+PROTOTYPE(void* mempool_alloc, (mempool* p));
 
 /**
  * Returns memory block to a memory pool.
  */
-PROTOTYPE(void mempool_free, (mempool_t* p, void* b));
+PROTOTYPE(void mempool_free, (mempool* p, void* b));
 
 #endif /* __BB_OS_MM_MEMPOOL_H */

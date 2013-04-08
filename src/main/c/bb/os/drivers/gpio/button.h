@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2012-2013 Sladeware LLC
+ * http://www.bionicbunny.org/
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +17,6 @@
 #ifndef __BB_OS_DRIVERS_GPIO_BUTTON_H
 #define __BB_OS_DRIVERS_GPIO_BUTTON_H
 
-#include "bb/os.h"
 
-struct is_button_pressed_args {
-  uint8_t pin;
-  uint8_t* is_pressed;
-};
-
-struct are_buttons_pressed_args {
-  uint16_t input_mask;
-  uint16_t* output_mask;
-};
 
 #endif /* __BB_OS_DRIVERS_GPIO_BUTTON_H */

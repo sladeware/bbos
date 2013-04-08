@@ -22,19 +22,19 @@
 #define __BB_OS_CONFIG_H
 
 /* Include main platform config, MUST be first. */
-#include <bb/config.h>
+#include "bb/config.h"
 
 /* Include main OS configuration file defined by user. MUST be second */
-#include <bb/os/config_autogen.h>
+#include "bb/os/config_autogen.h"
 #ifdef BB_CONFIG_OS_H
 #include BB_CONFIG_OS_H
 #endif /* BB_CONFIG_OS_H */
 
-#include <bb/os/version.h>
+#include "bb/os/version.h"
 
 /* Include some standard libraries from config compatibility. */
-#include <bb/config/stdlib/stdio.h>
-#include <bb/config/stdlib/stddef.h>
+//#include "bb/config/stdlib/stdio.h"
+#include "bb/config/stdlib/stddef.h"
 
 /*
  * By default BBOS_CONFIG_DEBUG macro equals to the ANSI standrad
@@ -72,11 +72,12 @@
 #endif /* BBOS_PROCESSOR_FILE */
 
 /**
- * Include BBOS_CONFIG_PROCESSOR_H header file with processor configurations. If
- * BBOS_CONFIG_PROCESSOR_H macro was not defined, BBOS_CONFIG_PROCESSOR can be
- * defined as a processor's name in order to find it in standard driver library
- * by using selection logic. For a standard processors this name equals the
- * directory name where the processor's configuration is located.
+ * Includes BBOS_CONFIG_PROCESSOR_H header file with processor
+ * configurations. If BBOS_CONFIG_PROCESSOR_H macro was not defined,
+ * BBOS_CONFIG_PROCESSOR can be defined as a processor's name in order to find
+ * it in standard driver library by using selection logic. For a standard
+ * processors this name equals the directory name where the processor's
+ * configuration is located.
  */
 #if defined(BBOS_CONFIG_PROCESSOR_H)
 #include BBOS_CONFIG_PROCESSOR_H
@@ -86,5 +87,26 @@
 #warning Cannot define processor in use. Please define BBOS_CONFIG_PROCESSOR_H or BBOS_CONFIG_PROCESSOR.
 #endif /* BBOS_CONFIG_PROCESSOR_H */
 #include BBOS_CONFIG_PROCESSOR_H
+
+/* Types */
+
+/*
+ * TODO: generate port id at buildtime
+ */
+#ifndef bbos_port_id_t
+typedef uint8_t bbos_port_id_t;
+#endif
+
+/**
+ * Buildtime defined type for thread identifier. By default represents up to 255
+ * threads.
+ */
+#ifndef bbos_thread_id_t
+typedef uint8_t bbos_thread_id_t;
+#endif
+
+#ifndef bbos_message_label_t
+typedef uint8_t bbos_message_label_t;
+#endif /* bbos_message_label_t */
 
 #endif /* __BB_OS_CONFIG_H */

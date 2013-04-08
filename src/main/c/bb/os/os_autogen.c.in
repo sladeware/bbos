@@ -2,25 +2,25 @@
  * {{ copyright }}
  */
 
-#include <bb/os.h>
+#include "bb/os.h"
 
 {% for port in ports %}
-MEMPOOL_PARTITION(port{{ forloop.counter0 }}_part, {{ port.capacity }},
-                  BBOS_MAX_MESSAGE_PAYLOAD_SIZE);
-bbos_message_t* port{{ forloop.counter0 }}_stack[{{ port.capacity }}];
+MEMPOOL_PARTITION(port{{ forloop.counter0 }}_part, {{ port.get_capacity }}, BBOS_MAX_MESSAGE_SIZE);
+struct bbos_message* port{{ forloop.counter0 }}_inbox[{{ port.get_capacity }}];
 {% endfor %}
 
-bbos_port_t bbos_ports[BBOS_NUM_PORTS];
+struct bbos_message bbos_ports[BBOS_NUM_PORTS];
 
-void bbos_init()
+void
+bbos_init()
 {
   {% for port in ports %}
-  mempool_t port{{ forloop.counter0 }}_pool = mempool_init(
+  mempool port{{ forloop.counter0 }}_pool = mempool_init(
                 port{{ forloop.counter0 }}_part,
-                {{ port.capacity }},
-                BBOS_MAX_MESSAGE_PAYLOAD_SIZE);
-  bbos_port_init({{ forloop.counter0 }}, {{ port.capacity }},
+                {{ port.get_capacity }},
+                BBOS_MAX_MESSAGE_SIZE);
+  bbos_port_init({{ forloop.counter0 }}, {{ port.get_capacity }},
                  port{{ forloop.counter0 }}_pool,
-                 port{{ forloop.counter0 }}_stack);
+                 port{{ forloop.counter0 }}_inbox);
   {% endfor %}
 }

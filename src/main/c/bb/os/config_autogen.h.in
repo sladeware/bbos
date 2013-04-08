@@ -17,7 +17,7 @@
 
 /* Supported messages */
 {% for message in messages %}
-#define {{ message.label }} {{ forloop.counter0 }}
+#define {{ message.get_label }} {{ forloop.counter0 }}
 {% empty %}
 /* No messages */
 {% endfor %}

@@ -16,6 +16,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
+ */
+
+/*
  * Note, sio_put_byte() and sio_get_byte() is the only external dependency for
  * this file.
  */

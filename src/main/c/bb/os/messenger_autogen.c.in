@@ -4,10 +4,15 @@
  * {{ copyright }}
  */
 
-void {{ messenger.runner }}()
+{% for filename in impl_files %}
+#include "{{ filename }}"
+{% endfor %}
+
+void
+{{ messenger.runner }}()
 {
-  bbos_message_t* request;
-  bbos_message_t* response;
+  struct bbos_message* request;
+  struct bbos_message* response;
   if ((request = bbos_receive_message()) == NULL) {
   {% if messenger.get_default_action %}
     {{ messenger.get_default_action }}();
@@ -16,17 +21,18 @@ void {{ messenger.runner }}()
   }
   switch (request->label) {
   {% for message, handler in messenger.get_message_handlers.items %}
-    case {{ message.label }}:
-    {% if message.output_fields %}
-      if ((response = bbos_send_message(request->sender)) == NULL) {
+    case {{ message.get_label }}:
+    {% if handler.is_output_required %}
+      if ((response = bbos_request_message(request->sender)) == NULL) {
         break;
       }
-      {{ handler }}(&request->payload, &response->payload);
+      {{ handler.get_name }}(request->payload, response->payload);
+      bbos_send_message(response);
     {% else %}
       {{ handler }}(&request->payload);
     {% endif %}
       break;
   {% endfor %}
   }
-  bbos_deliver_messages();
+  bbos_delete_message(request);
 }
