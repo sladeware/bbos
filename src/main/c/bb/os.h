@@ -1,7 +1,7 @@
 /*
  * BB operating system interface
  *
- * Copyright (c) 2012 Sladeware LLC
+ * Copyright (c) 2012-2013 Sladeware LLC
  * Author: Oleksand Sviridenko
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,25 +19,22 @@
 #ifndef __BB_OS_H
 #define __BB_OS_H
 
-#include "os/config.h"
-#include "os/kernel.h"
-#include "os/thread.h"
-#include "os/message.h"
-#include "os/port.h"
+#define BBOS
+
+#include "bb/os/config.h"
+#include "bb/os/types.h"
+#include "bb/os/kernel.h"
+#include "bb/os/mm/mempool.h"
 #include BBOS_PROCESSOR_FILE(core.h)
 
-#define BBOS_ITC_ENABLED 0
-/* ITC will be provided only if number of ports is greater than zero. */
-#if BBOS_NUM_PORTS > 0
-#undef BBOS_ITC_ENABLED
-#define BBOS_ITC_ENABLED 1
-#endif
+/**
+ * This array keeps an ID of running thread per kernel/core.
+ */
+extern bbos_thread_id_t bbos_running_threads[BBOS_NUM_KERNELS];
 
-#if BBOS_ITC_ENABLED
-#define BBOS_MESSAGE_SIZE (sizeof(bbos_message_t) + BBOS_MAX_MESSAGE_PAYLOAD_SIZE)
-
-extern bbos_port_t bbos_ports[];
-#endif /* BBOS_ITC_ENABLED */
+/******************************************************************************
+ * MACROS                                                                     *
+ ******************************************************************************/
 
 #define BBOS_ASSERT(expr)                       \
   do {                                          \
@@ -45,8 +42,6 @@ extern bbos_port_t bbos_ports[];
       bbos_assert(__FILE__, __LINE__, #expr);   \
     }                                           \
   } while (0)
-
-extern bbos_thread_id_t bbos_running_threads[BBOS_NUM_KERNELS];
 
 /**
  * Returns ID of the thread that is currently running.
@@ -56,6 +51,37 @@ extern bbos_thread_id_t bbos_running_threads[BBOS_NUM_KERNELS];
 
 #define bbos_set_running_thread(id) \
   bbos_running_threads[ bbos_get_core_id() ] = (id)
+
+/* ITC will be provided only if number of ports is greater than zero. */
+#define BBOS_ITC_ENABLED 0
+#if BBOS_NUM_PORTS > 0
+#undef BBOS_ITC_ENABLED
+#define BBOS_ITC_ENABLED 1
+#endif
+
+#define BBOS_MAX_MESSAGE_SIZE                                   \
+  (sizeof(struct bbos_message) + BBOS_MAX_MESSAGE_PAYLOAD_SIZE)
+
+/**
+ * Receives a new message for the running thread. See also
+ * bbos_receive_message_from().
+ */
+#define bbos_receive_message()                                          \
+  bbos_receive_message_from((bbos_port_id_t)bbos_get_running_thread())
+
+/******************************************************************************
+ * PROTOTYPES                                                                 *
+ ******************************************************************************/
+
+PROTOTYPE(void bbos_port_init, (bbos_port_id_t id, size_t capacity,
+                                mempool pool, struct bbos_message** inbox));
+PROTOTYPE(int8_t bbos_port_is_empty, (bbos_port_id_t id));
+PROTOTYPE(int8_t bbos_port_is_full, (bbos_port_id_t id));
+
+PROTOTYPE(struct bbos_message* bbos_request_message, (bbos_port_id_t id));
+PROTOTYPE(void bbos_send_message, (struct bbos_message* msg));
+PROTOTYPE(struct bbos_message* bbos_receive_message_from, (bbos_port_id_t id));
+PROTOTYPE(void bbos_delete_message, (struct bbos_message* msg));
 
 PROTOTYPE(void bbos_assert, (char* filename, int line, char* expr));
 
@@ -71,11 +97,5 @@ PROTOTYPE(void bbos_panic, (const char* fmt, ...));
  * presented in os_autogen.c
  */
 PROTOTYPE(void bbos_init, ());
-
-#if BBOS_ITC_ENABLED
-bbos_message_t* bbos_send_message(bbos_thread_id_t tid);
-bbos_message_t* bbos_receive_message();
-void bbos_deliver_messages();
-#endif /* BBOS_ITC_ENABLED */
 
 #endif /* __BB_OS_H */

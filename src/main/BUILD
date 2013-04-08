@@ -22,3 +22,5 @@ for subdir in subdirs:
 # FIXME:
 require(os.path.join(os.path.dirname(__file__), "c", "bb", "os", "drivers",
                      "processors", "propeller_p8x32"))
+require(os.path.join(os.path.dirname(__file__), "c", "bb", "os", "drivers",
+                     "gpio"))

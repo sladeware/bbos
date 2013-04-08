@@ -7,8 +7,8 @@
 #include "bb/os.h"
 #include BBOS_PROCESSOR_FILE(init.h)
 
-static void
-loop()
+void
+main{{ core.id }}(void* arg)
 {
   while (1) {
   {% for thread in threads %}
@@ -16,23 +16,4 @@ loop()
     {{ thread.get_runner }}();
   }
   {% endfor %}
-}
-
-static void
-init()
-{
-  //bbos_kernel_init();
-}
-
-static void
-start()
-{
-  loop();
-}
-
-void
-main{{ core.id }}(void* arg)
-{
-  init();
-  start();
 }

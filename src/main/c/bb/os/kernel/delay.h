@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 Sladeware LLC
+ * Copyright (c) 2012-2013 Sladeware LLC
  * Author: Oleksandr Sviridenko
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +17,7 @@
 #ifndef __BB_OS_KERNEL_DELAY_H
 #define __BB_OS_KERNEL_DELAY_H
 
-#include <bb/os/config.h>
+#include "bb/os/config.h"
 #include BBOS_PROCESSOR_FILE(delay.h)
 
 #endif /* __BB_OS_KERNEL_DELAY_H */

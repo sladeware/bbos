@@ -1,7 +1,7 @@
 /*
  * This file implements mempool.h interface.
  *
- * Copyright (c) 2012 Sladeware LLC
+ * Copyright (c) 2012-2013 Sladeware LLC
  * Author: Oleksandr Sviridenko
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,12 +17,11 @@
  * limitations under the License.
 */
 
-#include "mempool.h"
-
-#include <bb/os.h>
+#include "bb/os.h"
+#include "bb/os/mm/mempool.h"
 
 void
-mempool_resize(mempool_t p, uint16_t n, uint16_t sz)
+mempool_resize(mempool p, uint16_t n, uint16_t sz)
 {
   uint16_t i;
   BBOS_ASSERT(p != NULL);
@@ -37,16 +36,16 @@ mempool_resize(mempool_t p, uint16_t n, uint16_t sz)
   *(void **)((uint32_t)p + i * sz) = NULL;
 }
 
-mempool_t
+mempool
 mempool_init(const int8_t* p, uint16_t n, uint16_t sz)
 {
   BBOS_ASSERT(p != NULL);
-  mempool_resize((mempool_t)p, n, sz);
-  return (mempool_t)p;
+  mempool_resize((mempool)p, n, sz);
+  return (mempool)p;
 }
 
 void*
-mempool_alloc(mempool_t* p)
+mempool_alloc(mempool* p)
 {
   void** b;
   BBOS_ASSERT(p != NULL);
@@ -55,7 +54,7 @@ mempool_alloc(mempool_t* p)
 }
 
 void
-mempool_free(mempool_t* p, void* b)
+mempool_free(mempool* p, void* b)
 {
   BBOS_ASSERT(p != NULL);
   BBOS_ASSERT(b != NULL);
