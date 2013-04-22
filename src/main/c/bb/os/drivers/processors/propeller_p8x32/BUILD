@@ -20,7 +20,7 @@
 from django.template import Template, Context
 
 from bb import __copyright__
-from bb.app.meta_os import OS
+from bb.app.os import OS
 from bb.app.hardware.devices.processors.propeller_p8x32 import PropellerP8X32A
 from bb.utils.path_utils import localpath, exists
 

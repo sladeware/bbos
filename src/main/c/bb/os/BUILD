@@ -21,7 +21,7 @@ from django.template import Template, Context
 from functools import partial
 
 from bb import __copyright__
-from bb.app.meta_os import OS
+from bb.app.os import OS
 from bb.utils.path_utils import localpath
 from bb.utils import logging
 from bb.utils import typecheck
