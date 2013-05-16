@@ -22,23 +22,41 @@
 #include "bb/os/light_stdio.h"
 #include BB_STDLIB_FILE(stdlib.h)
 
-// Internal macro to check port id
+//#define PRINT_DEBUG(frmt, args...) sio_cogsafe_printf(frmt, args)
+#define PRINT_DEBUG(frmt, args...) do {} while (0)
+
+HUBDATA int messaging_lock = 0;
+
+/* Internal macro to check port id. */
 #define ASSERT_PORT_ID(id) BBOS_ASSERT((id) < BBOS_NUM_PORTS)
 
-#define PORT_IS_EMPTY(id) (bbos_ports[id].counter == 0)
-#define PORT_IS_FULL(id) (bbos_ports[id].capacity == bbos_ports[id].counter)
+#define PORT_IS_EMPTY(id) (bbos_ports[id].head == bbos_ports[id].tail)
 
-// This array keeps IDs for running threads for each kernel.
-bbos_thread_id_t bbos_running_threads[BBOS_NUM_KERNELS];
+#define PORT_IS_FULL(id) \
+  (((bbos_ports[id].tail + 1) % (bbos_ports[id].capacity)) == bbos_ports[id].head)
 
-// Array of ports
-struct bbos_port bbos_ports[BBOS_NUM_PORTS];
+// We need this only in case of multicore support
+#define LOCK_PORT(id)                           \
+  do {                                          \
+    while (!lockset(messaging_lock));           \
+  } while (0)
 
-// BBOS banner!
+#define UNLOCK_PORT(id)                         \
+  do {                                          \
+    lockclr(messaging_lock);                    \
+  } while (0)
+
+/* This array keeps IDs for running threads for each kernel. */
+HUBDATA bbos_thread_id_t bbos_running_threads[BBOS_NUM_KERNELS];
+
+/* Array of available ports for thread communication purposes. */
+HUBDATA struct bbos_port bbos_ports[BBOS_NUM_PORTS];
+
+/* BBOS banner! */
 #ifndef BBOS_CONFIG_SKIP_BANNER_PRINTING
-const static char bbos_banner[] = "BBOS version " BBOS_VERSION_STR  \
-  " (" BB_HOST_PLATFORM_NAME ")"                                    \
-  " (" BB_COMPILER_NAME ")"                                         \
+HUBDATA const static char bbos_banner[] = "BBOS version " BBOS_VERSION_STR \
+  " (" BB_HOST_PLATFORM_NAME ")"                                        \
+  " (" BB_COMPILER_NAME ")"                                             \
   "\n";
 #endif /* BBOS_CONFIG_SKIP_BANNER_PRINTING */
 
@@ -53,8 +71,8 @@ bbos_panic(const char* frmt, ...)
   bb_vprintf(frmt, args);
   va_end(args);
   //#endif
-#endif
   exit(0);
+#endif
 }
 
 void
@@ -64,16 +82,20 @@ bbos_assert(char* filename, int line, char* expr)
 }
 
 void
-bbos_port_init(bbos_port_id_t id, size_t capacity, mempool pool,
+bbos_port_init(bbos_port_id_t id, size_t capacity, const int8_t* part,
                struct bbos_message** inbox)
 {
   ASSERT_PORT_ID(id);
   // TODO(d2rk): assert null pool
   BBOS_ASSERT(inbox != NULL);
+  BBOS_ASSERT(part != NULL);
+  PRINT_DEBUG("[I] Init port %d[capacity=%d, part=0x%x, inbox=0x%x]\n",
+              id, capacity, part, inbox);
   bbos_ports[id].capacity = capacity;
-  bbos_ports[id].counter = 0;
-  bbos_ports[id].pool = pool;
+  bbos_ports[id].pool = mempool_init(part, capacity, BBOS_MAX_MESSAGE_SIZE);;
+  bbos_ports[id].head = bbos_ports[id].tail = 0;
   bbos_ports[id].inbox = inbox;
+  bbos_ports[id].lock = 0;
 }
 
 int8_t
@@ -95,12 +117,17 @@ bbos_request_message(bbos_port_id_t id)
 {
   struct bbos_message* msg;
   ASSERT_PORT_ID(id);
-  if ((msg = (struct bbos_message*)mempool_alloc(&bbos_ports[id].pool)) == NULL) {
+  LOCK_PORT(id);
+  PRINT_DEBUG("[I] Thread %d requests message from port %d\n",
+              bbos_get_running_thread(), id);
+  if ((msg = (struct bbos_message*)mempool_alloc(bbos_ports[id].pool)) == NULL) {
+    PRINT_DEBUG("[I] Port %d doesn't have free messages\n", id);
     return NULL;
   }
+  UNLOCK_PORT(id);
   msg->receiver = id;
   msg->sender = bbos_get_running_thread();
-  msg->label = 0; /* NO_LABEL? */
+  msg->label = 0; /* BBOS_NOT_LABELED_MESSAGE ? */
   msg->payload = (void*)((void*)msg + sizeof(struct bbos_message));
   return msg;
 }
@@ -108,12 +135,23 @@ bbos_request_message(bbos_port_id_t id)
 void
 bbos_send_message(struct bbos_message* msg)
 {
+  bbos_port_id_t id;
   BBOS_ASSERT(msg != NULL);
-  ASSERT_PORT_ID(msg->receiver); /* redundant? */
-  //*(++bbos_ports[msg->receiver].inbox) = msg;
-  *bbos_ports[msg->receiver].inbox = msg;
-  bbos_ports[msg->receiver].inbox++;
-  bbos_ports[msg->receiver].counter++;
+  id = msg->receiver;
+  ASSERT_PORT_ID(id); /* redundant? */
+  LOCK_PORT(id);
+  if (PORT_IS_FULL(id)) {
+    /*
+     * This should never happen unless the message receiver was manually
+     * changed.
+     */
+    return;
+  }
+  PRINT_DEBUG("[I] Thread %d sends message 0x%x with label %d to %d\n",
+              msg->sender, msg, msg->label, msg->receiver);
+  bbos_ports[id].inbox[bbos_ports[id].tail] = msg;
+  bbos_ports[id].tail = (bbos_ports[id].tail + 1) % (bbos_ports[id].capacity);
+  UNLOCK_PORT(id);
 }
 
 struct bbos_message*
@@ -123,18 +161,26 @@ bbos_receive_message_from(bbos_port_id_t id)
   if (PORT_IS_EMPTY(id)) {
     return NULL;
   }
-  //msg = *(--bbos_ports[id].inbox);
-  bbos_ports[id].inbox--;
-  msg = *bbos_ports[id].inbox;
-  bbos_ports[id].counter--;
+  LOCK_PORT(id);
+  msg = bbos_ports[id].inbox[bbos_ports[id].head];
+  bbos_ports[id].head = (bbos_ports[id].head + 1) % (bbos_ports[id].capacity);
+  PRINT_DEBUG("[I] Thread %d receives a message 0x%x with label %d from %d\n",
+              id, msg, msg->label, msg->sender);
+  UNLOCK_PORT(id);
   return msg;
 }
 
 void
 bbos_delete_message(struct bbos_message* msg)
 {
+  bbos_port_id_t id;
   BBOS_ASSERT(msg != NULL);
-  mempool_free(&bbos_ports[msg->receiver].pool, msg);
+  id = msg->receiver;
+  LOCK_PORT(id);
+  PRINT_DEBUG("[I] Thread %d deletes message 0x%x from %d\n",
+              bbos_get_running_thread(), msg, id);
+  mempool_free(bbos_ports[id].pool, msg);
+  UNLOCK_PORT(id);
 }
 
 void
@@ -143,5 +189,7 @@ bbos()
 #ifndef BBOS_CONFIG_SKIP_BANNER_PRINTING
   //printf("%s", bbos_banner);
 #endif /* BBOS_CONFIG_SKIP_BANNER_PRINTING */
+  messaging_lock = locknew();
+  bb_sio_init();
   bbos_init();
 }

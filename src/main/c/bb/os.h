@@ -43,6 +43,9 @@ extern bbos_thread_id_t bbos_running_threads[BBOS_NUM_KERNELS];
     }                                           \
   } while (0)
 
+#define BBOS_PORT_PARTITION(name, n, sz) \
+  MEMPOOL_PARTITION(name, n, sz)
+
 /**
  * Returns ID of the thread that is currently running.
  */
@@ -74,7 +77,7 @@ extern bbos_thread_id_t bbos_running_threads[BBOS_NUM_KERNELS];
  ******************************************************************************/
 
 PROTOTYPE(void bbos_port_init, (bbos_port_id_t id, size_t capacity,
-                                mempool pool, struct bbos_message** inbox));
+                                const int8_t* part, struct bbos_message** inbox));
 PROTOTYPE(int8_t bbos_port_is_empty, (bbos_port_id_t id));
 PROTOTYPE(int8_t bbos_port_is_full, (bbos_port_id_t id));
 

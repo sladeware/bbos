@@ -19,6 +19,7 @@
 
 #include "bb/os.h"
 #include "bb/os/mm/mempool.h"
+#include "bb/os/light_stdio.h"
 
 void
 mempool_resize(mempool p, uint16_t n, uint16_t sz)
@@ -40,8 +41,8 @@ mempool
 mempool_init(const int8_t* p, uint16_t n, uint16_t sz)
 {
   BBOS_ASSERT(p != NULL);
-  mempool_resize((mempool)p, n, sz);
-  return (mempool)p;
+  mempool_resize((void*)p, n, sz);
+  return (void*)p;
 }
 
 void*

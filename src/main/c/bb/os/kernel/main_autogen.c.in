@@ -14,6 +14,6 @@ main{{ core.id }}(void* arg)
   {% for thread in threads %}
     bbos_set_running_thread({{ thread.get_name }});
     {{ thread.get_runner }}();
-  }
   {% endfor %}
+  }
 }
