@@ -2,6 +2,7 @@
  * Copyright (c) 2012-2013 Sladeware LLC
  * Author: Oleksandr Sviridenko
  */
+
 #ifndef __BB_OS_LIGHT_IO_H
 #define __BB_OS_LIGHT_IO_H
 

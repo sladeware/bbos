@@ -35,6 +35,7 @@ def gen_msngr_runner_h(msngr):
   input_fn = path_utils.localpath("messenger_autogen.h.in")
   output_fn = self.buildpath(["bb", "os", "%s_autogen.h" %
                               msngr.get_runner()])
+  logger.info("Generating %s" % output_fn)
   with open(input_fn) as in_fh, open(output_fn, "w") as output_fh:
     template = Template(input_fh.read())
     context = Context({
@@ -54,6 +55,7 @@ def gen_msngr_runner_c(impl_files, rule, msngr):
     raise TypeError()
   output_fn = rule.buildpath(["bb", "os", "%s_autogen.c" % msngr.get_runner()])
   input_fn = localpath("messenger_autogen.c.in")
+  logger.info("Generating %s" % output_fn)
   with open(input_fn) as input_fh, open(output_fn, "w") as output_fh:
     template = Template(input_fh.read())
     context = Context({
@@ -92,6 +94,7 @@ def gen_config_h(rule, os):
   """
   input_fn = localpath("config_autogen.h.in")
   output_fn = rule.buildpath(["bb", "os", "config_autogen.h"])
+  logger.info("Generating %s" % output_fn)
   with open(input_fn) as input_fh, open(output_fn, "w") as output_fh:
     template = Template(input_fh.read())
     context = Context({

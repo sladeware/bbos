@@ -21,6 +21,9 @@
 #include <bb/config.h>
 #include BB_STDLIB_FILE(stdarg.h)
 
+#define SIO_COGSAFE_PRINTING 1
+#define BB_PRINTF_HEX_SUPPORT 1
+
 /* Default definitions */
 #define BB_PRINTF_STRING_SUPPORT
 

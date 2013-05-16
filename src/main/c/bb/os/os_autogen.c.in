@@ -5,22 +5,14 @@
 #include "bb/os.h"
 
 {% for port in ports %}
-MEMPOOL_PARTITION(port{{ forloop.counter0 }}_part, {{ port.get_capacity }}, BBOS_MAX_MESSAGE_SIZE);
-struct bbos_message* port{{ forloop.counter0 }}_inbox[{{ port.get_capacity }}];
+HUBDATA BBOS_PORT_PARTITION(port{{ forloop.counter0 }}_part, {{ port.get_capacity }}, BBOS_MAX_MESSAGE_SIZE);
+HUBDATA struct bbos_message* port{{ forloop.counter0 }}_inbox[{{ port.get_capacity }}];
 {% endfor %}
-
-struct bbos_message bbos_ports[BBOS_NUM_PORTS];
 
 void
 bbos_init()
 {
-  {% for port in ports %}
-  mempool port{{ forloop.counter0 }}_pool = mempool_init(
-                port{{ forloop.counter0 }}_part,
-                {{ port.get_capacity }},
-                BBOS_MAX_MESSAGE_SIZE);
-  bbos_port_init({{ forloop.counter0 }}, {{ port.get_capacity }},
-                 port{{ forloop.counter0 }}_pool,
-                 port{{ forloop.counter0 }}_inbox);
+  {% for port in ports %}/* Setup port {{ forloop.counter0 }} */
+  bbos_port_init({{ forloop.counter0 }}, {{ port.get_capacity }}, port{{ forloop.counter0 }}_part, port{{ forloop.counter0 }}_inbox);
   {% endfor %}
 }

@@ -22,8 +22,10 @@
 #ifndef __BB_OS_MM_MEMPOOL_H
 #define __BB_OS_MM_MEMPOOL_H
 
-#include "bb/os/config.h"
-#include BB_STDLIB_FILE(stddef.h)
+#include "bb/config/stdlib/stdint.h"
+#include "bb/config/stdlib/stddef.h"
+
+typedef void* mempool;
 
 /******************************************************************************
  * MACROS                                                                     *

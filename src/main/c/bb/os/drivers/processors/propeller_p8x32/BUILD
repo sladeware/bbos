@@ -41,8 +41,8 @@ def gen_main_c(rule, os):
       "kernels": os.get_kernels(),
       # TODO(team): the stack size has to be consider for each thread
       # individually
-      "stack_size": 16,
-      "copyright": __copyright__,
+      'stack_size': 256,
+      'copyright': __copyright__,
     })
     output_fh.write(template.render(context))
   return output_fn
