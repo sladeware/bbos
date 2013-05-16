@@ -42,10 +42,12 @@ struct bbos_message {
 };
 
 struct bbos_port {
+  int8_t lock;
   mempool pool;
   struct bbos_message** inbox;
+  size_t head;
+  size_t tail;
   size_t capacity;
-  size_t counter; /* count number of unread messages. */
 };
 
 #endif /* __BB_OS_TYPES_H */

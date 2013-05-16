@@ -1,7 +1,7 @@
 /*
  * This files implements sio.h interface.
  *
- * Copyright (c) 2012 Sladeware LLC
+ * Copyright (c) 2012-2013 Sladeware LLC
  * Author: Oleksandr Sviridenko
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -359,7 +359,7 @@ sio_cogsafe_printf(const char* format, ...)
   va_list a;
   while (propeller_lockset(cogsafe_lock)); /* wait until we lock sio */
   va_start(a, format);
-  _sio_multiarg_printf(format, a);
+  bb_vprintf(format, a);
   va_end(a);
   propeller_lockclr(cogsafe_lock); /* unlock sio */
 }
@@ -372,7 +372,7 @@ sio_lock_printf(int lock, const char* format, ...)
   va_list a;
   while (propeller_lockset(lock)); /* wait until we lock the serial */
   va_start(a, format);
-  _sio_multiarg_printf(format, a);
+  bb_vprintf(format, a);
   va_end(a);
   propeller_lockclr(lock); /* unlock the serial */
 }

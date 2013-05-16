@@ -7,20 +7,15 @@
 
 #include "bb/os.h"
 #include "bb/os/main.h"
-
 {% for kernel in kernels %}
-static _thread_state_t t{{ kernel.core.id }}_data;
-static int cog{{ kernel.core.id }}_stack[{{ stack_size }}];
+long cog{{ kernel.core.id }}_stack[{{ stack_size }}];
 {% endfor %}
-
 int
 main()
 {
-{% for kernel in kernels %}
-  _start_cog_thread(cog{{ kernel.core.id }}_stack + 16,
-                    main{{ kernel.core.id }}, (void*)0,
-                    &t{{ kernel.core.id }}_data);
-{% endfor %}
   bbos(); /* BBOS entry point */
+{% for kernel in kernels %} /* Run kernel {{ kernel.core.id }} */
+  cogstart(main{{ kernel.core.id }}, (void*)0, cog{{ kernel.core.id }}_stack, {{ stack_size }});
+{% endfor %}
   return 0;
 }

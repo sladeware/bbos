@@ -4,6 +4,8 @@
  * {{ copyright }}
  */
 
+#include "bb/os.h"
+
 {% for filename in impl_files %}
 #include "{{ filename }}"
 {% endfor %}
@@ -20,16 +22,17 @@ void
     return;
   }
   switch (request->label) {
-  {% for message, handler in messenger.get_message_handlers.items %}
-    case {{ message.get_label }}:
-    {% if handler.is_output_required %}
+  {% for handler in messenger.get_message_handlers %}
+    case {{ handler.get_target_message.get_label }}:
+    {% if handler.get_response_message %}
       if ((response = bbos_request_message(request->sender)) == NULL) {
         break;
       }
       {{ handler.get_name }}(request->payload, response->payload);
+      response->label = {{ handler.get_response_message.get_label }};
       bbos_send_message(response);
     {% else %}
-      {{ handler }}(&request->payload);
+      {{ handler.get_name }}(request->payload);
     {% endif %}
       break;
   {% endfor %}

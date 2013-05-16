@@ -20,7 +20,7 @@
 from django.template import Template, Context
 
 from bb import __copyright__
-from bb.app.meta_os import OS
+from bb.app.os import OS
 from bb.app.hardware.devices.processors.propeller_p8x32 import PropellerP8X32A
 from bb.utils.path_utils import localpath, exists
 
@@ -41,8 +41,8 @@ def gen_main_c(rule, os):
       "kernels": os.get_kernels(),
       # TODO(team): the stack size has to be consider for each thread
       # individually
-      "stack_size": 16,
-      "copyright": __copyright__,
+      'stack_size': 256,
+      'copyright': __copyright__,
     })
     output_fh.write(template.render(context))
   return output_fn

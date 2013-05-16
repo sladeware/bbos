@@ -16,8 +16,11 @@
 {% endfor %}
 
 /* Supported messages */
+enum {
 {% for message in messages %}
-#define {{ message.get_label }} {{ forloop.counter0 }}
+  {{ message.get_label }} = {{ forloop.counter0 }},
 {% empty %}
 /* No messages */
 {% endfor %}
+  BBOS_NUM_MESSAGE_LABELS
+};
