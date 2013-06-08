@@ -24,14 +24,24 @@ Installation
 
         $ git clone git@github.com:sladeware/bbos.git
 
-2. To install bbos, make sure you have [Python](http://www.python.org/) 2.6 or
+2. To install bbos, make sure you have [Python](http://www.python.org/) 2.7 or
    greater installed. If you're in doubt, run:
 
         $ python -V
 
-3. Initiate setup process:
+3. Run the tests:
+
+        $ python setup.py test
+
+   If some tests fail, this library may not work correctly on your system.
+   Continue at your own risk.
+
+4. Run this command from the command prompt to initiate setup process:
 
         $ python setup.py
 
-> **NOTE:** while BB is in development mode, BBAPP will not be installed
-> automatically.
+   All the modules will be installed automatically if required. The installation
+   process will generate default config file `~/.bbconfig`. In case you would
+   like to refresh it and does not want to reinstall the package, run:
+
+        $ python -m bb.config

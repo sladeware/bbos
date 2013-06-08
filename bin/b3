@@ -1,0 +1,6 @@
+#!/bin/sh
+#
+# Copyright (c) 2012 Sladeware LLC
+# http://www.bionicbunny.org/
+
+python -m bb.tools.b3 $@
