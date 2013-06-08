@@ -1,4 +1,5 @@
 setup.py
+bin/b3
 src/main/python/bb/__init__.py
 src/main/python/bb/object.py
 src/main/python/bb.egg-info/PKG-INFO

@@ -38,10 +38,14 @@ Installation
 
 4. Run this command from the command prompt to initiate setup process:
 
-        $ python setup.py
+        $ python setup.py install
 
    All the modules will be installed automatically if required. The installation
    process will generate default config file `~/.bbconfig`. In case you would
    like to refresh it and does not want to reinstall the package, run:
 
         $ python -m bb.config
+
+   Run the following command to uninstall the framework:
+
+        $ python setup.py uninstall

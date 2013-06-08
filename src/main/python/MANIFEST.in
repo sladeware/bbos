@@ -1,2 +1,0 @@
-recursive-exclude src/bb _test\.py
-recursive-exclude * *.py[co]
