@@ -60,8 +60,6 @@ class Mapping(Object):
   :param thread_distributor: A :class:`ThreadDistributor` instance that will
     distribute threads. By default :class:`RoundrobinThreadDistributor` instance
     will be used.
-  :param autoreg: If ``True``, allows mapping to automatically try to connect to
-    the active :class:`~bb.app.app.Application` instance.
   """
 
   processor = None
@@ -69,7 +67,7 @@ class Mapping(Object):
   name_format = "M%d"
 
   def __init__(self, name=None, processor=None, os_class=None, threads=[],
-               thread_distributor=None, autoreg=True):
+               thread_distributor=None):
     Object.__init__(self)
     self._name = None
     self._threads = dict()
@@ -90,15 +88,6 @@ class Mapping(Object):
       self.set_processor(processor or self.__class__.processor)
     if threads:
       self.register_threads(threads)
-    if autoreg:
-      self._register()
-
-  def _register(self):
-    import bb.runtime
-    app = bb.runtime.get_active_application()
-    if not self.get_name():
-      self.set_name(app.gen_default_mapping_name(self))
-    app.add_mapping(self)
 
   def __str__(self):
     return '%s[name=%s,processor=%s,thread_distributor=%s,is_simulation_mode=%s]' \
@@ -332,8 +321,7 @@ class Mapping(Object):
     return self._ports.values()
 
   def serialize(self):
-    os = self.gen_os()
     return json.dumps({
-      'name': self.get_name(),  
-      'os': json.loads(os.serialize())
+      'name': self.get_name(),
+      'os': json.loads(self.gen_os().serialize())
     })

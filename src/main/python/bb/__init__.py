@@ -23,3 +23,5 @@ from bb.app.app import *
 from bb.app.mapping import Mapping, Thread, Port
 from bb.app.os import os
 from bb.app.thread_distributors import *
+
+__copyright__ = 'Copyright (c) 2012-2013 Sladeware LLC'

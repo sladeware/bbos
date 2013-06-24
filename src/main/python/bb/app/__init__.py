@@ -19,6 +19,8 @@
 
 from __future__ import absolute_import
 
+__all__ = ['Mapping', 'Thread', 'Port']
+
 from bb.app.app import *
 from bb.app.mapping import Mapping, Thread, Port
 from bb.app.os import os

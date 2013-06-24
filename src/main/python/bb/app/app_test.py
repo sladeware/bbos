@@ -20,17 +20,15 @@ from bb.utils.testing import unittest
 class ApplicationTest(unittest.TestCase):
 
   def setup(self):
-    self._app = bbapp.create_application()
+    self._app = bbapp.Application('test')
 
   def teardown(self):
-    bbapp.delete_application(self._app)
+    pass
 
   def test_mapping_registration(self):
     self.assert_equal(0, self._app.get_num_mappings(),
                       msg="Active application %s" % str(self._app))
-    self._app.add_mappings([bbapp.create_mapping("M1", autoreg=False),
-                            bbapp.create_mapping("M2", autoreg=False)])
+    self._app.add_mappings([bbapp.Mapping('M1'), bbapp.Mapping('M2')])
     self.assert_equal(2, self._app.get_num_mappings())
-    self._app.create_mapping("M3"),
-    self._app.create_mapping("M4")
-    self.assert_equal(4, self._app.get_num_mappings())
+    random_mapping = bbapp.Mapping('M3')
+    self.assert_equal(2, self._app.get_num_mappings())

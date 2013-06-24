@@ -53,7 +53,6 @@ class Application(Object):
          `True`.
   """
 
-  _register = {}
   settings_dirname = ".bbapp"
 
   def __init__(self, name=None, home_dir=None, init_home_dir=False, settings_dir=None):
@@ -90,20 +89,6 @@ class Application(Object):
     if not typecheck.is_string(name):
       raise TypeError()
     self._name = name
-
-  @classmethod
-  def _register_instance(cls, app):
-    if not isinstance(app, Application):
-      raise TypeError("app must be derived from Application")
-    if not app.get_home_dir() in cls._register:
-      cls._register[app.get_home_dir()] = app
-
-  @classmethod
-  def _unregister_instance(cls, app):
-    if not isinstance(app, Application):
-      raise TypeError("app must be derived from Application")
-    if app.get_home_dir() in cls._register:
-      del cls._register[app.get_home_dir()]
 
   def __str__(self):
     return "%s[home_dir='%s',num_mappings=%d]" \
@@ -268,28 +253,6 @@ class Application(Object):
       raise TypeError("'mappings' must be list")
     for mapping in mappings:
       self.add_mapping(mapping)
-
-  def create_mapping(self, *args, **kwargs):
-    """Mapping factory, creates and returns a new mapping connected to this
-    application.
-
-    .. note::
-
-       Use :func:`create_mapping` to automatically create a mapping and connect
-       it to the active application. Otherwise you will have to create mapping
-       manually and then use :func:`add_mapping` in order to connect it to
-       specific :class:`Application` instance.
-
-    :param args: A list of arguments.
-    :param kwargs: A dict of key-word arguments.
-
-    :returns: A :class:`~bb.app.mapping.Mapping` instance.
-    """
-    fixed_kwargs = dict(**kwargs)
-    fixed_kwargs.update(autoreg=False)
-    mapping = Mapping(*args, **fixed_kwargs)
-    self.add_mapping(mapping)
-    return mapping
 
   def remove_mapping(self, mapping):
     if not isinstance(mapping, Mapping):

@@ -20,10 +20,10 @@ from bb.app.os.thread import Thread
 class MappingTest(unittest.TestCase):
 
   def test_thread_registration(self):
-    m = Mapping("M1", autoreg=False)
-    m.register_threads([Thread("T1"), Thread("T2")])
+    m = Mapping('M1')
+    m.register_threads([Thread('T1'), Thread('T2')])
     self.assert_equal(2, len(m.get_threads()))
 
   def test_name(self):
-    m = Mapping("M1", autoreg=False)
-    self.assert_equal("M1", m.get_name())
+    m = Mapping('M1')
+    self.assert_equal('M1', m.get_name())
