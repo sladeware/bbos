@@ -57,8 +57,8 @@ Sometimes it's required to manually install bbos using
 [virtualenv](http://www.virtualenv.org/). Create an environment
 (e.g. `bbos-env`) and switch to bbos home directory:
 
-     $ virtualenv bbos-env
-     $ cd bbos/
+    $ virtualenv bbos-env
+    $ cd bbos/
 
 The following example shows how to run tests:
 
