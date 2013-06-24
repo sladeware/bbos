@@ -60,4 +60,9 @@ Sometimes it's required to manually install bbos using
      $ virtualenv bbos-env
      $ cd bbos/
 
-Continue installation process from step 3 from section INSTALL.
+The following example shows how to run tests:
+
+    $ ../bbos-env/bin/python setup.py test
+
+Continue installation process from step 3 from section INSTALL by using created
+environment.
