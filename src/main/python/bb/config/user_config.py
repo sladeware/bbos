@@ -14,7 +14,8 @@ import types
 
 __all__ = ["read_user_settings", "gen_default_user_config", "UserConfigParser"]
 
-_DEFAULT_USER_CONFIG_FILE_PATH = os.path.expanduser("~/.bbconfig")
+USER_CONFIG_FILE_NAME = '.bbconfig'
+_DEFAULT_USER_CONFIG_FILE_PATH = os.path.expanduser(os.path.join('~', USER_CONFIG_FILE_NAME))
 
 _DEFAULT_USER_CONFIG = {
   "bbos": {
