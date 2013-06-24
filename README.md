@@ -49,3 +49,15 @@ Installation
    Run the following command to uninstall the framework:
 
         $ python setup.py uninstall
+
+Install using virtualenv
+------------------------
+
+Sometimes it's required to manually install bbos using
+[virtualenv](http://www.virtualenv.org/). Create an environment
+(e.g. `bbos-env`) and switch to bbos home directory:
+
+     $ virtualenv bbos-env
+     $ cd bbos/
+
+Continue installation process from step 3 from section INSTALL.
