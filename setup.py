@@ -16,7 +16,7 @@
 
 from __future__ import print_function
 
-# http://peak.telecommunity.com/DevCenter/EasyInstall
+# See http://peak.telecommunity.com/DevCenter/EasyInstall for details.
 from bootstrap import use_setuptools
 
 import setuptools.sandbox
@@ -29,34 +29,6 @@ HOME_DIR = os.path.dirname(os.path.realpath(__file__))
 
 EMAIL = "info@bionicbunny.org"
 URL = "http://www.bionicbunny.org/"
-
-def setup_py(args):
-  print(' '.join(['setup.py'] + args))
-  setuptools.setup(
-    name="bb",
-    description="BB Framework",
-    author="Bionic Bunny Team",
-    author_email=EMAIL,
-    url=URL,
-    license="Apache",
-    classifiers=[
-      "License :: OSI Approved :: Apache Software License",
-      "Development Status :: 2 - Pre-Alpha",
-      "Operating System :: BBOS"
-    ],
-    install_requires=[
-      "django",
-      "distribute>=0.6.24",
-      "networkx",
-      "pyserial"
-    ],
-    packages=setuptools.find_packages("src/main/python"),
-    package_dir={'': 'src/main/python'},
-    scripts=["bin/b3"],
-    test_suite="test.make_testsuite",
-    # Pass setup arguments manually
-    script_args=args,
-  )
 
 class Command(object):
 
@@ -116,6 +88,34 @@ class Test(object):
 
   def run(self):
     setup_py(['test'])
+
+def setup_py(args):
+  print(' '.join(['setup.py'] + args))
+  setuptools.setup(
+    name="bb",
+    description="BB Framework",
+    author="Bionic Bunny Team",
+    author_email=EMAIL,
+    url=URL,
+    license="Apache",
+    classifiers=[
+      "License :: OSI Approved :: Apache Software License",
+      "Development Status :: 2 - Pre-Alpha",
+      "Operating System :: BBOS"
+    ],
+    install_requires=[
+      "django",
+      "distribute>=0.6.24",
+      "networkx",
+      "pyserial"
+    ],
+    packages=setuptools.find_packages("src/main/python"),
+    package_dir={'': 'src/main/python'},
+    scripts=["bin/b3"],
+    test_suite="test.make_testsuite",
+    # Pass setup arguments manually
+    script_args=args,
+  )
 
 def _build_argparser():
   parser = argparse.ArgumentParser(description='BB setup.')
