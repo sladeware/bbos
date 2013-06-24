@@ -1,6 +1,24 @@
-#!/bin/sh
+#!/bin/bash
 #
-# Copyright (c) 2012 Sladeware LLC
+# Copyright (c) 2012-2013 Sladeware LLC
 # http://www.bionicbunny.org/
 
-python -m bb.tools.b3 $@
+PYTHON_EXE="python"
+
+# Check whether or not it's python interpreter in the same directory with b3
+# script.
+SCRIPT_SRC="${BASH_SOURCE[0]}"
+# Resolve $SCRIPT_SRC until the file is no longer a symlink...
+while [ -h "$SCRIPT_SRC" ]; do
+  SCRIPT_DIR="$( cd -P "$( dirname "$SCRIPT_SRC" )" && pwd )"
+  SCRIPT_SRC="$(readlink "$SCRIPT_SRC")"
+  # if $SCRIPT_SRC was a relative symlink, we need to resolve it relative to the
+  # path where the symlink file was located
+  [[ $SCRIPT_SRC != /* ]] && SCRIPT_SRC="$SCRIPT_DIR/$SCRIPT_SRC"
+done
+SCRIPT_DIR="$( cd -P "$( dirname "$SCRIPT_SRC" )" && pwd )"
+if [ -f "${SCRIPT_DIR}/python" ]; then
+    PYTHON_EXE="${SCRIPT_DIR}/python"
+fi
+
+${PYTHON_EXE} -m bb.tools.b3 $@
