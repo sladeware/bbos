@@ -1,0 +1,32 @@
+{% extends "!layout.html" %}
+{% block rootrellink %}
+<li><a href="http://www.bionicbunny.org/">Home</a>{{ reldelim1 }}</li>
+<li><a href="{{ pathto('index') }}">{{ shorttitle }}</a>{{ reldelim1 }}</li>
+{% endblock %}
+{% block extrahead %}
+   <!-- <link rel="shortcut icon" type="image/png" href="{{ pathto('_static/bb.png', 1) }}" /> -->
+
+{{ super() }}
+{% endblock %}
+{% block footer %}
+   <div class="footer">
+     &copy; <a href="{{ pathto('copyright') }}">Copyright</a> {{ copyright|e }}.
+     <br />
+     The Bionic Bunny is a non-profit organisation.
+     <a href="http://www.bionicbunny.org/donations/">Please donate.</a>
+     <br />
+     <a href="https://github.com/sladeware/bbapp/issues">Found a bug</a>?
+     <br />
+     Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> {{ sphinx_version|e }}.
+   </div>
+{% endblock %}
+{% block sidebarsourcelink %}
+{%- if show_source and has_source and sourcename %}
+<h3>{{ _('This Page') }}</h3>
+<ul class="this-page-menu">
+  <li><a href="{{ pathto('bugs') }}">Report a Bug</a></li>
+  <li><a href="{{ pathto('_sources/' + sourcename, true)|e }}"
+         rel="nofollow">Show Source</a></li>
+</ul>
+{%- endif %}
+{% endblock %}
