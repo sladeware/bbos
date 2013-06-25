@@ -6,6 +6,8 @@ Copyright (c) 2011-2013 Sladeware LLC
 
 http://www.bionicbunny.org/
 
+[![Build status](https://api.travis-ci.org/sladeware/bbos.png?branch=master)](https://travis-ci.org/sladeware/bbos)
+
 What is Bionic Bunny?
 ---------------------
 
