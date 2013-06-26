@@ -55,7 +55,8 @@ class Install(object):
       print("Please install bb first", file=sys.stderr)
       sys.exit(0)
     bb.config.gen_default_user_config()
-    bb.config.user_settings.set("bbos", "homedir", HOME_DIR)
+    bb.config.user_settings.set('bbos', 'homedir', HOME_DIR)
+    bb.config.user_settings.set('b3', 'builddir', os.path.join(HOME_DIR, 'tmp'))
     bb.config.user_settings.write()
 
 class Uninstall(object):

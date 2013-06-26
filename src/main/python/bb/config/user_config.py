@@ -22,7 +22,7 @@ _DEFAULT_USER_CONFIG = {
     "homedir": "",
   },
   "b3": {
-    "builddir": os.path.expanduser("~/.b3"),
+    "builddir": "",
   }
 }
 
